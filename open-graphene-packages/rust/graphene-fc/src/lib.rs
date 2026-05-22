@@ -147,12 +147,27 @@ impl FcSerialize for bool {
     }
 }
 
-impl FcSerialize for i64 {
+impl FcSerialize for u8 {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        out.extend_from_slice(&self.to_le_bytes());
+        out.push(*self);
         Ok(())
     }
 }
+
+macro_rules! impl_fc_fixed_width_integer {
+    ($($ty:ty),+ $(,)?) => {
+        $(
+            impl FcSerialize for $ty {
+                fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+                    out.extend_from_slice(&self.to_le_bytes());
+                    Ok(())
+                }
+            }
+        )+
+    };
+}
+
+impl_fc_fixed_width_integer!(u16, u32, u64, i32, i64);
 
 impl<T: FcSerialize> FcSerialize for Option<T> {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
@@ -198,6 +213,19 @@ mod tests {
     fn bool_serializes_as_single_fc_byte() {
         assert_eq!(false.to_fc_bytes().unwrap(), [0]);
         assert_eq!(true.to_fc_bytes().unwrap(), [1]);
+    }
+
+    #[test]
+    fn fixed_width_integers_serialize_little_endian() {
+        assert_eq!(0xabu8.to_fc_bytes().unwrap(), [0xab]);
+        assert_eq!(0x1234u16.to_fc_bytes().unwrap(), [0x34, 0x12]);
+        assert_eq!(0x1234_5678u32.to_fc_bytes().unwrap(), [0x78, 0x56, 0x34, 0x12]);
+        assert_eq!(
+            0x0123_4567_89ab_cdefu64.to_fc_bytes().unwrap(),
+            [0xef, 0xcd, 0xab, 0x89, 0x67, 0x45, 0x23, 0x01]
+        );
+        assert_eq!((-2i32).to_fc_bytes().unwrap(), [0xfe, 0xff, 0xff, 0xff]);
+        assert_eq!((-2i64).to_fc_bytes().unwrap(), [0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]);
     }
 
     #[test]

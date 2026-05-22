@@ -1,7 +1,7 @@
 use graphene_chain_swaplock_bindings::generated::{
-    AccountId, AccountWhitelistOperation, Asset, AssetId, FcSerialize, FcSerializeError,
-    FutureExtensions, LimitOrderCancelOperation, LimitOrderCreateOperation, LimitOrderId, Operation,
-    TransferOperation,
+    AccountId, Asset, AssetId, FcSerialize, FcSerializeError, FutureExtensions,
+    LimitOrderCancelOperation, LimitOrderCreateOperation, LimitOrderId, Operation, TransferOperation,
+    WitnessCreateOperation,
 };
 
 fn sample_transfer_operation() -> TransferOperation {
@@ -169,15 +169,14 @@ fn operation_fc_serializes_limit_order_cancel_tag_and_payload() {
 
 #[test]
 fn operation_fc_reports_unsupported_variant() {
-    let operation = Operation::AccountWhitelistOperation(Box::new(AccountWhitelistOperation {
+    let operation = Operation::WitnessCreateOperation(Box::new(WitnessCreateOperation {
         fee: Asset {
             amount: 0,
             asset_id: AssetId("1.3.0".to_string()),
         },
-        authorizing_account: AccountId("1.2.1".to_string()),
-        account_to_list: AccountId("1.2.2".to_string()),
-        new_listing: 1,
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        witness_account: AccountId("1.2.1".to_string()),
+        url: "https://example.invalid".to_string(),
+        block_signing_key: "BTS1111111111111111111111111111111114T1Anm".to_string(),
     }));
 
     let err = operation.to_fc_bytes().expect_err("unsupported variant fails explicitly");
@@ -185,7 +184,7 @@ fn operation_fc_reports_unsupported_variant() {
     assert!(matches!(
         err,
         FcSerializeError::UnsupportedVariant {
-            variant: "AccountWhitelistOperation"
+            variant: "WitnessCreateOperation"
         }
     ));
 }

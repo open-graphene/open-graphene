@@ -538,7 +538,14 @@ fn is_fc_supported_type(
     supported_structs: &BTreeSet<String>,
 ) -> bool {
     match ty {
-        TypeRef::Void | TypeRef::Bool | TypeRef::Int64 { json: None, .. } => true,
+        TypeRef::Void
+        | TypeRef::Bool
+        | TypeRef::Uint8
+        | TypeRef::Uint16
+        | TypeRef::Uint32
+        | TypeRef::Int32 { .. }
+        | TypeRef::Int64 { json: None, .. }
+        | TypeRef::Uint64 { json: None, .. } => true,
         TypeRef::ObjectId | TypeRef::ProtocolObjectId { .. } => true,
         TypeRef::Ref { name } => supported_structs.contains(name),
         TypeRef::StaticVariantRef { name } => name == "future_extensions",
@@ -549,10 +556,6 @@ fn is_fc_supported_type(
         | TypeRef::Map { .. }
         | TypeRef::FlatMap { .. }
         | TypeRef::Pair { .. }
-        | TypeRef::Uint8
-        | TypeRef::Uint16
-        | TypeRef::Uint32
-        | TypeRef::Int32 { .. }
         | TypeRef::Int64 { .. }
         | TypeRef::Uint64 { .. }
         | TypeRef::UnsignedVarint
@@ -1218,6 +1221,47 @@ mod tests {
                 },
                 FieldDef {
                     index: 2,
+                    name: "small".to_string(),
+                    ty: TypeRef::Uint8,
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 3,
+                    name: "medium".to_string(),
+                    ty: TypeRef::Uint16,
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 4,
+                    name: "large".to_string(),
+                    ty: TypeRef::Uint32,
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 5,
+                    name: "huge".to_string(),
+                    ty: TypeRef::Uint64 {
+                        json: None,
+                        fc: None,
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 6,
+                    name: "signed".to_string(),
+                    ty: TypeRef::Int32 {
+                        fc: None,
+                        source: None,
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 7,
                     name: "account".to_string(),
                     ty: TypeRef::ProtocolObjectId {
                         object_type: "account".to_string(),
@@ -1226,7 +1270,7 @@ mod tests {
                     support: None,
                 },
                 FieldDef {
-                    index: 3,
+                    index: 8,
                     name: "extensions".to_string(),
                     ty: TypeRef::StaticVariantRef {
                         name: "future_extensions".to_string(),
@@ -1319,6 +1363,11 @@ mod tests {
         assert!(output.contains("impl FcSerialize for crate::generated::operations::CustomSupportedOperation"));
         assert!(output.contains("self.fee.fc_serialize(out)?;"));
         assert!(output.contains("self.enabled.fc_serialize(out)?;"));
+        assert!(output.contains("self.small.fc_serialize(out)?;"));
+        assert!(output.contains("self.medium.fc_serialize(out)?;"));
+        assert!(output.contains("self.large.fc_serialize(out)?;"));
+        assert!(output.contains("self.huge.fc_serialize(out)?;"));
+        assert!(output.contains("self.signed.fc_serialize(out)?;"));
         assert!(output.contains("self.account.fc_serialize(out)?;"));
         assert!(output.contains("self.extensions.fc_serialize(out)?;"));
         assert!(output.contains("Self::CustomSupportedOperation(value) => { write_varint(9u64, out); value.as_ref().fc_serialize(out) }"));
