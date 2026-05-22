@@ -3202,7 +3202,95 @@
     {
       "name": "authority",
       "kind": "struct",
-      "fields": [],
+      "fields": [
+        {
+          "index": 0,
+          "name": "weight_threshold",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "weight_threshold",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/authority.hpp",
+            "line": 116
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "account_auths",
+          "type": {
+            "kind": "flat_map",
+            "key": {
+              "kind": "protocol_object_id",
+              "objectType": "account"
+            },
+            "value": {
+              "kind": "uint16"
+            },
+            "ordering": "unresolved"
+          },
+          "source": {
+            "name": "account_auths",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/authority.hpp",
+            "line": 118
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "key_auths",
+          "type": {
+            "kind": "flat_map",
+            "key": {
+              "kind": "public_key",
+              "prefixRef": "chain.publicKeyPrefix"
+            },
+            "value": {
+              "kind": "uint16"
+            },
+            "ordering": "unresolved"
+          },
+          "source": {
+            "name": "key_auths",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/authority.hpp",
+            "line": 119
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "address_auths",
+          "type": {
+            "kind": "flat_map",
+            "key": {
+              "kind": "address"
+            },
+            "value": {
+              "kind": "uint16"
+            },
+            "ordering": "unresolved"
+          },
+          "source": {
+            "name": "address_auths",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/authority.hpp",
+            "line": 120
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
       "support": {
         "status": "provisional",
         "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
@@ -5698,7 +5786,7 @@
           "index": 9,
           "name": "acceptable_collateral",
           "type": {
-            "kind": "map",
+            "kind": "flat_map",
             "key": {
               "kind": "protocol_object_id",
               "objectType": "asset"
@@ -5723,7 +5811,7 @@
           "index": 10,
           "name": "acceptable_borrowers",
           "type": {
-            "kind": "map",
+            "kind": "flat_map",
             "key": {
               "kind": "protocol_object_id",
               "objectType": "account"
@@ -6074,7 +6162,7 @@
           "type": {
             "kind": "optional",
             "inner": {
-              "kind": "map",
+              "kind": "flat_map",
               "key": {
                 "kind": "protocol_object_id",
                 "objectType": "asset"
@@ -6102,7 +6190,7 @@
           "type": {
             "kind": "optional",
             "inner": {
-              "kind": "map",
+              "kind": "flat_map",
               "key": {
                 "kind": "protocol_object_id",
                 "objectType": "account"
@@ -6808,10 +6896,7 @@
           "index": 4,
           "name": "data",
           "type": {
-            "kind": "vector",
-            "inner": {
-              "kind": "string"
-            }
+            "kind": "bytes"
           },
           "source": {
             "name": "data",
@@ -7932,10 +8017,7 @@
           "index": 3,
           "name": "preimage",
           "type": {
-            "kind": "vector",
-            "inner": {
-              "kind": "string"
-            }
+            "kind": "bytes"
           },
           "source": {
             "name": "preimage",
@@ -8123,10 +8205,7 @@
           "index": 8,
           "name": "preimage",
           "type": {
-            "kind": "vector",
-            "inner": {
-              "kind": "string"
-            }
+            "kind": "bytes"
           },
           "source": {
             "name": "preimage",
@@ -11774,10 +11853,7 @@
           "index": 2,
           "name": "encrypted_memo",
           "type": {
-            "kind": "vector",
-            "inner": {
-              "kind": "string"
-            }
+            "kind": "bytes"
           },
           "source": {
             "name": "encrypted_memo",
@@ -20843,10 +20919,7 @@
           "index": 4,
           "name": "data",
           "type": {
-            "kind": "vector",
-            "inner": {
-              "kind": "string"
-            }
+            "kind": "bytes"
           },
           "source": {
             "name": "data",
@@ -22269,10 +22342,7 @@
           "index": 3,
           "name": "preimage",
           "type": {
-            "kind": "vector",
-            "inner": {
-              "kind": "string"
-            }
+            "kind": "bytes"
           },
           "source": {
             "name": "preimage",
@@ -22451,10 +22521,7 @@
           "index": 8,
           "name": "preimage",
           "type": {
-            "kind": "vector",
-            "inner": {
-              "kind": "string"
-            }
+            "kind": "bytes"
           },
           "source": {
             "name": "preimage",
@@ -24563,7 +24630,7 @@
           "index": 9,
           "name": "acceptable_collateral",
           "type": {
-            "kind": "map",
+            "kind": "flat_map",
             "key": {
               "kind": "protocol_object_id",
               "objectType": "asset"
@@ -24588,7 +24655,7 @@
           "index": 10,
           "name": "acceptable_borrowers",
           "type": {
-            "kind": "map",
+            "kind": "flat_map",
             "key": {
               "kind": "protocol_object_id",
               "objectType": "account"
@@ -24887,7 +24954,7 @@
           "type": {
             "kind": "optional",
             "inner": {
-              "kind": "map",
+              "kind": "flat_map",
               "key": {
                 "kind": "protocol_object_id",
                 "objectType": "asset"
@@ -24915,7 +24982,7 @@
           "type": {
             "kind": "optional",
             "inner": {
-              "kind": "map",
+              "kind": "flat_map",
               "key": {
                 "kind": "protocol_object_id",
                 "objectType": "account"

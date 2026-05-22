@@ -97,10 +97,10 @@ fn extract_methods_from_class_body(body: &str, file: &Path, class_line: usize) -
 
     for (index, ch) in body.char_indices() {
         match ch {
-            '(' => paren_depth += 1,
-            ')' => paren_depth = paren_depth.saturating_sub(1),
-            '<' => angle_depth += 1,
-            '>' => angle_depth = angle_depth.saturating_sub(1),
+            '(' if brace_depth == 0 => paren_depth += 1,
+            ')' if brace_depth == 0 => paren_depth = paren_depth.saturating_sub(1),
+            '<' if brace_depth == 0 => angle_depth += 1,
+            '>' if brace_depth == 0 => angle_depth = angle_depth.saturating_sub(1),
             '{' => brace_depth += 1,
             '}' => {
                 brace_depth = brace_depth.saturating_sub(1);
@@ -132,10 +132,10 @@ fn extract_fields_from_class_body(body: &str, file: &Path, class_line: usize) ->
 
     for (index, ch) in body.char_indices() {
         match ch {
-            '(' => paren_depth += 1,
-            ')' => paren_depth = paren_depth.saturating_sub(1),
-            '<' => angle_depth += 1,
-            '>' => angle_depth = angle_depth.saturating_sub(1),
+            '(' if brace_depth == 0 => paren_depth += 1,
+            ')' if brace_depth == 0 => paren_depth = paren_depth.saturating_sub(1),
+            '<' if brace_depth == 0 => angle_depth += 1,
+            '>' if brace_depth == 0 => angle_depth = angle_depth.saturating_sub(1),
             '{' => brace_depth += 1,
             '}' => {
                 brace_depth = brace_depth.saturating_sub(1);
@@ -587,6 +587,90 @@ mod tests {
         assert_eq!(classes[0].fields.len(), 2);
         assert_eq!(classes[0].fields[0].name, "amount");
         assert_eq!(classes[0].fields[1].name, "asset_id");
+    }
+
+    #[test]
+    fn extracts_authority_fields_after_methods_and_friend_operators() {
+        let source = r#"
+            struct authority
+            {
+               authority(){}
+               template<class ...Args>
+               authority(uint32_t threshhold, Args... auths)
+                  : weight_threshold(threshhold)
+               {
+                  add_authorities(auths...);
+               }
+
+               enum classification
+               {
+                  owner  = 0,
+                  active = 1,
+                  key    = 2
+               };
+               void add_authority( const public_key_type& k, weight_type w )
+               {
+                  key_auths[k] = w;
+               }
+               vector<public_key_type> get_keys() const
+               {
+                  vector<public_key_type> result;
+                  return result;
+               }
+               friend bool operator == ( const authority& a, const authority& b )
+               {
+                  return (a.weight_threshold == b.weight_threshold) &&
+                         (a.account_auths == b.account_auths) &&
+                         (a.key_auths == b.key_auths) &&
+                         (a.address_auths == b.address_auths);
+               }
+               friend bool operator!= ( const authority& a, const authority& b ) { return !(a==b); }
+               uint32_t num_auths()const { return account_auths.size() + key_auths.size() + address_auths.size(); }
+               void     clear() { account_auths.clear(); key_auths.clear(); address_auths.clear(); weight_threshold = 0; }
+
+               static authority null_authority()
+               {
+                  return authority( 1, GRAPHENE_NULL_ACCOUNT, 1 );
+               }
+
+               uint32_t                              weight_threshold = 0;
+               flat_map<account_id_type,weight_type> account_auths;
+               flat_map<public_key_type,weight_type> key_auths;
+               flat_map<address,weight_type>         address_auths;
+            };
+        "#;
+
+        let classes = extract_classes(source, &PathBuf::from("authority.hpp"));
+        let authority = classes
+            .iter()
+            .find(|class| class.name == "authority")
+            .expect("authority extracted");
+        assert_authority_fields(&authority.fields);
+    }
+
+    #[test]
+    fn extracts_real_swaplock_authority_fields() {
+        let source = include_str!(
+            "../../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/authority.hpp"
+        );
+        let classes = extract_classes(source, &PathBuf::from("authority.hpp"));
+        let authority = classes
+            .iter()
+            .find(|class| class.name == "authority")
+            .expect("authority extracted");
+        assert_authority_fields(&authority.fields);
+    }
+
+    fn assert_authority_fields(fields: &[RawField]) {
+        assert_eq!(fields.len(), 4);
+        assert_eq!(fields[0].name, "weight_threshold");
+        assert_eq!(fields[0].type_expr, "uint32_t");
+        assert_eq!(fields[1].name, "account_auths");
+        assert_eq!(fields[1].type_expr, "flat_map<account_id_type,weight_type>");
+        assert_eq!(fields[2].name, "key_auths");
+        assert_eq!(fields[2].type_expr, "flat_map<public_key_type,weight_type>");
+        assert_eq!(fields[3].name, "address_auths");
+        assert_eq!(fields[3].type_expr, "flat_map<address,weight_type>");
     }
 
     #[test]

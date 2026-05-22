@@ -448,7 +448,7 @@ pub struct CustomOperation {
     pub payer: crate::generated::ids::AccountId,
     pub required_auths: Vec<crate::generated::ids::AccountId>,
     pub id: u16,
-    pub data: Vec<String>,
+    pub data: Vec<u8>,
 }
 
 pub const ASSERT_OPERATION_ID: u32 = 36;
@@ -626,7 +626,7 @@ pub struct HtlcRedeemOperation {
     pub fee: crate::generated::types::Asset,
     pub htlc_id: crate::generated::ids::HtlcId,
     pub redeemer: crate::generated::ids::AccountId,
-    pub preimage: Vec<String>,
+    pub preimage: Vec<u8>,
     pub extensions: crate::generated::static_variants::FutureExtensions,
 }
 
@@ -643,7 +643,7 @@ pub struct HtlcRedeemedOperation {
     pub amount: crate::generated::types::Asset,
     pub htlc_preimage_hash: crate::generated::static_variants::HtlcHash,
     pub htlc_preimage_size: u16,
-    pub preimage: Vec<String>,
+    pub preimage: Vec<u8>,
 }
 
 pub const HTLC_EXTEND_OPERATION_ID: u32 = 52;

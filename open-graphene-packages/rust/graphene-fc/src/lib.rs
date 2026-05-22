@@ -16,6 +16,15 @@ pub enum FcSerializeError {
         value: String,
         reason: &'static str,
     },
+    InvalidVoteId {
+        value: String,
+        reason: &'static str,
+    },
+    InvalidFixedBytes {
+        type_name: &'static str,
+        expected_len: usize,
+        actual_len: usize,
+    },
     UnsupportedVariant {
         variant: &'static str,
     },
@@ -47,6 +56,17 @@ impl std::fmt::Display for FcSerializeError {
             Self::InvalidTimePointSec { value, reason } => {
                 write!(f, "invalid time_point_sec `{value}`: {reason}")
             }
+            Self::InvalidVoteId { value, reason } => {
+                write!(f, "invalid vote id `{value}`: {reason}")
+            }
+            Self::InvalidFixedBytes {
+                type_name,
+                expected_len,
+                actual_len,
+            } => write!(
+                f,
+                "invalid fixed bytes `{type_name}`: expected {expected_len} bytes, got {actual_len}"
+            ),
             Self::UnsupportedVariant { variant } => {
                 write!(
                     f,
@@ -82,6 +102,13 @@ pub struct ProtocolObjectIdParts {
     pub space: u32,
     pub type_id: u32,
     pub instance: u64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct VoteIdParts {
+    pub type_id: u8,
+    pub instance: u32,
+    pub content: u32,
 }
 
 pub fn write_varint(mut value: u64, out: &mut Vec<u8>) {
@@ -258,6 +285,71 @@ pub fn write_time_point_sec(value: &str, out: &mut Vec<u8>) -> Result<()> {
     Ok(())
 }
 
+pub fn parse_vote_id(value: &str) -> Result<VoteIdParts> {
+    let (type_part, instance_part) = value
+        .split_once(':')
+        .ok_or_else(|| invalid_vote_id(value, "expected type:instance"))?;
+
+    if type_part.is_empty() || instance_part.is_empty() || instance_part.contains(':') {
+        return Err(invalid_vote_id(value, "expected type:instance"));
+    }
+    if !type_part.bytes().all(|byte| byte.is_ascii_digit())
+        || !instance_part.bytes().all(|byte| byte.is_ascii_digit())
+    {
+        return Err(invalid_vote_id(value, "type and instance must be decimal integers"));
+    }
+
+    let type_id = type_part
+        .parse::<u32>()
+        .map_err(|_| invalid_vote_id(value, "type is out of range"))?;
+    if type_id > u8::MAX as u32 {
+        return Err(invalid_vote_id(value, "type exceeds 8 bits"));
+    }
+
+    let instance = instance_part
+        .parse::<u32>()
+        .map_err(|_| invalid_vote_id(value, "instance is out of range"))?;
+    if instance >= 0x0100_0000 {
+        return Err(invalid_vote_id(value, "instance exceeds 24 bits"));
+    }
+
+    let content = (instance << 8) | type_id;
+    Ok(VoteIdParts {
+        type_id: type_id as u8,
+        instance,
+        content,
+    })
+}
+
+pub fn write_vote_id(value: &str, out: &mut Vec<u8>) -> Result<()> {
+    let parts = parse_vote_id(value)?;
+    out.extend_from_slice(&parts.content.to_le_bytes());
+    Ok(())
+}
+
+pub fn write_bytes(value: &[u8], out: &mut Vec<u8>) -> Result<()> {
+    write_varint(value.len() as u64, out);
+    out.extend_from_slice(value);
+    Ok(())
+}
+
+pub fn write_fixed_bytes(
+    value: &[u8],
+    expected_len: usize,
+    type_name: &'static str,
+    out: &mut Vec<u8>,
+) -> Result<()> {
+    if value.len() != expected_len {
+        return Err(FcSerializeError::InvalidFixedBytes {
+            type_name,
+            expected_len,
+            actual_len: value.len(),
+        });
+    }
+    out.extend_from_slice(value);
+    Ok(())
+}
+
 fn parse_fixed_digits(value: &str, start: usize, len: usize, component: &'static str) -> Result<u32> {
     let part = &value[start..start + len];
     if !part.bytes().all(|byte| byte.is_ascii_digit()) {
@@ -318,6 +410,13 @@ fn invalid_public_key(
 
 fn invalid_time_point_sec(value: &str, reason: &'static str) -> FcSerializeError {
     FcSerializeError::InvalidTimePointSec {
+        value: value.to_string(),
+        reason,
+    }
+}
+
+fn invalid_vote_id(value: &str, reason: &'static str) -> FcSerializeError {
+    FcSerializeError::InvalidVoteId {
         value: value.to_string(),
         reason,
     }
@@ -439,6 +538,31 @@ mod tests {
     }
 
     #[test]
+    fn bytes_write_varint_length_prefixed_raw_bytes() {
+        let mut out = Vec::new();
+        write_bytes(&[0xab, 0xcd], &mut out).unwrap();
+        assert_eq!(out, [2, 0xab, 0xcd]);
+    }
+
+    #[test]
+    fn fixed_bytes_validate_exact_length_and_write_raw_bytes() {
+        let mut out = Vec::new();
+        write_fixed_bytes(&[0xab, 0xcd], 2, "test_fixed", &mut out).unwrap();
+        assert_eq!(out, [0xab, 0xcd]);
+
+        let err = write_fixed_bytes(&[0xab], 2, "test_fixed", &mut out)
+            .expect_err("invalid fixed bytes length fails");
+        assert!(matches!(
+            err,
+            FcSerializeError::InvalidFixedBytes {
+                type_name: "test_fixed",
+                expected_len: 2,
+                actual_len: 1,
+            }
+        ));
+    }
+
+    #[test]
     fn time_point_sec_writes_u32_seconds_little_endian() {
         let mut out = Vec::new();
         write_time_point_sec("1970-01-01T00:00:00", &mut out).unwrap();
@@ -472,6 +596,44 @@ mod tests {
                 matches!(
                     write_time_point_sec(value, &mut Vec::new()),
                     Err(FcSerializeError::InvalidTimePointSec { .. })
+                ),
+                "{value} should fail"
+            );
+        }
+    }
+
+    #[test]
+    fn vote_id_writes_packed_u32_little_endian() {
+        let mut out = Vec::new();
+        write_vote_id("0:0", &mut out).unwrap();
+        assert_eq!(out, [0, 0, 0, 0]);
+
+        let mut out = Vec::new();
+        write_vote_id("1:5", &mut out).unwrap();
+        assert_eq!(out, [1, 5, 0, 0]);
+
+        let mut out = Vec::new();
+        write_vote_id("2:16777215", &mut out).unwrap();
+        assert_eq!(out, [2, 0xff, 0xff, 0xff]);
+    }
+
+    #[test]
+    fn vote_id_rejects_invalid_or_out_of_range_values() {
+        for value in [
+            "",
+            "1",
+            "1:",
+            ":5",
+            "1:5:7",
+            "x:5",
+            "1:x",
+            "256:0",
+            "1:16777216",
+        ] {
+            assert!(
+                matches!(
+                    write_vote_id(value, &mut Vec::new()),
+                    Err(FcSerializeError::InvalidVoteId { .. })
                 ),
                 "{value} should fail"
             );

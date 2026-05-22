@@ -2,7 +2,7 @@
 // Chain: swaplock | schema version: 1 | module: minimal FC serialization for transfer path.
 // Do not edit by hand.
 
-pub use open_graphene_fc::{write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, FcSerialize, FcSerializeError, Result};
+pub use open_graphene_fc::{parse_protocol_object_id, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};
 
 impl FcSerialize for crate::generated::ids::AccountId {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
@@ -234,7 +234,7 @@ impl FcSerialize for crate::generated::ids::VestingBalanceId {
 
 impl FcSerialize for crate::generated::ids::VoteId {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        write_protocol_object_id(&self.0, None, None, out)
+        write_vote_id(&self.0, out)
     }
 }
 
@@ -268,6 +268,15 @@ impl FcSerialize for crate::generated::ids::ObjectId {
     }
 }
 
+impl FcSerialize for crate::generated::types::AccountCreateOperationExt {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.null_ext.fc_serialize(out)?;
+        self.owner_special_authority.fc_serialize(out)?;
+        self.active_special_authority.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::AccountCreateOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         let _ = out;
@@ -283,9 +292,33 @@ impl FcSerialize for crate::generated::types::AccountNameEqLitPredicate {
     }
 }
 
+impl FcSerialize for crate::generated::types::AccountOptions {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_public_key(&self.memo_key, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;
+        self.voting_account.fc_serialize(out)?;
+        self.num_witness.fc_serialize(out)?;
+        self.num_committee.fc_serialize(out)?;
+        write_varint(self.votes.len() as u64, out);
+        for value in &self.votes {
+            write_vote_id(&value.0, out)?;
+        }
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::AccountTransferOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::AccountUpdateOperationExt {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.null_ext.fc_serialize(out)?;
+        self.owner_special_authority.fc_serialize(out)?;
+        self.active_special_authority.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -307,6 +340,15 @@ impl FcSerialize for crate::generated::types::AccountUpgradeOperationFeeParamsT 
 impl FcSerialize for crate::generated::types::AccountWhitelistOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::AdditionalAssetOptions {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.reward_percent.fc_serialize(out)?;
+        self.whitelist_market_fee_sharing.fc_serialize(out)?;
+        self.taker_fee_percent.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -371,6 +413,59 @@ impl FcSerialize for crate::generated::types::AssetGlobalSettleOperationFeeParam
 impl FcSerialize for crate::generated::types::AssetIssueOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::AssetOptions {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.max_supply.fc_serialize(out)?;
+        self.market_fee_percent.fc_serialize(out)?;
+        self.max_market_fee.fc_serialize(out)?;
+        self.issuer_permissions.fc_serialize(out)?;
+        self.flags.fc_serialize(out)?;
+        write_varint(self.whitelist_authorities.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.whitelist_authorities {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        write_varint(self.blacklist_authorities.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.blacklist_authorities {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        write_varint(self.whitelist_markets.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.whitelist_markets {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        write_varint(self.blacklist_markets.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.blacklist_markets {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        self.description.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -455,7 +550,34 @@ impl FcSerialize for crate::generated::types::AssetUpdateOperationFeeParamsT {
 
 impl FcSerialize for crate::generated::types::Authority {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        let _ = out;
+        self.weight_threshold.fc_serialize(out)?;
+        write_varint(self.account_auths.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for (key, value) in &self.account_auths {
+            let key_parts = parse_protocol_object_id(&key.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "FlatMap", reason: "flat_map keys must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            key.fc_serialize(out)?;
+            value.fc_serialize(out)?;
+        }
+        write_varint(self.key_auths.len() as u64, out);
+        let mut previous_key: Option<Vec<u8>> = None;
+        for (key, value) in &self.key_auths {
+            let mut key_bytes = Vec::new();
+            write_public_key(key, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), &mut key_bytes)?;
+            if previous_key.as_ref().is_some_and(|previous| previous >= &key_bytes) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "FlatMap", reason: "flat_map keys must be sorted and unique" });
+            }
+            previous_key = Some(key_bytes.clone());
+            out.extend_from_slice(&key_bytes);
+            value.fc_serialize(out)?;
+        }
+        if !self.address_auths.is_empty() {
+            return Err(FcSerializeError::UnsupportedValue { type_name: "Address", reason: "address flat_map FC serialization is not implemented" });
+        }
+        write_varint(0, out);
         Ok(())
     }
 }
@@ -494,10 +616,35 @@ impl FcSerialize for crate::generated::types::BitassetOptionsExt {
     }
 }
 
+impl FcSerialize for crate::generated::types::BlindInput {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_fixed_bytes(&self.commitment, 33, "fixed_bytes_33", out)?;
+        self.owner.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::BlindOutput {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_fixed_bytes(&self.commitment, 33, "fixed_bytes_33", out)?;
+        write_bytes(&self.range_proof, out)?;
+        self.owner.fc_serialize(out)?;
+        self.stealth_memo.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::BlindTransferOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
         self.price_per_output.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::BlockIdPredicate {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_fixed_bytes(&self.id, 20, "fixed_bytes_20", out)?;
         Ok(())
     }
 }
@@ -692,6 +839,13 @@ impl FcSerialize for crate::generated::types::GenericExchangeOperationResult {
     }
 }
 
+impl FcSerialize for crate::generated::types::HtlcCreateOperationAdditionalOptionsType {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.memo.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::HtlcCreateOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         let _ = out;
@@ -814,6 +968,23 @@ impl FcSerialize for crate::generated::types::LiquidityPoolWithdrawOperationFeeP
     }
 }
 
+impl FcSerialize for crate::generated::types::MemoData {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        match &self.from {
+            Some(value) => {
+                out.push(1);
+                write_public_key(value, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;
+            }
+            None => out.push(0),
+        }
+        self.amount.fc_serialize(out)?;
+        write_fixed_bytes(&self.blinding_factor, 32, "fixed_bytes_32", out)?;
+        write_fixed_bytes(&self.commitment, 33, "fixed_bytes_33", out)?;
+        self.check.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::NoSpecialAuthority {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         let _ = out;
@@ -920,7 +1091,7 @@ impl FcSerialize for crate::generated::types::StealthConfirmation {
             }
             None => out.push(0),
         }
-        self.encrypted_memo.fc_serialize(out)?;
+        write_bytes(&self.encrypted_memo, out)?;
         Ok(())
     }
 }
@@ -1058,6 +1229,112 @@ impl FcSerialize for crate::generated::static_variants::FutureExtensions {
     }
 }
 
+impl FcSerialize for crate::generated::static_variants::SpecialAuthority {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        match self {
+            Self::NoSpecialAuthority(value) => {
+                write_varint(0, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::TopHoldersSpecialAuthority(value) => {
+                write_varint(1, out);
+                value.as_ref().fc_serialize(out)
+            }
+        }
+    }
+}
+
+impl FcSerialize for crate::generated::static_variants::HtlcHash {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        match self {
+            Self::HtlcAlgoRipemd160(value) => {
+                write_varint(0u64, out);
+                write_fixed_bytes(value.as_ref(), 20, "htlc_hash::htlc_algo_ripemd160", out)
+            }
+            Self::HtlcAlgoSha1(value) => {
+                write_varint(1u64, out);
+                write_fixed_bytes(value.as_ref(), 20, "htlc_hash::htlc_algo_sha1", out)
+            }
+            Self::HtlcAlgoSha256(value) => {
+                write_varint(2u64, out);
+                write_fixed_bytes(value.as_ref(), 32, "htlc_hash::htlc_algo_sha256", out)
+            }
+            Self::HtlcAlgoHash160(value) => {
+                write_varint(3u64, out);
+                write_fixed_bytes(value.as_ref(), 20, "htlc_hash::htlc_algo_hash160", out)
+            }
+        }
+    }
+}
+
+impl FcSerialize for crate::generated::static_variants::Predicate {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        match self {
+            Self::AccountNameEqLitPredicate(value) => {
+                write_varint(0u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AssetSymbolEqLitPredicate(value) => {
+                write_varint(1u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::BlockIdPredicate(value) => {
+                write_varint(2u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+        }
+    }
+}
+
+impl FcSerialize for crate::generated::static_variants::VestingPolicyInitializer {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        match self {
+            Self::LinearVestingPolicyInitializer(value) => {
+                write_varint(0u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::CddVestingPolicyInitializer(value) => {
+                write_varint(1u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::InstantVestingPolicyInitializer(value) => {
+                write_varint(2u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+        }
+    }
+}
+
+impl FcSerialize for crate::generated::static_variants::WorkerInitializer {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        match self {
+            Self::RefundWorkerInitializer(value) => {
+                write_varint(0u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::VestingBalanceWorkerInitializer(value) => {
+                write_varint(1u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::BurnWorkerInitializer(value) => {
+                write_varint(2u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+        }
+    }
+}
+
+impl FcSerialize for crate::generated::static_variants::LimitOrderAutoAction {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        match self {
+            Self::CreateTakeProfitOrderAction(value) => {
+                write_varint(0u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+        }
+    }
+}
+
 impl FcSerialize for crate::generated::operations::TransferOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -1119,6 +1396,33 @@ impl FcSerialize for crate::generated::operations::FillOrderOperation {
     }
 }
 
+impl FcSerialize for crate::generated::operations::AccountCreateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.registrar.fc_serialize(out)?;
+        self.referrer.fc_serialize(out)?;
+        self.referrer_percent.fc_serialize(out)?;
+        self.name.fc_serialize(out)?;
+        self.owner.fc_serialize(out)?;
+        self.active.fc_serialize(out)?;
+        self.options.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::AccountUpdateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.account.fc_serialize(out)?;
+        self.owner.fc_serialize(out)?;
+        self.active.fc_serialize(out)?;
+        self.new_options.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::operations::AccountWhitelistOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -1150,12 +1454,70 @@ impl FcSerialize for crate::generated::operations::AccountTransferOperation {
     }
 }
 
+impl FcSerialize for crate::generated::operations::AssetCreateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.issuer.fc_serialize(out)?;
+        self.symbol.fc_serialize(out)?;
+        self.precision.fc_serialize(out)?;
+        self.common_options.fc_serialize(out)?;
+        self.bitasset_opts.fc_serialize(out)?;
+        self.is_prediction_market.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::AssetUpdateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.issuer.fc_serialize(out)?;
+        self.asset_to_update.fc_serialize(out)?;
+        self.new_issuer.fc_serialize(out)?;
+        self.new_options.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::operations::AssetUpdateBitassetOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
         self.issuer.fc_serialize(out)?;
         self.asset_to_update.fc_serialize(out)?;
         self.new_options.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::AssetUpdateFeedProducersOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.issuer.fc_serialize(out)?;
+        self.asset_to_update.fc_serialize(out)?;
+        write_varint(self.new_feed_producers.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.new_feed_producers {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::AssetIssueOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.issuer.fc_serialize(out)?;
+        self.asset_to_issue.fc_serialize(out)?;
+        self.issue_to_account.fc_serialize(out)?;
+        self.memo.fc_serialize(out)?;
         self.extensions.fc_serialize(out)?;
         Ok(())
     }
@@ -1241,6 +1603,78 @@ impl FcSerialize for crate::generated::operations::WitnessUpdateOperation {
     }
 }
 
+impl FcSerialize for crate::generated::operations::ProposalUpdateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.fee_paying_account.fc_serialize(out)?;
+        self.proposal.fc_serialize(out)?;
+        write_varint(self.active_approvals_to_add.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.active_approvals_to_add {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        write_varint(self.active_approvals_to_remove.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.active_approvals_to_remove {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        write_varint(self.owner_approvals_to_add.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.owner_approvals_to_add {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        write_varint(self.owner_approvals_to_remove.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.owner_approvals_to_remove {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        write_varint(self.key_approvals_to_add.len() as u64, out);
+        let mut previous_key: Option<Vec<u8>> = None;
+        for value in &self.key_approvals_to_add {
+            let mut key_bytes = Vec::new();
+            write_public_key(value, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), &mut key_bytes)?;
+            if previous_key.as_ref().is_some_and(|previous| previous >= &key_bytes) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key_bytes.clone());
+            out.extend_from_slice(&key_bytes);
+        }
+        write_varint(self.key_approvals_to_remove.len() as u64, out);
+        let mut previous_key: Option<Vec<u8>> = None;
+        for value in &self.key_approvals_to_remove {
+            let mut key_bytes = Vec::new();
+            write_public_key(value, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), &mut key_bytes)?;
+            if previous_key.as_ref().is_some_and(|previous| previous >= &key_bytes) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key_bytes.clone());
+            out.extend_from_slice(&key_bytes);
+        }
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::operations::ProposalDeleteOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -1279,6 +1713,18 @@ impl FcSerialize for crate::generated::operations::WithdrawPermissionUpdateOpera
     }
 }
 
+impl FcSerialize for crate::generated::operations::WithdrawPermissionClaimOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.withdraw_permission.fc_serialize(out)?;
+        self.withdraw_from_account.fc_serialize(out)?;
+        self.withdraw_to_account.fc_serialize(out)?;
+        self.amount_to_withdraw.fc_serialize(out)?;
+        self.memo.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::operations::WithdrawPermissionDeleteOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -1308,12 +1754,77 @@ impl FcSerialize for crate::generated::operations::CommitteeMemberUpdateOperatio
     }
 }
 
+impl FcSerialize for crate::generated::operations::VestingBalanceCreateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.creator.fc_serialize(out)?;
+        self.owner.fc_serialize(out)?;
+        self.amount.fc_serialize(out)?;
+        self.policy.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::operations::VestingBalanceWithdrawOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
         self.vesting_balance.fc_serialize(out)?;
         self.owner.fc_serialize(out)?;
         self.amount.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::WorkerCreateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.owner.fc_serialize(out)?;
+        write_time_point_sec(&self.work_begin_date, out)?;
+        write_time_point_sec(&self.work_end_date, out)?;
+        self.daily_pay.fc_serialize(out)?;
+        self.name.fc_serialize(out)?;
+        self.url.fc_serialize(out)?;
+        self.initializer.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::CustomOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.payer.fc_serialize(out)?;
+        write_varint(self.required_auths.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.required_auths {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        self.id.fc_serialize(out)?;
+        write_bytes(&self.data, out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::AssertOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.fee_paying_account.fc_serialize(out)?;
+        self.predicates.fc_serialize(out)?;
+        write_varint(self.required_auths.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.required_auths {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        self.extensions.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -1325,6 +1836,50 @@ impl FcSerialize for crate::generated::operations::BalanceClaimOperation {
         self.balance_to_claim.fc_serialize(out)?;
         write_public_key(&self.balance_owner_key, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;
         self.total_claimed.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::OverrideTransferOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.issuer.fc_serialize(out)?;
+        self.from.fc_serialize(out)?;
+        self.to.fc_serialize(out)?;
+        self.amount.fc_serialize(out)?;
+        self.memo.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::TransferToBlindOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.amount.fc_serialize(out)?;
+        self.from.fc_serialize(out)?;
+        write_fixed_bytes(&self.blinding_factor, 32, "fixed_bytes_32", out)?;
+        self.outputs.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::BlindTransferOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.inputs.fc_serialize(out)?;
+        self.outputs.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::TransferFromBlindOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.amount.fc_serialize(out)?;
+        self.to.fc_serialize(out)?;
+        write_fixed_bytes(&self.blinding_factor, 32, "fixed_bytes_32", out)?;
+        self.inputs.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -1402,13 +1957,42 @@ impl FcSerialize for crate::generated::operations::AssetUpdateIssuerOperation {
     }
 }
 
+impl FcSerialize for crate::generated::operations::HtlcCreateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.from.fc_serialize(out)?;
+        self.to.fc_serialize(out)?;
+        self.amount.fc_serialize(out)?;
+        self.preimage_hash.fc_serialize(out)?;
+        self.preimage_size.fc_serialize(out)?;
+        self.claim_period_seconds.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::operations::HtlcRedeemOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
         self.htlc_id.fc_serialize(out)?;
         self.redeemer.fc_serialize(out)?;
-        self.preimage.fc_serialize(out)?;
+        write_bytes(&self.preimage, out)?;
         self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::HtlcRedeemedOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.htlc_id.fc_serialize(out)?;
+        self.from.fc_serialize(out)?;
+        self.to.fc_serialize(out)?;
+        self.redeemer.fc_serialize(out)?;
+        self.amount.fc_serialize(out)?;
+        self.htlc_preimage_hash.fc_serialize(out)?;
+        self.htlc_preimage_size.fc_serialize(out)?;
+        write_bytes(&self.preimage, out)?;
         Ok(())
     }
 }
@@ -1420,6 +2004,19 @@ impl FcSerialize for crate::generated::operations::HtlcExtendOperation {
         self.update_issuer.fc_serialize(out)?;
         self.seconds_to_add.fc_serialize(out)?;
         self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::HtlcRefundOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.htlc_id.fc_serialize(out)?;
+        self.to.fc_serialize(out)?;
+        self.original_htlc_recipient.fc_serialize(out)?;
+        self.htlc_amount.fc_serialize(out)?;
+        self.htlc_preimage_hash.fc_serialize(out)?;
+        self.htlc_preimage_size.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -1573,11 +2170,105 @@ impl FcSerialize for crate::generated::operations::SametFundRepayOperation {
     }
 }
 
+impl FcSerialize for crate::generated::operations::CreditOfferCreateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.owner_account.fc_serialize(out)?;
+        self.asset_type.fc_serialize(out)?;
+        self.balance.fc_serialize(out)?;
+        self.fee_rate.fc_serialize(out)?;
+        self.max_duration_seconds.fc_serialize(out)?;
+        self.min_deal_amount.fc_serialize(out)?;
+        self.enabled.fc_serialize(out)?;
+        write_time_point_sec(&self.auto_disable_time, out)?;
+        write_varint(self.acceptable_collateral.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for (key, value) in &self.acceptable_collateral {
+            let key_parts = parse_protocol_object_id(&key.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "FlatMap", reason: "flat_map keys must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            key.fc_serialize(out)?;
+            value.fc_serialize(out)?;
+        }
+        write_varint(self.acceptable_borrowers.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for (key, value) in &self.acceptable_borrowers {
+            let key_parts = parse_protocol_object_id(&key.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "FlatMap", reason: "flat_map keys must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            key.fc_serialize(out)?;
+            value.fc_serialize(out)?;
+        }
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::operations::CreditOfferDeleteOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
         self.owner_account.fc_serialize(out)?;
         self.offer_id.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::CreditOfferUpdateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.owner_account.fc_serialize(out)?;
+        self.offer_id.fc_serialize(out)?;
+        self.delta_amount.fc_serialize(out)?;
+        self.fee_rate.fc_serialize(out)?;
+        self.max_duration_seconds.fc_serialize(out)?;
+        self.min_deal_amount.fc_serialize(out)?;
+        self.enabled.fc_serialize(out)?;
+        match &self.auto_disable_time {
+            Some(value) => {
+                out.push(1);
+                write_time_point_sec(value, out)?;
+            }
+            None => out.push(0),
+        }
+        match &self.acceptable_collateral {
+            Some(value) => {
+                out.push(1);
+        write_varint((*value).len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for (key, value) in &(*value) {
+            let key_parts = parse_protocol_object_id(&key.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "FlatMap", reason: "flat_map keys must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            key.fc_serialize(out)?;
+            value.fc_serialize(out)?;
+        }
+            }
+            None => out.push(0),
+        }
+        match &self.acceptable_borrowers {
+            Some(value) => {
+                out.push(1);
+        write_varint((*value).len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for (key, value) in &(*value) {
+            let key_parts = parse_protocol_object_id(&key.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "FlatMap", reason: "flat_map keys must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            key.fc_serialize(out)?;
+            value.fc_serialize(out)?;
+        }
+            }
+            None => out.push(0),
+        }
         self.extensions.fc_serialize(out)?;
         Ok(())
     }
@@ -1646,6 +2337,26 @@ impl FcSerialize for crate::generated::operations::CreditDealUpdateOperation {
     }
 }
 
+impl FcSerialize for crate::generated::operations::LimitOrderUpdateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.seller.fc_serialize(out)?;
+        self.order.fc_serialize(out)?;
+        self.new_price.fc_serialize(out)?;
+        self.delta_amount_to_sell.fc_serialize(out)?;
+        match &self.new_expiration {
+            Some(value) => {
+                out.push(1);
+                write_time_point_sec(value, out)?;
+            }
+            None => out.push(0),
+        }
+        self.on_fill.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::static_variants::Operation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         match self {
@@ -1654,16 +2365,16 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             Self::LimitOrderCancelOperation(value) => { write_varint(2u64, out); value.as_ref().fc_serialize(out) }
             Self::CallOrderUpdateOperation(value) => { write_varint(3u64, out); value.as_ref().fc_serialize(out) }
             Self::FillOrderOperation(value) => { write_varint(4u64, out); value.as_ref().fc_serialize(out) }
-            Self::AccountCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "AccountCreateOperation" }),
-            Self::AccountUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "AccountUpdateOperation" }),
+            Self::AccountCreateOperation(value) => { write_varint(5u64, out); value.as_ref().fc_serialize(out) }
+            Self::AccountUpdateOperation(value) => { write_varint(6u64, out); value.as_ref().fc_serialize(out) }
             Self::AccountWhitelistOperation(value) => { write_varint(7u64, out); value.as_ref().fc_serialize(out) }
             Self::AccountUpgradeOperation(value) => { write_varint(8u64, out); value.as_ref().fc_serialize(out) }
             Self::AccountTransferOperation(value) => { write_varint(9u64, out); value.as_ref().fc_serialize(out) }
-            Self::AssetCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "AssetCreateOperation" }),
-            Self::AssetUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "AssetUpdateOperation" }),
+            Self::AssetCreateOperation(value) => { write_varint(10u64, out); value.as_ref().fc_serialize(out) }
+            Self::AssetUpdateOperation(value) => { write_varint(11u64, out); value.as_ref().fc_serialize(out) }
             Self::AssetUpdateBitassetOperation(value) => { write_varint(12u64, out); value.as_ref().fc_serialize(out) }
-            Self::AssetUpdateFeedProducersOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "AssetUpdateFeedProducersOperation" }),
-            Self::AssetIssueOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "AssetIssueOperation" }),
+            Self::AssetUpdateFeedProducersOperation(value) => { write_varint(13u64, out); value.as_ref().fc_serialize(out) }
+            Self::AssetIssueOperation(value) => { write_varint(14u64, out); value.as_ref().fc_serialize(out) }
             Self::AssetReserveOperation(value) => { write_varint(15u64, out); value.as_ref().fc_serialize(out) }
             Self::AssetFundFeePoolOperation(value) => { write_varint(16u64, out); value.as_ref().fc_serialize(out) }
             Self::AssetSettleOperation(value) => { write_varint(17u64, out); value.as_ref().fc_serialize(out) }
@@ -1672,25 +2383,25 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             Self::WitnessCreateOperation(value) => { write_varint(20u64, out); value.as_ref().fc_serialize(out) }
             Self::WitnessUpdateOperation(value) => { write_varint(21u64, out); value.as_ref().fc_serialize(out) }
             Self::ProposalCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "ProposalCreateOperation" }),
-            Self::ProposalUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "ProposalUpdateOperation" }),
+            Self::ProposalUpdateOperation(value) => { write_varint(23u64, out); value.as_ref().fc_serialize(out) }
             Self::ProposalDeleteOperation(value) => { write_varint(24u64, out); value.as_ref().fc_serialize(out) }
             Self::WithdrawPermissionCreateOperation(value) => { write_varint(25u64, out); value.as_ref().fc_serialize(out) }
             Self::WithdrawPermissionUpdateOperation(value) => { write_varint(26u64, out); value.as_ref().fc_serialize(out) }
-            Self::WithdrawPermissionClaimOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "WithdrawPermissionClaimOperation" }),
+            Self::WithdrawPermissionClaimOperation(value) => { write_varint(27u64, out); value.as_ref().fc_serialize(out) }
             Self::WithdrawPermissionDeleteOperation(value) => { write_varint(28u64, out); value.as_ref().fc_serialize(out) }
             Self::CommitteeMemberCreateOperation(value) => { write_varint(29u64, out); value.as_ref().fc_serialize(out) }
             Self::CommitteeMemberUpdateOperation(value) => { write_varint(30u64, out); value.as_ref().fc_serialize(out) }
             Self::CommitteeMemberUpdateGlobalParametersOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "CommitteeMemberUpdateGlobalParametersOperation" }),
-            Self::VestingBalanceCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "VestingBalanceCreateOperation" }),
+            Self::VestingBalanceCreateOperation(value) => { write_varint(32u64, out); value.as_ref().fc_serialize(out) }
             Self::VestingBalanceWithdrawOperation(value) => { write_varint(33u64, out); value.as_ref().fc_serialize(out) }
-            Self::WorkerCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "WorkerCreateOperation" }),
-            Self::CustomOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "CustomOperation" }),
-            Self::AssertOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "AssertOperation" }),
+            Self::WorkerCreateOperation(value) => { write_varint(34u64, out); value.as_ref().fc_serialize(out) }
+            Self::CustomOperation(value) => { write_varint(35u64, out); value.as_ref().fc_serialize(out) }
+            Self::AssertOperation(value) => { write_varint(36u64, out); value.as_ref().fc_serialize(out) }
             Self::BalanceClaimOperation(value) => { write_varint(37u64, out); value.as_ref().fc_serialize(out) }
-            Self::OverrideTransferOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "OverrideTransferOperation" }),
-            Self::TransferToBlindOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "TransferToBlindOperation" }),
-            Self::BlindTransferOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "BlindTransferOperation" }),
-            Self::TransferFromBlindOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "TransferFromBlindOperation" }),
+            Self::OverrideTransferOperation(value) => { write_varint(38u64, out); value.as_ref().fc_serialize(out) }
+            Self::TransferToBlindOperation(value) => { write_varint(39u64, out); value.as_ref().fc_serialize(out) }
+            Self::BlindTransferOperation(value) => { write_varint(40u64, out); value.as_ref().fc_serialize(out) }
+            Self::TransferFromBlindOperation(value) => { write_varint(41u64, out); value.as_ref().fc_serialize(out) }
             Self::AssetSettleCancelOperation(value) => { write_varint(42u64, out); value.as_ref().fc_serialize(out) }
             Self::AssetClaimFeesOperation(value) => { write_varint(43u64, out); value.as_ref().fc_serialize(out) }
             Self::FbaDistributeOperation(value) => { write_varint(44u64, out); value.as_ref().fc_serialize(out) }
@@ -1698,11 +2409,11 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             Self::ExecuteBidOperation(value) => { write_varint(46u64, out); value.as_ref().fc_serialize(out) }
             Self::AssetClaimPoolOperation(value) => { write_varint(47u64, out); value.as_ref().fc_serialize(out) }
             Self::AssetUpdateIssuerOperation(value) => { write_varint(48u64, out); value.as_ref().fc_serialize(out) }
-            Self::HtlcCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "HtlcCreateOperation" }),
+            Self::HtlcCreateOperation(value) => { write_varint(49u64, out); value.as_ref().fc_serialize(out) }
             Self::HtlcRedeemOperation(value) => { write_varint(50u64, out); value.as_ref().fc_serialize(out) }
-            Self::HtlcRedeemedOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "HtlcRedeemedOperation" }),
+            Self::HtlcRedeemedOperation(value) => { write_varint(51u64, out); value.as_ref().fc_serialize(out) }
             Self::HtlcExtendOperation(value) => { write_varint(52u64, out); value.as_ref().fc_serialize(out) }
-            Self::HtlcRefundOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "HtlcRefundOperation" }),
+            Self::HtlcRefundOperation(value) => { write_varint(53u64, out); value.as_ref().fc_serialize(out) }
             Self::CustomAuthorityCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "CustomAuthorityCreateOperation" }),
             Self::CustomAuthorityUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "CustomAuthorityUpdateOperation" }),
             Self::CustomAuthorityDeleteOperation(value) => { write_varint(56u64, out); value.as_ref().fc_serialize(out) }
@@ -1718,15 +2429,15 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             Self::SametFundUpdateOperation(value) => { write_varint(66u64, out); value.as_ref().fc_serialize(out) }
             Self::SametFundBorrowOperation(value) => { write_varint(67u64, out); value.as_ref().fc_serialize(out) }
             Self::SametFundRepayOperation(value) => { write_varint(68u64, out); value.as_ref().fc_serialize(out) }
-            Self::CreditOfferCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "CreditOfferCreateOperation" }),
+            Self::CreditOfferCreateOperation(value) => { write_varint(69u64, out); value.as_ref().fc_serialize(out) }
             Self::CreditOfferDeleteOperation(value) => { write_varint(70u64, out); value.as_ref().fc_serialize(out) }
-            Self::CreditOfferUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "CreditOfferUpdateOperation" }),
+            Self::CreditOfferUpdateOperation(value) => { write_varint(71u64, out); value.as_ref().fc_serialize(out) }
             Self::CreditOfferAcceptOperation(value) => { write_varint(72u64, out); value.as_ref().fc_serialize(out) }
             Self::CreditDealRepayOperation(value) => { write_varint(73u64, out); value.as_ref().fc_serialize(out) }
             Self::CreditDealExpiredOperation(value) => { write_varint(74u64, out); value.as_ref().fc_serialize(out) }
             Self::LiquidityPoolUpdateOperation(value) => { write_varint(75u64, out); value.as_ref().fc_serialize(out) }
             Self::CreditDealUpdateOperation(value) => { write_varint(76u64, out); value.as_ref().fc_serialize(out) }
-            Self::LimitOrderUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "LimitOrderUpdateOperation" }),
+            Self::LimitOrderUpdateOperation(value) => { write_varint(77u64, out); value.as_ref().fc_serialize(out) }
         }
     }
 }

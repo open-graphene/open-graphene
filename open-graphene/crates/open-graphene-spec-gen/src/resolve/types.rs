@@ -14,6 +14,9 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
     if let Some(inner) = unwrap_template(&normalized, "vector")
         .or_else(|| unwrap_template(&normalized, "std::vector"))
     {
+        if normalize_cpp_type(inner) == "char" {
+            return TypeRef::Bytes;
+        }
         return TypeRef::Vector {
             inner: Box::new(resolve_cpp_type(inner)),
         };
@@ -51,8 +54,15 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         };
     }
 
-    if let Some((key, value)) = unwrap_two_arg_template(&normalized, "flat_map")
-        .or_else(|| unwrap_two_arg_template(&normalized, "map"))
+    if let Some((key, value)) = unwrap_two_arg_template(&normalized, "flat_map") {
+        return TypeRef::FlatMap {
+            key: Box::new(resolve_cpp_type(&key)),
+            value: Box::new(resolve_cpp_type(&value)),
+            ordering: OrderingRule::Unresolved,
+        };
+    }
+
+    if let Some((key, value)) = unwrap_two_arg_template(&normalized, "map")
         .or_else(|| unwrap_two_arg_template(&normalized, "std::map"))
     {
         return TypeRef::Map {
@@ -97,7 +107,7 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         "bool" => TypeRef::Bool,
         "char" => TypeRef::String,
         "uint8_t" => TypeRef::Uint8,
-        "uint16_t" => TypeRef::Uint16,
+        "uint16_t" | "weight_type" => TypeRef::Uint16,
         "uint32_t" | "unsigned" | "unsigned int" | "unsigned_int" => TypeRef::Uint32,
         "int32_t" | "int" => TypeRef::Int32 {
             fc: None,
@@ -120,6 +130,7 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
             chain_prefix: None,
             prefix_ref: Some("chain.publicKeyPrefix".to_string()),
         },
+        "address" => TypeRef::Address,
         "additional_asset_options_t" => TypeRef::Ref {
             name: "additional_asset_options".to_string(),
         },
@@ -335,7 +346,7 @@ mod tests {
     fn maps_two_arg_templates() {
         assert_eq!(
             resolve_cpp_type("flat_map<asset_id_type, price>"),
-            TypeRef::Map {
+            TypeRef::FlatMap {
                 key: Box::new(TypeRef::ProtocolObjectId {
                     object_type: "asset".to_string()
                 }),
@@ -355,6 +366,41 @@ mod tests {
                     json: None,
                     fc: None
                 }),
+            }
+        );
+    }
+
+    #[test]
+    fn maps_authority_field_types() {
+        assert_eq!(resolve_cpp_type("weight_type"), TypeRef::Uint16);
+        assert_eq!(resolve_cpp_type("address"), TypeRef::Address);
+        assert_eq!(
+            resolve_cpp_type("flat_map<account_id_type,weight_type>"),
+            TypeRef::FlatMap {
+                key: Box::new(TypeRef::ProtocolObjectId {
+                    object_type: "account".to_string()
+                }),
+                value: Box::new(TypeRef::Uint16),
+                ordering: OrderingRule::Unresolved,
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("flat_map<public_key_type,weight_type>"),
+            TypeRef::FlatMap {
+                key: Box::new(TypeRef::PublicKey {
+                    chain_prefix: None,
+                    prefix_ref: Some("chain.publicKeyPrefix".to_string())
+                }),
+                value: Box::new(TypeRef::Uint16),
+                ordering: OrderingRule::Unresolved,
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("flat_map<address,weight_type>"),
+            TypeRef::FlatMap {
+                key: Box::new(TypeRef::Address),
+                value: Box::new(TypeRef::Uint16),
+                ordering: OrderingRule::Unresolved,
             }
         );
     }
@@ -537,6 +583,8 @@ mod tests {
         );
         assert_eq!(resolve_cpp_type("unsigned_int"), TypeRef::Uint32);
         assert_eq!(resolve_cpp_type("char"), TypeRef::String);
+        assert_eq!(resolve_cpp_type("vector<char>"), TypeRef::Bytes);
+        assert_eq!(resolve_cpp_type("std::vector<char>"), TypeRef::Bytes);
         assert_eq!(
             resolve_cpp_type("extension< ext >"),
             TypeRef::AnyJson {

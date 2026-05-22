@@ -393,6 +393,10 @@ pub struct AssetUpdateOperationFeeParamsT {
 /// Raw protocol struct `authority`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Authority {
+    pub weight_threshold: u32,
+    pub account_auths: Vec<(crate::generated::ids::AccountId, u16)>,
+    pub key_auths: Vec<(String, u16)>,
+    pub address_auths: Vec<(String, u16)>,
 }
 
 /// Raw protocol struct `balance_claim_operation_fee_params_t`.
@@ -931,7 +935,7 @@ pub struct SignedBlock {
 pub struct StealthConfirmation {
     pub one_time_key: String,
     pub to: Option<String>,
-    pub encrypted_memo: Vec<String>,
+    pub encrypted_memo: Vec<u8>,
 }
 
 /// Raw protocol struct `ticket_create_operation_fee_params_t`.

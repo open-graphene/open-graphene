@@ -301,7 +301,7 @@ fn render_fields(out: &mut String, protocol: &Protocol, fields: &[FieldDef]) -> 
 
 fn render_fc(protocol: &Protocol) -> Result<String> {
     let mut out = generated_header(protocol, "minimal FC serialization for transfer path");
-    out.push_str("pub use open_graphene_fc::{write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, FcSerialize, FcSerializeError, Result};\n\n");
+    out.push_str("pub use open_graphene_fc::{parse_protocol_object_id, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};\n\n");
 
     render_fc_id_impls(&mut out, protocol)?;
     render_fc_transfer_path_impls(&mut out, protocol)?;
@@ -334,9 +334,13 @@ fn render_fc_id_impls(out: &mut String, protocol: &Protocol) -> Result<()> {
             "impl FcSerialize for crate::generated::ids::{id_name} {{\n"
         ));
         out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
-        out.push_str(&format!(
-            "        write_protocol_object_id(&self.0, {expected_space}, {expected_type}, out)\n"
-        ));
+        if id_name == "VoteId" {
+            out.push_str("        write_vote_id(&self.0, out)\n");
+        } else {
+            out.push_str(&format!(
+                "        write_protocol_object_id(&self.0, {expected_space}, {expected_type}, out)\n"
+            ));
+        }
         out.push_str("    }\n");
         out.push_str("}\n\n");
     }
@@ -370,6 +374,35 @@ fn render_fc_transfer_path_impls(out: &mut String, protocol: &Protocol) -> Resul
         out.push_str("    }\n");
         out.push_str("}\n\n");
     }
+
+    if protocol
+        .static_variants
+        .iter()
+        .any(|variant| variant.name == "special_authority")
+    {
+        out.push_str(
+            "impl FcSerialize for crate::generated::static_variants::SpecialAuthority {\n",
+        );
+        out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
+        out.push_str("        match self {\n");
+        out.push_str("            Self::NoSpecialAuthority(value) => {\n");
+        out.push_str("                write_varint(0, out);\n");
+        out.push_str("                value.as_ref().fc_serialize(out)\n");
+        out.push_str("            }\n");
+        out.push_str("            Self::TopHoldersSpecialAuthority(value) => {\n");
+        out.push_str("                write_varint(1, out);\n");
+        out.push_str("                value.as_ref().fc_serialize(out)\n");
+        out.push_str("            }\n");
+        out.push_str("        }\n");
+        out.push_str("    }\n");
+        out.push_str("}\n\n");
+    }
+
+    render_fc_htlc_hash_impl(out, protocol)?;
+    render_fc_predicate_impl(out, protocol)?;
+    render_fc_vesting_policy_initializer_impl(out, protocol)?;
+    render_fc_worker_initializer_impl(out, protocol)?;
+    render_fc_limit_order_auto_action_impl(out, protocol)?;
 
     let supported_operations = render_fc_operation_impls(out, protocol, &supported_structs)?;
 
@@ -432,6 +465,192 @@ fn render_fc_struct_impls(out: &mut String, protocol: &Protocol) -> Result<BTree
     }
 
     Ok(supported_structs)
+}
+
+fn render_fc_htlc_hash_impl(out: &mut String, protocol: &Protocol) -> Result<()> {
+    let Some(variant) = protocol
+        .static_variants
+        .iter()
+        .find(|variant| variant.name == "htlc_hash")
+    else {
+        return Ok(());
+    };
+
+    out.push_str("impl FcSerialize for crate::generated::static_variants::HtlcHash {\n");
+    out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
+    out.push_str("        match self {\n");
+
+    let mut arms = variant.variants.clone();
+    arms.sort_by_key(|arm| arm.tag);
+    for arm in arms {
+        let TypeRef::FixedBytes { bytes } = arm.ty else {
+            return Err(GenBindingsRsError::Render {
+                message: format!(
+                    "unsupported htlc_hash variant `{}` payload type for FC rendering",
+                    arm.name
+                ),
+            });
+        };
+        let variant_name = rust_variant_name(&arm.name);
+        out.push_str(&format!(
+            "            Self::{variant_name}(value) => {{\n                write_varint({}u64, out);\n                write_fixed_bytes(value.as_ref(), {bytes}, {}, out)\n            }}\n",
+            arm.tag,
+            rust_string_literal(&format!("htlc_hash::{}", arm.name))
+        ));
+    }
+
+    out.push_str("        }\n");
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
+    Ok(())
+}
+
+fn render_fc_predicate_impl(out: &mut String, protocol: &Protocol) -> Result<()> {
+    let Some(variant) = protocol
+        .static_variants
+        .iter()
+        .find(|variant| variant.name == "predicate")
+    else {
+        return Ok(());
+    };
+
+    out.push_str("impl FcSerialize for crate::generated::static_variants::Predicate {\n");
+    out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
+    out.push_str("        match self {\n");
+
+    let mut arms = variant.variants.clone();
+    arms.sort_by_key(|arm| arm.tag);
+    for arm in arms {
+        if !matches!(arm.ty, TypeRef::Ref { .. }) {
+            return Err(GenBindingsRsError::Render {
+                message: format!(
+                    "unsupported predicate variant `{}` payload type for FC rendering",
+                    arm.name
+                ),
+            });
+        }
+        let variant_name = rust_variant_name(&arm.name);
+        out.push_str(&format!(
+            "            Self::{variant_name}(value) => {{\n                write_varint({}u64, out);\n                value.as_ref().fc_serialize(out)\n            }}\n",
+            arm.tag
+        ));
+    }
+
+    out.push_str("        }\n");
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
+    Ok(())
+}
+
+fn render_fc_vesting_policy_initializer_impl(out: &mut String, protocol: &Protocol) -> Result<()> {
+    let Some(variant) = protocol
+        .static_variants
+        .iter()
+        .find(|variant| variant.name == "vesting_policy_initializer")
+    else {
+        return Ok(());
+    };
+
+    out.push_str("impl FcSerialize for crate::generated::static_variants::VestingPolicyInitializer {\n");
+    out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
+    out.push_str("        match self {\n");
+
+    let mut arms = variant.variants.clone();
+    arms.sort_by_key(|arm| arm.tag);
+    for arm in arms {
+        if !matches!(arm.ty, TypeRef::Ref { .. }) {
+            return Err(GenBindingsRsError::Render {
+                message: format!(
+                    "unsupported vesting_policy_initializer variant `{}` payload type for FC rendering",
+                    arm.name
+                ),
+            });
+        }
+        let variant_name = rust_variant_name(&arm.name);
+        out.push_str(&format!(
+            "            Self::{variant_name}(value) => {{\n                write_varint({}u64, out);\n                value.as_ref().fc_serialize(out)\n            }}\n",
+            arm.tag
+        ));
+    }
+
+    out.push_str("        }\n");
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
+    Ok(())
+}
+
+fn render_fc_worker_initializer_impl(out: &mut String, protocol: &Protocol) -> Result<()> {
+    let Some(variant) = protocol
+        .static_variants
+        .iter()
+        .find(|variant| variant.name == "worker_initializer")
+    else {
+        return Ok(());
+    };
+
+    out.push_str("impl FcSerialize for crate::generated::static_variants::WorkerInitializer {\n");
+    out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
+    out.push_str("        match self {\n");
+
+    let mut arms = variant.variants.clone();
+    arms.sort_by_key(|arm| arm.tag);
+    for arm in arms {
+        if !matches!(arm.ty, TypeRef::Ref { .. }) {
+            return Err(GenBindingsRsError::Render {
+                message: format!(
+                    "unsupported worker_initializer variant `{}` payload type for FC rendering",
+                    arm.name
+                ),
+            });
+        }
+        let variant_name = rust_variant_name(&arm.name);
+        out.push_str(&format!(
+            "            Self::{variant_name}(value) => {{\n                write_varint({}u64, out);\n                value.as_ref().fc_serialize(out)\n            }}\n",
+            arm.tag
+        ));
+    }
+
+    out.push_str("        }\n");
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
+    Ok(())
+}
+
+fn render_fc_limit_order_auto_action_impl(out: &mut String, protocol: &Protocol) -> Result<()> {
+    let Some(variant) = protocol
+        .static_variants
+        .iter()
+        .find(|variant| variant.name == "limit_order_auto_action")
+    else {
+        return Ok(());
+    };
+
+    out.push_str("impl FcSerialize for crate::generated::static_variants::LimitOrderAutoAction {\n");
+    out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
+    out.push_str("        match self {\n");
+
+    let mut arms = variant.variants.clone();
+    arms.sort_by_key(|arm| arm.tag);
+    for arm in arms {
+        if !matches!(arm.ty, TypeRef::Ref { .. }) {
+            return Err(GenBindingsRsError::Render {
+                message: format!(
+                    "unsupported limit_order_auto_action variant `{}` payload type for FC rendering",
+                    arm.name
+                ),
+            });
+        }
+        let variant_name = rust_variant_name(&arm.name);
+        out.push_str(&format!(
+            "            Self::{variant_name}(value) => {{\n                write_varint({}u64, out);\n                value.as_ref().fc_serialize(out)\n            }}\n",
+            arm.tag
+        ));
+    }
+
+    out.push_str("        }\n");
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
+    Ok(())
 }
 
 fn fc_supported_struct_names(protocol: &Protocol) -> BTreeSet<String> {
@@ -518,6 +737,15 @@ fn render_fc_value_serialize_lines(value_expr: &str, ty: &TypeRef, indent: &str)
         TypeRef::TimePointSec => Ok(format!(
             "{indent}write_time_point_sec(&{value_expr}, out)?;\n"
         )),
+        ty if is_vote_id_type(ty) => Ok(format!(
+            "{indent}write_vote_id({}, out)?;\n",
+            render_vote_id_arg(value_expr, ty)?
+        )),
+        TypeRef::Bytes => Ok(format!("{indent}write_bytes(&{value_expr}, out)?;\n")),
+        TypeRef::FixedBytes { bytes } => Ok(format!(
+            "{indent}write_fixed_bytes(&{value_expr}, {bytes}, {}, out)?;\n",
+            rust_string_literal(&format!("fixed_bytes_{bytes}"))
+        )),
         TypeRef::Optional { inner } if matches!(inner.as_ref(), TypeRef::PublicKey { .. }) => {
             let prefix = render_public_key_prefix_expr(inner)?;
             Ok(format!(
@@ -539,6 +767,32 @@ fn render_fc_value_serialize_lines(value_expr: &str, ty: &TypeRef, indent: &str)
              {indent}    None => out.push(0),\n\
              {indent}}}\n"
         )),
+        TypeRef::Optional { inner } if is_vote_id_type(inner) => Ok(format!(
+            "{indent}match &{value_expr} {{\n\
+             {indent}    Some(value) => {{\n\
+             {indent}        out.push(1);\n\
+             {indent}        write_vote_id({}, out)?;\n\
+             {indent}    }}\n\
+             {indent}    None => out.push(0),\n\
+             {indent}}}\n",
+            render_vote_id_arg("value", inner)?
+        )),
+        TypeRef::Optional { inner }
+            if matches!(inner.as_ref(), TypeRef::FlatMap { key, value, .. } if is_fc_supported_flat_map(key, value)) =>
+        {
+            let TypeRef::FlatMap { key, value, .. } = inner.as_ref() else {
+                unreachable!("guard checked flat_map inner")
+            };
+            let inner_lines = render_fc_flat_map_serialize_lines("(*value)", key, value, indent)?;
+            Ok(format!(
+                "{indent}match &{value_expr} {{\n\
+                 {indent}    Some(value) => {{\n\
+                 {indent}        out.push(1);\n{inner_lines}\
+                 {indent}    }}\n\
+                 {indent}    None => out.push(0),\n\
+                 {indent}}}\n"
+            ))
+        }
         TypeRef::Vector { inner } if matches!(inner.as_ref(), TypeRef::PublicKey { .. }) => {
             let prefix = render_public_key_prefix_expr(inner)?;
             Ok(format!(
@@ -554,7 +808,150 @@ fn render_fc_value_serialize_lines(value_expr: &str, ty: &TypeRef, indent: &str)
              {indent}    write_time_point_sec(value, out)?;\n\
              {indent}}}\n"
         )),
+        TypeRef::Vector { inner } | TypeRef::Set { inner, .. } if is_vote_id_type(inner) => Ok(format!(
+            "{indent}write_varint({value_expr}.len() as u64, out);\n\
+             {indent}for value in &{value_expr} {{\n\
+             {indent}    write_vote_id({}, out)?;\n\
+             {indent}}}\n",
+            render_vote_id_arg("value", inner)?
+        )),
+        TypeRef::Set { inner, .. } if is_fc_supported_set(inner) => {
+            render_fc_set_serialize_lines(value_expr, inner, indent)
+        }
+        TypeRef::FlatMap { key, value, .. } if is_fc_supported_flat_map(key, value) => {
+            render_fc_flat_map_serialize_lines(value_expr, key, value, indent)
+        }
         _ => Ok(format!("{indent}{value_expr}.fc_serialize(out)?;\n")),
+    }
+}
+
+fn is_vote_id_type(ty: &TypeRef) -> bool {
+    match ty {
+        TypeRef::VoteId => true,
+        TypeRef::ProtocolObjectId { object_type } => object_type == "vote",
+        _ => false,
+    }
+}
+
+fn render_fc_set_serialize_lines(value_expr: &str, inner: &TypeRef, indent: &str) -> Result<String> {
+    match inner {
+        TypeRef::ProtocolObjectId { .. } => Ok(format!(
+            "{indent}write_varint({value_expr}.len() as u64, out);\n\
+             {indent}let mut previous_key: Option<u64> = None;\n\
+             {indent}for value in &{value_expr} {{\n\
+             {indent}    let key_parts = parse_protocol_object_id(&value.0, None, None)?;\n\
+             {indent}    if previous_key.is_some_and(|previous| previous >= key_parts.instance) {{\n\
+             {indent}        return Err(FcSerializeError::UnsupportedValue {{ type_name: \"Set\", reason: \"set values must be sorted and unique\" }});\n\
+             {indent}    }}\n\
+             {indent}    previous_key = Some(key_parts.instance);\n\
+             {indent}    value.fc_serialize(out)?;\n\
+             {indent}}}\n"
+        )),
+        TypeRef::PublicKey { .. } => {
+            let prefix = render_public_key_prefix_expr(inner)?;
+            Ok(format!(
+                "{indent}write_varint({value_expr}.len() as u64, out);\n\
+                 {indent}let mut previous_key: Option<Vec<u8>> = None;\n\
+                 {indent}for value in &{value_expr} {{\n\
+                 {indent}    let mut key_bytes = Vec::new();\n\
+                 {indent}    write_public_key(value, {prefix}, &mut key_bytes)?;\n\
+                 {indent}    if previous_key.as_ref().is_some_and(|previous| previous >= &key_bytes) {{\n\
+                 {indent}        return Err(FcSerializeError::UnsupportedValue {{ type_name: \"Set\", reason: \"set values must be sorted and unique\" }});\n\
+                 {indent}    }}\n\
+                 {indent}    previous_key = Some(key_bytes.clone());\n\
+                 {indent}    out.extend_from_slice(&key_bytes);\n\
+                 {indent}}}\n"
+            ))
+        }
+        _ => Err(GenBindingsRsError::Render {
+            message: "internal error: unsupported set value type".to_string(),
+        }),
+    }
+}
+
+fn render_fc_flat_map_serialize_lines(
+    value_expr: &str,
+    key: &TypeRef,
+    value: &TypeRef,
+    indent: &str,
+) -> Result<String> {
+    if matches!(key, TypeRef::Address) && matches!(value, TypeRef::Uint16) {
+        return Ok(format!(
+            "{indent}if !{value_expr}.is_empty() {{\n\
+             {indent}    return Err(FcSerializeError::UnsupportedValue {{ type_name: \"Address\", reason: \"address flat_map FC serialization is not implemented\" }});\n\
+             {indent}}}\n\
+             {indent}write_varint(0, out);\n"
+        ));
+    }
+
+    if !is_fc_supported_flat_map(key, value) {
+        return Err(GenBindingsRsError::Render {
+            message: "internal error: unsupported flat_map key/value type".to_string(),
+        });
+    }
+
+    match key {
+        TypeRef::ProtocolObjectId { .. } => Ok(format!(
+            "{indent}write_varint({value_expr}.len() as u64, out);\n\
+             {indent}let mut previous_key: Option<u64> = None;\n\
+             {indent}for (key, value) in &{value_expr} {{\n\
+             {indent}    let key_parts = parse_protocol_object_id(&key.0, None, None)?;\n\
+             {indent}    if previous_key.is_some_and(|previous| previous >= key_parts.instance) {{\n\
+             {indent}        return Err(FcSerializeError::UnsupportedValue {{ type_name: \"FlatMap\", reason: \"flat_map keys must be sorted and unique\" }});\n\
+             {indent}    }}\n\
+             {indent}    previous_key = Some(key_parts.instance);\n\
+             {indent}    key.fc_serialize(out)?;\n\
+             {indent}    value.fc_serialize(out)?;\n\
+             {indent}}}\n"
+        )),
+        TypeRef::PublicKey { .. } => {
+            let prefix = render_public_key_prefix_expr(key)?;
+            Ok(format!(
+                "{indent}write_varint({value_expr}.len() as u64, out);\n\
+                 {indent}let mut previous_key: Option<Vec<u8>> = None;\n\
+                 {indent}for (key, value) in &{value_expr} {{\n\
+                 {indent}    let mut key_bytes = Vec::new();\n\
+                 {indent}    write_public_key(key, {prefix}, &mut key_bytes)?;\n\
+                 {indent}    if previous_key.as_ref().is_some_and(|previous| previous >= &key_bytes) {{\n\
+                 {indent}        return Err(FcSerializeError::UnsupportedValue {{ type_name: \"FlatMap\", reason: \"flat_map keys must be sorted and unique\" }});\n\
+                 {indent}    }}\n\
+                 {indent}    previous_key = Some(key_bytes.clone());\n\
+                 {indent}    out.extend_from_slice(&key_bytes);\n\
+                 {indent}    value.fc_serialize(out)?;\n\
+                 {indent}}}\n"
+            ))
+        }
+        _ => Err(GenBindingsRsError::Render {
+            message: "internal error: unsupported flat_map key type".to_string(),
+        }),
+    }
+}
+
+fn is_fc_supported_set(inner: &TypeRef) -> bool {
+    matches!(inner, TypeRef::ProtocolObjectId { .. } | TypeRef::PublicKey { .. })
+}
+
+fn is_fc_supported_flat_map(key: &TypeRef, value: &TypeRef) -> bool {
+    if matches!(key, TypeRef::Address) {
+        return matches!(value, TypeRef::Uint16);
+    }
+
+    matches!(
+        key,
+        TypeRef::ProtocolObjectId { .. } | TypeRef::PublicKey { .. }
+    ) && (matches!(value, TypeRef::Uint16 | TypeRef::Int64 { json: None, .. })
+        || matches!(value, TypeRef::Ref { name } if name == "price"))
+}
+
+fn render_vote_id_arg(value_expr: &str, ty: &TypeRef) -> Result<String> {
+    match ty {
+        TypeRef::VoteId => Ok(format!("&{value_expr}")),
+        TypeRef::ProtocolObjectId { object_type } if object_type == "vote" => {
+            Ok(format!("&{value_expr}.0"))
+        }
+        _ => Err(GenBindingsRsError::Render {
+            message: "internal error: expected vote id type".to_string(),
+        }),
     }
 }
 
@@ -625,14 +1022,28 @@ fn is_fc_supported_type(
         | TypeRef::Int64 { json: None, .. }
         | TypeRef::Uint64 { json: None, .. }
         | TypeRef::String
+        | TypeRef::Bytes
+        | TypeRef::FixedBytes { .. }
         | TypeRef::PublicKey { .. }
-        | TypeRef::TimePointSec => true,
+        | TypeRef::TimePointSec
+        | TypeRef::VoteId => true,
         TypeRef::ObjectId | TypeRef::ProtocolObjectId { .. } => true,
         TypeRef::Ref { name } => supported_structs.contains(name),
-        TypeRef::StaticVariantRef { name } => name == "future_extensions",
+        TypeRef::StaticVariantRef { name } => {
+            name == "future_extensions"
+                || name == "special_authority"
+                || name == "htlc_hash"
+                || name == "predicate"
+                || name == "vesting_policy_initializer"
+                || name == "worker_initializer"
+                || name == "limit_order_auto_action"
+        }
         TypeRef::Optional { inner } | TypeRef::Vector { inner } => {
             is_fc_supported_type(protocol, inner, supported_structs)
         }
+        TypeRef::Set { inner, .. } if is_vote_id_type(inner) => true,
+        TypeRef::Set { inner, .. } if is_fc_supported_set(inner) => true,
+        TypeRef::FlatMap { key, value, .. } if is_fc_supported_flat_map(key, value) => true,
         TypeRef::Set { .. }
         | TypeRef::Map { .. }
         | TypeRef::FlatMap { .. }
@@ -641,14 +1052,11 @@ fn is_fc_supported_type(
         | TypeRef::Uint64 { .. }
         | TypeRef::UnsignedVarint
         | TypeRef::CallbackHandle
-        | TypeRef::Bytes
         | TypeRef::FixedHex { .. }
-        | TypeRef::FixedBytes { .. }
         | TypeRef::TimePoint
         | TypeRef::Address
         | TypeRef::Signature
         | TypeRef::ProtocolObjectUnion { .. }
-        | TypeRef::VoteId
         | TypeRef::AnyJson { .. }
         | TypeRef::Unsupported { .. } => false,
     }
@@ -1253,6 +1661,39 @@ mod tests {
             }],
             support: None,
         });
+        protocol.structs.push(StructDef {
+            name: "no_special_authority".to_string(),
+            source_name: None,
+            kind: StructKind::Struct,
+            wire_tag: None,
+            fields: vec![],
+            support: None,
+        });
+        protocol.structs.push(StructDef {
+            name: "top_holders_special_authority".to_string(),
+            source_name: None,
+            kind: StructKind::Struct,
+            wire_tag: None,
+            fields: vec![
+                FieldDef {
+                    index: 0,
+                    name: "asset".to_string(),
+                    ty: TypeRef::ProtocolObjectId {
+                        object_type: "asset".to_string(),
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 1,
+                    name: "num_top_holders".to_string(),
+                    ty: TypeRef::Uint8,
+                    source: None,
+                    support: None,
+                },
+            ],
+            support: None,
+        });
         protocol.operations.push(OperationDef {
             name: "transfer_operation".to_string(),
             wire_tag: 0,
@@ -1394,6 +1835,108 @@ mod tests {
                 },
                 FieldDef {
                     index: 13,
+                    name: "vote".to_string(),
+                    ty: TypeRef::VoteId,
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 14,
+                    name: "optional_vote".to_string(),
+                    ty: TypeRef::Optional {
+                        inner: Box::new(TypeRef::VoteId),
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 15,
+                    name: "votes".to_string(),
+                    ty: TypeRef::Vector {
+                        inner: Box::new(TypeRef::VoteId),
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 16,
+                    name: "account_auths".to_string(),
+                    ty: TypeRef::FlatMap {
+                        key: Box::new(TypeRef::ProtocolObjectId {
+                            object_type: "account".to_string(),
+                        }),
+                        value: Box::new(TypeRef::Uint16),
+                        ordering: open_graphene_json_schema::OrderingRule::Unresolved,
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 17,
+                    name: "key_auths".to_string(),
+                    ty: TypeRef::FlatMap {
+                        key: Box::new(TypeRef::PublicKey {
+                            chain_prefix: None,
+                            prefix_ref: Some("chain.publicKeyPrefix".to_string()),
+                        }),
+                        value: Box::new(TypeRef::Uint16),
+                        ordering: open_graphene_json_schema::OrderingRule::Unresolved,
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 18,
+                    name: "address_auths".to_string(),
+                    ty: TypeRef::FlatMap {
+                        key: Box::new(TypeRef::Address),
+                        value: Box::new(TypeRef::Uint16),
+                        ordering: open_graphene_json_schema::OrderingRule::Unresolved,
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 19,
+                    name: "required_auths".to_string(),
+                    ty: TypeRef::Set {
+                        inner: Box::new(TypeRef::ProtocolObjectId {
+                            object_type: "account".to_string(),
+                        }),
+                        ordering: open_graphene_json_schema::OrderingRule::Unresolved,
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 20,
+                    name: "key_auths_set".to_string(),
+                    ty: TypeRef::Set {
+                        inner: Box::new(TypeRef::PublicKey {
+                            chain_prefix: None,
+                            prefix_ref: Some("chain.publicKeyPrefix".to_string()),
+                        }),
+                        ordering: open_graphene_json_schema::OrderingRule::Unresolved,
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 21,
+                    name: "payload".to_string(),
+                    ty: TypeRef::Bytes,
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 22,
+                    name: "digest".to_string(),
+                    ty: TypeRef::FixedBytes { bytes: 20 },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 23,
                     name: "account".to_string(),
                     ty: TypeRef::ProtocolObjectId {
                         object_type: "account".to_string(),
@@ -1402,7 +1945,7 @@ mod tests {
                     support: None,
                 },
                 FieldDef {
-                    index: 14,
+                    index: 24,
                     name: "extensions".to_string(),
                     ty: TypeRef::StaticVariantRef {
                         name: "future_extensions".to_string(),
@@ -1480,10 +2023,141 @@ mod tests {
             support: None,
         });
 
+        protocol.static_variants.push(StaticVariantDef {
+            name: "special_authority".to_string(),
+            kind: "static_variant".to_string(),
+            json: "tagged_tuple".to_string(),
+            fc: "static_variant".to_string(),
+            variants: vec![
+                open_graphene_json_schema::StaticVariantArmDef {
+                    tag: 0,
+                    name: "no_special_authority".to_string(),
+                    ty: TypeRef::Ref {
+                        name: "no_special_authority".to_string(),
+                    },
+                    support: None,
+                },
+                open_graphene_json_schema::StaticVariantArmDef {
+                    tag: 1,
+                    name: "top_holders_special_authority".to_string(),
+                    ty: TypeRef::Ref {
+                        name: "top_holders_special_authority".to_string(),
+                    },
+                    support: None,
+                },
+            ],
+            source: None,
+            support: None,
+        });
+        protocol.static_variants.push(StaticVariantDef {
+            name: "htlc_hash".to_string(),
+            kind: "static_variant".to_string(),
+            json: "tagged_tuple".to_string(),
+            fc: "static_variant".to_string(),
+            variants: vec![
+                open_graphene_json_schema::StaticVariantArmDef {
+                    tag: 0,
+                    name: "htlc_algo_ripemd160".to_string(),
+                    ty: TypeRef::FixedBytes { bytes: 20 },
+                    support: None,
+                },
+                open_graphene_json_schema::StaticVariantArmDef {
+                    tag: 2,
+                    name: "htlc_algo_sha256".to_string(),
+                    ty: TypeRef::FixedBytes { bytes: 32 },
+                    support: None,
+                },
+            ],
+            source: None,
+            support: None,
+        });
+        protocol.static_variants.push(StaticVariantDef {
+            name: "predicate".to_string(),
+            kind: "static_variant".to_string(),
+            json: "tagged_tuple".to_string(),
+            fc: "static_variant".to_string(),
+            variants: vec![open_graphene_json_schema::StaticVariantArmDef {
+                tag: 2,
+                name: "block_id_predicate".to_string(),
+                ty: TypeRef::Ref {
+                    name: "block_id_predicate".to_string(),
+                },
+                support: None,
+            }],
+            source: None,
+            support: None,
+        });
+        protocol.static_variants.push(StaticVariantDef {
+            name: "vesting_policy_initializer".to_string(),
+            kind: "static_variant".to_string(),
+            json: "tagged_tuple".to_string(),
+            fc: "static_variant".to_string(),
+            variants: vec![open_graphene_json_schema::StaticVariantArmDef {
+                tag: 1,
+                name: "cdd_vesting_policy_initializer".to_string(),
+                ty: TypeRef::Ref {
+                    name: "cdd_vesting_policy_initializer".to_string(),
+                },
+                support: None,
+            }],
+            source: None,
+            support: None,
+        });
+        protocol.static_variants.push(StaticVariantDef {
+            name: "worker_initializer".to_string(),
+            kind: "static_variant".to_string(),
+            json: "tagged_tuple".to_string(),
+            fc: "static_variant".to_string(),
+            variants: vec![open_graphene_json_schema::StaticVariantArmDef {
+                tag: 1,
+                name: "vesting_balance_worker_initializer".to_string(),
+                ty: TypeRef::Ref {
+                    name: "vesting_balance_worker_initializer".to_string(),
+                },
+                support: None,
+            }],
+            source: None,
+            support: None,
+        });
+        protocol.static_variants.push(StaticVariantDef {
+            name: "limit_order_auto_action".to_string(),
+            kind: "static_variant".to_string(),
+            json: "tagged_tuple".to_string(),
+            fc: "static_variant".to_string(),
+            variants: vec![open_graphene_json_schema::StaticVariantArmDef {
+                tag: 0,
+                name: "create_take_profit_order_action".to_string(),
+                ty: TypeRef::Ref {
+                    name: "create_take_profit_order_action".to_string(),
+                },
+                support: None,
+            }],
+            source: None,
+            support: None,
+        });
+
         let output = render_fc(&protocol).expect("render fc");
 
-        assert!(output.contains("pub use open_graphene_fc::{write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, FcSerialize, FcSerializeError, Result};"));
+        assert!(output.contains("pub use open_graphene_fc::{parse_protocol_object_id, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};"));
         assert!(output.contains("impl FcSerialize for crate::generated::types::Asset"));
+        assert!(output.contains("impl FcSerialize for crate::generated::static_variants::SpecialAuthority"));
+        assert!(output.contains("Self::NoSpecialAuthority(value)"));
+        assert!(output.contains("Self::TopHoldersSpecialAuthority(value)"));
+        assert!(output.contains("impl FcSerialize for crate::generated::static_variants::HtlcHash"));
+        assert!(output.contains("Self::HtlcAlgoRipemd160(value)"));
+        assert!(output.contains("write_fixed_bytes(value.as_ref(), 20, \"htlc_hash::htlc_algo_ripemd160\", out)"));
+        assert!(output.contains("Self::HtlcAlgoSha256(value)"));
+        assert!(output.contains("write_fixed_bytes(value.as_ref(), 32, \"htlc_hash::htlc_algo_sha256\", out)"));
+        assert!(output.contains("impl FcSerialize for crate::generated::static_variants::Predicate"));
+        assert!(output.contains("Self::BlockIdPredicate(value)"));
+        assert!(output.contains("write_varint(2u64, out);"));
+        assert!(output.contains("impl FcSerialize for crate::generated::static_variants::VestingPolicyInitializer"));
+        assert!(output.contains("Self::CddVestingPolicyInitializer(value)"));
+        assert!(output.contains("write_varint(1u64, out);"));
+        assert!(output.contains("impl FcSerialize for crate::generated::static_variants::WorkerInitializer"));
+        assert!(output.contains("Self::VestingBalanceWorkerInitializer(value)"));
+        assert!(output.contains("impl FcSerialize for crate::generated::static_variants::LimitOrderAutoAction"));
+        assert!(output.contains("Self::CreateTakeProfitOrderAction(value)"));
         assert!(output.contains("self.amount.fc_serialize(out)?;"));
         assert!(output.contains("self.asset_id.fc_serialize(out)?;"));
         assert!(!output.contains("impl FcSerialize for crate::generated::types::UnsupportedSignatureStruct"));
@@ -1509,6 +2183,32 @@ mod tests {
         assert!(output.contains("write_time_point_sec(value, out)?;"));
         assert!(output.contains("write_varint(self.expiration_points.len() as u64, out);"));
         assert!(output.contains("for value in &self.expiration_points"));
+        assert!(output.contains("write_vote_id(&self.vote, out)?;"));
+        assert!(output.contains("match &self.optional_vote"));
+        assert!(output.contains("write_vote_id(&value, out)?;"));
+        assert!(output.contains("write_varint(self.votes.len() as u64, out);"));
+        assert!(output.contains("for value in &self.votes"));
+        assert!(output.contains("write_varint(self.account_auths.len() as u64, out);"));
+        assert!(output.contains("for (key, value) in &self.account_auths"));
+        assert!(output.contains("parse_protocol_object_id(&key.0, None, None)?;"));
+        assert!(output.contains("flat_map keys must be sorted and unique"));
+        assert!(output.contains("key.fc_serialize(out)?;"));
+        assert!(output.contains("write_varint(self.key_auths.len() as u64, out);"));
+        assert!(output.contains("for (key, value) in &self.key_auths"));
+        assert!(output.contains("write_public_key(key, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), &mut key_bytes)?;"));
+        assert!(output.contains("if !self.address_auths.is_empty()"));
+        assert!(output.contains("address flat_map FC serialization is not implemented"));
+        assert!(output.contains("write_varint(self.required_auths.len() as u64, out);"));
+        assert!(output.contains("for value in &self.required_auths"));
+        assert!(output.contains("parse_protocol_object_id(&value.0, None, None)?;"));
+        assert!(output.contains("set values must be sorted and unique"));
+        assert!(output.contains("write_varint(self.key_auths_set.len() as u64, out);"));
+        assert!(output.contains("for value in &self.key_auths_set"));
+        assert!(output.contains("write_public_key(value, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), &mut key_bytes)?;"));
+        assert!(output.contains("write_bytes(&self.payload, out)?;"));
+        assert!(output.contains("write_fixed_bytes(&self.digest, 20, \"fixed_bytes_20\", out)?;"));
+        assert!(output.contains("impl FcSerialize for crate::generated::ids::VoteId"));
+        assert!(output.contains("write_vote_id(&self.0, out)"));
         assert!(output.contains("self.account.fc_serialize(out)?;"));
         assert!(output.contains("self.extensions.fc_serialize(out)?;"));
         assert!(output.contains("Self::CustomSupportedOperation(value) => { write_varint(9u64, out); value.as_ref().fc_serialize(out) }"));
@@ -1528,7 +2228,15 @@ mod tests {
             enums: vec![],
             static_variants: vec![],
             operations: vec![],
-            object_types: vec![],
+            object_types: vec![open_graphene_json_schema::ObjectTypeDef {
+                object_type: "vote".to_string(),
+                cpp_alias: "vote_id_type".to_string(),
+                object_space: None,
+                type_id: None,
+                struct_ref: None,
+                source: None,
+                support: None,
+            }],
             rpc_apis: vec![],
             rpc_methods: vec![],
             strict_mode: None,
