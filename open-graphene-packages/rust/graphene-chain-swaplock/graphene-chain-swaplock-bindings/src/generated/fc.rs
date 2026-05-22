@@ -2,7 +2,7 @@
 // Chain: swaplock | schema version: 1 | module: minimal FC serialization for transfer path.
 // Do not edit by hand.
 
-pub use open_graphene_fc::{write_protocol_object_id, write_public_key, write_varint, FcSerialize, FcSerializeError, Result};
+pub use open_graphene_fc::{write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, FcSerialize, FcSerializeError, Result};
 
 impl FcSerialize for crate::generated::ids::AccountId {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
@@ -516,6 +516,14 @@ impl FcSerialize for crate::generated::types::CallOrderUpdateOperationFeeParamsT
     }
 }
 
+impl FcSerialize for crate::generated::types::CddVestingPolicyInitializer {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_time_point_sec(&self.start_claim, out)?;
+        self.vesting_seconds.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::ChainParametersExt {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.updatable_htlc_options.fc_serialize(out)?;
@@ -751,6 +759,15 @@ impl FcSerialize for crate::generated::types::LimitOrderCreateOperationFeeParams
 impl FcSerialize for crate::generated::types::LimitOrderUpdateOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::LinearVestingPolicyInitializer {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_time_point_sec(&self.begin_timestamp, out)?;
+        self.vesting_cliff_seconds.fc_serialize(out)?;
+        self.vesting_duration_seconds.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -1235,6 +1252,33 @@ impl FcSerialize for crate::generated::operations::ProposalDeleteOperation {
     }
 }
 
+impl FcSerialize for crate::generated::operations::WithdrawPermissionCreateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.withdraw_from_account.fc_serialize(out)?;
+        self.authorized_account.fc_serialize(out)?;
+        self.withdrawal_limit.fc_serialize(out)?;
+        self.withdrawal_period_sec.fc_serialize(out)?;
+        self.periods_until_expiration.fc_serialize(out)?;
+        write_time_point_sec(&self.period_start_time, out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::WithdrawPermissionUpdateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.withdraw_from_account.fc_serialize(out)?;
+        self.authorized_account.fc_serialize(out)?;
+        self.permission_to_update.fc_serialize(out)?;
+        self.withdrawal_limit.fc_serialize(out)?;
+        self.withdrawal_period_sec.fc_serialize(out)?;
+        write_time_point_sec(&self.period_start_time, out)?;
+        self.periods_until_expiration.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::operations::WithdrawPermissionDeleteOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -1630,8 +1674,8 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             Self::ProposalCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "ProposalCreateOperation" }),
             Self::ProposalUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "ProposalUpdateOperation" }),
             Self::ProposalDeleteOperation(value) => { write_varint(24u64, out); value.as_ref().fc_serialize(out) }
-            Self::WithdrawPermissionCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "WithdrawPermissionCreateOperation" }),
-            Self::WithdrawPermissionUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "WithdrawPermissionUpdateOperation" }),
+            Self::WithdrawPermissionCreateOperation(value) => { write_varint(25u64, out); value.as_ref().fc_serialize(out) }
+            Self::WithdrawPermissionUpdateOperation(value) => { write_varint(26u64, out); value.as_ref().fc_serialize(out) }
             Self::WithdrawPermissionClaimOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "WithdrawPermissionClaimOperation" }),
             Self::WithdrawPermissionDeleteOperation(value) => { write_varint(28u64, out); value.as_ref().fc_serialize(out) }
             Self::CommitteeMemberCreateOperation(value) => { write_varint(29u64, out); value.as_ref().fc_serialize(out) }

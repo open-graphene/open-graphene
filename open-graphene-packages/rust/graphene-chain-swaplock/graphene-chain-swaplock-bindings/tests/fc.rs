@@ -2,6 +2,7 @@ use graphene_chain_swaplock_bindings::generated::{
     AccountCreateOperation, AccountCreateOperationExt, AccountId, AccountOptions, Asset, AssetId,
     Authority, FcSerialize, FcSerializeError, FutureExtensions, LimitOrderCancelOperation,
     LimitOrderCreateOperation, LimitOrderId, Operation, TransferOperation,
+    WithdrawPermissionCreateOperation,
 };
 
 fn sample_transfer_operation() -> TransferOperation {
@@ -53,6 +54,24 @@ fn sample_limit_order_cancel_operation() -> LimitOrderCancelOperation {
     }
 }
 
+fn sample_withdraw_permission_create_operation() -> WithdrawPermissionCreateOperation {
+    WithdrawPermissionCreateOperation {
+        fee: Asset {
+            amount: 0,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        withdraw_from_account: AccountId("1.2.1".to_string()),
+        authorized_account: AccountId("1.2.2".to_string()),
+        withdrawal_limit: Asset {
+            amount: 3,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        withdrawal_period_sec: 86_400,
+        periods_until_expiration: 7,
+        period_start_time: "1970-01-01T00:00:01".to_string(),
+    }
+}
+
 fn expected_limit_order_create_payload() -> Vec<u8> {
     vec![
         // fee: amount 0 + asset instance 0
@@ -80,6 +99,25 @@ fn expected_limit_order_cancel_payload() -> Vec<u8> {
         1,
         // extensions: future_extensions VoidT static variant tag 0
         0,
+    ]
+}
+
+fn expected_withdraw_permission_create_payload() -> Vec<u8> {
+    vec![
+        // fee: amount 0 + asset instance 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        // withdraw_from_account account instance 1
+        1,
+        // authorized_account account instance 2
+        2,
+        // withdrawal_limit: amount 3 + asset instance 0
+        3, 0, 0, 0, 0, 0, 0, 0, 0,
+        // withdrawal_period_sec 86400
+        0x80, 0x51, 0x01, 0x00,
+        // periods_until_expiration 7
+        7, 0, 0, 0,
+        // period_start_time 1970-01-01T00:00:01 as u32 little-endian seconds
+        1, 0, 0, 0,
     ]
 }
 
@@ -163,6 +201,41 @@ fn operation_fc_serializes_limit_order_cancel_tag_and_payload() {
 
     let mut expected = vec![2];
     expected.extend(expected_limit_order_cancel_payload());
+
+    assert_eq!(bytes, expected);
+}
+
+#[test]
+fn withdraw_permission_create_operation_fc_serializes_time_point_sec() {
+    let operation = sample_withdraw_permission_create_operation();
+
+    assert_eq!(
+        operation.to_fc_bytes().expect("serialize withdraw permission create"),
+        expected_withdraw_permission_create_payload()
+    );
+}
+
+#[test]
+fn withdraw_permission_create_operation_rejects_invalid_time_point_sec() {
+    let mut operation = sample_withdraw_permission_create_operation();
+    operation.period_start_time = "1970-01-01T00:00:00Z".to_string();
+
+    let err = operation
+        .to_fc_bytes()
+        .expect_err("ambiguous timestamp format fails");
+
+    assert!(matches!(err, FcSerializeError::InvalidTimePointSec { .. }));
+}
+
+#[test]
+fn operation_fc_serializes_withdraw_permission_create_tag_and_payload() {
+    let operation = Operation::WithdrawPermissionCreateOperation(Box::new(
+        sample_withdraw_permission_create_operation(),
+    ));
+    let bytes = operation.to_fc_bytes().expect("serialize operation");
+
+    let mut expected = vec![25];
+    expected.extend(expected_withdraw_permission_create_payload());
 
     assert_eq!(bytes, expected);
 }

@@ -12,6 +12,10 @@ pub enum FcSerializeError {
         expected_prefix: Option<String>,
         reason: &'static str,
     },
+    InvalidTimePointSec {
+        value: String,
+        reason: &'static str,
+    },
     UnsupportedVariant {
         variant: &'static str,
     },
@@ -40,6 +44,9 @@ impl std::fmt::Display for FcSerializeError {
                 f,
                 "invalid public key `{value}` for expected prefix {expected_prefix:?}: {reason}"
             ),
+            Self::InvalidTimePointSec { value, reason } => {
+                write!(f, "invalid time_point_sec `{value}`: {reason}")
+            }
             Self::UnsupportedVariant { variant } => {
                 write!(
                     f,
@@ -185,6 +192,106 @@ pub fn write_public_key(
     Ok(())
 }
 
+pub fn parse_time_point_sec(value: &str) -> Result<u32> {
+    if value.len() != "YYYY-MM-DDTHH:MM:SS".len() {
+        return Err(invalid_time_point_sec(
+            value,
+            "expected YYYY-MM-DDTHH:MM:SS",
+        ));
+    }
+
+    let bytes = value.as_bytes();
+    if bytes[4] != b'-'
+        || bytes[7] != b'-'
+        || bytes[10] != b'T'
+        || bytes[13] != b':'
+        || bytes[16] != b':'
+    {
+        return Err(invalid_time_point_sec(
+            value,
+            "expected YYYY-MM-DDTHH:MM:SS",
+        ));
+    }
+
+    let year = parse_fixed_digits(value, 0, 4, "year")?;
+    let month = parse_fixed_digits(value, 5, 2, "month")?;
+    let day = parse_fixed_digits(value, 8, 2, "day")?;
+    let hour = parse_fixed_digits(value, 11, 2, "hour")?;
+    let minute = parse_fixed_digits(value, 14, 2, "minute")?;
+    let second = parse_fixed_digits(value, 17, 2, "second")?;
+
+    if year < 1970 {
+        return Err(invalid_time_point_sec(value, "year is before Unix epoch"));
+    }
+    if !(1..=12).contains(&month) {
+        return Err(invalid_time_point_sec(value, "month out of range"));
+    }
+    let days_in_month = days_in_month(year, month);
+    if day == 0 || day > days_in_month {
+        return Err(invalid_time_point_sec(value, "day out of range"));
+    }
+    if hour > 23 {
+        return Err(invalid_time_point_sec(value, "hour out of range"));
+    }
+    if minute > 59 {
+        return Err(invalid_time_point_sec(value, "minute out of range"));
+    }
+    if second > 59 {
+        return Err(invalid_time_point_sec(value, "second out of range"));
+    }
+
+    let days = days_since_unix_epoch(year, month, day);
+    let seconds = days
+        .checked_mul(86_400)
+        .and_then(|base| base.checked_add((hour as u64) * 3_600))
+        .and_then(|base| base.checked_add((minute as u64) * 60))
+        .and_then(|base| base.checked_add(second as u64))
+        .ok_or_else(|| invalid_time_point_sec(value, "timestamp is out of u32 range"))?;
+
+    u32::try_from(seconds)
+        .map_err(|_| invalid_time_point_sec(value, "timestamp is out of u32 range"))
+}
+
+pub fn write_time_point_sec(value: &str, out: &mut Vec<u8>) -> Result<()> {
+    let seconds = parse_time_point_sec(value)?;
+    out.extend_from_slice(&seconds.to_le_bytes());
+    Ok(())
+}
+
+fn parse_fixed_digits(value: &str, start: usize, len: usize, component: &'static str) -> Result<u32> {
+    let part = &value[start..start + len];
+    if !part.bytes().all(|byte| byte.is_ascii_digit()) {
+        return Err(invalid_time_point_sec(value, component));
+    }
+    part.parse::<u32>()
+        .map_err(|_| invalid_time_point_sec(value, component))
+}
+
+fn days_since_unix_epoch(year: u32, month: u32, day: u32) -> u64 {
+    let mut days = 0u64;
+    for current_year in 1970..year {
+        days += if is_leap_year(current_year) { 366 } else { 365 };
+    }
+    for current_month in 1..month {
+        days += u64::from(days_in_month(year, current_month));
+    }
+    days + u64::from(day - 1)
+}
+
+fn days_in_month(year: u32, month: u32) -> u32 {
+    match month {
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+        4 | 6 | 9 | 11 => 30,
+        2 if is_leap_year(year) => 29,
+        2 => 28,
+        _ => 0,
+    }
+}
+
+fn is_leap_year(year: u32) -> bool {
+    year.is_multiple_of(4) && !year.is_multiple_of(100) || year.is_multiple_of(400)
+}
+
 fn invalid_protocol_object_id(
     value: &str,
     expected_space: Option<u32>,
@@ -205,6 +312,13 @@ fn invalid_public_key(
     FcSerializeError::InvalidPublicKey {
         value: value.to_string(),
         expected_prefix: expected_prefix.map(str::to_string),
+        reason,
+    }
+}
+
+fn invalid_time_point_sec(value: &str, reason: &'static str) -> FcSerializeError {
+    FcSerializeError::InvalidTimePointSec {
+        value: value.to_string(),
         reason,
     }
 }
@@ -322,6 +436,46 @@ mod tests {
         assert_eq!("".to_fc_bytes().unwrap(), [0]);
         assert_eq!("abc".to_fc_bytes().unwrap(), [3, b'a', b'b', b'c']);
         assert_eq!(String::from("ż").to_fc_bytes().unwrap(), [2, 0xc5, 0xbc]);
+    }
+
+    #[test]
+    fn time_point_sec_writes_u32_seconds_little_endian() {
+        let mut out = Vec::new();
+        write_time_point_sec("1970-01-01T00:00:00", &mut out).unwrap();
+        assert_eq!(out, [0, 0, 0, 0]);
+
+        let mut out = Vec::new();
+        write_time_point_sec("1970-01-01T00:00:01", &mut out).unwrap();
+        assert_eq!(out, [1, 0, 0, 0]);
+
+        let mut out = Vec::new();
+        write_time_point_sec("2020-01-02T03:04:05", &mut out).unwrap();
+        assert_eq!(out, [0xa5, 0x5d, 0x0d, 0x5e]);
+
+        let mut out = Vec::new();
+        write_time_point_sec("2106-02-07T06:28:15", &mut out).unwrap();
+        assert_eq!(out, [0xff, 0xff, 0xff, 0xff]);
+    }
+
+    #[test]
+    fn time_point_sec_rejects_ambiguous_or_out_of_range_values() {
+        for value in [
+            "1970-01-01T00:00:00Z",
+            "1970-01-01T00:00:00.000",
+            "1969-12-31T23:59:59",
+            "2023-02-29T00:00:00",
+            "2023-01-01T24:00:00",
+            "2106-02-07T06:28:16",
+            "bad",
+        ] {
+            assert!(
+                matches!(
+                    write_time_point_sec(value, &mut Vec::new()),
+                    Err(FcSerializeError::InvalidTimePointSec { .. })
+                ),
+                "{value} should fail"
+            );
+        }
     }
 
     #[test]

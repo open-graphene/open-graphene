@@ -301,7 +301,7 @@ fn render_fields(out: &mut String, protocol: &Protocol, fields: &[FieldDef]) -> 
 
 fn render_fc(protocol: &Protocol) -> Result<String> {
     let mut out = generated_header(protocol, "minimal FC serialization for transfer path");
-    out.push_str("pub use open_graphene_fc::{write_protocol_object_id, write_public_key, write_varint, FcSerialize, FcSerializeError, Result};\n\n");
+    out.push_str("pub use open_graphene_fc::{write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, FcSerialize, FcSerializeError, Result};\n\n");
 
     render_fc_id_impls(&mut out, protocol)?;
     render_fc_transfer_path_impls(&mut out, protocol)?;
@@ -515,6 +515,9 @@ fn render_fc_value_serialize_lines(value_expr: &str, ty: &TypeRef, indent: &str)
                 "{indent}write_public_key(&{value_expr}, {prefix}, out)?;\n"
             ))
         }
+        TypeRef::TimePointSec => Ok(format!(
+            "{indent}write_time_point_sec(&{value_expr}, out)?;\n"
+        )),
         TypeRef::Optional { inner } if matches!(inner.as_ref(), TypeRef::PublicKey { .. }) => {
             let prefix = render_public_key_prefix_expr(inner)?;
             Ok(format!(
@@ -527,6 +530,15 @@ fn render_fc_value_serialize_lines(value_expr: &str, ty: &TypeRef, indent: &str)
                  {indent}}}\n"
             ))
         }
+        TypeRef::Optional { inner } if matches!(inner.as_ref(), TypeRef::TimePointSec) => Ok(format!(
+            "{indent}match &{value_expr} {{\n\
+             {indent}    Some(value) => {{\n\
+             {indent}        out.push(1);\n\
+             {indent}        write_time_point_sec(value, out)?;\n\
+             {indent}    }}\n\
+             {indent}    None => out.push(0),\n\
+             {indent}}}\n"
+        )),
         TypeRef::Vector { inner } if matches!(inner.as_ref(), TypeRef::PublicKey { .. }) => {
             let prefix = render_public_key_prefix_expr(inner)?;
             Ok(format!(
@@ -536,6 +548,12 @@ fn render_fc_value_serialize_lines(value_expr: &str, ty: &TypeRef, indent: &str)
                  {indent}}}\n"
             ))
         }
+        TypeRef::Vector { inner } if matches!(inner.as_ref(), TypeRef::TimePointSec) => Ok(format!(
+            "{indent}write_varint({value_expr}.len() as u64, out);\n\
+             {indent}for value in &{value_expr} {{\n\
+             {indent}    write_time_point_sec(value, out)?;\n\
+             {indent}}}\n"
+        )),
         _ => Ok(format!("{indent}{value_expr}.fc_serialize(out)?;\n")),
     }
 }
@@ -607,7 +625,8 @@ fn is_fc_supported_type(
         | TypeRef::Int64 { json: None, .. }
         | TypeRef::Uint64 { json: None, .. }
         | TypeRef::String
-        | TypeRef::PublicKey { .. } => true,
+        | TypeRef::PublicKey { .. }
+        | TypeRef::TimePointSec => true,
         TypeRef::ObjectId | TypeRef::ProtocolObjectId { .. } => true,
         TypeRef::Ref { name } => supported_structs.contains(name),
         TypeRef::StaticVariantRef { name } => name == "future_extensions",
@@ -625,7 +644,6 @@ fn is_fc_supported_type(
         | TypeRef::Bytes
         | TypeRef::FixedHex { .. }
         | TypeRef::FixedBytes { .. }
-        | TypeRef::TimePointSec
         | TypeRef::TimePoint
         | TypeRef::Address
         | TypeRef::Signature
@@ -1351,6 +1369,31 @@ mod tests {
                 },
                 FieldDef {
                     index: 10,
+                    name: "expires_at".to_string(),
+                    ty: TypeRef::TimePointSec,
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 11,
+                    name: "optional_expiration".to_string(),
+                    ty: TypeRef::Optional {
+                        inner: Box::new(TypeRef::TimePointSec),
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 12,
+                    name: "expiration_points".to_string(),
+                    ty: TypeRef::Vector {
+                        inner: Box::new(TypeRef::TimePointSec),
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 13,
                     name: "account".to_string(),
                     ty: TypeRef::ProtocolObjectId {
                         object_type: "account".to_string(),
@@ -1359,7 +1402,7 @@ mod tests {
                     support: None,
                 },
                 FieldDef {
-                    index: 11,
+                    index: 14,
                     name: "extensions".to_string(),
                     ty: TypeRef::StaticVariantRef {
                         name: "future_extensions".to_string(),
@@ -1439,7 +1482,7 @@ mod tests {
 
         let output = render_fc(&protocol).expect("render fc");
 
-        assert!(output.contains("pub use open_graphene_fc::{write_protocol_object_id, write_public_key, write_varint, FcSerialize, FcSerializeError, Result};"));
+        assert!(output.contains("pub use open_graphene_fc::{write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, FcSerialize, FcSerializeError, Result};"));
         assert!(output.contains("impl FcSerialize for crate::generated::types::Asset"));
         assert!(output.contains("self.amount.fc_serialize(out)?;"));
         assert!(output.contains("self.asset_id.fc_serialize(out)?;"));
@@ -1461,6 +1504,11 @@ mod tests {
         assert!(output.contains("write_public_key(&self.signing_key, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;"));
         assert!(output.contains("match &self.optional_signing_key"));
         assert!(output.contains("write_public_key(value, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;"));
+        assert!(output.contains("write_time_point_sec(&self.expires_at, out)?;"));
+        assert!(output.contains("match &self.optional_expiration"));
+        assert!(output.contains("write_time_point_sec(value, out)?;"));
+        assert!(output.contains("write_varint(self.expiration_points.len() as u64, out);"));
+        assert!(output.contains("for value in &self.expiration_points"));
         assert!(output.contains("self.account.fc_serialize(out)?;"));
         assert!(output.contains("self.extensions.fc_serialize(out)?;"));
         assert!(output.contains("Self::CustomSupportedOperation(value) => { write_varint(9u64, out); value.as_ref().fc_serialize(out) }"));
