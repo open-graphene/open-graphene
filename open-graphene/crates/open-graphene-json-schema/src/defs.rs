@@ -164,6 +164,25 @@ fn default_required() -> bool {
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+pub struct RpcApiDef {
+    /// Wire namespace name used for discovery through the login API, e.g. `database`.
+    pub name: String,
+    #[serde(rename = "class")]
+    pub api_class: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub access_name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub discover_method: Option<String>,
+    #[serde(default = "default_required", skip_serializing_if = "is_true")]
+    pub required: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source: Option<SourceMeta>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub support: Option<SupportDef>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct RpcMethodDef {
     pub name: String,
     #[serde(default, skip_serializing_if = "String::is_empty")]

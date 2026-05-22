@@ -44,19 +44,17 @@ coverage/
 .cache/
 tmp/
 
-!graphene-rs
-!graphene-rs/**
-graphene-rs/target/
-graphene-rs/target/**
+# !graphene-rs
+# !graphene-rs/**
+# graphene-rs/target/
+# graphene-rs/target/**
 
 !open-graphene
 !open-graphene/**
 open-graphene/target/
 open-graphene/target/**
 
-# !graphene-rs-v2
-# !graphene-rs-v2/**
-# graphene-rs-v2/.env
-# graphene-rs-v2/.env.*
-# graphene-rs-v2/target/
-# graphene-rs-v2/target/**
+!open-graphene-gen
+!open-graphene-gen/**
+open-graphene-gen/target/
+open-graphene-gen/target/**

@@ -28,6 +28,13 @@
         "$ref": "#/$defs/OperationDef"
       }
     },
+    "rpcApis": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/RpcApiDef"
+      }
+    },
     "rpcMethods": {
       "type": "array",
       "default": [],
@@ -382,6 +389,57 @@
         "raw_bytes_lexicographic",
         "static_variant_tag",
         "unresolved"
+      ]
+    },
+    "RpcApiDef": {
+      "type": "object",
+      "properties": {
+        "accessName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "class": {
+          "type": "string"
+        },
+        "discoverMethod": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "description": "Wire namespace name used for discovery through the login API, e.g. `database`.",
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceMeta"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "support": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SupportDef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "class"
       ]
     },
     "RpcBindingHintsDef": {

@@ -19,7 +19,7 @@ pub mod types;
 
 pub use defs::{
     ChainDef, DependentReturnDef, EnumDef, EnumValueDef, FieldDef, ObjectTypeDef, OperationDef,
-    RpcBindingHintsDef, RpcMethodDef, RpcNoticeDef, RpcParamDef, StaticVariantArmDef,
+    RpcApiDef, RpcBindingHintsDef, RpcMethodDef, RpcNoticeDef, RpcParamDef, StaticVariantArmDef,
     StaticVariantDef, StrictModeDef, StructDef, StructKind,
 };
 pub use support::{SourceMeta, SupportDef, SupportStatus};
@@ -41,6 +41,8 @@ pub struct Protocol {
     pub operations: Vec<OperationDef>,
     #[serde(default)]
     pub object_types: Vec<ObjectTypeDef>,
+    #[serde(default)]
+    pub rpc_apis: Vec<RpcApiDef>,
     #[serde(default)]
     pub rpc_methods: Vec<RpcMethodDef>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -70,6 +72,7 @@ mod tests {
             static_variants: vec![],
             operations: vec![],
             object_types: vec![],
+            rpc_apis: vec![],
             rpc_methods: vec![],
             strict_mode: None,
         };
@@ -138,6 +141,7 @@ mod tests {
         let protocol: Protocol =
             serde_json::from_value(json).expect("deserialize old protocol JSON");
         assert!(protocol.object_types.is_empty());
+        assert!(protocol.rpc_apis.is_empty());
     }
 
     #[test]
@@ -214,6 +218,26 @@ mod tests {
             static_variants: vec![],
             operations: vec![],
             object_types: vec![object_type],
+            rpc_apis: vec![
+                RpcApiDef {
+                    name: "database".to_string(),
+                    api_class: "database_api".to_string(),
+                    access_name: Some("database_api".to_string()),
+                    discover_method: Some("database".to_string()),
+                    required: true,
+                    source: None,
+                    support: None,
+                },
+                RpcApiDef {
+                    name: "history".to_string(),
+                    api_class: "history_api".to_string(),
+                    access_name: Some("history_api".to_string()),
+                    discover_method: Some("history".to_string()),
+                    required: false,
+                    source: None,
+                    support: None,
+                },
+            ],
             rpc_methods: vec![
                 method,
                 RpcMethodDef {
@@ -268,6 +292,13 @@ mod tests {
         assert_eq!(json["objectTypes"][0]["typeId"], 2);
         assert_eq!(json["objectTypes"][0]["structRef"], "account_object");
         assert_eq!(json["objectTypes"][0]["source"]["line"], 42);
+        assert_eq!(json["rpcApis"][0]["name"], "database");
+        assert_eq!(json["rpcApis"][0]["class"], "database_api");
+        assert_eq!(json["rpcApis"][0]["accessName"], "database_api");
+        assert_eq!(json["rpcApis"][0]["discoverMethod"], "database");
+        assert!(json["rpcApis"][0]["required"].is_null());
+        assert_eq!(json["rpcApis"][1]["name"], "history");
+        assert_eq!(json["rpcApis"][1]["required"], false);
         assert_eq!(json["rpcMethods"][0]["apiClass"], "database_api");
         assert_eq!(json["rpcMethods"][0]["apiName"], "database");
         assert_eq!(json["rpcMethods"][0]["params"][0]["name"], "ids");
