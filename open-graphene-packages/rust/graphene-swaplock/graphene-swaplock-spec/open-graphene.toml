@@ -1,12 +1,12 @@
 [chain]
-id = "bitshares"
+id = "swaplock"
 public_key_prefix = "BTS"
 
 [source]
-chain_repo = "../../../../blockchains/bitshares/bitshares-core"
+chain_repo = "../../../../blockchains/swaplock/swaplock-core"
 
 [output]
-dist = "./dist/bitshares.open-graphene.json"
+dist = "./dist/swaplock.open-graphene.json"
 
 [[rpc_apis]]
 name = "database"
