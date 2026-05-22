@@ -58,3 +58,8 @@ open-graphene/target/**
 !open-graphene-spec/**
 open-graphene-spec/target/
 open-graphene-spec/target/**
+
+!open-graphene-bindings
+!open-graphene-bindings/**
+open-graphene-bindings/target/
+open-graphene-bindings/target/**
