@@ -23,5 +23,46 @@
       "discoverMethod": "history"
     }
   ],
-  "rpcMethods": []
+  "rpcMethods": [
+    {
+      "name": "get_objects",
+      "apiClass": "database_api",
+      "apiName": "database",
+      "params": [],
+      "returns": {
+        "kind": "any_json",
+        "reason": "signature extraction pending"
+      },
+      "isSubscription": false,
+      "source": {
+        "name": "get_objects",
+        "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/database_api.hpp",
+        "line": 1468
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "selected in config and present in FC_API; signature extraction pending"
+      }
+    },
+    {
+      "name": "get_account_history",
+      "apiClass": "history_api",
+      "apiName": "history",
+      "params": [],
+      "returns": {
+        "kind": "any_json",
+        "reason": "signature extraction pending"
+      },
+      "isSubscription": false,
+      "source": {
+        "name": "get_account_history",
+        "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/api.hpp",
+        "line": 825
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "selected in config and present in FC_API; signature extraction pending"
+      }
+    }
+  ]
 }

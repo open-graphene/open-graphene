@@ -35,8 +35,13 @@ fn main() -> ExitCode {
         Ok(result) => {
             println!("wrote {}", result.output_path.display());
             println!(
-                "configured {} RPC APIs and {} selected RPC methods",
-                result.rpc_api_count, result.selected_method_count
+                "configured {} RPC APIs, {} selected RPC methods, discovered {} source files, extracted {} FC_API blocks, resolved {} RPC methods, {} diagnostics",
+                result.rpc_api_count,
+                result.selected_method_count,
+                result.source_file_count,
+                result.fc_api_count,
+                result.resolved_rpc_method_count,
+                result.diagnostic_count
             );
             ExitCode::SUCCESS
         }

@@ -18,8 +18,27 @@ pub enum SpecGenError {
         #[source]
         source: toml::de::Error,
     },
+    #[error("failed to read source file {path}: {source}")]
+    ReadSourceFile {
+        path: PathBuf,
+        #[source]
+        source: std::io::Error,
+    },
     #[error("output path in config {config_path} must have a parent directory: {dist}")]
     OutputPathHasNoParent { config_path: PathBuf, dist: String },
+    #[error("source path in config {config_path} must have a parent directory: {chain_repo}")]
+    SourcePathHasNoConfigParent {
+        config_path: PathBuf,
+        chain_repo: String,
+    },
+    #[error("source chain repository does not exist or is not a directory: {path}")]
+    SourceRootMissing { path: PathBuf },
+    #[error("failed to discover source files under {path}: {source}")]
+    DiscoverSources {
+        path: PathBuf,
+        #[source]
+        source: walkdir::Error,
+    },
     #[error("failed to create output directory {path}: {source}")]
     CreateOutputDir {
         path: PathBuf,
