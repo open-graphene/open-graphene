@@ -314,12 +314,22 @@ impl FcSerialize for crate::generated::operations::LimitOrderCreateOperation {
     }
 }
 
+impl FcSerialize for crate::generated::operations::LimitOrderCancelOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.fee_paying_account.fc_serialize(out)?;
+        self.order.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::static_variants::Operation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         match self {
             Self::TransferOperation(value) => { write_varint(0u64, out); value.as_ref().fc_serialize(out) }
             Self::LimitOrderCreateOperation(value) => { write_varint(1u64, out); value.as_ref().fc_serialize(out) }
-            Self::LimitOrderCancelOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "LimitOrderCancelOperation" }),
+            Self::LimitOrderCancelOperation(value) => { write_varint(2u64, out); value.as_ref().fc_serialize(out) }
             Self::CallOrderUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "CallOrderUpdateOperation" }),
             Self::FillOrderOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "FillOrderOperation" }),
             Self::AccountCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "AccountCreateOperation" }),

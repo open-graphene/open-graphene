@@ -418,6 +418,22 @@ fn render_fc_transfer_path_impls(out: &mut String, protocol: &Protocol) -> Resul
         out.push_str("}\n\n");
     }
 
+    let limit_order_cancel_operation = protocol
+        .operations
+        .iter()
+        .find(|operation| operation.name == "limit_order_cancel_operation");
+    if limit_order_cancel_operation.is_some() {
+        out.push_str("impl FcSerialize for crate::generated::operations::LimitOrderCancelOperation {\n");
+        out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
+        out.push_str("        self.fee.fc_serialize(out)?;\n");
+        out.push_str("        self.fee_paying_account.fc_serialize(out)?;\n");
+        out.push_str("        self.order.fc_serialize(out)?;\n");
+        out.push_str("        self.extensions.fc_serialize(out)?;\n");
+        out.push_str("        Ok(())\n");
+        out.push_str("    }\n");
+        out.push_str("}\n\n");
+    }
+
     let operation_variant = protocol
         .static_variants
         .iter()
@@ -430,7 +446,12 @@ fn render_fc_transfer_path_impls(out: &mut String, protocol: &Protocol) -> Resul
         arms.sort_by_key(|arm| arm.tag);
         for arm in arms {
             let variant_name = rust_variant_name(&arm.name);
-            if arm.name == "transfer_operation" || arm.name == "limit_order_create_operation" {
+            if matches!(
+                arm.name.as_str(),
+                "transfer_operation"
+                    | "limit_order_create_operation"
+                    | "limit_order_cancel_operation"
+            ) {
                 out.push_str(&format!(
                     "            Self::{variant_name}(value) => {{ write_varint({}u64, out); value.as_ref().fc_serialize(out) }}\n",
                     arm.tag
@@ -1045,6 +1066,14 @@ mod tests {
             source: None,
             support: None,
         });
+        protocol.operations.push(OperationDef {
+            name: "call_order_update_operation".to_string(),
+            wire_tag: 3,
+            fields: vec![],
+            is_virtual: false,
+            source: None,
+            support: None,
+        });
         protocol.static_variants.push(StaticVariantDef {
             name: "operation".to_string(),
             kind: "static_variant".to_string(),
@@ -1075,6 +1104,14 @@ mod tests {
                     },
                     support: None,
                 },
+                open_graphene_json_schema::StaticVariantArmDef {
+                    tag: 3,
+                    name: "call_order_update_operation".to_string(),
+                    ty: TypeRef::Ref {
+                        name: "call_order_update_operation".to_string(),
+                    },
+                    support: None,
+                },
             ],
             source: None,
             support: None,
@@ -1087,8 +1124,10 @@ mod tests {
         assert!(output.contains("Self::TransferOperation(value) => { write_varint(0u64, out); value.as_ref().fc_serialize(out) }"));
         assert!(output.contains("impl FcSerialize for crate::generated::operations::LimitOrderCreateOperation"));
         assert!(output.contains("Self::LimitOrderCreateOperation(value) => { write_varint(1u64, out); value.as_ref().fc_serialize(out) }"));
+        assert!(output.contains("impl FcSerialize for crate::generated::operations::LimitOrderCancelOperation"));
+        assert!(output.contains("Self::LimitOrderCancelOperation(value) => { write_varint(2u64, out); value.as_ref().fc_serialize(out) }"));
         assert!(output.contains(
-            "Self::LimitOrderCancelOperation(_) => Err(FcSerializeError::UnsupportedVariant"
+            "Self::CallOrderUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant"
         ));
     }
 

@@ -1,6 +1,7 @@
 use graphene_chain_swaplock_bindings::generated::{
-    AccountId, Asset, AssetId, FcSerialize, FcSerializeError, FutureExtensions,
-    LimitOrderCancelOperation, LimitOrderCreateOperation, LimitOrderId, Operation, TransferOperation,
+    AccountId, Asset, AssetId, CallOrderUpdateOperation, FcSerialize, FcSerializeError,
+    FutureExtensions, LimitOrderCancelOperation, LimitOrderCreateOperation, LimitOrderId, Operation,
+    TransferOperation,
 };
 
 fn sample_transfer_operation() -> TransferOperation {
@@ -40,6 +41,18 @@ fn sample_limit_order_create_operation() -> LimitOrderCreateOperation {
     }
 }
 
+fn sample_limit_order_cancel_operation() -> LimitOrderCancelOperation {
+    LimitOrderCancelOperation {
+        fee: Asset {
+            amount: 0,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        fee_paying_account: AccountId("1.2.1".to_string()),
+        order: LimitOrderId("1.7.1".to_string()),
+        extensions: FutureExtensions::VoidT(Box::new(())),
+    }
+}
+
 fn expected_limit_order_create_payload() -> Vec<u8> {
     vec![
         // fee: amount 0 + asset instance 0
@@ -51,6 +64,19 @@ fn expected_limit_order_create_payload() -> Vec<u8> {
         // min_to_receive: amount 2 + asset instance 0
         2, 0, 0, 0, 0, 0, 0, 0, 0,
         // fill_or_kill true
+        1,
+        // extensions: future_extensions VoidT static variant tag 0
+        0,
+    ]
+}
+
+fn expected_limit_order_cancel_payload() -> Vec<u8> {
+    vec![
+        // fee: amount 0 + asset instance 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        // fee_paying_account account instance 1
+        1,
+        // order limit_order instance 1
         1,
         // extensions: future_extensions VoidT static variant tag 0
         0,
@@ -121,14 +147,42 @@ fn operation_fc_serializes_limit_order_create_tag_and_payload() {
 }
 
 #[test]
+fn limit_order_cancel_operation_fc_serializes_known_fields() {
+    let operation = sample_limit_order_cancel_operation();
+
+    assert_eq!(
+        operation.to_fc_bytes().expect("serialize limit order cancel"),
+        expected_limit_order_cancel_payload()
+    );
+}
+
+#[test]
+fn operation_fc_serializes_limit_order_cancel_tag_and_payload() {
+    let operation = Operation::LimitOrderCancelOperation(Box::new(sample_limit_order_cancel_operation()));
+    let bytes = operation.to_fc_bytes().expect("serialize operation");
+
+    let mut expected = vec![2];
+    expected.extend(expected_limit_order_cancel_payload());
+
+    assert_eq!(bytes, expected);
+}
+
+#[test]
 fn operation_fc_reports_unsupported_variant() {
-    let operation = Operation::LimitOrderCancelOperation(Box::new(LimitOrderCancelOperation {
+    let operation = Operation::CallOrderUpdateOperation(Box::new(CallOrderUpdateOperation {
         fee: Asset {
             amount: 0,
             asset_id: AssetId("1.3.0".to_string()),
         },
-        fee_paying_account: AccountId("1.2.1".to_string()),
-        order: LimitOrderId("1.7.1".to_string()),
+        funding_account: AccountId("1.2.1".to_string()),
+        delta_collateral: Asset {
+            amount: 1,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        delta_debt: Asset {
+            amount: 2,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
         extensions: FutureExtensions::VoidT(Box::new(())),
     }));
 
@@ -137,7 +191,7 @@ fn operation_fc_reports_unsupported_variant() {
     assert!(matches!(
         err,
         FcSerializeError::UnsupportedVariant {
-            variant: "LimitOrderCancelOperation"
+            variant: "CallOrderUpdateOperation"
         }
     ));
 }
