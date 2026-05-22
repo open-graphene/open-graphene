@@ -4,6 +4,7 @@ use std::path::PathBuf;
 pub struct SourceFacts {
     pub fc_apis: Vec<FcApi>,
     pub classes: Vec<RawClass>,
+    pub static_variants: Vec<RawStaticVariant>,
     pub diagnostics: Vec<ExtractDiagnostic>,
 }
 
@@ -27,6 +28,13 @@ pub struct RawClass {
 pub struct RawField {
     pub name: String,
     pub type_expr: String,
+    pub source: SourceLoc,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RawStaticVariant {
+    pub name: String,
+    pub variants: Vec<String>,
     pub source: SourceLoc,
 }
 

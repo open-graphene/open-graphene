@@ -400,6 +400,7 @@ mod tests {
                 },
             }],
             classes: vec![],
+            static_variants: vec![],
             diagnostics: vec![],
         }
     }

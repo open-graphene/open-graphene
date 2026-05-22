@@ -17,8 +17,8 @@ pub use config::{
 };
 pub use error::{Result, SpecGenError};
 pub use extract::{
-    ExtractDiagnostic, FcApi, RawClass, RawField, RawMethod, RawParam, SourceFacts, SourceLoc,
-    extract_source_facts,
+    ExtractDiagnostic, FcApi, RawClass, RawField, RawMethod, RawParam, RawStaticVariant,
+    SourceFacts, SourceLoc, extract_source_facts,
 };
 pub use generate::{GenerateResult, build_protocol, generate_from_config};
 pub use resolve::{ResolveDiagnostic, RpcResolution, resolve_rpc_methods};

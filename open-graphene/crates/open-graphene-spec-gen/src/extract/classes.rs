@@ -7,16 +7,15 @@ pub fn extract_classes(source_text: &str, file: &Path) -> Vec<RawClass> {
     let mut classes = Vec::new();
     let mut offset = 0usize;
 
-    while let Some(relative_start) = source[offset..].find("class ") {
-        let class_start = offset + relative_start;
-        if !is_keyword_boundary(&source, class_start, "class".len()) {
-            offset = class_start + "class".len();
+    while let Some((record_start, keyword)) = find_next_record_keyword(&source, offset) {
+        if !is_keyword_boundary(&source, record_start, keyword.len()) {
+            offset = record_start + keyword.len();
             continue;
         }
 
-        let Some((name, after_name)) = parse_class_name(&source, class_start + "class".len())
+        let Some((name, after_name)) = parse_class_name(&source, record_start + keyword.len())
         else {
-            offset = class_start + "class".len();
+            offset = record_start + keyword.len();
             continue;
         };
         let next_open_brace = source[after_name..].find('{').map(|idx| after_name + idx);
@@ -36,7 +35,7 @@ pub fn extract_classes(source_text: &str, file: &Path) -> Vec<RawClass> {
             continue;
         };
 
-        let class_line = line_number(&source, class_start);
+        let class_line = line_number(&source, record_start);
         let body = &source[open_brace + 1..close_brace];
         classes.push(RawClass {
             name,
@@ -52,6 +51,26 @@ pub fn extract_classes(source_text: &str, file: &Path) -> Vec<RawClass> {
     }
 
     classes
+}
+
+fn find_next_record_keyword(source: &str, offset: usize) -> Option<(usize, &'static str)> {
+    let class_start = source[offset..]
+        .find("class ")
+        .map(|relative| (offset + relative, "class"));
+    let struct_start = source[offset..]
+        .find("struct ")
+        .map(|relative| (offset + relative, "struct"));
+
+    match (class_start, struct_start) {
+        (Some(class_start), Some(struct_start)) => Some(std::cmp::min_by_key(
+            class_start,
+            struct_start,
+            |(index, _)| *index,
+        )),
+        (Some(class_start), None) => Some(class_start),
+        (None, Some(struct_start)) => Some(struct_start),
+        (None, None) => None,
+    }
 }
 
 fn extract_methods_from_class_body(body: &str, file: &Path, class_line: usize) -> Vec<RawMethod> {
@@ -112,9 +131,7 @@ fn extract_fields_from_class_body(body: &str, file: &Path, class_line: usize) ->
             ';' if paren_depth == 0 && angle_depth == 0 && brace_depth == 0 => {
                 let statement = &body[statement_start..index];
                 let statement_line = class_line + line_number(body, statement_start) - 1;
-                if let Some(field) = parse_field_statement(statement, file, statement_line) {
-                    fields.push(field);
-                }
+                fields.extend(parse_field_statement(statement, file, statement_line));
                 statement_start = index + ch.len_utf8();
             }
             _ => {}
@@ -124,7 +141,7 @@ fn extract_fields_from_class_body(body: &str, file: &Path, class_line: usize) ->
     fields
 }
 
-fn parse_field_statement(statement: &str, file: &Path, line: usize) -> Option<RawField> {
+fn parse_field_statement(statement: &str, file: &Path, line: usize) -> Vec<RawField> {
     let statement = collapse_whitespace(statement);
     let statement = strip_access_labels(&statement).trim().to_string();
     if statement.is_empty()
@@ -136,19 +153,49 @@ fn parse_field_statement(statement: &str, file: &Path, line: usize) -> Option<Ra
         || statement.starts_with("struct ")
         || statement.starts_with("static ")
     {
-        return None;
+        return vec![];
     }
 
-    let (without_default, _) = split_default_value(&statement);
-    let (type_expr, name) = split_type_and_param_name(without_default.trim())?;
-    Some(RawField {
-        name: name.to_string(),
+    let declarators = split_top_level(&statement, ',');
+    let Some((first_without_default, _)) =
+        declarators.first().map(|value| split_default_value(value))
+    else {
+        return vec![];
+    };
+    let Some((type_expr, first_name)) = split_type_and_param_name(first_without_default.trim())
+    else {
+        return vec![];
+    };
+
+    let mut fields = vec![RawField {
+        name: first_name.to_string(),
         type_expr: type_expr.to_string(),
         source: SourceLoc {
             file: file.to_path_buf(),
             line,
         },
-    })
+    }];
+
+    for declarator in declarators.iter().skip(1) {
+        let (without_default, _) = split_default_value(declarator);
+        let name = without_default
+            .trim()
+            .trim_start_matches('*')
+            .trim_start_matches('&')
+            .trim();
+        if !name.is_empty() {
+            fields.push(RawField {
+                name: name.to_string(),
+                type_expr: type_expr.to_string(),
+                source: SourceLoc {
+                    file: file.to_path_buf(),
+                    line,
+                },
+            });
+        }
+    }
+
+    fields
 }
 
 fn parse_method_statement(statement: &str, file: &Path, line: usize) -> Option<RawMethod> {
@@ -304,13 +351,36 @@ fn parse_class_name(source: &str, mut offset: usize) -> Option<(String, usize)> 
 fn strip_comments_preserving_newlines(source: &str) -> String {
     let mut output = String::with_capacity(source.len());
     let mut chars = source.chars().peekable();
+    let mut at_line_start = true;
 
     while let Some(ch) = chars.next() {
-        if ch == '/' && chars.peek() == Some(&'/') {
+        if at_line_start && ch.is_whitespace() && ch != '\n' {
+            output.push(ch);
+            continue;
+        }
+        if at_line_start && ch == '#' {
+            let mut continued = false;
+            for directive_ch in chars.by_ref() {
+                if directive_ch == '\\' {
+                    continued = true;
+                } else if directive_ch == '\n' {
+                    output.push('\n');
+                    at_line_start = true;
+                    if continued {
+                        continued = false;
+                        continue;
+                    }
+                    break;
+                } else if !directive_ch.is_whitespace() {
+                    continued = false;
+                }
+            }
+        } else if ch == '/' && chars.peek() == Some(&'/') {
             chars.next();
             for comment_ch in chars.by_ref() {
                 if comment_ch == '\n' {
                     output.push('\n');
+                    at_line_start = true;
                     break;
                 }
             }
@@ -320,6 +390,7 @@ fn strip_comments_preserving_newlines(source: &str) -> String {
             for comment_ch in chars.by_ref() {
                 if comment_ch == '\n' {
                     output.push('\n');
+                    at_line_start = true;
                 }
                 if previous == '*' && comment_ch == '/' {
                     break;
@@ -328,6 +399,7 @@ fn strip_comments_preserving_newlines(source: &str) -> String {
             }
         } else {
             output.push(ch);
+            at_line_start = ch == '\n';
         }
     }
 
@@ -482,6 +554,68 @@ mod tests {
         assert_eq!(fields[1].type_expr, "operation_result");
         assert_eq!(fields[2].name, "block_num");
         assert_eq!(fields[2].type_expr, "uint32_t");
+    }
+
+    #[test]
+    fn extracts_struct_fields() {
+        let source = r#"
+            struct asset
+            {
+               share_type amount;
+               asset_id_type asset_id;
+            };
+        "#;
+
+        let classes = extract_classes(source, &PathBuf::from("asset.hpp"));
+        assert_eq!(classes.len(), 1);
+        assert_eq!(classes[0].name, "asset");
+        assert_eq!(classes[0].fields.len(), 2);
+        assert_eq!(classes[0].fields[0].name, "amount");
+        assert_eq!(classes[0].fields[1].name, "asset_id");
+    }
+
+    #[test]
+    fn extracts_empty_struct() {
+        let source = "struct void_result{};";
+
+        let classes = extract_classes(source, &PathBuf::from("base.hpp"));
+        assert_eq!(classes.len(), 1);
+        assert_eq!(classes[0].name, "void_result");
+        assert!(classes[0].fields.is_empty());
+    }
+
+    #[test]
+    fn extracts_multiple_field_declarators() {
+        let source = r#"
+            struct blind_transfer_operation
+            {
+               account_id_type from, to;
+            };
+        "#;
+
+        let classes = extract_classes(source, &PathBuf::from("confidential.hpp"));
+        assert_eq!(classes[0].fields.len(), 2);
+        assert_eq!(classes[0].fields[0].name, "from");
+        assert_eq!(classes[0].fields[0].type_expr, "account_id_type");
+        assert_eq!(classes[0].fields[1].name, "to");
+        assert_eq!(classes[0].fields[1].type_expr, "account_id_type");
+    }
+
+    #[test]
+    fn ignores_macro_lines_inside_records() {
+        let source = r#"
+            struct restriction
+            {
+               #define GRAPHENE_OP_RESTRICTION_ARGUMENTS_VARIADIC \\
+                  predicate,
+               argument_type argument;
+            };
+        "#;
+
+        let classes = extract_classes(source, &PathBuf::from("restriction.hpp"));
+        assert_eq!(classes[0].fields.len(), 1);
+        assert_eq!(classes[0].fields[0].name, "argument");
+        assert_eq!(classes[0].fields[0].type_expr, "argument_type");
     }
 
     #[test]

@@ -1,6 +1,7 @@
 pub mod classes;
 pub mod facts;
 pub mod macros;
+pub mod static_variants;
 
 use std::fs;
 
@@ -9,9 +10,11 @@ use crate::source::SourceSet;
 
 pub use classes::extract_classes;
 pub use facts::{
-    ExtractDiagnostic, FcApi, RawClass, RawField, RawMethod, RawParam, SourceFacts, SourceLoc,
+    ExtractDiagnostic, FcApi, RawClass, RawField, RawMethod, RawParam, RawStaticVariant,
+    SourceFacts, SourceLoc,
 };
 pub use macros::extract_fc_apis;
+pub use static_variants::extract_static_variants;
 
 pub fn extract_source_facts(source_set: &SourceSet) -> Result<SourceFacts> {
     let mut facts = SourceFacts::default();
@@ -29,6 +32,9 @@ pub fn extract_source_facts(source_set: &SourceSet) -> Result<SourceFacts> {
         facts
             .classes
             .extend(extract_classes(&text, &source_file.path));
+        facts
+            .static_variants
+            .extend(extract_static_variants(&text, &source_file.path));
     }
 
     Ok(facts)
