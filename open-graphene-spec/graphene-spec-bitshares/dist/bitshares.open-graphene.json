@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "chain": {
+    "id": "bitshares",
+    "publicKeyPrefix": "BTS"
+  },
+  "structs": [],
+  "enums": [],
+  "staticVariants": [],
+  "operations": [],
+  "objectTypes": [],
+  "rpcApis": [
+    {
+      "name": "database",
+      "class": "database_api",
+      "accessName": "database_api",
+      "discoverMethod": "database"
+    },
+    {
+      "name": "history",
+      "class": "history_api",
+      "accessName": "history_api",
+      "discoverMethod": "history"
+    }
+  ],
+  "rpcMethods": []
+}
