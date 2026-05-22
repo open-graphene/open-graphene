@@ -1,0 +1,1140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Protocol",
+  "description": "Root canonical IR document for one Graphene-family protocol.",
+  "type": "object",
+  "properties": {
+    "chain": {
+      "$ref": "#/$defs/ChainDef"
+    },
+    "enums": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/EnumDef"
+      }
+    },
+    "objectTypes": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ObjectTypeDef"
+      }
+    },
+    "operations": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/OperationDef"
+      }
+    },
+    "rpcMethods": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/RpcMethodDef"
+      }
+    },
+    "schemaVersion": {
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 0
+    },
+    "staticVariants": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/StaticVariantDef"
+      }
+    },
+    "strictMode": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StrictModeDef"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "structs": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/StructDef"
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "chain"
+  ],
+  "$defs": {
+    "ChainDef": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "publicKeyPrefix": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "publicKeyPrefix"
+      ]
+    },
+    "EnumDef": {
+      "type": "object",
+      "properties": {
+        "isBitfield": {
+          "type": "boolean",
+          "default": false
+        },
+        "name": {
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceMeta"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "support": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SupportDef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "underlying": {
+          "$ref": "#/$defs/IntType"
+        },
+        "values": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/EnumValueDef"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "underlying"
+      ]
+    },
+    "EnumValueDef": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "required": [
+        "name",
+        "value"
+      ]
+    },
+    "FcEncoding": {
+      "type": "string",
+      "enum": [
+        "fixed_le_i32",
+        "fixed_le_i64",
+        "fixed_le_u64",
+        "fixed_le_u32",
+        "unsigned_varint",
+        "length_prefixed_utf8",
+        "length_prefixed_bytes",
+        "fixed_bytes",
+        "public_key33_with_checksum_input",
+        "signature65",
+        "struct_fields",
+        "sparse_struct_fields",
+        "static_variant"
+      ]
+    },
+    "FieldDef": {
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "name": {
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceMeta"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "support": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SupportDef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "type": {
+          "$ref": "#/$defs/TypeRef"
+        }
+      },
+      "required": [
+        "index",
+        "name",
+        "type"
+      ]
+    },
+    "IntType": {
+      "type": "string",
+      "enum": [
+        "u8",
+        "u16",
+        "u32",
+        "u64",
+        "i32",
+        "i64"
+      ]
+    },
+    "JsonShape": {
+      "type": "string",
+      "enum": [
+        "number",
+        "decimal_string",
+        "string",
+        "object",
+        "array",
+        "tagged_tuple"
+      ]
+    },
+    "ObjectTypeDef": {
+      "type": "object",
+      "properties": {
+        "cppAlias": {
+          "type": "string"
+        },
+        "objectSpace": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "objectType": {
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceMeta"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "support": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SupportDef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "typeId": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "objectType",
+        "cppAlias"
+      ]
+    },
+    "OperationDef": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/FieldDef"
+          }
+        },
+        "isVirtual": {
+          "type": "boolean",
+          "default": false
+        },
+        "name": {
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceMeta"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "support": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SupportDef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "wireTag": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name",
+        "wireTag"
+      ]
+    },
+    "OrderingRule": {
+      "type": "string",
+      "enum": [
+        "numeric",
+        "lexicographic_string",
+        "protocol_object_instance",
+        "raw_bytes_lexicographic",
+        "static_variant_tag",
+        "unresolved"
+      ]
+    },
+    "RpcMethodDef": {
+      "type": "object",
+      "properties": {
+        "apiClass": {
+          "type": "string"
+        },
+        "apiName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "isSubscription": {
+          "type": "boolean",
+          "default": false
+        },
+        "name": {
+          "type": "string"
+        },
+        "params": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/FieldDef"
+          }
+        },
+        "returns": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TypeRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceMeta"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "support": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SupportDef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "SourceMeta": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "legacyName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "StaticVariantArmDef": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "support": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SupportDef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tag": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "type": {
+          "$ref": "#/$defs/TypeRef"
+        }
+      },
+      "required": [
+        "tag",
+        "name",
+        "type"
+      ]
+    },
+    "StaticVariantDef": {
+      "type": "object",
+      "properties": {
+        "fc": {
+          "type": "string"
+        },
+        "json": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceMeta"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "support": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SupportDef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "variants": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/StaticVariantArmDef"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "kind",
+        "json",
+        "fc"
+      ]
+    },
+    "StrictModeDef": {
+      "type": "object",
+      "properties": {
+        "duplicateFieldIndexes": {
+          "type": "string"
+        },
+        "duplicateVariantTags": {
+          "type": "string"
+        },
+        "unknownTypes": {
+          "type": "string"
+        },
+        "unsupportedSigningShape": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "unknownTypes",
+        "duplicateFieldIndexes",
+        "duplicateVariantTags",
+        "unsupportedSigningShape"
+      ]
+    },
+    "StructDef": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/FieldDef"
+          }
+        },
+        "kind": {
+          "$ref": "#/$defs/StructKind"
+        },
+        "name": {
+          "type": "string"
+        },
+        "sourceName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "support": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SupportDef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "wireTag": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name",
+        "kind"
+      ]
+    },
+    "StructKind": {
+      "type": "string",
+      "enum": [
+        "struct",
+        "sparse_struct",
+        "operation"
+      ]
+    },
+    "SupportDef": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "$ref": "#/$defs/SupportStatus"
+        }
+      },
+      "required": [
+        "status"
+      ]
+    },
+    "SupportStatus": {
+      "type": "string",
+      "enum": [
+        "supported",
+        "provisional",
+        "deferred",
+        "unsupported",
+        "empty_for_first_spike"
+      ]
+    },
+    "TypeRef": {
+      "description": "Canonical v3 type reference.\n\nThe JSON representation intentionally uses the same `kind` tag as the\nhand-written v3 fixtures in `open-graphene-v5/fixtures/json`.",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "bool"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "uint8"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "uint16"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "uint32"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "fc": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/FcEncoding"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "kind": {
+              "type": "string",
+              "const": "int32"
+            },
+            "source": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/SourceMeta"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "fc": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/FcEncoding"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "json": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/JsonShape"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "kind": {
+              "type": "string",
+              "const": "int64"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "fc": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/FcEncoding"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "json": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/JsonShape"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "kind": {
+              "type": "string",
+              "const": "uint64"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "unsigned_varint"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "bytes"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "bytes": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0
+            },
+            "kind": {
+              "type": "string",
+              "const": "fixed_hex"
+            }
+          },
+          "required": [
+            "kind",
+            "bytes"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "bytes": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0
+            },
+            "kind": {
+              "type": "string",
+              "const": "fixed_bytes"
+            }
+          },
+          "required": [
+            "kind",
+            "bytes"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "time_point_sec"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "time_point"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "chainPrefix": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "kind": {
+              "type": "string",
+              "const": "public_key"
+            },
+            "prefixRef": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "address"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "signature"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "object_id"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "protocol_object_id"
+            },
+            "objectType": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "objectType"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "vote_id"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "inner": {
+              "$ref": "#/$defs/TypeRef"
+            },
+            "kind": {
+              "type": "string",
+              "const": "optional"
+            }
+          },
+          "required": [
+            "kind",
+            "inner"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "inner": {
+              "$ref": "#/$defs/TypeRef"
+            },
+            "kind": {
+              "type": "string",
+              "const": "vector"
+            }
+          },
+          "required": [
+            "kind",
+            "inner"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "inner": {
+              "$ref": "#/$defs/TypeRef"
+            },
+            "kind": {
+              "type": "string",
+              "const": "set"
+            },
+            "ordering": {
+              "$ref": "#/$defs/OrderingRule"
+            }
+          },
+          "required": [
+            "kind",
+            "inner",
+            "ordering"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "key": {
+              "$ref": "#/$defs/TypeRef"
+            },
+            "kind": {
+              "type": "string",
+              "const": "map"
+            },
+            "ordering": {
+              "$ref": "#/$defs/OrderingRule"
+            },
+            "value": {
+              "$ref": "#/$defs/TypeRef"
+            }
+          },
+          "required": [
+            "kind",
+            "key",
+            "value",
+            "ordering"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "key": {
+              "$ref": "#/$defs/TypeRef"
+            },
+            "kind": {
+              "type": "string",
+              "const": "flat_map"
+            },
+            "ordering": {
+              "$ref": "#/$defs/OrderingRule"
+            },
+            "value": {
+              "$ref": "#/$defs/TypeRef"
+            }
+          },
+          "required": [
+            "kind",
+            "key",
+            "value",
+            "ordering"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "first": {
+              "$ref": "#/$defs/TypeRef"
+            },
+            "kind": {
+              "type": "string",
+              "const": "pair"
+            },
+            "second": {
+              "$ref": "#/$defs/TypeRef"
+            }
+          },
+          "required": [
+            "kind",
+            "first",
+            "second"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "ref"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "name"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "static_variant_ref"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "name"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "unsupported"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "source": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/SourceMeta"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "support": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/SupportDef"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "reason"
+          ]
+        }
+      ]
+    }
+  }
+}
