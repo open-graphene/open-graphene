@@ -275,6 +275,14 @@ impl FcSerialize for crate::generated::types::AccountCreateOperationFeeParamsT {
     }
 }
 
+impl FcSerialize for crate::generated::types::AccountNameEqLitPredicate {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.account_id.fc_serialize(out)?;
+        self.name.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::AccountTransferOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -398,6 +406,14 @@ impl FcSerialize for crate::generated::types::AssetSettleCancelOperationFeeParam
 impl FcSerialize for crate::generated::types::AssetSettleOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::AssetSymbolEqLitPredicate {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.asset_id.fc_serialize(out)?;
+        self.symbol.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -1187,6 +1203,25 @@ impl FcSerialize for crate::generated::operations::WithdrawPermissionDeleteOpera
     }
 }
 
+impl FcSerialize for crate::generated::operations::CommitteeMemberCreateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.committee_member_account.fc_serialize(out)?;
+        self.url.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::CommitteeMemberUpdateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.committee_member.fc_serialize(out)?;
+        self.committee_member_account.fc_serialize(out)?;
+        self.new_url.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::operations::VestingBalanceWithdrawOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -1265,6 +1300,17 @@ impl FcSerialize for crate::generated::operations::AssetUpdateIssuerOperation {
         self.issuer.fc_serialize(out)?;
         self.asset_to_update.fc_serialize(out)?;
         self.new_issuer.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::HtlcRedeemOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.htlc_id.fc_serialize(out)?;
+        self.redeemer.fc_serialize(out)?;
+        self.preimage.fc_serialize(out)?;
         self.extensions.fc_serialize(out)?;
         Ok(())
     }
@@ -1535,8 +1581,8 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             Self::WithdrawPermissionUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "WithdrawPermissionUpdateOperation" }),
             Self::WithdrawPermissionClaimOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "WithdrawPermissionClaimOperation" }),
             Self::WithdrawPermissionDeleteOperation(value) => { write_varint(28u64, out); value.as_ref().fc_serialize(out) }
-            Self::CommitteeMemberCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "CommitteeMemberCreateOperation" }),
-            Self::CommitteeMemberUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "CommitteeMemberUpdateOperation" }),
+            Self::CommitteeMemberCreateOperation(value) => { write_varint(29u64, out); value.as_ref().fc_serialize(out) }
+            Self::CommitteeMemberUpdateOperation(value) => { write_varint(30u64, out); value.as_ref().fc_serialize(out) }
             Self::CommitteeMemberUpdateGlobalParametersOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "CommitteeMemberUpdateGlobalParametersOperation" }),
             Self::VestingBalanceCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "VestingBalanceCreateOperation" }),
             Self::VestingBalanceWithdrawOperation(value) => { write_varint(33u64, out); value.as_ref().fc_serialize(out) }
@@ -1556,7 +1602,7 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             Self::AssetClaimPoolOperation(value) => { write_varint(47u64, out); value.as_ref().fc_serialize(out) }
             Self::AssetUpdateIssuerOperation(value) => { write_varint(48u64, out); value.as_ref().fc_serialize(out) }
             Self::HtlcCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "HtlcCreateOperation" }),
-            Self::HtlcRedeemOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "HtlcRedeemOperation" }),
+            Self::HtlcRedeemOperation(value) => { write_varint(50u64, out); value.as_ref().fc_serialize(out) }
             Self::HtlcRedeemedOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "HtlcRedeemedOperation" }),
             Self::HtlcExtendOperation(value) => { write_varint(52u64, out); value.as_ref().fc_serialize(out) }
             Self::HtlcRefundOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "HtlcRefundOperation" }),

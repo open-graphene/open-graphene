@@ -169,6 +169,20 @@ macro_rules! impl_fc_fixed_width_integer {
 
 impl_fc_fixed_width_integer!(u16, u32, u64, i32, i64);
 
+impl FcSerialize for str {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_varint(self.len() as u64, out);
+        out.extend_from_slice(self.as_bytes());
+        Ok(())
+    }
+}
+
+impl FcSerialize for String {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.as_str().fc_serialize(out)
+    }
+}
+
 impl<T: FcSerialize> FcSerialize for Option<T> {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         match self {
@@ -226,6 +240,13 @@ mod tests {
         );
         assert_eq!((-2i32).to_fc_bytes().unwrap(), [0xfe, 0xff, 0xff, 0xff]);
         assert_eq!((-2i64).to_fc_bytes().unwrap(), [0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]);
+    }
+
+    #[test]
+    fn strings_serialize_as_varint_length_prefixed_utf8() {
+        assert_eq!("".to_fc_bytes().unwrap(), [0]);
+        assert_eq!("abc".to_fc_bytes().unwrap(), [3, b'a', b'b', b'c']);
+        assert_eq!(String::from("ż").to_fc_bytes().unwrap(), [2, 0xc5, 0xbc]);
     }
 
     #[test]

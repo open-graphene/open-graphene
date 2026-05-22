@@ -545,7 +545,8 @@ fn is_fc_supported_type(
         | TypeRef::Uint32
         | TypeRef::Int32 { .. }
         | TypeRef::Int64 { json: None, .. }
-        | TypeRef::Uint64 { json: None, .. } => true,
+        | TypeRef::Uint64 { json: None, .. }
+        | TypeRef::String => true,
         TypeRef::ObjectId | TypeRef::ProtocolObjectId { .. } => true,
         TypeRef::Ref { name } => supported_structs.contains(name),
         TypeRef::StaticVariantRef { name } => name == "future_extensions",
@@ -560,7 +561,6 @@ fn is_fc_supported_type(
         | TypeRef::Uint64 { .. }
         | TypeRef::UnsignedVarint
         | TypeRef::CallbackHandle
-        | TypeRef::String
         | TypeRef::Bytes
         | TypeRef::FixedHex { .. }
         | TypeRef::FixedBytes { .. }
@@ -1162,14 +1162,17 @@ mod tests {
             support: None,
         });
         protocol.structs.push(StructDef {
-            name: "unsupported_string_struct".to_string(),
+            name: "unsupported_public_key_struct".to_string(),
             source_name: None,
             kind: StructKind::Struct,
             wire_tag: None,
             fields: vec![FieldDef {
                 index: 0,
                 name: "value".to_string(),
-                ty: TypeRef::String,
+                ty: TypeRef::PublicKey {
+                    chain_prefix: None,
+                    prefix_ref: Some("chain.publicKeyPrefix".to_string()),
+                },
                 source: None,
                 support: None,
             }],
@@ -1262,6 +1265,13 @@ mod tests {
                 },
                 FieldDef {
                     index: 7,
+                    name: "label".to_string(),
+                    ty: TypeRef::String,
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 8,
                     name: "account".to_string(),
                     ty: TypeRef::ProtocolObjectId {
                         object_type: "account".to_string(),
@@ -1270,7 +1280,7 @@ mod tests {
                     support: None,
                 },
                 FieldDef {
-                    index: 8,
+                    index: 9,
                     name: "extensions".to_string(),
                     ty: TypeRef::StaticVariantRef {
                         name: "future_extensions".to_string(),
@@ -1288,8 +1298,11 @@ mod tests {
             wire_tag: 3,
             fields: vec![FieldDef {
                 index: 0,
-                name: "unsupported_string".to_string(),
-                ty: TypeRef::String,
+                name: "unsupported_public_key".to_string(),
+                ty: TypeRef::PublicKey {
+                    chain_prefix: None,
+                    prefix_ref: Some("chain.publicKeyPrefix".to_string()),
+                },
                 source: None,
                 support: None,
             }],
@@ -1354,7 +1367,7 @@ mod tests {
         assert!(output.contains("impl FcSerialize for crate::generated::types::Asset"));
         assert!(output.contains("self.amount.fc_serialize(out)?;"));
         assert!(output.contains("self.asset_id.fc_serialize(out)?;"));
-        assert!(!output.contains("impl FcSerialize for crate::generated::types::UnsupportedStringStruct"));
+        assert!(!output.contains("impl FcSerialize for crate::generated::types::UnsupportedPublicKeyStruct"));
         assert!(output.contains("Self::TransferOperation(value) => { write_varint(0u64, out); value.as_ref().fc_serialize(out) }"));
         assert!(output.contains("impl FcSerialize for crate::generated::operations::LimitOrderCreateOperation"));
         assert!(output.contains("Self::LimitOrderCreateOperation(value) => { write_varint(1u64, out); value.as_ref().fc_serialize(out) }"));
@@ -1368,6 +1381,7 @@ mod tests {
         assert!(output.contains("self.large.fc_serialize(out)?;"));
         assert!(output.contains("self.huge.fc_serialize(out)?;"));
         assert!(output.contains("self.signed.fc_serialize(out)?;"));
+        assert!(output.contains("self.label.fc_serialize(out)?;"));
         assert!(output.contains("self.account.fc_serialize(out)?;"));
         assert!(output.contains("self.extensions.fc_serialize(out)?;"));
         assert!(output.contains("Self::CustomSupportedOperation(value) => { write_varint(9u64, out); value.as_ref().fc_serialize(out) }"));
