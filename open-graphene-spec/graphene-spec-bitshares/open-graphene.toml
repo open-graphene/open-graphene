@@ -14,6 +14,8 @@ class = "database_api"
 discover_method = "database"
 methods = [
   "get_objects",
+  "get_block_header",
+  "get_block",
 ]
 
 [[rpc_apis]]

@@ -479,21 +479,39 @@ fn reflected_or_declared_fields(
             .collect();
     };
 
-    reflect
-        .fields
-        .iter()
-        .filter_map(|field_name| class.fields.iter().find(|field| &field.name == field_name))
-        .enumerate()
-        .map(|(index, field)| {
-            field_def(
-                index,
-                field,
-                class,
+    let mut fields = Vec::new();
+    for base in &reflect.bases {
+        if let Some(base_class) = find_raw_class(facts, last_path_segment(base)) {
+            let base_reflect = find_raw_reflect(facts, base_class);
+            fields.extend(reflected_or_declared_fields(
+                base_class,
+                base_reflect,
                 facts,
-                "field selected and ordered by FC_REFLECT",
-            )
-        })
-        .collect()
+            ));
+        }
+    }
+
+    fields.extend(
+        reflect
+            .fields
+            .iter()
+            .filter_map(|field_name| class.fields.iter().find(|field| &field.name == field_name))
+            .enumerate()
+            .map(|(index, field)| {
+                field_def(
+                    index,
+                    field,
+                    class,
+                    facts,
+                    "field selected and ordered by FC_REFLECT",
+                )
+            }),
+    );
+
+    for (index, field) in fields.iter_mut().enumerate() {
+        field.index = index as u32;
+    }
+    fields
 }
 
 fn field_def(
@@ -825,6 +843,114 @@ mod tests {
     }
 
     #[test]
+    fn build_protocol_includes_derived_reflect_base_fields() {
+        let config: GeneratorConfig = toml::from_str(
+            r#"
+            [chain]
+            id = "bitshares"
+            public_key_prefix = "BTS"
+
+            [output]
+            dist = "./dist/bitshares.open-graphene.json"
+
+            [source]
+            chain_repo = "../../blockchains/bitshares/bitshares-core"
+            "#,
+        )
+        .expect("parse config");
+        let facts = SourceFacts {
+            classes: vec![
+                RawClass {
+                    name: "block_header".to_string(),
+                    qualified_name: Some("graphene::protocol::block_header".to_string()),
+                    methods: vec![],
+                    fields: vec![RawField {
+                        name: "previous".to_string(),
+                        type_expr: "block_id_type".to_string(),
+                        source: SourceLoc {
+                            file: PathBuf::from("block.hpp"),
+                            line: 10,
+                        },
+                    }],
+                    source: SourceLoc {
+                        file: PathBuf::from("block.hpp"),
+                        line: 9,
+                    },
+                },
+                RawClass {
+                    name: "maybe_signed_block_header".to_string(),
+                    qualified_name: Some("graphene::app::maybe_signed_block_header".to_string()),
+                    methods: vec![],
+                    fields: vec![RawField {
+                        name: "witness_signature".to_string(),
+                        type_expr: "optional<signature_type>".to_string(),
+                        source: SourceLoc {
+                            file: PathBuf::from("api_objects.hpp"),
+                            line: 20,
+                        },
+                    }],
+                    source: SourceLoc {
+                        file: PathBuf::from("api_objects.hpp"),
+                        line: 18,
+                    },
+                },
+            ],
+            reflects: vec![
+                RawReflect {
+                    type_name: "graphene::protocol::block_header".to_string(),
+                    bases: vec![],
+                    fields: vec!["previous".to_string()],
+                    source: SourceLoc {
+                        file: PathBuf::from("block.hpp"),
+                        line: 50,
+                    },
+                    derived: false,
+                },
+                RawReflect {
+                    type_name: "graphene::app::maybe_signed_block_header".to_string(),
+                    bases: vec!["graphene::protocol::block_header".to_string()],
+                    fields: vec!["witness_signature".to_string()],
+                    source: SourceLoc {
+                        file: PathBuf::from("api_objects.hpp"),
+                        line: 60,
+                    },
+                    derived: true,
+                },
+            ],
+            ..SourceFacts::default()
+        };
+        let rpc_methods = vec![RpcMethodDef {
+            name: "get_block_header".to_string(),
+            api_class: "database_api".to_string(),
+            api_name: Some("database".to_string()),
+            params: vec![],
+            returns: Some(TypeRef::Ref {
+                name: "maybe_signed_block_header".to_string(),
+            }),
+            is_subscription: false,
+            notices: vec![],
+            binding_hints: None,
+            source: None,
+            support: None,
+        }];
+
+        let protocol = build_protocol(&config, &facts, rpc_methods);
+        let header = protocol
+            .structs
+            .iter()
+            .find(|struct_def| struct_def.name == "maybe_signed_block_header")
+            .expect("maybe_signed_block_header emitted");
+        assert_eq!(
+            header
+                .fields
+                .iter()
+                .map(|field| field.name.as_str())
+                .collect::<Vec<_>>(),
+            vec!["previous", "witness_signature"]
+        );
+    }
+
+    #[test]
     fn build_protocol_synthesizes_fee_parameters_static_variant() {
         let config: GeneratorConfig = toml::from_str(
             r#"
@@ -898,6 +1024,7 @@ mod tests {
             reflects: vec![
                 RawReflect {
                     type_name: "graphene::protocol::fee_schedule".to_string(),
+                    bases: vec![],
                     fields: vec!["parameters".to_string()],
                     source: SourceLoc {
                         file: PathBuf::from("fee_schedule.hpp"),
@@ -907,6 +1034,7 @@ mod tests {
                 },
                 RawReflect {
                     type_name: "graphene::protocol::transfer_operation::fee_params_t".to_string(),
+                    bases: vec![],
                     fields: vec!["fee".to_string()],
                     source: SourceLoc {
                         file: PathBuf::from("transfer.hpp"),
@@ -1035,6 +1163,7 @@ mod tests {
             reflects: vec![
                 RawReflect {
                     type_name: "graphene::protocol::account_create_operation".to_string(),
+                    bases: vec![],
                     fields: vec!["extensions".to_string()],
                     source: SourceLoc {
                         file: PathBuf::from("account.hpp"),
@@ -1044,6 +1173,7 @@ mod tests {
                 },
                 RawReflect {
                     type_name: "graphene::protocol::account_create_operation::ext".to_string(),
+                    bases: vec![],
                     fields: vec!["owner_special_authority".to_string()],
                     source: SourceLoc {
                         file: PathBuf::from("account.hpp"),
@@ -1155,6 +1285,7 @@ mod tests {
             }],
             reflects: vec![RawReflect {
                 type_name: "graphene::protocol::sample_operation".to_string(),
+                bases: vec![],
                 fields: vec!["a".to_string(), "b".to_string()],
                 source: SourceLoc {
                     file: PathBuf::from("sample.hpp"),

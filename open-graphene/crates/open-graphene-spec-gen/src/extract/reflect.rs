@@ -23,12 +23,20 @@ pub fn extract_reflects(source_text: &str, file: &Path) -> Vec<RawReflect> {
             1
         };
         if let Some(type_name) = args.first() {
+            let bases = if macro_name == "FC_REFLECT_DERIVED" {
+                args.get(1)
+                    .map(|bases_arg| parse_reflect_fields(bases_arg))
+                    .unwrap_or_default()
+            } else {
+                vec![]
+            };
             let fields = args
                 .get(field_arg_index)
                 .map(|fields_arg| parse_reflect_fields(fields_arg))
                 .unwrap_or_default();
             reflects.push(RawReflect {
                 type_name: type_name.trim().to_string(),
+                bases,
                 fields,
                 source: SourceLoc {
                     file: file.to_path_buf(),
@@ -212,6 +220,10 @@ mod tests {
         assert_eq!(
             reflects[0].fields,
             vec!["op", "result", "block_num", "trx_in_block"]
+        );
+        assert_eq!(
+            reflects[0].bases,
+            vec!["graphene::db::abstract_object<operation_history_object>"]
         );
         assert!(reflects[0].derived);
     }

@@ -125,6 +125,9 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         },
         "range_proof_type" => TypeRef::Bytes,
         "blind_factor_type" => TypeRef::FixedBytes { bytes: 32 },
+        "block_id_type" | "checksum_type" => TypeRef::FixedBytes { bytes: 20 },
+        "digest_type" => TypeRef::FixedBytes { bytes: 32 },
+        "signature_type" => TypeRef::Signature,
         "extensions_type" => TypeRef::StaticVariantRef {
             name: "future_extensions".to_string(),
         },
@@ -135,17 +138,22 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         | "bitasset_options"
         | "blind_input"
         | "blind_output"
+        | "block_header"
         | "chain_parameters"
         | "custom_authority_options_type"
         | "generic_operation_result"
         | "generic_exchange_operation_result"
         | "htlc_options"
         | "memo_data"
+        | "maybe_signed_block_header"
         | "no_special_authority"
         | "op_wrapper"
         | "price"
         | "price_feed"
+        | "processed_transaction"
         | "restriction"
+        | "signed_block"
+        | "signed_block_header"
         | "stealth_confirmation"
         | "top_holders_special_authority"
         | "void_result" => TypeRef::Ref {
@@ -549,6 +557,27 @@ mod tests {
         assert_eq!(
             resolve_cpp_type("blind_factor_type"),
             TypeRef::FixedBytes { bytes: 32 }
+        );
+        assert_eq!(
+            resolve_cpp_type("block_id_type"),
+            TypeRef::FixedBytes { bytes: 20 }
+        );
+        assert_eq!(
+            resolve_cpp_type("digest_type"),
+            TypeRef::FixedBytes { bytes: 32 }
+        );
+        assert_eq!(resolve_cpp_type("signature_type"), TypeRef::Signature);
+        assert_eq!(
+            resolve_cpp_type("signed_block"),
+            TypeRef::Ref {
+                name: "signed_block".to_string()
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("processed_transaction"),
+            TypeRef::Ref {
+                name: "processed_transaction".to_string()
+            }
         );
     }
 

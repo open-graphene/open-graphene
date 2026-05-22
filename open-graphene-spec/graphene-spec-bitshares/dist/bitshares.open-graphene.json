@@ -3814,8 +3814,8 @@
           "index": 0,
           "name": "id",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "block"
+            "kind": "fixed_bytes",
+            "bytes": 20
           },
           "source": {
             "name": "id",
@@ -9558,6 +9558,119 @@
       }
     },
     {
+      "name": "maybe_signed_block_header",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "previous",
+          "type": {
+            "kind": "fixed_bytes",
+            "bytes": 20
+          },
+          "source": {
+            "name": "previous",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/block.hpp",
+            "line": 31
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "timestamp",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "timestamp",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/block.hpp",
+            "line": 33
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "witness",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "witness"
+          },
+          "source": {
+            "name": "witness",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/block.hpp",
+            "line": 34
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "transaction_merkle_root",
+          "type": {
+            "kind": "fixed_bytes",
+            "bytes": 20
+          },
+          "source": {
+            "name": "transaction_merkle_root",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/block.hpp",
+            "line": 35
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "extensions",
+          "type": {
+            "kind": "static_variant_ref",
+            "name": "future_extensions"
+          },
+          "source": {
+            "name": "extensions",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/block.hpp",
+            "line": 36
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 5,
+          "name": "witness_signature",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "signature"
+            }
+          },
+          "source": {
+            "name": "witness_signature",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 182
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
       "name": "memo_data",
       "kind": "struct",
       "fields": [
@@ -10113,6 +10226,140 @@
             "name": "core_exchange_rate",
             "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/asset.hpp",
             "line": 179
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
+      "name": "processed_transaction",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "ref_block_num",
+          "type": {
+            "kind": "uint16"
+          },
+          "source": {
+            "name": "ref_block_num",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 71
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "ref_block_prefix",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "ref_block_prefix",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 75
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "expiration",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "expiration",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 81
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "operations",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "static_variant_ref",
+              "name": "operation"
+            }
+          },
+          "source": {
+            "name": "operations",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 86
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "extensions",
+          "type": {
+            "kind": "static_variant_ref",
+            "name": "future_extensions"
+          },
+          "source": {
+            "name": "extensions",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 88
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 5,
+          "name": "signatures",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "signature"
+            }
+          },
+          "source": {
+            "name": "signatures",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 213
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 6,
+          "name": "operation_results",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "static_variant_ref",
+              "name": "operation_result"
+            }
+          },
+          "source": {
+            "name": "operation_results",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 295
           },
           "support": {
             "status": "provisional",
@@ -11350,6 +11597,136 @@
       "support": {
         "status": "provisional",
         "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
+      }
+    },
+    {
+      "name": "signed_block",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "previous",
+          "type": {
+            "kind": "fixed_bytes",
+            "bytes": 20
+          },
+          "source": {
+            "name": "previous",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/block.hpp",
+            "line": 31
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "timestamp",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "timestamp",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/block.hpp",
+            "line": 33
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "witness",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "witness"
+          },
+          "source": {
+            "name": "witness",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/block.hpp",
+            "line": 34
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "transaction_merkle_root",
+          "type": {
+            "kind": "fixed_bytes",
+            "bytes": 20
+          },
+          "source": {
+            "name": "transaction_merkle_root",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/block.hpp",
+            "line": 35
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "extensions",
+          "type": {
+            "kind": "static_variant_ref",
+            "name": "future_extensions"
+          },
+          "source": {
+            "name": "extensions",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/block.hpp",
+            "line": 36
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 5,
+          "name": "witness_signature",
+          "type": {
+            "kind": "signature"
+          },
+          "source": {
+            "name": "witness_signature",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/block.hpp",
+            "line": 52
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 6,
+          "name": "transactions",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "ref",
+              "name": "processed_transaction"
+            }
+          },
+          "source": {
+            "name": "transactions",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/block.hpp",
+            "line": 66
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
       }
     },
     {
@@ -26113,6 +26490,107 @@
         "name": "get_objects",
         "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/database_api.hpp",
         "line": 73
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "selected in config, present in FC_API, and signature found"
+      }
+    },
+    {
+      "name": "get_block_header",
+      "apiClass": "database_api",
+      "apiName": "database",
+      "params": [
+        {
+          "index": 0,
+          "name": "block_num",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "block_num",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/database_api.hpp",
+            "line": 148
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        },
+        {
+          "index": 1,
+          "name": "with_witness_signature",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "bool"
+            }
+          },
+          "required": false,
+          "nullable": true,
+          "source": {
+            "name": "with_witness_signature",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/database_api.hpp",
+            "line": 148
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "optional",
+        "inner": {
+          "kind": "ref",
+          "name": "maybe_signed_block_header"
+        }
+      },
+      "isSubscription": false,
+      "source": {
+        "name": "get_block_header",
+        "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/database_api.hpp",
+        "line": 148
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "selected in config, present in FC_API, and signature found"
+      }
+    },
+    {
+      "name": "get_block",
+      "apiClass": "database_api",
+      "apiName": "database",
+      "params": [
+        {
+          "index": 0,
+          "name": "block_num",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "block_num",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/database_api.hpp",
+            "line": 174
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "optional",
+        "inner": {
+          "kind": "ref",
+          "name": "signed_block"
+        }
+      },
+      "isSubscription": false,
+      "source": {
+        "name": "get_block",
+        "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/database_api.hpp",
+        "line": 174
       },
       "support": {
         "status": "provisional",

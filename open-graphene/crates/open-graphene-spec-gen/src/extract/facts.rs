@@ -70,6 +70,7 @@ pub struct RawObjectType {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RawReflect {
     pub type_name: String,
+    pub bases: Vec<String>,
     pub fields: Vec<String>,
     pub source: SourceLoc,
     pub derived: bool,
