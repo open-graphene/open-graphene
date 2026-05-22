@@ -1,15 +1,18 @@
 use graphene_chain_swaplock_bindings::generated::{
     AccountCreateOperation, AccountCreateOperationExt, AccountId, AccountNameEqLitPredicate,
     AccountOptions, Asset, AssetId, AssetSymbolEqLitPredicate, AssetUpdateFeedProducersOperation,
-    AssertOperation, Authority, BlockIdPredicate, BurnWorkerInitializer, CddVestingPolicyInitializer,
-    ChainParameters, ChainParametersExt, CommitteeMemberUpdateGlobalParametersOperation,
-    CommitteeMemberUpdateGlobalParametersOperationFeeParamsT, CreateTakeProfitOrderAction, CreditOfferCreateOperation, CreditOfferId, CreditOfferUpdateOperation,
-    CustomOperation, FcSerialize, FcSerializeError, FeeParameters, FeeSchedule, FutureExtensions, HtlcHash, HtlcId,
+    ArgumentType, AssertOperation, Authority, BlockIdPredicate, BurnWorkerInitializer,
+    CddVestingPolicyInitializer, ChainParameters, ChainParametersExt,
+    CommitteeMemberUpdateGlobalParametersOperation,
+    CommitteeMemberUpdateGlobalParametersOperationFeeParamsT, CreateTakeProfitOrderAction,
+    CreditOfferCreateOperation, CreditOfferId, CreditOfferUpdateOperation, CustomAuthorityCreateOperation,
+    CustomAuthorityId, CustomAuthorityUpdateOperation, CustomOperation, FcSerialize, FcSerializeError,
+    FeeParameters, FeeSchedule, FutureExtensions, HtlcHash, HtlcId,
     HtlcRefundOperation, InstantVestingPolicyInitializer, LimitOrderAutoAction, LinearVestingPolicyInitializer,
     LimitOrderCancelOperation, LimitOrderCreateOperation, LimitOrderId, LimitOrderUpdateOperation,
-    NoSpecialAuthority, Operation, Predicate, Price, ProposalCreateOperation, RefundWorkerInitializer, SpecialAuthority,
-    TopHoldersSpecialAuthority, TransferOperation, TransferOperationFeeParamsT,
-    VestingBalanceCreateOperation, VestingBalanceWorkerInitializer, VestingPolicyInitializer, VoteId,
+    MemoData, NoSpecialAuthority, OpWrapper, Operation, Predicate, Price, ProposalCreateOperation, RefundWorkerInitializer,
+    Restriction, SpecialAuthority, TopHoldersSpecialAuthority, TransferOperation,
+    TransferOperationFeeParamsT, VestingBalanceCreateOperation, VestingBalanceWorkerInitializer, VestingPolicyInitializer, VoteId,
     WorkerCreateOperation, WorkerInitializer, WithdrawPermissionCreateOperation,
 };
 
@@ -28,6 +31,47 @@ fn sample_transfer_operation() -> TransferOperation {
         memo: None,
         extensions: FutureExtensions::VoidT(Box::new(())),
     }
+}
+
+fn expected_transfer_payload() -> Vec<u8> {
+    let mut bytes = Vec::new();
+    // fee: amount 0 + asset instance 0
+    bytes.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    // from account instance 1, to account instance 2
+    bytes.extend_from_slice(&[1, 2]);
+    // amount: amount 100_000 + asset instance 0
+    bytes.extend_from_slice(&[0xa0, 0x86, 0x01, 0, 0, 0, 0, 0, 0]);
+    // memo None, extensions tag 0
+    bytes.extend_from_slice(&[0, 0]);
+    bytes
+}
+
+fn sample_proposal_create_operation() -> ProposalCreateOperation {
+    ProposalCreateOperation {
+        fee: Asset {
+            amount: 0,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        fee_paying_account: AccountId("1.2.1".to_string()),
+        expiration_time: "1970-01-01T00:00:03".to_string(),
+        proposed_ops: vec![OpWrapper {
+            op: Operation::TransferOperation(Box::new(sample_transfer_operation())),
+        }],
+        review_period_seconds: Some(60),
+        extensions: FutureExtensions::VoidT(Box::new(())),
+    }
+}
+
+fn expected_proposal_create_payload() -> Vec<u8> {
+    let mut bytes = Vec::new();
+    // fee amount 0 + asset instance 0, fee_paying_account instance 1, expiration time 3
+    bytes.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 0, 0, 0]);
+    // proposed_ops length 1, op_wrapper.op = Operation::TransferOperation tag 0 + payload
+    bytes.extend_from_slice(&[1, 0]);
+    bytes.extend(expected_transfer_payload());
+    // review_period_seconds Some(60), extensions tag 0
+    bytes.extend_from_slice(&[1, 60, 0, 0, 0, 0]);
+    bytes
 }
 
 fn sample_limit_order_create_operation() -> LimitOrderCreateOperation {
@@ -202,6 +246,50 @@ fn sample_committee_member_update_global_parameters_operation(
             asset_id: AssetId("1.3.0".to_string()),
         },
         new_parameters: sample_chain_parameters(),
+    }
+}
+
+fn sample_restriction() -> Restriction {
+    Restriction {
+        member_index: 2,
+        restriction_type: 1,
+        argument: ArgumentType::Bool(Box::new(true)),
+        extensions: FutureExtensions::VoidT(Box::new(())),
+    }
+}
+
+fn sample_custom_authority_create_operation() -> CustomAuthorityCreateOperation {
+    CustomAuthorityCreateOperation {
+        fee: Asset {
+            amount: 0,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        account: AccountId("1.2.1".to_string()),
+        enabled: true,
+        valid_from: "1970-01-01T00:00:01".to_string(),
+        valid_to: "1970-01-01T00:00:02".to_string(),
+        operation_type: 0,
+        auth: sample_authority(),
+        restrictions: vec![sample_restriction()],
+        extensions: FutureExtensions::VoidT(Box::new(())),
+    }
+}
+
+fn sample_custom_authority_update_operation() -> CustomAuthorityUpdateOperation {
+    CustomAuthorityUpdateOperation {
+        fee: Asset {
+            amount: 0,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        account: AccountId("1.2.1".to_string()),
+        authority_to_update: CustomAuthorityId("1.17.1".to_string()),
+        new_enabled: Some(false),
+        new_valid_from: None,
+        new_valid_to: Some("1970-01-01T00:00:03".to_string()),
+        new_auth: None,
+        restrictions_to_remove: vec![1, 3],
+        restrictions_to_add: vec![sample_restriction()],
+        extensions: FutureExtensions::VoidT(Box::new(())),
     }
 }
 
@@ -515,6 +603,48 @@ fn expected_committee_member_update_global_parameters_payload() -> Vec<u8> {
     // fee amount 0 + asset instance 0
     bytes.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0, 0, 0]);
     bytes.extend(expected_chain_parameters_payload());
+    bytes
+}
+
+fn expected_restriction_payload() -> Vec<u8> {
+    let mut bytes = Vec::new();
+    // member_index 2, restriction_type 1
+    bytes.extend_from_slice(&[2, 0, 0, 0, 1, 0, 0, 0]);
+    // argument_type Bool tag 1, true
+    bytes.extend_from_slice(&[1, 1]);
+    // extensions tag 0
+    bytes.push(0);
+    bytes
+}
+
+fn expected_custom_authority_create_payload() -> Vec<u8> {
+    let mut bytes = Vec::new();
+    // fee amount 0 + asset instance 0, account instance 1, enabled true
+    bytes.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]);
+    // valid_from 1, valid_to 2, operation_type 0
+    bytes.extend_from_slice(&[1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0]);
+    bytes.extend(expected_empty_authority_payload());
+    // restrictions vec length 1
+    bytes.push(1);
+    bytes.extend(expected_restriction_payload());
+    // extensions tag 0
+    bytes.push(0);
+    bytes
+}
+
+fn expected_custom_authority_update_payload() -> Vec<u8> {
+    let mut bytes = Vec::new();
+    // fee amount 0 + asset instance 0, account instance 1, authority_to_update instance 1
+    bytes.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]);
+    // new_enabled Some(false), new_valid_from None, new_valid_to Some(3), new_auth None
+    bytes.extend_from_slice(&[1, 0, 0, 1, 3, 0, 0, 0, 0]);
+    // restrictions_to_remove sorted set [1, 3]
+    bytes.extend_from_slice(&[2, 1, 0, 3, 0]);
+    // restrictions_to_add vec length 1
+    bytes.push(1);
+    bytes.extend(expected_restriction_payload());
+    // extensions tag 0
+    bytes.push(0);
     bytes
 }
 
@@ -1109,6 +1239,121 @@ fn operation_fc_serializes_committee_member_update_global_parameters_tag_and_pay
 }
 
 #[test]
+fn argument_type_fc_serializes_scalar_set_and_recursive_pair_variants() {
+    assert_eq!(
+        ArgumentType::TimePointSec(Box::new("1970-01-01T00:00:03".to_string()))
+            .to_fc_bytes()
+            .expect("serialize time_point_sec argument"),
+        vec![4, 3, 0, 0, 0]
+    );
+
+    assert_eq!(
+        ArgumentType::FlatSetInt64T(Box::new(vec![-1, 2]))
+            .to_fc_bytes()
+            .expect("serialize sorted int64 set argument"),
+        vec![21, 2, 255, 255, 255, 255, 255, 255, 255, 255, 2, 0, 0, 0, 0, 0, 0, 0]
+    );
+
+    let bytes = ArgumentType::VariantAssertArgumentType(Box::new((9, vec![sample_restriction()])))
+        .to_fc_bytes()
+        .expect("serialize recursive variant assert argument");
+    let mut expected = vec![41, 9, 0, 0, 0, 0, 0, 0, 0, 1];
+    expected.extend(expected_restriction_payload());
+    assert_eq!(bytes, expected);
+}
+
+#[test]
+fn argument_type_fc_rejects_unsorted_or_duplicate_sets() {
+    let err = ArgumentType::FlatSetInt64T(Box::new(vec![2, -1]))
+        .to_fc_bytes()
+        .expect_err("unsorted argument set fails explicitly");
+    assert!(matches!(
+        err,
+        FcSerializeError::UnsupportedValue {
+            type_name: "Set",
+            reason: "set values must be sorted and unique"
+        }
+    ));
+
+    let err = ArgumentType::FlatSetString(Box::new(vec!["same".to_string(), "same".to_string()]))
+        .to_fc_bytes()
+        .expect_err("duplicate argument set fails explicitly");
+    assert!(matches!(
+        err,
+        FcSerializeError::UnsupportedValue {
+            type_name: "Set",
+            reason: "set values must be sorted and unique"
+        }
+    ));
+}
+
+#[test]
+fn custom_authority_operations_fc_serialize_argument_restrictions() {
+    assert_eq!(
+        sample_custom_authority_create_operation()
+            .to_fc_bytes()
+            .expect("serialize custom authority create"),
+        expected_custom_authority_create_payload()
+    );
+
+    assert_eq!(
+        sample_custom_authority_update_operation()
+            .to_fc_bytes()
+            .expect("serialize custom authority update"),
+        expected_custom_authority_update_payload()
+    );
+}
+
+#[test]
+fn custom_authority_update_fc_rejects_unsorted_or_duplicate_removed_restrictions() {
+    let mut op = sample_custom_authority_update_operation();
+    op.restrictions_to_remove = vec![3, 1];
+    let err = op
+        .to_fc_bytes()
+        .expect_err("unsorted restriction removal set fails explicitly");
+    assert!(matches!(
+        err,
+        FcSerializeError::UnsupportedValue {
+            type_name: "Set",
+            reason: "set values must be sorted and unique"
+        }
+    ));
+
+    op.restrictions_to_remove = vec![1, 1];
+    let err = op
+        .to_fc_bytes()
+        .expect_err("duplicate restriction removal set fails explicitly");
+    assert!(matches!(
+        err,
+        FcSerializeError::UnsupportedValue {
+            type_name: "Set",
+            reason: "set values must be sorted and unique"
+        }
+    ));
+}
+
+#[test]
+fn operation_fc_serializes_custom_authority_tags_and_payloads() {
+    let bytes = Operation::CustomAuthorityCreateOperation(Box::new(
+        sample_custom_authority_create_operation(),
+    ))
+    .to_fc_bytes()
+    .expect("serialize custom authority create variant");
+    let mut expected = vec![54];
+    expected.extend(expected_custom_authority_create_payload());
+    assert_eq!(bytes, expected);
+
+    let bytes = Operation::CustomAuthorityUpdateOperation(Box::new(
+        sample_custom_authority_update_operation(),
+    ))
+    .to_fc_bytes()
+    .expect("serialize custom authority update variant");
+    let mut expected = vec![55];
+    expected.extend(expected_custom_authority_update_payload());
+    assert_eq!(bytes, expected);
+}
+
+#[test]
 fn withdraw_permission_create_operation_fc_serializes_time_point_sec() {
     let operation = sample_withdraw_permission_create_operation();
 
@@ -1528,25 +1773,53 @@ fn account_id_set_fc_rejects_unsorted_or_duplicate_values() {
 }
 
 #[test]
-fn operation_fc_reports_unsupported_variant() {
-    let operation = Operation::ProposalCreateOperation(Box::new(ProposalCreateOperation {
-        fee: Asset {
-            amount: 0,
+fn proposal_create_operation_fc_serializes_nested_transfer_operation() {
+    assert_eq!(
+        sample_proposal_create_operation()
+            .to_fc_bytes()
+            .expect("serialize proposal create operation"),
+        expected_proposal_create_payload()
+    );
+}
+
+#[test]
+fn operation_fc_serializes_proposal_create_tag_and_nested_operation_payload() {
+    let bytes = Operation::ProposalCreateOperation(Box::new(sample_proposal_create_operation()))
+        .to_fc_bytes()
+        .expect("serialize proposal create variant");
+
+    let mut expected = vec![22];
+    expected.extend(expected_proposal_create_payload());
+    assert_eq!(bytes, expected);
+}
+
+#[test]
+fn proposal_create_operation_propagates_nested_operation_fc_errors() {
+    let mut transfer = sample_transfer_operation();
+    transfer.memo = Some(MemoData {
+        from: None,
+        amount: Asset {
+            amount: 1,
             asset_id: AssetId("1.3.0".to_string()),
         },
-        fee_paying_account: AccountId("1.2.1".to_string()),
-        expiration_time: "2020-01-01T00:00:00".to_string(),
-        proposed_ops: Vec::new(),
-        review_period_seconds: None,
-        extensions: FutureExtensions::VoidT(Box::new(())),
-    }));
+        blinding_factor: Vec::new(),
+        commitment: Vec::new(),
+        check: 0,
+    });
+    let mut proposal = sample_proposal_create_operation();
+    proposal.proposed_ops = vec![OpWrapper {
+        op: Operation::TransferOperation(Box::new(transfer)),
+    }];
 
-    let err = operation.to_fc_bytes().expect_err("unsupported variant fails explicitly");
+    let err = proposal
+        .to_fc_bytes()
+        .expect_err("nested transfer memo still fails explicitly");
 
     assert!(matches!(
         err,
-        FcSerializeError::UnsupportedVariant {
-            variant: "ProposalCreateOperation"
+        FcSerializeError::UnsupportedValue {
+            type_name: "MemoData",
+            reason: "memo FC serialization is not implemented in the minimal transfer slice"
         }
     ));
 }

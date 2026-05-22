@@ -404,6 +404,7 @@ fn render_fc_transfer_path_impls(out: &mut String, protocol: &Protocol) -> Resul
     render_fc_worker_initializer_impl(out, protocol)?;
     render_fc_limit_order_auto_action_impl(out, protocol)?;
     render_fc_fee_parameters_impl(out, protocol)?;
+    render_fc_argument_type_impl(out, protocol)?;
 
     let supported_operations = render_fc_operation_impls(out, protocol, &supported_structs)?;
 
@@ -703,6 +704,45 @@ fn render_fc_fee_parameters_impl(out: &mut String, protocol: &Protocol) -> Resul
     Ok(())
 }
 
+fn render_fc_argument_type_impl(out: &mut String, protocol: &Protocol) -> Result<()> {
+    let Some(variant) = protocol
+        .static_variants
+        .iter()
+        .find(|variant| variant.name == "argument_type")
+    else {
+        return Ok(());
+    };
+
+    out.push_str("impl FcSerialize for crate::generated::static_variants::ArgumentType {\n");
+    out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
+    out.push_str("        match self {\n");
+
+    let mut arms = variant.variants.clone();
+    arms.sort_by_key(|arm| arm.tag);
+    let supported_structs = fc_supported_struct_names(protocol);
+    for arm in arms {
+        if !is_fc_supported_type(protocol, &arm.ty, &supported_structs) {
+            return Err(GenBindingsRsError::Render {
+                message: format!(
+                    "unsupported argument_type variant `{}` payload type for FC rendering",
+                    arm.name
+                ),
+            });
+        }
+        let variant_name = rust_variant_name(&arm.name);
+        let payload_lines = render_fc_value_serialize_lines("(**value)", &arm.ty, "                ")?;
+        out.push_str(&format!(
+            "            Self::{variant_name}(value) => {{\n                write_varint({}u64, out);\n{payload_lines}                Ok(())\n            }}\n",
+            arm.tag
+        ));
+    }
+
+    out.push_str("        }\n");
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
+    Ok(())
+}
+
 fn fc_supported_struct_names(protocol: &Protocol) -> BTreeSet<String> {
     let mut supported = BTreeSet::new();
     let mut changed = true;
@@ -865,6 +905,11 @@ fn render_fc_value_serialize_lines(value_expr: &str, ty: &TypeRef, indent: &str)
              {indent}}}\n",
             render_vote_id_arg("value", inner)?
         )),
+        TypeRef::Pair { first, second } => {
+            let first_lines = render_fc_value_serialize_lines(&format!("{value_expr}.0"), first, indent)?;
+            let second_lines = render_fc_value_serialize_lines(&format!("{value_expr}.1"), second, indent)?;
+            Ok(format!("{first_lines}{second_lines}"))
+        }
         TypeRef::Set { inner, .. } if is_fee_parameters_type(inner) => {
             render_fc_static_variant_set_serialize_lines(value_expr, inner, indent)
         }
@@ -888,6 +933,60 @@ fn is_vote_id_type(ty: &TypeRef) -> bool {
 
 fn render_fc_set_serialize_lines(value_expr: &str, inner: &TypeRef, indent: &str) -> Result<String> {
     match inner {
+        TypeRef::Bool => Ok(format!(
+            "{indent}write_varint({value_expr}.len() as u64, out);\n\
+             {indent}let mut previous_key: Option<bool> = None;\n\
+             {indent}for value in &{value_expr} {{\n\
+             {indent}    if previous_key.is_some_and(|previous| previous >= *value) {{\n\
+             {indent}        return Err(FcSerializeError::UnsupportedValue {{ type_name: \"Set\", reason: \"set values must be sorted and unique\" }});\n\
+             {indent}    }}\n\
+             {indent}    previous_key = Some(*value);\n\
+             {indent}    value.fc_serialize(out)?;\n\
+             {indent}}}\n"
+        )),
+        TypeRef::Uint16 => render_fc_ordered_copy_set_serialize_lines(value_expr, "u16", indent),
+        TypeRef::Uint32 => render_fc_ordered_copy_set_serialize_lines(value_expr, "u32", indent),
+        TypeRef::Int32 { .. } => render_fc_ordered_copy_set_serialize_lines(value_expr, "i32", indent),
+        TypeRef::Int64 { json: None, .. } => render_fc_ordered_copy_set_serialize_lines(value_expr, "i64", indent),
+        TypeRef::Uint64 { json: None, .. } => render_fc_ordered_copy_set_serialize_lines(value_expr, "u64", indent),
+        TypeRef::String => Ok(format!(
+            "{indent}write_varint({value_expr}.len() as u64, out);\n\
+             {indent}let mut previous_key: Option<&str> = None;\n\
+             {indent}for value in &{value_expr} {{\n\
+             {indent}    let key = value.as_str();\n\
+             {indent}    if previous_key.is_some_and(|previous| previous >= key) {{\n\
+             {indent}        return Err(FcSerializeError::UnsupportedValue {{ type_name: \"Set\", reason: \"set values must be sorted and unique\" }});\n\
+             {indent}    }}\n\
+             {indent}    previous_key = Some(key);\n\
+             {indent}    value.fc_serialize(out)?;\n\
+             {indent}}}\n"
+        )),
+        TypeRef::TimePointSec => Ok(format!(
+            "{indent}write_varint({value_expr}.len() as u64, out);\n\
+             {indent}let mut previous_key: Option<u32> = None;\n\
+             {indent}for value in &{value_expr} {{\n\
+             {indent}    let key = open_graphene_fc::parse_time_point_sec(value)?;\n\
+             {indent}    if previous_key.is_some_and(|previous| previous >= key) {{\n\
+             {indent}        return Err(FcSerializeError::UnsupportedValue {{ type_name: \"Set\", reason: \"set values must be sorted and unique\" }});\n\
+             {indent}    }}\n\
+             {indent}    previous_key = Some(key);\n\
+             {indent}    write_time_point_sec(value, out)?;\n\
+             {indent}}}\n"
+        )),
+        TypeRef::FixedBytes { bytes } => Ok(format!(
+            "{indent}write_varint({value_expr}.len() as u64, out);\n\
+             {indent}let mut previous_key: Option<Vec<u8>> = None;\n\
+             {indent}for value in &{value_expr} {{\n\
+             {indent}    let mut key_bytes = Vec::new();\n\
+             {indent}    write_fixed_bytes(value, {bytes}, {}, &mut key_bytes)?;\n\
+             {indent}    if previous_key.as_ref().is_some_and(|previous| previous >= &key_bytes) {{\n\
+             {indent}        return Err(FcSerializeError::UnsupportedValue {{ type_name: \"Set\", reason: \"set values must be sorted and unique\" }});\n\
+             {indent}    }}\n\
+             {indent}    previous_key = Some(key_bytes.clone());\n\
+             {indent}    out.extend_from_slice(&key_bytes);\n\
+             {indent}}}\n",
+            rust_string_literal(&format!("fixed_bytes_{bytes}"))
+        )),
         TypeRef::ProtocolObjectId { .. } => Ok(format!(
             "{indent}write_varint({value_expr}.len() as u64, out);\n\
              {indent}let mut previous_key: Option<u64> = None;\n\
@@ -920,6 +1019,24 @@ fn render_fc_set_serialize_lines(value_expr: &str, inner: &TypeRef, indent: &str
             message: "internal error: unsupported set value type".to_string(),
         }),
     }
+}
+
+fn render_fc_ordered_copy_set_serialize_lines(
+    value_expr: &str,
+    rust_key_type: &str,
+    indent: &str,
+) -> Result<String> {
+    Ok(format!(
+        "{indent}write_varint({value_expr}.len() as u64, out);\n\
+         {indent}let mut previous_key: Option<{rust_key_type}> = None;\n\
+         {indent}for value in &{value_expr} {{\n\
+         {indent}    if previous_key.is_some_and(|previous| previous >= *value) {{\n\
+         {indent}        return Err(FcSerializeError::UnsupportedValue {{ type_name: \"Set\", reason: \"set values must be sorted and unique\" }});\n\
+         {indent}    }}\n\
+         {indent}    previous_key = Some(*value);\n\
+         {indent}    value.fc_serialize(out)?;\n\
+         {indent}}}\n"
+    ))
 }
 
 fn render_fc_static_variant_set_serialize_lines(
@@ -1006,7 +1123,20 @@ fn render_fc_flat_map_serialize_lines(
 }
 
 fn is_fc_supported_set(inner: &TypeRef) -> bool {
-    matches!(inner, TypeRef::ProtocolObjectId { .. } | TypeRef::PublicKey { .. })
+    matches!(
+        inner,
+        TypeRef::Bool
+            | TypeRef::Uint16
+            | TypeRef::Uint32
+            | TypeRef::Int32 { .. }
+            | TypeRef::Int64 { json: None, .. }
+            | TypeRef::Uint64 { json: None, .. }
+            | TypeRef::String
+            | TypeRef::TimePointSec
+            | TypeRef::FixedBytes { .. }
+            | TypeRef::ProtocolObjectId { .. }
+            | TypeRef::PublicKey { .. }
+    )
 }
 
 fn is_fee_parameters_type(ty: &TypeRef) -> bool {
@@ -1120,6 +1250,8 @@ fn is_fc_supported_type(
                 || name == "worker_initializer"
                 || name == "limit_order_auto_action"
                 || name == "fee_parameters"
+                || name == "argument_type"
+                || name == "operation"
         }
         TypeRef::Optional { inner } | TypeRef::Vector { inner } => {
             is_fc_supported_type(protocol, inner, supported_structs)
@@ -1128,10 +1260,13 @@ fn is_fc_supported_type(
         TypeRef::Set { inner, .. } if is_fee_parameters_type(inner) => true,
         TypeRef::Set { inner, .. } if is_fc_supported_set(inner) => true,
         TypeRef::FlatMap { key, value, .. } if is_fc_supported_flat_map(key, value) => true,
+        TypeRef::Pair { first, second } => {
+            is_fc_supported_type(protocol, first, supported_structs)
+                && is_fc_supported_type(protocol, second, supported_structs)
+        }
         TypeRef::Set { .. }
         | TypeRef::Map { .. }
         | TypeRef::FlatMap { .. }
-        | TypeRef::Pair { .. }
         | TypeRef::Int64 { .. }
         | TypeRef::Uint64 { .. }
         | TypeRef::UnsignedVarint
@@ -2298,6 +2433,112 @@ mod tests {
         assert!(output.contains("Self::CustomSupportedOperation(value) => { write_varint(9u64, out); value.as_ref().fc_serialize(out) }"));
         assert!(output.contains(
             "Self::CallOrderUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant"
+        ));
+    }
+
+    #[test]
+    fn fc_set_renderer_guards_scalar_and_fixed_bytes_sets_without_sorting() {
+        let uint16_set = render_fc_value_serialize_lines(
+            "self.restrictions_to_remove",
+            &TypeRef::Set {
+                inner: Box::new(TypeRef::Uint16),
+                ordering: open_graphene_json_schema::OrderingRule::Unresolved,
+            },
+            "        ",
+        )
+        .expect("render uint16 set");
+        assert!(uint16_set.contains("let mut previous_key: Option<u16> = None;"));
+        assert!(uint16_set.contains("previous >= *value"));
+        assert!(uint16_set.contains("set values must be sorted and unique"));
+        assert!(!uint16_set.contains(".sort"));
+
+        let fixed_bytes_set = render_fc_value_serialize_lines(
+            "self.hashes",
+            &TypeRef::Set {
+                inner: Box::new(TypeRef::FixedBytes { bytes: 32 }),
+                ordering: open_graphene_json_schema::OrderingRule::Unresolved,
+            },
+            "        ",
+        )
+        .expect("render fixed bytes set");
+        assert!(fixed_bytes_set.contains("let mut key_bytes = Vec::new();"));
+        assert!(fixed_bytes_set.contains("write_fixed_bytes(value, 32, \"fixed_bytes_32\", &mut key_bytes)?;"));
+        assert!(fixed_bytes_set.contains("previous >= &key_bytes"));
+        assert!(fixed_bytes_set.contains("out.extend_from_slice(&key_bytes);"));
+        assert!(!fixed_bytes_set.contains(".sort"));
+    }
+
+    #[test]
+    fn fc_argument_type_renderer_emits_tagged_scalar_and_pair_payloads() {
+        let mut protocol = minimal_protocol();
+        protocol.structs.push(StructDef {
+            name: "restriction".to_string(),
+            source_name: None,
+            kind: StructKind::Struct,
+            wire_tag: None,
+            fields: vec![FieldDef {
+                index: 0,
+                name: "member_index".to_string(),
+                ty: TypeRef::Uint32,
+                source: None,
+                support: None,
+            }],
+            support: None,
+        });
+        protocol.static_variants.push(StaticVariantDef {
+            name: "argument_type".to_string(),
+            kind: "static_variant".to_string(),
+            json: "tagged_tuple".to_string(),
+            fc: "static_variant".to_string(),
+            variants: vec![
+                open_graphene_json_schema::StaticVariantArmDef {
+                    tag: 1,
+                    name: "bool".to_string(),
+                    ty: TypeRef::Bool,
+                    support: None,
+                },
+                open_graphene_json_schema::StaticVariantArmDef {
+                    tag: 41,
+                    name: "variant_assert_argument_type".to_string(),
+                    ty: TypeRef::Pair {
+                        first: Box::new(TypeRef::Int64 { json: None, fc: None }),
+                        second: Box::new(TypeRef::Vector {
+                            inner: Box::new(TypeRef::Ref {
+                                name: "restriction".to_string(),
+                            }),
+                        }),
+                    },
+                    support: None,
+                },
+            ],
+            source: None,
+            support: None,
+        });
+
+        let mut output = String::new();
+        render_fc_argument_type_impl(&mut output, &protocol).expect("render argument_type");
+
+        assert!(output.contains("impl FcSerialize for crate::generated::static_variants::ArgumentType"));
+        assert!(output.contains("Self::Bool(value)"));
+        assert!(output.contains("write_varint(1u64, out);"));
+        assert!(output.contains("(**value).fc_serialize(out)?;"));
+        assert!(output.contains("Self::VariantAssertArgumentType(value)"));
+        assert!(output.contains("write_varint(41u64, out);"));
+        assert!(output.contains("(**value).0.fc_serialize(out)?;"));
+        assert!(output.contains("(**value).1.fc_serialize(out)?;"));
+    }
+
+    #[test]
+    fn fc_type_support_allows_nested_operation_static_variant() {
+        let protocol = minimal_protocol();
+        let supported_structs = BTreeSet::new();
+
+        assert!(is_fc_supported_type(
+            &protocol,
+            &TypeRef::StaticVariantRef {
+                name: "operation".to_string(),
+            },
+            &supported_structs,
         ));
     }
 

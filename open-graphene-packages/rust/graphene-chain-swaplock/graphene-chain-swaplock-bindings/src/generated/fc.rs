@@ -1044,6 +1044,13 @@ impl FcSerialize for crate::generated::types::NoSpecialAuthority {
     }
 }
 
+impl FcSerialize for crate::generated::types::OpWrapper {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.op.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::OverrideTransferOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -1094,6 +1101,16 @@ impl FcSerialize for crate::generated::types::ProposalUpdateOperationFeeParamsT 
 impl FcSerialize for crate::generated::types::RefundWorkerInitializer {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::Restriction {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.member_index.fc_serialize(out)?;
+        self.restriction_type.fc_serialize(out)?;
+        self.argument.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -1789,6 +1806,395 @@ impl FcSerialize for crate::generated::static_variants::FeeParameters {
     }
 }
 
+impl FcSerialize for crate::generated::static_variants::ArgumentType {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        match self {
+            Self::VoidT(value) => {
+                write_varint(0u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::Bool(value) => {
+                write_varint(1u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::Int64T(value) => {
+                write_varint(2u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::String(value) => {
+                write_varint(3u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::TimePointSec(value) => {
+                write_varint(4u64, out);
+                write_time_point_sec(&(**value), out)?;
+                Ok(())
+            }
+            Self::PublicKeyType(value) => {
+                write_varint(5u64, out);
+                write_public_key(&(**value), Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;
+                Ok(())
+            }
+            Self::FcSha256(value) => {
+                write_varint(6u64, out);
+                write_fixed_bytes(&(**value), 32, "fixed_bytes_32", out)?;
+                Ok(())
+            }
+            Self::AccountIdType(value) => {
+                write_varint(7u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::AssetIdType(value) => {
+                write_varint(8u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::ForceSettlementIdType(value) => {
+                write_varint(9u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::CommitteeMemberIdType(value) => {
+                write_varint(10u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::WitnessIdType(value) => {
+                write_varint(11u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::LimitOrderIdType(value) => {
+                write_varint(12u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::CallOrderIdType(value) => {
+                write_varint(13u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::CustomIdType(value) => {
+                write_varint(14u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::ProposalIdType(value) => {
+                write_varint(15u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::WithdrawPermissionIdType(value) => {
+                write_varint(16u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::VestingBalanceIdType(value) => {
+                write_varint(17u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::WorkerIdType(value) => {
+                write_varint(18u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::BalanceIdType(value) => {
+                write_varint(19u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::FlatSetBool(value) => {
+                write_varint(20u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<bool> = None;
+                for value in &(**value) {
+                    if previous_key.is_some_and(|previous| previous >= *value) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(*value);
+                    value.fc_serialize(out)?;
+                }
+                Ok(())
+            }
+            Self::FlatSetInt64T(value) => {
+                write_varint(21u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<i64> = None;
+                for value in &(**value) {
+                    if previous_key.is_some_and(|previous| previous >= *value) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(*value);
+                    value.fc_serialize(out)?;
+                }
+                Ok(())
+            }
+            Self::FlatSetString(value) => {
+                write_varint(22u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<&str> = None;
+                for value in &(**value) {
+                    let key = value.as_str();
+                    if previous_key.is_some_and(|previous| previous >= key) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(key);
+                    value.fc_serialize(out)?;
+                }
+                Ok(())
+            }
+            Self::FlatSetTimePointSec(value) => {
+                write_varint(23u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<u32> = None;
+                for value in &(**value) {
+                    let key = open_graphene_fc::parse_time_point_sec(value)?;
+                    if previous_key.is_some_and(|previous| previous >= key) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(key);
+                    write_time_point_sec(value, out)?;
+                }
+                Ok(())
+            }
+            Self::FlatSetPublicKeyType(value) => {
+                write_varint(24u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<Vec<u8>> = None;
+                for value in &(**value) {
+                    let mut key_bytes = Vec::new();
+                    write_public_key(value, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), &mut key_bytes)?;
+                    if previous_key.as_ref().is_some_and(|previous| previous >= &key_bytes) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(key_bytes.clone());
+                    out.extend_from_slice(&key_bytes);
+                }
+                Ok(())
+            }
+            Self::FlatSetFcSha256(value) => {
+                write_varint(25u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<Vec<u8>> = None;
+                for value in &(**value) {
+                    let mut key_bytes = Vec::new();
+                    write_fixed_bytes(value, 32, "fixed_bytes_32", &mut key_bytes)?;
+                    if previous_key.as_ref().is_some_and(|previous| previous >= &key_bytes) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(key_bytes.clone());
+                    out.extend_from_slice(&key_bytes);
+                }
+                Ok(())
+            }
+            Self::FlatSetAccountIdType(value) => {
+                write_varint(26u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<u64> = None;
+                for value in &(**value) {
+                    let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+                    if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(key_parts.instance);
+                    value.fc_serialize(out)?;
+                }
+                Ok(())
+            }
+            Self::FlatSetAssetIdType(value) => {
+                write_varint(27u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<u64> = None;
+                for value in &(**value) {
+                    let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+                    if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(key_parts.instance);
+                    value.fc_serialize(out)?;
+                }
+                Ok(())
+            }
+            Self::FlatSetForceSettlementIdType(value) => {
+                write_varint(28u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<u64> = None;
+                for value in &(**value) {
+                    let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+                    if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(key_parts.instance);
+                    value.fc_serialize(out)?;
+                }
+                Ok(())
+            }
+            Self::FlatSetCommitteeMemberIdType(value) => {
+                write_varint(29u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<u64> = None;
+                for value in &(**value) {
+                    let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+                    if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(key_parts.instance);
+                    value.fc_serialize(out)?;
+                }
+                Ok(())
+            }
+            Self::FlatSetWitnessIdType(value) => {
+                write_varint(30u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<u64> = None;
+                for value in &(**value) {
+                    let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+                    if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(key_parts.instance);
+                    value.fc_serialize(out)?;
+                }
+                Ok(())
+            }
+            Self::FlatSetLimitOrderIdType(value) => {
+                write_varint(31u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<u64> = None;
+                for value in &(**value) {
+                    let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+                    if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(key_parts.instance);
+                    value.fc_serialize(out)?;
+                }
+                Ok(())
+            }
+            Self::FlatSetCallOrderIdType(value) => {
+                write_varint(32u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<u64> = None;
+                for value in &(**value) {
+                    let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+                    if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(key_parts.instance);
+                    value.fc_serialize(out)?;
+                }
+                Ok(())
+            }
+            Self::FlatSetCustomIdType(value) => {
+                write_varint(33u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<u64> = None;
+                for value in &(**value) {
+                    let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+                    if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(key_parts.instance);
+                    value.fc_serialize(out)?;
+                }
+                Ok(())
+            }
+            Self::FlatSetProposalIdType(value) => {
+                write_varint(34u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<u64> = None;
+                for value in &(**value) {
+                    let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+                    if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(key_parts.instance);
+                    value.fc_serialize(out)?;
+                }
+                Ok(())
+            }
+            Self::FlatSetWithdrawPermissionIdType(value) => {
+                write_varint(35u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<u64> = None;
+                for value in &(**value) {
+                    let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+                    if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(key_parts.instance);
+                    value.fc_serialize(out)?;
+                }
+                Ok(())
+            }
+            Self::FlatSetVestingBalanceIdType(value) => {
+                write_varint(36u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<u64> = None;
+                for value in &(**value) {
+                    let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+                    if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(key_parts.instance);
+                    value.fc_serialize(out)?;
+                }
+                Ok(())
+            }
+            Self::FlatSetWorkerIdType(value) => {
+                write_varint(37u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<u64> = None;
+                for value in &(**value) {
+                    let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+                    if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(key_parts.instance);
+                    value.fc_serialize(out)?;
+                }
+                Ok(())
+            }
+            Self::FlatSetBalanceIdType(value) => {
+                write_varint(38u64, out);
+                write_varint((**value).len() as u64, out);
+                let mut previous_key: Option<u64> = None;
+                for value in &(**value) {
+                    let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+                    if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                        return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+                    }
+                    previous_key = Some(key_parts.instance);
+                    value.fc_serialize(out)?;
+                }
+                Ok(())
+            }
+            Self::VectorRestriction(value) => {
+                write_varint(39u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::VectorVectorRestriction(value) => {
+                write_varint(40u64, out);
+                (**value).fc_serialize(out)?;
+                Ok(())
+            }
+            Self::VariantAssertArgumentType(value) => {
+                write_varint(41u64, out);
+                (**value).0.fc_serialize(out)?;
+                (**value).1.fc_serialize(out)?;
+                Ok(())
+            }
+        }
+    }
+}
+
 impl FcSerialize for crate::generated::operations::TransferOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -2053,6 +2459,18 @@ impl FcSerialize for crate::generated::operations::WitnessUpdateOperation {
             }
             None => out.push(0),
         }
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::ProposalCreateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.fee_paying_account.fc_serialize(out)?;
+        write_time_point_sec(&self.expiration_time, out)?;
+        self.proposed_ops.fc_serialize(out)?;
+        self.review_period_seconds.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -2483,6 +2901,57 @@ impl FcSerialize for crate::generated::operations::HtlcRefundOperation {
     }
 }
 
+impl FcSerialize for crate::generated::operations::CustomAuthorityCreateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.account.fc_serialize(out)?;
+        self.enabled.fc_serialize(out)?;
+        write_time_point_sec(&self.valid_from, out)?;
+        write_time_point_sec(&self.valid_to, out)?;
+        self.operation_type.fc_serialize(out)?;
+        self.auth.fc_serialize(out)?;
+        self.restrictions.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::CustomAuthorityUpdateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.account.fc_serialize(out)?;
+        self.authority_to_update.fc_serialize(out)?;
+        self.new_enabled.fc_serialize(out)?;
+        match &self.new_valid_from {
+            Some(value) => {
+                out.push(1);
+                write_time_point_sec(value, out)?;
+            }
+            None => out.push(0),
+        }
+        match &self.new_valid_to {
+            Some(value) => {
+                out.push(1);
+                write_time_point_sec(value, out)?;
+            }
+            None => out.push(0),
+        }
+        self.new_auth.fc_serialize(out)?;
+        write_varint(self.restrictions_to_remove.len() as u64, out);
+        let mut previous_key: Option<u16> = None;
+        for value in &self.restrictions_to_remove {
+            if previous_key.is_some_and(|previous| previous >= *value) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(*value);
+            value.fc_serialize(out)?;
+        }
+        self.restrictions_to_add.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::operations::CustomAuthorityDeleteOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -2844,7 +3313,7 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             Self::AssetPublishFeedOperation(value) => { write_varint(19u64, out); value.as_ref().fc_serialize(out) }
             Self::WitnessCreateOperation(value) => { write_varint(20u64, out); value.as_ref().fc_serialize(out) }
             Self::WitnessUpdateOperation(value) => { write_varint(21u64, out); value.as_ref().fc_serialize(out) }
-            Self::ProposalCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "ProposalCreateOperation" }),
+            Self::ProposalCreateOperation(value) => { write_varint(22u64, out); value.as_ref().fc_serialize(out) }
             Self::ProposalUpdateOperation(value) => { write_varint(23u64, out); value.as_ref().fc_serialize(out) }
             Self::ProposalDeleteOperation(value) => { write_varint(24u64, out); value.as_ref().fc_serialize(out) }
             Self::WithdrawPermissionCreateOperation(value) => { write_varint(25u64, out); value.as_ref().fc_serialize(out) }
@@ -2876,8 +3345,8 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             Self::HtlcRedeemedOperation(value) => { write_varint(51u64, out); value.as_ref().fc_serialize(out) }
             Self::HtlcExtendOperation(value) => { write_varint(52u64, out); value.as_ref().fc_serialize(out) }
             Self::HtlcRefundOperation(value) => { write_varint(53u64, out); value.as_ref().fc_serialize(out) }
-            Self::CustomAuthorityCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "CustomAuthorityCreateOperation" }),
-            Self::CustomAuthorityUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "CustomAuthorityUpdateOperation" }),
+            Self::CustomAuthorityCreateOperation(value) => { write_varint(54u64, out); value.as_ref().fc_serialize(out) }
+            Self::CustomAuthorityUpdateOperation(value) => { write_varint(55u64, out); value.as_ref().fc_serialize(out) }
             Self::CustomAuthorityDeleteOperation(value) => { write_varint(56u64, out); value.as_ref().fc_serialize(out) }
             Self::TicketCreateOperation(value) => { write_varint(57u64, out); value.as_ref().fc_serialize(out) }
             Self::TicketUpdateOperation(value) => { write_varint(58u64, out); value.as_ref().fc_serialize(out) }
