@@ -2,10 +2,11 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RUST_PACKAGES_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-SPEC_GEN="${SCRIPT_DIR}/graphene-chain-swaplock-spec/bin/gen.sh"
-BINDINGS_GEN="${SCRIPT_DIR}/graphene-chain-swaplock-bindings/bin/gen.sh"
-BINDINGS_MANIFEST="${SCRIPT_DIR}/graphene-chain-swaplock-bindings/Cargo.toml"
+CHAIN_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+RUST_PACKAGES_DIR="$(cd "${CHAIN_DIR}/.." && pwd)"
+SPEC_GEN="${CHAIN_DIR}/graphene-chain-swaplock-spec/bin/gen.sh"
+BINDINGS_GEN="${CHAIN_DIR}/graphene-chain-swaplock-bindings/bin/gen.sh"
+BINDINGS_MANIFEST="${CHAIN_DIR}/graphene-chain-swaplock-bindings/Cargo.toml"
 FC_MANIFEST="${RUST_PACKAGES_DIR}/graphene-fc/Cargo.toml"
 
 step() {
