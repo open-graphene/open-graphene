@@ -19,8 +19,8 @@ pub mod types;
 
 pub use defs::{
     ChainDef, DependentReturnDef, EnumDef, EnumValueDef, FieldDef, ObjectTypeDef, OperationDef,
-    RpcBindingHintsDef, RpcMethodDef, RpcParamDef, StaticVariantArmDef, StaticVariantDef,
-    StrictModeDef, StructDef, StructKind,
+    RpcBindingHintsDef, RpcMethodDef, RpcNoticeDef, RpcParamDef, StaticVariantArmDef,
+    StaticVariantDef, StrictModeDef, StructDef, StructKind,
 };
 pub use support::{SourceMeta, SupportDef, SupportStatus};
 pub use types::{FcEncoding, JsonShape, OrderingRule, TypeRef};
@@ -111,6 +111,13 @@ mod tests {
         .expect("serialize public key");
         assert_eq!(public_key["kind"], "public_key");
         assert_eq!(public_key["chainPrefix"], "SWP");
+
+        let void = serde_json::to_value(TypeRef::Void).expect("serialize void");
+        assert_eq!(void["kind"], "void");
+
+        let callback_handle =
+            serde_json::to_value(TypeRef::CallbackHandle).expect("serialize callback handle");
+        assert_eq!(callback_handle["kind"], "callback_handle");
     }
 
     #[test]
@@ -187,6 +194,7 @@ mod tests {
                 }),
             }),
             is_subscription: false,
+            notices: vec![],
             binding_hints: Some(RpcBindingHintsDef {
                 callback_param_index: None,
                 dependent_return: Some(DependentReturnDef::ObjectByIdVector { id_param_index: 0 }),
@@ -206,7 +214,50 @@ mod tests {
             static_variants: vec![],
             operations: vec![],
             object_types: vec![object_type],
-            rpc_methods: vec![method],
+            rpc_methods: vec![
+                method,
+                RpcMethodDef {
+                    name: "set_subscribe_callback".to_string(),
+                    api_class: "database_api".to_string(),
+                    api_name: Some("database".to_string()),
+                    params: vec![
+                        RpcParamDef {
+                            index: 0,
+                            name: "callback_id".to_string(),
+                            ty: TypeRef::CallbackHandle,
+                            required: true,
+                            default_value: None,
+                            nullable: false,
+                            source: None,
+                            support: None,
+                        },
+                        RpcParamDef {
+                            index: 1,
+                            name: "notify_remove_create".to_string(),
+                            ty: TypeRef::Bool,
+                            required: true,
+                            default_value: None,
+                            nullable: false,
+                            source: None,
+                            support: None,
+                        },
+                    ],
+                    returns: Some(TypeRef::Void),
+                    is_subscription: true,
+                    notices: vec![RpcNoticeDef {
+                        method: "notice".to_string(),
+                        callback_id_param_index: 0,
+                        payload_param_index: 1,
+                        payload: Some(TypeRef::AnyJson {
+                            reason: Some("object update payload".to_string()),
+                            source: None,
+                        }),
+                    }],
+                    binding_hints: None,
+                    source: None,
+                    support: None,
+                },
+            ],
             strict_mode: None,
         };
 
@@ -242,6 +293,23 @@ mod tests {
             json["rpcMethods"][0]["bindingHints"]["dependentReturn"]["kind"],
             "object_by_id_vector"
         );
+        assert_eq!(json["rpcMethods"][1]["name"], "set_subscribe_callback");
+        assert_eq!(json["rpcMethods"][1]["params"][0]["name"], "callback_id");
+        assert_eq!(
+            json["rpcMethods"][1]["params"][0]["type"]["kind"],
+            "callback_handle"
+        );
+        assert_eq!(json["rpcMethods"][1]["returns"]["kind"], "void");
+        assert_eq!(json["rpcMethods"][1]["notices"][0]["method"], "notice");
+        assert_eq!(
+            json["rpcMethods"][1]["notices"][0]["callbackIdParamIndex"],
+            0
+        );
+        assert_eq!(json["rpcMethods"][1]["notices"][0]["payloadParamIndex"], 1);
+        assert_eq!(
+            json["rpcMethods"][1]["notices"][0]["payload"]["kind"],
+            "any_json"
+        );
     }
 
     #[test]
@@ -256,5 +324,6 @@ mod tests {
             serde_json::from_value(json).expect("deserialize old RPC method");
         assert_eq!(method.api_class, "");
         assert_eq!(method.api_name, None);
+        assert!(method.notices.is_empty());
     }
 }

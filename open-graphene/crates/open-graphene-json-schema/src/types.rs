@@ -61,6 +61,8 @@ pub enum IntType {
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum TypeRef {
+    /// A method or expression that intentionally returns no JSON value.
+    Void,
     Bool,
     Uint8,
     Uint16,
@@ -84,6 +86,8 @@ pub enum TypeRef {
         fc: Option<FcEncoding>,
     },
     UnsignedVarint,
+    /// Numeric handle used on the wire to correlate RPC notices with a client-side callback.
+    CallbackHandle,
     String,
     Bytes,
     FixedHex {

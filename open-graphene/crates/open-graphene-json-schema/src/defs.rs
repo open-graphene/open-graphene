@@ -176,12 +176,24 @@ pub struct RpcMethodDef {
     pub returns: Option<TypeRef>,
     #[serde(default)]
     pub is_subscription: bool,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub notices: Vec<RpcNoticeDef>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub binding_hints: Option<RpcBindingHintsDef>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub source: Option<SourceMeta>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub support: Option<SupportDef>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct RpcNoticeDef {
+    pub method: String,
+    pub callback_id_param_index: u32,
+    pub payload_param_index: u32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub payload: Option<TypeRef>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]

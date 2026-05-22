@@ -436,6 +436,12 @@
         "name": {
           "type": "string"
         },
+        "notices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RpcNoticeDef"
+          }
+        },
         "params": {
           "type": "array",
           "default": [],
@@ -476,6 +482,39 @@
       },
       "required": [
         "name"
+      ]
+    },
+    "RpcNoticeDef": {
+      "type": "object",
+      "properties": {
+        "callbackIdParamIndex": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "method": {
+          "type": "string"
+        },
+        "payload": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TypeRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "payloadParamIndex": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "method",
+        "callbackIdParamIndex",
+        "payloadParamIndex"
       ]
     },
     "RpcParamDef": {
@@ -752,6 +791,19 @@
       "description": "Canonical v3 type reference.\n\nThe JSON representation intentionally uses the same `kind` tag as the\nhand-written v3 fixtures in `open-graphene-v5/fixtures/json`.",
       "oneOf": [
         {
+          "description": "A method or expression that intentionally returns no JSON value.",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "void"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
           "type": "object",
           "properties": {
             "kind": {
@@ -901,6 +953,19 @@
             "kind": {
               "type": "string",
               "const": "unsigned_varint"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "description": "Numeric handle used on the wire to correlate RPC notices with a client-side callback.",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "callback_handle"
             }
           },
           "required": [
