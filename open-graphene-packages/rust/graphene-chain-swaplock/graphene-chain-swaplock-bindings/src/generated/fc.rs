@@ -268,10 +268,244 @@ impl FcSerialize for crate::generated::ids::ObjectId {
     }
 }
 
+impl FcSerialize for crate::generated::types::AccountCreateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::AccountUpgradeOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::Asset {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.amount.fc_serialize(out)?;
         self.asset_id.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::AssetClaimFeesOperationAdditionalOptionsType {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.claim_from_asset_id.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::AssetCreateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::AssetSettleCancelOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::AssetUpdateOperationExt {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::Authority {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::BalanceClaimOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::BidCollateralOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::BurnWorkerInitializer {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::CallOrderUpdateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::CreditDealExpiredOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::CustomAuthorityCreateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::CustomAuthorityUpdateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::ExecuteBidOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::FbaDistributeOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::FillOrderOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::GenericExchangeOperationResult {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.paid.fc_serialize(out)?;
+        self.received.fc_serialize(out)?;
+        self.fees.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::HtlcCreateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::HtlcExtendOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::HtlcRedeemOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::HtlcRedeemedOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::HtlcRefundOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::InstantVestingPolicyInitializer {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::LimitOrderCancelOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::LimitOrderCreateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::LimitOrderUpdateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::NoSpecialAuthority {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::Price {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.base.fc_serialize(out)?;
+        self.quote.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::RefundWorkerInitializer {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::VoidResult {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::WitnessCreateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::WitnessUpdateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -335,6 +569,19 @@ impl FcSerialize for crate::generated::operations::CallOrderUpdateOperation {
     }
 }
 
+impl FcSerialize for crate::generated::operations::FillOrderOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.order_id.fc_serialize(out)?;
+        self.account_id.fc_serialize(out)?;
+        self.pays.fc_serialize(out)?;
+        self.receives.fc_serialize(out)?;
+        self.fill_price.fc_serialize(out)?;
+        self.is_maker.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::operations::AccountUpgradeOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -386,6 +633,17 @@ impl FcSerialize for crate::generated::operations::AssetSettleOperation {
     }
 }
 
+impl FcSerialize for crate::generated::operations::AssetGlobalSettleOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.issuer.fc_serialize(out)?;
+        self.asset_to_settle.fc_serialize(out)?;
+        self.settle_price.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::operations::ProposalDeleteOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -423,6 +681,16 @@ impl FcSerialize for crate::generated::operations::AssetSettleCancelOperation {
         self.settlement.fc_serialize(out)?;
         self.account.fc_serialize(out)?;
         self.amount.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::AssetClaimFeesOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.issuer.fc_serialize(out)?;
+        self.amount_to_claim.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -597,7 +865,7 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             Self::LimitOrderCreateOperation(value) => { write_varint(1u64, out); value.as_ref().fc_serialize(out) }
             Self::LimitOrderCancelOperation(value) => { write_varint(2u64, out); value.as_ref().fc_serialize(out) }
             Self::CallOrderUpdateOperation(value) => { write_varint(3u64, out); value.as_ref().fc_serialize(out) }
-            Self::FillOrderOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "FillOrderOperation" }),
+            Self::FillOrderOperation(value) => { write_varint(4u64, out); value.as_ref().fc_serialize(out) }
             Self::AccountCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "AccountCreateOperation" }),
             Self::AccountUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "AccountUpdateOperation" }),
             Self::AccountWhitelistOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "AccountWhitelistOperation" }),
@@ -611,7 +879,7 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             Self::AssetReserveOperation(value) => { write_varint(15u64, out); value.as_ref().fc_serialize(out) }
             Self::AssetFundFeePoolOperation(value) => { write_varint(16u64, out); value.as_ref().fc_serialize(out) }
             Self::AssetSettleOperation(value) => { write_varint(17u64, out); value.as_ref().fc_serialize(out) }
-            Self::AssetGlobalSettleOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "AssetGlobalSettleOperation" }),
+            Self::AssetGlobalSettleOperation(value) => { write_varint(18u64, out); value.as_ref().fc_serialize(out) }
             Self::AssetPublishFeedOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "AssetPublishFeedOperation" }),
             Self::WitnessCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "WitnessCreateOperation" }),
             Self::WitnessUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "WitnessUpdateOperation" }),
@@ -636,7 +904,7 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             Self::BlindTransferOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "BlindTransferOperation" }),
             Self::TransferFromBlindOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "TransferFromBlindOperation" }),
             Self::AssetSettleCancelOperation(value) => { write_varint(42u64, out); value.as_ref().fc_serialize(out) }
-            Self::AssetClaimFeesOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "AssetClaimFeesOperation" }),
+            Self::AssetClaimFeesOperation(value) => { write_varint(43u64, out); value.as_ref().fc_serialize(out) }
             Self::FbaDistributeOperation(value) => { write_varint(44u64, out); value.as_ref().fc_serialize(out) }
             Self::BidCollateralOperation(value) => { write_varint(45u64, out); value.as_ref().fc_serialize(out) }
             Self::ExecuteBidOperation(value) => { write_varint(46u64, out); value.as_ref().fc_serialize(out) }

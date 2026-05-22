@@ -350,15 +350,7 @@ fn render_fc_id_impls(out: &mut String, protocol: &Protocol) -> Result<()> {
 }
 
 fn render_fc_transfer_path_impls(out: &mut String, protocol: &Protocol) -> Result<()> {
-    if has_type(protocol, "asset") {
-        out.push_str("impl FcSerialize for crate::generated::types::Asset {\n");
-        out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
-        out.push_str("        self.amount.fc_serialize(out)?;\n");
-        out.push_str("        self.asset_id.fc_serialize(out)?;\n");
-        out.push_str("        Ok(())\n");
-        out.push_str("    }\n");
-        out.push_str("}\n\n");
-    }
+    let supported_structs = render_fc_struct_impls(out, protocol)?;
 
     if protocol
         .static_variants
@@ -379,7 +371,7 @@ fn render_fc_transfer_path_impls(out: &mut String, protocol: &Protocol) -> Resul
         out.push_str("}\n\n");
     }
 
-    let supported_operations = render_fc_operation_impls(out, protocol)?;
+    let supported_operations = render_fc_operation_impls(out, protocol, &supported_structs)?;
 
     let operation_variant = protocol
         .static_variants
@@ -413,7 +405,69 @@ fn render_fc_transfer_path_impls(out: &mut String, protocol: &Protocol) -> Resul
     Ok(())
 }
 
-fn render_fc_operation_impls(out: &mut String, protocol: &Protocol) -> Result<BTreeSet<String>> {
+fn render_fc_struct_impls(out: &mut String, protocol: &Protocol) -> Result<BTreeSet<String>> {
+    let supported_structs = fc_supported_struct_names(protocol);
+
+    for struct_def in sorted_structs(&protocol.structs) {
+        if !supported_structs.contains(&struct_def.name) {
+            continue;
+        }
+
+        let struct_name = rust_type_name(&struct_def.name);
+        out.push_str(&format!(
+            "impl FcSerialize for crate::generated::types::{struct_name} {{\n"
+        ));
+        out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
+        let mut fields = struct_def.fields.clone();
+        fields.sort_by_key(|field| field.index);
+        if fields.is_empty() {
+            out.push_str("        let _ = out;\n");
+        }
+        for field in fields {
+            let field_name = rust_field_name(&field.name);
+            out.push_str(&format!("        self.{field_name}.fc_serialize(out)?;\n"));
+        }
+        out.push_str("        Ok(())\n");
+        out.push_str("    }\n");
+        out.push_str("}\n\n");
+    }
+
+    Ok(supported_structs)
+}
+
+fn fc_supported_struct_names(protocol: &Protocol) -> BTreeSet<String> {
+    let mut supported = BTreeSet::new();
+    let mut changed = true;
+
+    while changed {
+        changed = false;
+        for struct_def in sorted_structs(&protocol.structs) {
+            if supported.contains(&struct_def.name)
+                || struct_def.kind == StructKind::Operation
+                || is_operation_ref(protocol, &struct_def.name)
+            {
+                continue;
+            }
+
+            if struct_def
+                .fields
+                .iter()
+                .all(|field| is_fc_supported_type(protocol, &field.ty, &supported))
+            {
+                supported.insert(struct_def.name);
+                changed = true;
+            }
+        }
+    }
+
+    supported
+}
+
+fn render_fc_operation_impls(
+    out: &mut String,
+    protocol: &Protocol,
+    supported_structs: &BTreeSet<String>,
+) -> Result<BTreeSet<String>> {
     let mut supported_operations = BTreeSet::new();
 
     for operation in sorted_operations(&protocol.operations) {
@@ -423,7 +477,7 @@ fn render_fc_operation_impls(out: &mut String, protocol: &Protocol) -> Result<BT
             continue;
         }
 
-        if !is_fc_supported_operation(protocol, &operation) {
+        if !is_fc_supported_operation(protocol, &operation, supported_structs) {
             continue;
         }
 
@@ -434,6 +488,9 @@ fn render_fc_operation_impls(out: &mut String, protocol: &Protocol) -> Result<BT
         out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
         let mut fields = operation.fields.clone();
         fields.sort_by_key(|field| field.index);
+        if fields.is_empty() {
+            out.push_str("        let _ = out;\n");
+        }
         for field in fields {
             let field_name = rust_field_name(&field.name);
             out.push_str(&format!("        self.{field_name}.fc_serialize(out)?;\n"));
@@ -464,22 +521,31 @@ fn render_fc_transfer_operation_impl(out: &mut String) {
     out.push_str("}\n\n");
 }
 
-fn is_fc_supported_operation(protocol: &Protocol, operation: &OperationDef) -> bool {
+fn is_fc_supported_operation(
+    protocol: &Protocol,
+    operation: &OperationDef,
+    supported_structs: &BTreeSet<String>,
+) -> bool {
     operation
         .fields
         .iter()
-        .all(|field| is_fc_supported_type(protocol, &field.ty))
+        .all(|field| is_fc_supported_type(protocol, &field.ty, supported_structs))
 }
 
-fn is_fc_supported_type(protocol: &Protocol, ty: &TypeRef) -> bool {
+fn is_fc_supported_type(
+    protocol: &Protocol,
+    ty: &TypeRef,
+    supported_structs: &BTreeSet<String>,
+) -> bool {
     match ty {
         TypeRef::Void | TypeRef::Bool | TypeRef::Int64 { json: None, .. } => true,
         TypeRef::ObjectId | TypeRef::ProtocolObjectId { .. } => true,
-        TypeRef::Ref { name } => name == "asset" && has_type(protocol, "asset"),
+        TypeRef::Ref { name } => supported_structs.contains(name),
         TypeRef::StaticVariantRef { name } => name == "future_extensions",
-        TypeRef::Optional { .. }
-        | TypeRef::Vector { .. }
-        | TypeRef::Set { .. }
+        TypeRef::Optional { inner } | TypeRef::Vector { inner } => {
+            is_fc_supported_type(protocol, inner, supported_structs)
+        }
+        TypeRef::Set { .. }
         | TypeRef::Map { .. }
         | TypeRef::FlatMap { .. }
         | TypeRef::Pair { .. }
@@ -507,12 +573,6 @@ fn is_fc_supported_type(protocol: &Protocol, ty: &TypeRef) -> bool {
     }
 }
 
-fn has_type(protocol: &Protocol, name: &str) -> bool {
-    protocol
-        .structs
-        .iter()
-        .any(|struct_def| struct_def.name == name)
-}
 
 fn render_static_variant(
     out: &mut String,
@@ -1075,7 +1135,41 @@ mod tests {
             source_name: None,
             kind: StructKind::Struct,
             wire_tag: None,
-            fields: vec![],
+            fields: vec![
+                FieldDef {
+                    index: 0,
+                    name: "amount".to_string(),
+                    ty: TypeRef::Int64 {
+                        json: None,
+                        fc: None,
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 1,
+                    name: "asset_id".to_string(),
+                    ty: TypeRef::ProtocolObjectId {
+                        object_type: "asset".to_string(),
+                    },
+                    source: None,
+                    support: None,
+                },
+            ],
+            support: None,
+        });
+        protocol.structs.push(StructDef {
+            name: "unsupported_string_struct".to_string(),
+            source_name: None,
+            kind: StructKind::Struct,
+            wire_tag: None,
+            fields: vec![FieldDef {
+                index: 0,
+                name: "value".to_string(),
+                ty: TypeRef::String,
+                source: None,
+                support: None,
+            }],
             support: None,
         });
         protocol.operations.push(OperationDef {
@@ -1214,6 +1308,9 @@ mod tests {
 
         assert!(output.contains("pub use open_graphene_fc::{write_protocol_object_id, write_varint, FcSerialize, FcSerializeError, Result};"));
         assert!(output.contains("impl FcSerialize for crate::generated::types::Asset"));
+        assert!(output.contains("self.amount.fc_serialize(out)?;"));
+        assert!(output.contains("self.asset_id.fc_serialize(out)?;"));
+        assert!(!output.contains("impl FcSerialize for crate::generated::types::UnsupportedStringStruct"));
         assert!(output.contains("Self::TransferOperation(value) => { write_varint(0u64, out); value.as_ref().fc_serialize(out) }"));
         assert!(output.contains("impl FcSerialize for crate::generated::operations::LimitOrderCreateOperation"));
         assert!(output.contains("Self::LimitOrderCreateOperation(value) => { write_varint(1u64, out); value.as_ref().fc_serialize(out) }"));
