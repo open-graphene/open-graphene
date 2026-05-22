@@ -30,9 +30,8 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
 
     if normalized == "fee_parameters::flat_set_type" {
         return TypeRef::Set {
-            inner: Box::new(TypeRef::AnyJson {
-                reason: Some("fee_parameters::flat_set_type requires nested operation fee_params_t extraction".to_string()),
-                source: None,
+            inner: Box::new(TypeRef::StaticVariantRef {
+                name: "fee_parameters".to_string(),
             }),
             ordering: OrderingRule::StaticVariantTag,
         };
@@ -137,14 +136,18 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         | "blind_input"
         | "blind_output"
         | "chain_parameters"
+        | "custom_authority_options_type"
         | "generic_operation_result"
         | "generic_exchange_operation_result"
+        | "htlc_options"
         | "memo_data"
+        | "no_special_authority"
         | "op_wrapper"
         | "price"
         | "price_feed"
         | "restriction"
         | "stealth_confirmation"
+        | "top_holders_special_authority"
         | "void_result" => TypeRef::Ref {
             name: normalized.to_string(),
         },
@@ -179,6 +182,9 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         },
         "limit_order_auto_action" => TypeRef::StaticVariantRef {
             name: "limit_order_auto_action".to_string(),
+        },
+        "special_authority" => TypeRef::StaticVariantRef {
+            name: "special_authority".to_string(),
         },
         "void_t" => TypeRef::Void,
         "object_id_type" => TypeRef::ObjectId,
@@ -451,12 +457,8 @@ mod tests {
         assert_eq!(
             resolve_cpp_type("fee_parameters::flat_set_type"),
             TypeRef::Set {
-                inner: Box::new(TypeRef::AnyJson {
-                    reason: Some(
-                        "fee_parameters::flat_set_type requires nested operation fee_params_t extraction"
-                            .to_string()
-                    ),
-                    source: None
+                inner: Box::new(TypeRef::StaticVariantRef {
+                    name: "fee_parameters".to_string()
                 }),
                 ordering: OrderingRule::StaticVariantTag
             }
@@ -493,6 +495,30 @@ mod tests {
             resolve_cpp_type("htlc_hash"),
             TypeRef::StaticVariantRef {
                 name: "htlc_hash".to_string()
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("special_authority"),
+            TypeRef::StaticVariantRef {
+                name: "special_authority".to_string()
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("top_holders_special_authority"),
+            TypeRef::Ref {
+                name: "top_holders_special_authority".to_string()
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("htlc_options"),
+            TypeRef::Ref {
+                name: "htlc_options".to_string()
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("custom_authority_options_type"),
+            TypeRef::Ref {
+                name: "custom_authority_options_type".to_string()
             }
         );
         assert_eq!(

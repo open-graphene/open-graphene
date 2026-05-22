@@ -4,7 +4,10 @@ use std::path::PathBuf;
 pub struct SourceFacts {
     pub fc_apis: Vec<FcApi>,
     pub classes: Vec<RawClass>,
+    pub enums: Vec<RawEnum>,
     pub static_variants: Vec<RawStaticVariant>,
+    pub object_types: Vec<RawObjectType>,
+    pub reflects: Vec<RawReflect>,
     pub diagnostics: Vec<ExtractDiagnostic>,
 }
 
@@ -32,10 +35,44 @@ pub struct RawField {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RawEnum {
+    pub name: String,
+    pub values: Vec<RawEnumValue>,
+    pub source: SourceLoc,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RawEnumValue {
+    pub name: String,
+    pub value: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RawStaticVariant {
     pub name: String,
     pub variants: Vec<String>,
     pub source: SourceLoc,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RawObjectType {
+    pub object_type: String,
+    pub cpp_alias: String,
+    pub object_space_name: String,
+    pub object_space: Option<u32>,
+    pub object_type_name: String,
+    pub type_id: Option<u32>,
+    pub struct_ref: Option<String>,
+    pub source: SourceLoc,
+    pub id_namespace: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RawReflect {
+    pub type_name: String,
+    pub fields: Vec<String>,
+    pub source: SourceLoc,
+    pub derived: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

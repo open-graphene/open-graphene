@@ -47,10 +47,25 @@ pub fn extract_classes(source_text: &str, file: &Path) -> Vec<RawClass> {
                 line: class_line,
             },
         });
+        let mut nested_classes = extract_classes(body, file);
+        offset_class_lines(&mut nested_classes, class_line.saturating_sub(1));
+        classes.extend(nested_classes);
         offset = close_brace + 1;
     }
 
     classes
+}
+
+fn offset_class_lines(classes: &mut [RawClass], offset: usize) {
+    for class in classes {
+        class.source.line += offset;
+        for field in &mut class.fields {
+            field.source.line += offset;
+        }
+        for method in &mut class.methods {
+            method.source.line += offset;
+        }
+    }
 }
 
 fn find_next_record_keyword(source: &str, offset: usize) -> Option<(usize, &'static str)> {
@@ -582,6 +597,27 @@ mod tests {
         assert_eq!(classes.len(), 1);
         assert_eq!(classes[0].name, "void_result");
         assert!(classes[0].fields.is_empty());
+    }
+
+    #[test]
+    fn extracts_nested_struct_fields() {
+        let source = r#"
+            struct account_create_operation {
+               struct ext {
+                  uint16_t null_ext;
+               };
+               extension<ext> extensions;
+            };
+        "#;
+
+        let classes = extract_classes(source, &PathBuf::from("account.hpp"));
+        let nested = classes
+            .iter()
+            .find(|class| class.name == "ext")
+            .expect("nested ext extracted");
+        assert_eq!(nested.fields.len(), 1);
+        assert_eq!(nested.fields[0].name, "null_ext");
+        assert_eq!(nested.fields[0].type_expr, "uint16_t");
     }
 
     #[test]

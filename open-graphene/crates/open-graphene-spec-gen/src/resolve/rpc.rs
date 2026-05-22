@@ -400,7 +400,10 @@ mod tests {
                 },
             }],
             classes: vec![],
+            enums: vec![],
             static_variants: vec![],
+            object_types: vec![],
+            reflects: vec![],
             diagnostics: vec![],
         }
     }
