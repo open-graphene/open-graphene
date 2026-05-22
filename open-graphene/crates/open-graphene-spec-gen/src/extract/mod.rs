@@ -1,3 +1,4 @@
+pub mod classes;
 pub mod facts;
 pub mod macros;
 
@@ -6,7 +7,8 @@ use std::fs;
 use crate::error::{Result, SpecGenError};
 use crate::source::SourceSet;
 
-pub use facts::{ExtractDiagnostic, FcApi, SourceFacts, SourceLoc};
+pub use classes::extract_classes;
+pub use facts::{ExtractDiagnostic, FcApi, RawClass, RawMethod, RawParam, SourceFacts, SourceLoc};
 pub use macros::extract_fc_apis;
 
 pub fn extract_source_facts(source_set: &SourceSet) -> Result<SourceFacts> {
@@ -22,6 +24,9 @@ pub fn extract_source_facts(source_set: &SourceSet) -> Result<SourceFacts> {
         facts
             .fc_apis
             .extend(extract_fc_apis(&text, &source_file.path));
+        facts
+            .classes
+            .extend(extract_classes(&text, &source_file.path));
     }
 
     Ok(facts)

@@ -28,40 +28,154 @@
       "name": "get_objects",
       "apiClass": "database_api",
       "apiName": "database",
-      "params": [],
+      "params": [
+        {
+          "index": 0,
+          "name": "ids",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "object_id"
+            }
+          },
+          "source": {
+            "name": "ids",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/database_api.hpp",
+            "line": 73
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        },
+        {
+          "index": 1,
+          "name": "subscribe",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "bool"
+            }
+          },
+          "required": false,
+          "nullable": true,
+          "source": {
+            "name": "subscribe",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/database_api.hpp",
+            "line": 73
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        }
+      ],
       "returns": {
         "kind": "any_json",
-        "reason": "signature extraction pending"
+        "reason": "unstructured Graphene variant type: fc::variants"
       },
       "isSubscription": false,
       "source": {
         "name": "get_objects",
         "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/database_api.hpp",
-        "line": 1468
+        "line": 73
       },
       "support": {
         "status": "provisional",
-        "reason": "selected in config and present in FC_API; signature extraction pending"
+        "reason": "selected in config, present in FC_API, and signature found"
       }
     },
     {
       "name": "get_account_history",
       "apiClass": "history_api",
       "apiName": "history",
-      "params": [],
+      "params": [
+        {
+          "index": 0,
+          "name": "account_name_or_id",
+          "type": {
+            "kind": "string"
+          },
+          "source": {
+            "name": "account_name_or_id",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/api.hpp",
+            "line": 77
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        },
+        {
+          "index": 1,
+          "name": "stop",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "operation_history"
+          },
+          "required": false,
+          "source": {
+            "name": "stop",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/api.hpp",
+            "line": 77
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        },
+        {
+          "index": 2,
+          "name": "limit",
+          "type": {
+            "kind": "uint32"
+          },
+          "required": false,
+          "source": {
+            "name": "limit",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/api.hpp",
+            "line": 77
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        },
+        {
+          "index": 3,
+          "name": "start",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "operation_history"
+          },
+          "required": false,
+          "source": {
+            "name": "start",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/api.hpp",
+            "line": 77
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        }
+      ],
       "returns": {
-        "kind": "any_json",
-        "reason": "signature extraction pending"
+        "kind": "vector",
+        "inner": {
+          "kind": "any_json",
+          "reason": "unsupported C++ type mapping: operation_history_object"
+        }
       },
       "isSubscription": false,
       "source": {
         "name": "get_account_history",
         "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/api.hpp",
-        "line": 825
+        "line": 77
       },
       "support": {
         "status": "provisional",
-        "reason": "selected in config and present in FC_API; signature extraction pending"
+        "reason": "selected in config, present in FC_API, and signature found"
       }
     }
   ]

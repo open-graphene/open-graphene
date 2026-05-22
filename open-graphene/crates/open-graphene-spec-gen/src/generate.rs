@@ -16,6 +16,8 @@ pub struct GenerateResult {
     pub selected_method_count: usize,
     pub source_file_count: usize,
     pub fc_api_count: usize,
+    pub class_count: usize,
+    pub method_declaration_count: usize,
     pub resolved_rpc_method_count: usize,
     pub diagnostic_count: usize,
 }
@@ -57,6 +59,8 @@ pub fn generate_from_config(path: impl AsRef<Path>) -> Result<GenerateResult> {
     let facts = extract_source_facts(&source_set)?;
     let rpc_resolution = resolve_rpc_methods(&config, &facts);
     let resolved_rpc_method_count = rpc_resolution.methods.len();
+    let class_count = facts.classes.len();
+    let method_declaration_count = facts.classes.iter().map(|class| class.methods.len()).sum();
     let diagnostic_count = facts.diagnostics.len() + rpc_resolution.diagnostics.len();
     let protocol = build_protocol(&config, rpc_resolution.methods);
     let output_path = write_protocol_json(config_path, &config.output.dist, &protocol)?;
@@ -67,6 +71,8 @@ pub fn generate_from_config(path: impl AsRef<Path>) -> Result<GenerateResult> {
         selected_method_count: config.rpc_apis.iter().map(|api| api.methods.len()).sum(),
         source_file_count: source_set.files.len(),
         fc_api_count: facts.fc_apis.len(),
+        class_count,
+        method_declaration_count,
         resolved_rpc_method_count,
         diagnostic_count,
     })

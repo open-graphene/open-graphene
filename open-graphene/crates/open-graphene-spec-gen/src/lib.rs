@@ -16,7 +16,10 @@ pub use config::{
     ChainConfig, GeneratorConfig, OutputConfig, RpcApiConfig, SourceConfig, load_config,
 };
 pub use error::{Result, SpecGenError};
-pub use extract::{ExtractDiagnostic, FcApi, SourceFacts, SourceLoc, extract_source_facts};
+pub use extract::{
+    ExtractDiagnostic, FcApi, RawClass, RawMethod, RawParam, SourceFacts, SourceLoc,
+    extract_source_facts,
+};
 pub use generate::{GenerateResult, build_protocol, generate_from_config};
 pub use resolve::{ResolveDiagnostic, RpcResolution, resolve_rpc_methods};
 pub use source::{SourceFile, SourceFileKind, SourceSet, discover_sources, resolve_chain_repo};
