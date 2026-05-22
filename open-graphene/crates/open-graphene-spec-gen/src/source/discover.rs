@@ -88,15 +88,17 @@ mod tests {
     #[test]
     fn resolves_relative_chain_repo_against_config_dir() {
         let resolved = resolve_chain_repo(
-            Path::new("/repo/open-graphene-spec/graphene-spec-bitshares/open-graphene.toml"),
-            "../../blockchains/bitshares/bitshares-core",
+            Path::new(
+                "/repo/open-graphene-bindings/graphene-bitshares/graphene-bitshares-spec/open-graphene.toml",
+            ),
+            "../../../blockchains/bitshares/bitshares-core",
         )
         .expect("resolve chain repo");
 
         assert_eq!(
             resolved,
             PathBuf::from(
-                "/repo/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core"
+                "/repo/open-graphene-bindings/graphene-bitshares/graphene-bitshares-spec/../../../blockchains/bitshares/bitshares-core"
             )
         );
     }

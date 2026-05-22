@@ -1,0 +1,8 @@
+[package]
+name = "graphene-acta-bindings"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "Generated Rust bindings for the acta Open Graphene protocol."
+
+[dependencies]

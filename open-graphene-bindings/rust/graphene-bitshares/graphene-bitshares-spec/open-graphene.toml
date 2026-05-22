@@ -3,7 +3,7 @@ id = "bitshares"
 public_key_prefix = "BTS"
 
 [source]
-chain_repo = "../../blockchains/bitshares/bitshares-core"
+chain_repo = "../../../../blockchains/bitshares/bitshares-core"
 
 [output]
 dist = "./dist/bitshares.open-graphene.json"

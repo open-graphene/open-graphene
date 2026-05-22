@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PACKAGE_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-REPO_ROOT="$(cd "${PACKAGE_DIR}/../.." && pwd)"
+REPO_ROOT="$(cd "${PACKAGE_DIR}/../../../.." && pwd)"
 OPEN_GRAPHENE_DIR="${REPO_ROOT}/open-graphene"
 CONFIG_FILE="${PACKAGE_DIR}/open-graphene.toml"
 
