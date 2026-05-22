@@ -30,4 +30,6 @@ pub enum GenBindingsRsError {
         #[source]
         source: std::io::Error,
     },
+    #[error("failed to render generated Rust bindings: {message}")]
+    Render { message: String },
 }
