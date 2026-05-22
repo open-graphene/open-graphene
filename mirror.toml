@@ -1,0 +1,43 @@
+[[repositories]]
+git = "git@github.com:open-graphene/open-graphene.git"
+branch = "main"
+path = "."
+flat = true
+
+[[repositories]]
+git = "git@github.com:bitshares/python-bitshares.git"
+path = "blockchains/bitshares/python-bitshares"
+
+[[repositories]]
+git = "git@github.com:bitshares/bitsharesjs.git"
+path = "blockchains/bitshares/bitsharesjs"
+
+[[repositories]]
+git = "git@github.com:bitshares/bitsharesjs-ws.git"
+path = "blockchains/bitshares/bitsharesjs-ws"
+
+[[repositories]]
+git = "git@github.com:R-Squared-Project/R-Squared-core.git"
+path = "blockchains/rsquared/R-Squared-core"
+
+[[repositories]]
+git = "git@github.com:R-Squared-Project/R-Squared-js.git"
+path = "blockchains/rsquared/R-Squared-js"
+
+[[repositories]]
+git = "git@github.com:R-Squared-Project/R-Squaredjs-ws.git"
+path = "blockchains/rsquared/R-Squaredjs-ws"
+
+[[repositories]]
+git = "git@github.com:acta-network/acta-network-core.git"
+path = "blockchains/acta-network/acta-network-core"
+
+[[repositories]]
+git = "git@github.com:bitshares/bitshares-core.git"
+path = "blockchains/bitshares/bitshares-core"
+readonly = true
+
+[[repositories]]
+git = "git@github.com:swaplock/swaplock-core.git"
+path = "blockchains/swaplock/swaplock-core"
+readonly = true
