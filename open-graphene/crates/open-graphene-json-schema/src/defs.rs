@@ -127,6 +127,41 @@ pub struct ObjectTypeDef {
     pub support: Option<SupportDef>,
 }
 
+fn is_true(value: &bool) -> bool {
+    *value
+}
+
+fn is_false(value: &bool) -> bool {
+    !*value
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct RpcParamDef {
+    pub index: u32,
+    pub name: String,
+    #[serde(rename = "type")]
+    pub ty: TypeRef,
+    /// Whether callers must provide this positional parameter.
+    ///
+    /// Graphene RPC parameters with C++ defaults are commonly omittable only
+    /// from the end of the positional argument list.
+    #[serde(default = "default_required", skip_serializing_if = "is_true")]
+    pub required: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub default_value: Option<String>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub nullable: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source: Option<SourceMeta>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub support: Option<SupportDef>,
+}
+
+fn default_required() -> bool {
+    true
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RpcMethodDef {
@@ -136,7 +171,7 @@ pub struct RpcMethodDef {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub api_name: Option<String>,
     #[serde(default)]
-    pub params: Vec<FieldDef>,
+    pub params: Vec<RpcParamDef>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub returns: Option<TypeRef>,
     #[serde(default)]

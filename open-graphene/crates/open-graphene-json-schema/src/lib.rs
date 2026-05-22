@@ -19,8 +19,8 @@ pub mod types;
 
 pub use defs::{
     ChainDef, DependentReturnDef, EnumDef, EnumValueDef, FieldDef, ObjectTypeDef, OperationDef,
-    RpcBindingHintsDef, RpcMethodDef, StaticVariantArmDef, StaticVariantDef, StrictModeDef,
-    StructDef, StructKind,
+    RpcBindingHintsDef, RpcMethodDef, RpcParamDef, StaticVariantArmDef, StaticVariantDef,
+    StrictModeDef, StructDef, StructKind,
 };
 pub use support::{SourceMeta, SupportDef, SupportStatus};
 pub use types::{FcEncoding, JsonShape, OrderingRule, TypeRef};
@@ -153,7 +153,32 @@ mod tests {
             name: "get_objects".to_string(),
             api_class: "database_api".to_string(),
             api_name: Some("database".to_string()),
-            params: vec![],
+            params: vec![
+                RpcParamDef {
+                    index: 0,
+                    name: "ids".to_string(),
+                    ty: TypeRef::Vector {
+                        inner: Box::new(TypeRef::ObjectId),
+                    },
+                    required: true,
+                    default_value: None,
+                    nullable: false,
+                    source: None,
+                    support: None,
+                },
+                RpcParamDef {
+                    index: 1,
+                    name: "subscribe".to_string(),
+                    ty: TypeRef::Optional {
+                        inner: Box::new(TypeRef::Bool),
+                    },
+                    required: false,
+                    default_value: Some("optional<bool>()".to_string()),
+                    nullable: true,
+                    source: None,
+                    support: None,
+                },
+            ],
             returns: Some(TypeRef::Vector {
                 inner: Box::new(TypeRef::Optional {
                     inner: Box::new(TypeRef::ProtocolObjectUnion {
@@ -194,6 +219,16 @@ mod tests {
         assert_eq!(json["objectTypes"][0]["source"]["line"], 42);
         assert_eq!(json["rpcMethods"][0]["apiClass"], "database_api");
         assert_eq!(json["rpcMethods"][0]["apiName"], "database");
+        assert_eq!(json["rpcMethods"][0]["params"][0]["name"], "ids");
+        assert!(json["rpcMethods"][0]["params"][0]["required"].is_null());
+        assert!(json["rpcMethods"][0]["params"][0]["nullable"].is_null());
+        assert_eq!(json["rpcMethods"][0]["params"][1]["name"], "subscribe");
+        assert_eq!(json["rpcMethods"][0]["params"][1]["required"], false);
+        assert_eq!(json["rpcMethods"][0]["params"][1]["nullable"], true);
+        assert_eq!(
+            json["rpcMethods"][0]["params"][1]["defaultValue"],
+            "optional<bool>()"
+        );
         assert_eq!(json["rpcMethods"][0]["returns"]["kind"], "vector");
         assert_eq!(
             json["rpcMethods"][0]["returns"]["inner"]["kind"],
