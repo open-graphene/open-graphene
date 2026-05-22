@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use super::facts::{RawClass, RawMethod, RawParam, SourceLoc};
+use super::facts::{RawClass, RawField, RawMethod, RawParam, SourceLoc};
 
 pub fn extract_classes(source_text: &str, file: &Path) -> Vec<RawClass> {
     let source = strip_comments_preserving_newlines(source_text);
@@ -42,6 +42,7 @@ pub fn extract_classes(source_text: &str, file: &Path) -> Vec<RawClass> {
             name,
             qualified_name: None,
             methods: extract_methods_from_class_body(body, file, class_line),
+            fields: extract_fields_from_class_body(body, file, class_line),
             source: SourceLoc {
                 file: file.to_path_buf(),
                 line: class_line,
@@ -67,7 +68,12 @@ fn extract_methods_from_class_body(body: &str, file: &Path, class_line: usize) -
             '<' => angle_depth += 1,
             '>' => angle_depth = angle_depth.saturating_sub(1),
             '{' => brace_depth += 1,
-            '}' => brace_depth = brace_depth.saturating_sub(1),
+            '}' => {
+                brace_depth = brace_depth.saturating_sub(1);
+                if brace_depth == 0 {
+                    statement_start = index + ch.len_utf8();
+                }
+            }
             ';' if paren_depth == 0 && angle_depth == 0 && brace_depth == 0 => {
                 let statement = &body[statement_start..index];
                 let statement_line = class_line + line_number(body, statement_start) - 1;
@@ -81,6 +87,68 @@ fn extract_methods_from_class_body(body: &str, file: &Path, class_line: usize) -
     }
 
     methods
+}
+
+fn extract_fields_from_class_body(body: &str, file: &Path, class_line: usize) -> Vec<RawField> {
+    let mut fields = Vec::new();
+    let mut statement_start = 0usize;
+    let mut paren_depth = 0usize;
+    let mut angle_depth = 0usize;
+    let mut brace_depth = 0usize;
+
+    for (index, ch) in body.char_indices() {
+        match ch {
+            '(' => paren_depth += 1,
+            ')' => paren_depth = paren_depth.saturating_sub(1),
+            '<' => angle_depth += 1,
+            '>' => angle_depth = angle_depth.saturating_sub(1),
+            '{' => brace_depth += 1,
+            '}' => {
+                brace_depth = brace_depth.saturating_sub(1);
+                if brace_depth == 0 {
+                    statement_start = index + ch.len_utf8();
+                }
+            }
+            ';' if paren_depth == 0 && angle_depth == 0 && brace_depth == 0 => {
+                let statement = &body[statement_start..index];
+                let statement_line = class_line + line_number(body, statement_start) - 1;
+                if let Some(field) = parse_field_statement(statement, file, statement_line) {
+                    fields.push(field);
+                }
+                statement_start = index + ch.len_utf8();
+            }
+            _ => {}
+        }
+    }
+
+    fields
+}
+
+fn parse_field_statement(statement: &str, file: &Path, line: usize) -> Option<RawField> {
+    let statement = collapse_whitespace(statement);
+    let statement = strip_access_labels(&statement).trim().to_string();
+    if statement.is_empty()
+        || statement.contains('(')
+        || statement.starts_with("typedef ")
+        || statement.starts_with("using ")
+        || statement.starts_with("friend ")
+        || statement.starts_with("enum ")
+        || statement.starts_with("struct ")
+        || statement.starts_with("static ")
+    {
+        return None;
+    }
+
+    let (without_default, _) = split_default_value(&statement);
+    let (type_expr, name) = split_type_and_param_name(without_default.trim())?;
+    Some(RawField {
+        name: name.to_string(),
+        type_expr: type_expr.to_string(),
+        source: SourceLoc {
+            file: file.to_path_buf(),
+            line,
+        },
+    })
 }
 
 fn parse_method_statement(statement: &str, file: &Path, line: usize) -> Option<RawMethod> {
@@ -389,6 +457,31 @@ mod tests {
         assert_eq!(classes.len(), 1);
         assert_eq!(classes[0].name, "database_api");
         assert_eq!(classes[0].methods[0].name, "get_objects");
+    }
+
+    #[test]
+    fn extracts_fields_after_inline_constructor_bodies() {
+        let source = r#"
+            class operation_history_object
+            {
+            public:
+               explicit operation_history_object( const operation& o ):op(o){}
+               operation_history_object() = default;
+               operation         op;
+               operation_result  result;
+               uint32_t          block_num = 0;
+            };
+        "#;
+
+        let classes = extract_classes(source, &PathBuf::from("operation_history_object.hpp"));
+        let fields = &classes[0].fields;
+        assert_eq!(fields.len(), 3);
+        assert_eq!(fields[0].name, "op");
+        assert_eq!(fields[0].type_expr, "operation");
+        assert_eq!(fields[1].name, "result");
+        assert_eq!(fields[1].type_expr, "operation_result");
+        assert_eq!(fields[2].name, "block_num");
+        assert_eq!(fields[2].type_expr, "uint32_t");
     }
 
     #[test]

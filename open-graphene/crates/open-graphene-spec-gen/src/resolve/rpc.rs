@@ -418,6 +418,7 @@ mod tests {
                     line: 20,
                 },
             }],
+            fields: vec![],
             source: SourceLoc {
                 file: PathBuf::from("database_api.hpp"),
                 line: 5,

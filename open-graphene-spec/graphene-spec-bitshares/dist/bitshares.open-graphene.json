@@ -4,7 +4,148 @@
     "id": "bitshares",
     "publicKeyPrefix": "BTS"
   },
-  "structs": [],
+  "structs": [
+    {
+      "name": "operation_history_object",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "op",
+          "type": {
+            "kind": "static_variant_ref",
+            "name": "operation"
+          },
+          "source": {
+            "name": "op",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/operation_history_object.hpp",
+            "line": 54
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 1,
+          "name": "result",
+          "type": {
+            "kind": "static_variant_ref",
+            "name": "operation_result"
+          },
+          "source": {
+            "name": "result",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/operation_history_object.hpp",
+            "line": 56
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 2,
+          "name": "block_num",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "block_num",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/operation_history_object.hpp",
+            "line": 57
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 3,
+          "name": "trx_in_block",
+          "type": {
+            "kind": "uint16"
+          },
+          "source": {
+            "name": "trx_in_block",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/operation_history_object.hpp",
+            "line": 59
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 4,
+          "name": "op_in_trx",
+          "type": {
+            "kind": "uint16"
+          },
+          "source": {
+            "name": "op_in_trx",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/operation_history_object.hpp",
+            "line": 61
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 5,
+          "name": "virtual_op",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "virtual_op",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/operation_history_object.hpp",
+            "line": 63
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 6,
+          "name": "is_virtual",
+          "type": {
+            "kind": "bool"
+          },
+          "source": {
+            "name": "is_virtual",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/operation_history_object.hpp",
+            "line": 65
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 7,
+          "name": "block_time",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "block_time",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-spec/graphene-spec-bitshares/../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/operation_history_object.hpp",
+            "line": 67
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+      }
+    }
+  ],
   "enums": [],
   "staticVariants": [],
   "operations": [],

@@ -47,6 +47,14 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
             fc: None,
         },
         "string" | "std::string" => TypeRef::String,
+        "time_point_sec" | "fc::time_point_sec" => TypeRef::TimePointSec,
+        "time_point" | "fc::time_point" => TypeRef::TimePoint,
+        "operation" => TypeRef::StaticVariantRef {
+            name: "operation".to_string(),
+        },
+        "operation_result" => TypeRef::StaticVariantRef {
+            name: "operation_result".to_string(),
+        },
         "object_id_type" => TypeRef::ObjectId,
         "fc::variants" | "fc::variant" | "fc::variant_object" => TypeRef::AnyJson {
             reason: Some(format!("unstructured Graphene variant type: {normalized}")),
@@ -133,6 +141,23 @@ mod tests {
                 object_type: "operation_history".to_string()
             }
         );
+    }
+
+    #[test]
+    fn maps_graphene_static_variant_and_time_types() {
+        assert_eq!(
+            resolve_cpp_type("operation"),
+            TypeRef::StaticVariantRef {
+                name: "operation".to_string()
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("operation_result"),
+            TypeRef::StaticVariantRef {
+                name: "operation_result".to_string()
+            }
+        );
+        assert_eq!(resolve_cpp_type("time_point_sec"), TypeRef::TimePointSec);
     }
 
     #[test]

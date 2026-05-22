@@ -56,9 +56,10 @@ pub fn resolve_chain_repo(config_path: &Path, chain_repo: &str) -> Result<PathBu
     Ok(config_dir.join(path))
 }
 
-fn rpc_header_roots(chain_repo: &Path) -> [PathBuf; 2] {
+fn rpc_header_roots(chain_repo: &Path) -> [PathBuf; 3] {
     [
         chain_repo.join("libraries/app/include"),
+        chain_repo.join("libraries/chain/include"),
         chain_repo.join("libraries/plugins"),
     ]
 }

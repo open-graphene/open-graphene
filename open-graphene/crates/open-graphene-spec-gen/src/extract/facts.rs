@@ -19,6 +19,14 @@ pub struct RawClass {
     pub name: String,
     pub qualified_name: Option<String>,
     pub methods: Vec<RawMethod>,
+    pub fields: Vec<RawField>,
+    pub source: SourceLoc,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RawField {
+    pub name: String,
+    pub type_expr: String,
     pub source: SourceLoc,
 }
 
