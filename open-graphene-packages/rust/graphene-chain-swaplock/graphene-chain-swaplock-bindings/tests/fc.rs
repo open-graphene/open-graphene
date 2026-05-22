@@ -1,6 +1,6 @@
 use graphene_chain_swaplock_bindings::generated::{
     AccountId, Asset, AssetId, FcSerialize, FcSerializeError, FutureExtensions,
-    LimitOrderCreateOperation, Operation, TransferOperation,
+    LimitOrderCancelOperation, LimitOrderCreateOperation, LimitOrderId, Operation, TransferOperation,
 };
 
 fn sample_transfer_operation() -> TransferOperation {
@@ -18,6 +18,43 @@ fn sample_transfer_operation() -> TransferOperation {
         memo: None,
         extensions: FutureExtensions::VoidT(Box::new(())),
     }
+}
+
+fn sample_limit_order_create_operation() -> LimitOrderCreateOperation {
+    LimitOrderCreateOperation {
+        fee: Asset {
+            amount: 0,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        seller: AccountId("1.2.1".to_string()),
+        amount_to_sell: Asset {
+            amount: 1,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        min_to_receive: Asset {
+            amount: 2,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        fill_or_kill: true,
+        extensions: FutureExtensions::VoidT(Box::new(())),
+    }
+}
+
+fn expected_limit_order_create_payload() -> Vec<u8> {
+    vec![
+        // fee: amount 0 + asset instance 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        // seller account instance 1
+        1,
+        // amount_to_sell: amount 1 + asset instance 0
+        1, 0, 0, 0, 0, 0, 0, 0, 0,
+        // min_to_receive: amount 2 + asset instance 0
+        2, 0, 0, 0, 0, 0, 0, 0, 0,
+        // fill_or_kill true
+        1,
+        // extensions: future_extensions VoidT static variant tag 0
+        0,
+    ]
 }
 
 #[test]
@@ -63,31 +100,44 @@ fn operation_fc_serializes_transfer_tag_and_payload() {
 }
 
 #[test]
-fn operation_fc_reports_unsupported_non_transfer_variant() {
-    let operation = Operation::LimitOrderCreateOperation(Box::new(LimitOrderCreateOperation {
+fn limit_order_create_operation_fc_serializes_known_fields() {
+    let operation = sample_limit_order_create_operation();
+
+    assert_eq!(
+        operation.to_fc_bytes().expect("serialize limit order create"),
+        expected_limit_order_create_payload()
+    );
+}
+
+#[test]
+fn operation_fc_serializes_limit_order_create_tag_and_payload() {
+    let operation = Operation::LimitOrderCreateOperation(Box::new(sample_limit_order_create_operation()));
+    let bytes = operation.to_fc_bytes().expect("serialize operation");
+
+    let mut expected = vec![1];
+    expected.extend(expected_limit_order_create_payload());
+
+    assert_eq!(bytes, expected);
+}
+
+#[test]
+fn operation_fc_reports_unsupported_variant() {
+    let operation = Operation::LimitOrderCancelOperation(Box::new(LimitOrderCancelOperation {
         fee: Asset {
             amount: 0,
             asset_id: AssetId("1.3.0".to_string()),
         },
-        seller: AccountId("1.2.1".to_string()),
-        amount_to_sell: Asset {
-            amount: 1,
-            asset_id: AssetId("1.3.0".to_string()),
-        },
-        min_to_receive: Asset {
-            amount: 1,
-            asset_id: AssetId("1.3.0".to_string()),
-        },
-        fill_or_kill: false,
+        fee_paying_account: AccountId("1.2.1".to_string()),
+        order: LimitOrderId("1.7.1".to_string()),
         extensions: FutureExtensions::VoidT(Box::new(())),
     }));
 
-    let err = operation.to_fc_bytes().expect_err("non-transfer is explicit unsupported");
+    let err = operation.to_fc_bytes().expect_err("unsupported variant fails explicitly");
 
     assert!(matches!(
         err,
         FcSerializeError::UnsupportedVariant {
-            variant: "LimitOrderCreateOperation"
+            variant: "LimitOrderCancelOperation"
         }
     ));
 }

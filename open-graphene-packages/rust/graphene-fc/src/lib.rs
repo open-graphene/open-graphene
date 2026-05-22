@@ -140,6 +140,13 @@ impl FcSerialize for () {
     }
 }
 
+impl FcSerialize for bool {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        out.push(u8::from(*self));
+        Ok(())
+    }
+}
+
 impl FcSerialize for i64 {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         out.extend_from_slice(&self.to_le_bytes());
@@ -185,6 +192,12 @@ mod tests {
         let mut out = Vec::new();
         write_varint(128, &mut out);
         assert_eq!(out, [0x80, 0x01]);
+    }
+
+    #[test]
+    fn bool_serializes_as_single_fc_byte() {
+        assert_eq!(false.to_fc_bytes().unwrap(), [0]);
+        assert_eq!(true.to_fc_bytes().unwrap(), [1]);
     }
 
     #[test]

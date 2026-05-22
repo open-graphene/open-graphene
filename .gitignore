@@ -53,13 +53,12 @@ tmp/
 !open-graphene/**
 open-graphene/target/
 open-graphene/target/**
-
-!open-graphene-spec
-!open-graphene-spec/**
-open-graphene-spec/target/
-open-graphene-spec/target/**
+open-graphene/**/target/
+open-graphene/**/target/**
 
 !open-graphene-packages
 !open-graphene-packages/**
 open-graphene-packages/target/
 open-graphene-packages/target/**
+open-graphene-packages/**/target/
+open-graphene-packages/**/target/**
