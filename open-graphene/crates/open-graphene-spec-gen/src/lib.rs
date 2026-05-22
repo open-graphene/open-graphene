@@ -50,6 +50,7 @@ pub enum SpecGenError {
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 pub struct GeneratorConfig {
     pub chain: ChainConfig,
+    pub source: SourceConfig,
     pub output: OutputConfig,
     #[serde(default)]
     pub rpc_apis: Vec<RpcApiConfig>,
@@ -59,6 +60,11 @@ pub struct GeneratorConfig {
 pub struct ChainConfig {
     pub id: String,
     pub public_key_prefix: String,
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+pub struct SourceConfig {
+    pub chain_repo: String,
 }
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
@@ -191,6 +197,9 @@ mod tests {
             [output]
             dist = "./dist/bitshares.open-graphene.json"
 
+            [source]
+            chain_repo = "../../blockchains/bitshares/bitshares-core"
+
             [[rpc_apis]]
             name = "database"
             class = "database_api"
@@ -204,6 +213,10 @@ mod tests {
         assert_eq!(protocol.schema_version, 1);
         assert_eq!(protocol.chain.id, "bitshares");
         assert_eq!(protocol.chain.public_key_prefix, "BTS");
+        assert_eq!(
+            config.source.chain_repo,
+            "../../blockchains/bitshares/bitshares-core"
+        );
         assert_eq!(protocol.rpc_apis.len(), 1);
         assert_eq!(protocol.rpc_apis[0].name, "database");
         assert_eq!(protocol.rpc_apis[0].api_class, "database_api");
