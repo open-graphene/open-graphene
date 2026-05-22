@@ -403,6 +403,7 @@ fn render_fc_transfer_path_impls(out: &mut String, protocol: &Protocol) -> Resul
     render_fc_vesting_policy_initializer_impl(out, protocol)?;
     render_fc_worker_initializer_impl(out, protocol)?;
     render_fc_limit_order_auto_action_impl(out, protocol)?;
+    render_fc_fee_parameters_impl(out, protocol)?;
 
     let supported_operations = render_fc_operation_impls(out, protocol, &supported_structs)?;
 
@@ -653,6 +654,55 @@ fn render_fc_limit_order_auto_action_impl(out: &mut String, protocol: &Protocol)
     Ok(())
 }
 
+fn render_fc_fee_parameters_impl(out: &mut String, protocol: &Protocol) -> Result<()> {
+    let Some(variant) = protocol
+        .static_variants
+        .iter()
+        .find(|variant| variant.name == "fee_parameters")
+    else {
+        return Ok(());
+    };
+
+    out.push_str("fn fee_parameters_tag(value: &crate::generated::static_variants::FeeParameters) -> u64 {\n");
+    out.push_str("    match value {\n");
+    let mut arms = variant.variants.clone();
+    arms.sort_by_key(|arm| arm.tag);
+    for arm in &arms {
+        let variant_name = rust_variant_name(&arm.name);
+        out.push_str(&format!(
+            "        crate::generated::static_variants::FeeParameters::{variant_name}(_) => {}u64,\n",
+            arm.tag
+        ));
+    }
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
+
+    out.push_str("impl FcSerialize for crate::generated::static_variants::FeeParameters {\n");
+    out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
+    out.push_str("        match self {\n");
+
+    for arm in arms {
+        if !matches!(arm.ty, TypeRef::Ref { .. }) {
+            return Err(GenBindingsRsError::Render {
+                message: format!(
+                    "unsupported fee_parameters variant `{}` payload type for FC rendering",
+                    arm.name
+                ),
+            });
+        }
+        let variant_name = rust_variant_name(&arm.name);
+        out.push_str(&format!(
+            "            Self::{variant_name}(value) => {{\n                write_varint({}u64, out);\n                value.as_ref().fc_serialize(out)\n            }}\n",
+            arm.tag
+        ));
+    }
+
+    out.push_str("        }\n");
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
+    Ok(())
+}
+
 fn fc_supported_struct_names(protocol: &Protocol) -> BTreeSet<String> {
     let mut supported = BTreeSet::new();
     let mut changed = true;
@@ -815,6 +865,9 @@ fn render_fc_value_serialize_lines(value_expr: &str, ty: &TypeRef, indent: &str)
              {indent}}}\n",
             render_vote_id_arg("value", inner)?
         )),
+        TypeRef::Set { inner, .. } if is_fee_parameters_type(inner) => {
+            render_fc_static_variant_set_serialize_lines(value_expr, inner, indent)
+        }
         TypeRef::Set { inner, .. } if is_fc_supported_set(inner) => {
             render_fc_set_serialize_lines(value_expr, inner, indent)
         }
@@ -867,6 +920,31 @@ fn render_fc_set_serialize_lines(value_expr: &str, inner: &TypeRef, indent: &str
             message: "internal error: unsupported set value type".to_string(),
         }),
     }
+}
+
+fn render_fc_static_variant_set_serialize_lines(
+    value_expr: &str,
+    inner: &TypeRef,
+    indent: &str,
+) -> Result<String> {
+    if !is_fee_parameters_type(inner) {
+        return Err(GenBindingsRsError::Render {
+            message: "internal error: unsupported static variant set type".to_string(),
+        });
+    }
+
+    Ok(format!(
+        "{indent}write_varint({value_expr}.len() as u64, out);\n\
+         {indent}let mut previous_key: Option<u64> = None;\n\
+         {indent}for value in &{value_expr} {{\n\
+         {indent}    let key = fee_parameters_tag(value);\n\
+         {indent}    if previous_key.is_some_and(|previous| previous >= key) {{\n\
+         {indent}        return Err(FcSerializeError::UnsupportedValue {{ type_name: \"Set\", reason: \"set values must be sorted and unique\" }});\n\
+         {indent}    }}\n\
+         {indent}    previous_key = Some(key);\n\
+         {indent}    value.fc_serialize(out)?;\n\
+         {indent}}}\n"
+    ))
 }
 
 fn render_fc_flat_map_serialize_lines(
@@ -929,6 +1007,10 @@ fn render_fc_flat_map_serialize_lines(
 
 fn is_fc_supported_set(inner: &TypeRef) -> bool {
     matches!(inner, TypeRef::ProtocolObjectId { .. } | TypeRef::PublicKey { .. })
+}
+
+fn is_fee_parameters_type(ty: &TypeRef) -> bool {
+    matches!(ty, TypeRef::StaticVariantRef { name } if name == "fee_parameters")
 }
 
 fn is_fc_supported_flat_map(key: &TypeRef, value: &TypeRef) -> bool {
@@ -1037,11 +1119,13 @@ fn is_fc_supported_type(
                 || name == "vesting_policy_initializer"
                 || name == "worker_initializer"
                 || name == "limit_order_auto_action"
+                || name == "fee_parameters"
         }
         TypeRef::Optional { inner } | TypeRef::Vector { inner } => {
             is_fc_supported_type(protocol, inner, supported_structs)
         }
         TypeRef::Set { inner, .. } if is_vote_id_type(inner) => true,
+        TypeRef::Set { inner, .. } if is_fee_parameters_type(inner) => true,
         TypeRef::Set { inner, .. } if is_fc_supported_set(inner) => true,
         TypeRef::FlatMap { key, value, .. } if is_fc_supported_flat_map(key, value) => true,
         TypeRef::Set { .. }

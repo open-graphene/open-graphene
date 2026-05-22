@@ -2,14 +2,15 @@ use graphene_chain_swaplock_bindings::generated::{
     AccountCreateOperation, AccountCreateOperationExt, AccountId, AccountNameEqLitPredicate,
     AccountOptions, Asset, AssetId, AssetSymbolEqLitPredicate, AssetUpdateFeedProducersOperation,
     AssertOperation, Authority, BlockIdPredicate, BurnWorkerInitializer, CddVestingPolicyInitializer,
-    CreateTakeProfitOrderAction, CreditOfferCreateOperation, CreditOfferId, CreditOfferUpdateOperation,
-    CustomOperation, FcSerialize, FcSerializeError, FutureExtensions, HtlcHash, HtlcId,
+    ChainParameters, ChainParametersExt, CommitteeMemberUpdateGlobalParametersOperation,
+    CommitteeMemberUpdateGlobalParametersOperationFeeParamsT, CreateTakeProfitOrderAction, CreditOfferCreateOperation, CreditOfferId, CreditOfferUpdateOperation,
+    CustomOperation, FcSerialize, FcSerializeError, FeeParameters, FeeSchedule, FutureExtensions, HtlcHash, HtlcId,
     HtlcRefundOperation, InstantVestingPolicyInitializer, LimitOrderAutoAction, LinearVestingPolicyInitializer,
     LimitOrderCancelOperation, LimitOrderCreateOperation, LimitOrderId, LimitOrderUpdateOperation,
     NoSpecialAuthority, Operation, Predicate, Price, ProposalCreateOperation, RefundWorkerInitializer, SpecialAuthority,
-    TopHoldersSpecialAuthority, TransferOperation, VestingBalanceCreateOperation,
-    VestingBalanceWorkerInitializer, VestingPolicyInitializer, VoteId, WorkerCreateOperation,
-    WorkerInitializer, WithdrawPermissionCreateOperation,
+    TopHoldersSpecialAuthority, TransferOperation, TransferOperationFeeParamsT,
+    VestingBalanceCreateOperation, VestingBalanceWorkerInitializer, VestingPolicyInitializer, VoteId,
+    WorkerCreateOperation, WorkerInitializer, WithdrawPermissionCreateOperation,
 };
 
 fn sample_transfer_operation() -> TransferOperation {
@@ -136,6 +137,71 @@ fn sample_credit_offer_update_operation() -> CreditOfferUpdateOperation {
         acceptable_collateral: Some(vec![(AssetId("1.3.0".to_string()), sample_price())]),
         acceptable_borrowers: Some(vec![(AccountId("1.2.1".to_string()), 99)]),
         extensions: FutureExtensions::VoidT(Box::new(())),
+    }
+}
+
+fn sample_fee_schedule() -> FeeSchedule {
+    FeeSchedule {
+        parameters: vec![
+            FeeParameters::TransferOperationFeeParamsT(Box::new(TransferOperationFeeParamsT {
+                fee: 5,
+                price_per_kbyte: 6,
+            })),
+            FeeParameters::CommitteeMemberUpdateGlobalParametersOperationFeeParamsT(Box::new(
+                CommitteeMemberUpdateGlobalParametersOperationFeeParamsT { fee: 7 },
+            )),
+        ],
+        scale: 100,
+    }
+}
+
+fn sample_chain_parameters() -> ChainParameters {
+    ChainParameters {
+        current_fees: sample_fee_schedule(),
+        block_interval: 0,
+        maintenance_interval: 0,
+        maintenance_skip_slots: 0,
+        committee_proposal_review_period: 0,
+        maximum_transaction_size: 0,
+        maximum_block_size: 0,
+        maximum_time_until_expiration: 0,
+        maximum_proposal_lifetime: 0,
+        maximum_asset_whitelist_authorities: 0,
+        maximum_asset_feed_publishers: 0,
+        maximum_witness_count: 0,
+        maximum_committee_count: 0,
+        maximum_authority_membership: 0,
+        reserve_percent_of_fee: 0,
+        network_percent_of_fee: 0,
+        lifetime_referrer_percent_of_fee: 0,
+        cashback_vesting_period_seconds: 0,
+        cashback_vesting_threshold: 0,
+        count_non_member_votes: false,
+        allow_non_member_whitelists: false,
+        witness_pay_per_block: 0,
+        worker_budget_per_day: 0,
+        max_predicate_opcode: 0,
+        fee_liquidation_threshold: 0,
+        accounts_per_fee_scale: 0,
+        account_fee_scale_bitshifts: 0,
+        max_authority_depth: 0,
+        extensions: ChainParametersExt {
+            updatable_htlc_options: None,
+            custom_authority_options: None,
+            market_fee_network_percent: None,
+            maker_fee_discount_percent: None,
+        },
+    }
+}
+
+fn sample_committee_member_update_global_parameters_operation(
+) -> CommitteeMemberUpdateGlobalParametersOperation {
+    CommitteeMemberUpdateGlobalParametersOperation {
+        fee: Asset {
+            amount: 0,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        new_parameters: sample_chain_parameters(),
     }
 }
 
@@ -418,6 +484,37 @@ fn expected_credit_offer_update_payload() -> Vec<u8> {
     bytes.extend_from_slice(&[1, 1, 1, 99, 0, 0, 0, 0, 0, 0, 0]);
     // extensions tag 0
     bytes.push(0);
+    bytes
+}
+
+fn expected_fee_schedule_payload() -> Vec<u8> {
+    let mut bytes = Vec::new();
+    // parameters set length 2
+    bytes.push(2);
+    // transfer_operation_fee_params_t tag 0, fee u64 5, price_per_kbyte u32 6
+    bytes.push(0);
+    bytes.extend_from_slice(&[5, 0, 0, 0, 0, 0, 0, 0]);
+    bytes.extend_from_slice(&[6, 0, 0, 0]);
+    // committee_member_update_global_parameters_operation_fee_params_t tag 31, fee u64 7
+    bytes.push(31);
+    bytes.extend_from_slice(&[7, 0, 0, 0, 0, 0, 0, 0]);
+    // scale u32 100
+    bytes.extend_from_slice(&[100, 0, 0, 0]);
+    bytes
+}
+
+fn expected_chain_parameters_payload() -> Vec<u8> {
+    let mut bytes = expected_fee_schedule_payload();
+    // remaining scalar chain_parameters fields are zero in sample_chain_parameters.
+    bytes.extend(vec![0; 88]);
+    bytes
+}
+
+fn expected_committee_member_update_global_parameters_payload() -> Vec<u8> {
+    let mut bytes = Vec::new();
+    // fee amount 0 + asset instance 0
+    bytes.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    bytes.extend(expected_chain_parameters_payload());
     bytes
 }
 
@@ -914,6 +1011,100 @@ fn operation_fc_serializes_credit_offer_tags_and_payloads() {
         .expect("serialize credit offer update variant");
     let mut expected = vec![71];
     expected.extend(expected_credit_offer_update_payload());
+    assert_eq!(bytes, expected);
+}
+
+#[test]
+fn fee_parameters_fc_serializes_known_variants() {
+    assert_eq!(
+        FeeParameters::TransferOperationFeeParamsT(Box::new(TransferOperationFeeParamsT {
+            fee: 5,
+            price_per_kbyte: 6,
+        }))
+        .to_fc_bytes()
+        .expect("serialize transfer fee params"),
+        vec![0, 5, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0]
+    );
+
+    assert_eq!(
+        FeeParameters::CommitteeMemberUpdateGlobalParametersOperationFeeParamsT(Box::new(
+            CommitteeMemberUpdateGlobalParametersOperationFeeParamsT { fee: 7 },
+        ))
+        .to_fc_bytes()
+        .expect("serialize committee global params fee params"),
+        vec![31, 7, 0, 0, 0, 0, 0, 0, 0]
+    );
+}
+
+#[test]
+fn fee_schedule_fc_serializes_sorted_fee_parameters_set() {
+    assert_eq!(
+        sample_fee_schedule()
+            .to_fc_bytes()
+            .expect("serialize fee schedule"),
+        expected_fee_schedule_payload()
+    );
+}
+
+#[test]
+fn fee_schedule_fc_rejects_unsorted_or_duplicate_fee_parameter_tags() {
+    let mut schedule = sample_fee_schedule();
+    schedule.parameters.reverse();
+
+    let err = schedule
+        .to_fc_bytes()
+        .expect_err("unsorted fee parameter set fails explicitly");
+    assert!(matches!(
+        err,
+        FcSerializeError::UnsupportedValue {
+            type_name: "Set",
+            reason: "set values must be sorted and unique"
+        }
+    ));
+
+    schedule.parameters = vec![
+        FeeParameters::TransferOperationFeeParamsT(Box::new(TransferOperationFeeParamsT {
+            fee: 5,
+            price_per_kbyte: 6,
+        })),
+        FeeParameters::TransferOperationFeeParamsT(Box::new(TransferOperationFeeParamsT {
+            fee: 8,
+            price_per_kbyte: 9,
+        })),
+    ];
+
+    let err = schedule
+        .to_fc_bytes()
+        .expect_err("duplicate fee parameter set tags fail explicitly");
+    assert!(matches!(
+        err,
+        FcSerializeError::UnsupportedValue {
+            type_name: "Set",
+            reason: "set values must be sorted and unique"
+        }
+    ));
+}
+
+#[test]
+fn committee_member_update_global_parameters_operation_fc_serializes_fee_schedule() {
+    assert_eq!(
+        sample_committee_member_update_global_parameters_operation()
+            .to_fc_bytes()
+            .expect("serialize committee global parameters update"),
+        expected_committee_member_update_global_parameters_payload()
+    );
+}
+
+#[test]
+fn operation_fc_serializes_committee_member_update_global_parameters_tag_and_payload() {
+    let bytes = Operation::CommitteeMemberUpdateGlobalParametersOperation(Box::new(
+        sample_committee_member_update_global_parameters_operation(),
+    ))
+    .to_fc_bytes()
+    .expect("serialize committee global parameters update variant");
+
+    let mut expected = vec![31];
+    expected.extend(expected_committee_member_update_global_parameters_payload());
     assert_eq!(bytes, expected);
 }
 

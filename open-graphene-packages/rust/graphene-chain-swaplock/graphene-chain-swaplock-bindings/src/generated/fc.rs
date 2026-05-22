@@ -671,6 +671,41 @@ impl FcSerialize for crate::generated::types::CddVestingPolicyInitializer {
     }
 }
 
+impl FcSerialize for crate::generated::types::ChainParameters {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.current_fees.fc_serialize(out)?;
+        self.block_interval.fc_serialize(out)?;
+        self.maintenance_interval.fc_serialize(out)?;
+        self.maintenance_skip_slots.fc_serialize(out)?;
+        self.committee_proposal_review_period.fc_serialize(out)?;
+        self.maximum_transaction_size.fc_serialize(out)?;
+        self.maximum_block_size.fc_serialize(out)?;
+        self.maximum_time_until_expiration.fc_serialize(out)?;
+        self.maximum_proposal_lifetime.fc_serialize(out)?;
+        self.maximum_asset_whitelist_authorities.fc_serialize(out)?;
+        self.maximum_asset_feed_publishers.fc_serialize(out)?;
+        self.maximum_witness_count.fc_serialize(out)?;
+        self.maximum_committee_count.fc_serialize(out)?;
+        self.maximum_authority_membership.fc_serialize(out)?;
+        self.reserve_percent_of_fee.fc_serialize(out)?;
+        self.network_percent_of_fee.fc_serialize(out)?;
+        self.lifetime_referrer_percent_of_fee.fc_serialize(out)?;
+        self.cashback_vesting_period_seconds.fc_serialize(out)?;
+        self.cashback_vesting_threshold.fc_serialize(out)?;
+        self.count_non_member_votes.fc_serialize(out)?;
+        self.allow_non_member_whitelists.fc_serialize(out)?;
+        self.witness_pay_per_block.fc_serialize(out)?;
+        self.worker_budget_per_day.fc_serialize(out)?;
+        self.max_predicate_opcode.fc_serialize(out)?;
+        self.fee_liquidation_threshold.fc_serialize(out)?;
+        self.accounts_per_fee_scale.fc_serialize(out)?;
+        self.account_fee_scale_bitshifts.fc_serialize(out)?;
+        self.max_authority_depth.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::ChainParametersExt {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.updatable_htlc_options.fc_serialize(out)?;
@@ -819,6 +854,23 @@ impl FcSerialize for crate::generated::types::ExecuteBidOperationFeeParamsT {
 impl FcSerialize for crate::generated::types::FbaDistributeOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::FeeSchedule {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_varint(self.parameters.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.parameters {
+            let key = fee_parameters_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
+        self.scale.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -1335,6 +1387,408 @@ impl FcSerialize for crate::generated::static_variants::LimitOrderAutoAction {
     }
 }
 
+fn fee_parameters_tag(value: &crate::generated::static_variants::FeeParameters) -> u64 {
+    match value {
+        crate::generated::static_variants::FeeParameters::TransferOperationFeeParamsT(_) => 0u64,
+        crate::generated::static_variants::FeeParameters::LimitOrderCreateOperationFeeParamsT(_) => 1u64,
+        crate::generated::static_variants::FeeParameters::LimitOrderCancelOperationFeeParamsT(_) => 2u64,
+        crate::generated::static_variants::FeeParameters::CallOrderUpdateOperationFeeParamsT(_) => 3u64,
+        crate::generated::static_variants::FeeParameters::FillOrderOperationFeeParamsT(_) => 4u64,
+        crate::generated::static_variants::FeeParameters::AccountCreateOperationFeeParamsT(_) => 5u64,
+        crate::generated::static_variants::FeeParameters::AccountUpdateOperationFeeParamsT(_) => 6u64,
+        crate::generated::static_variants::FeeParameters::AccountWhitelistOperationFeeParamsT(_) => 7u64,
+        crate::generated::static_variants::FeeParameters::AccountUpgradeOperationFeeParamsT(_) => 8u64,
+        crate::generated::static_variants::FeeParameters::AccountTransferOperationFeeParamsT(_) => 9u64,
+        crate::generated::static_variants::FeeParameters::AssetCreateOperationFeeParamsT(_) => 10u64,
+        crate::generated::static_variants::FeeParameters::AssetUpdateOperationFeeParamsT(_) => 11u64,
+        crate::generated::static_variants::FeeParameters::AssetUpdateBitassetOperationFeeParamsT(_) => 12u64,
+        crate::generated::static_variants::FeeParameters::AssetUpdateFeedProducersOperationFeeParamsT(_) => 13u64,
+        crate::generated::static_variants::FeeParameters::AssetIssueOperationFeeParamsT(_) => 14u64,
+        crate::generated::static_variants::FeeParameters::AssetReserveOperationFeeParamsT(_) => 15u64,
+        crate::generated::static_variants::FeeParameters::AssetFundFeePoolOperationFeeParamsT(_) => 16u64,
+        crate::generated::static_variants::FeeParameters::AssetSettleOperationFeeParamsT(_) => 17u64,
+        crate::generated::static_variants::FeeParameters::AssetGlobalSettleOperationFeeParamsT(_) => 18u64,
+        crate::generated::static_variants::FeeParameters::AssetPublishFeedOperationFeeParamsT(_) => 19u64,
+        crate::generated::static_variants::FeeParameters::WitnessCreateOperationFeeParamsT(_) => 20u64,
+        crate::generated::static_variants::FeeParameters::WitnessUpdateOperationFeeParamsT(_) => 21u64,
+        crate::generated::static_variants::FeeParameters::ProposalCreateOperationFeeParamsT(_) => 22u64,
+        crate::generated::static_variants::FeeParameters::ProposalUpdateOperationFeeParamsT(_) => 23u64,
+        crate::generated::static_variants::FeeParameters::ProposalDeleteOperationFeeParamsT(_) => 24u64,
+        crate::generated::static_variants::FeeParameters::WithdrawPermissionCreateOperationFeeParamsT(_) => 25u64,
+        crate::generated::static_variants::FeeParameters::WithdrawPermissionUpdateOperationFeeParamsT(_) => 26u64,
+        crate::generated::static_variants::FeeParameters::WithdrawPermissionClaimOperationFeeParamsT(_) => 27u64,
+        crate::generated::static_variants::FeeParameters::WithdrawPermissionDeleteOperationFeeParamsT(_) => 28u64,
+        crate::generated::static_variants::FeeParameters::CommitteeMemberCreateOperationFeeParamsT(_) => 29u64,
+        crate::generated::static_variants::FeeParameters::CommitteeMemberUpdateOperationFeeParamsT(_) => 30u64,
+        crate::generated::static_variants::FeeParameters::CommitteeMemberUpdateGlobalParametersOperationFeeParamsT(_) => 31u64,
+        crate::generated::static_variants::FeeParameters::VestingBalanceCreateOperationFeeParamsT(_) => 32u64,
+        crate::generated::static_variants::FeeParameters::VestingBalanceWithdrawOperationFeeParamsT(_) => 33u64,
+        crate::generated::static_variants::FeeParameters::WorkerCreateOperationFeeParamsT(_) => 34u64,
+        crate::generated::static_variants::FeeParameters::CustomOperationFeeParamsT(_) => 35u64,
+        crate::generated::static_variants::FeeParameters::AssertOperationFeeParamsT(_) => 36u64,
+        crate::generated::static_variants::FeeParameters::BalanceClaimOperationFeeParamsT(_) => 37u64,
+        crate::generated::static_variants::FeeParameters::OverrideTransferOperationFeeParamsT(_) => 38u64,
+        crate::generated::static_variants::FeeParameters::TransferToBlindOperationFeeParamsT(_) => 39u64,
+        crate::generated::static_variants::FeeParameters::BlindTransferOperationFeeParamsT(_) => 40u64,
+        crate::generated::static_variants::FeeParameters::TransferFromBlindOperationFeeParamsT(_) => 41u64,
+        crate::generated::static_variants::FeeParameters::AssetSettleCancelOperationFeeParamsT(_) => 42u64,
+        crate::generated::static_variants::FeeParameters::AssetClaimFeesOperationFeeParamsT(_) => 43u64,
+        crate::generated::static_variants::FeeParameters::FbaDistributeOperationFeeParamsT(_) => 44u64,
+        crate::generated::static_variants::FeeParameters::BidCollateralOperationFeeParamsT(_) => 45u64,
+        crate::generated::static_variants::FeeParameters::ExecuteBidOperationFeeParamsT(_) => 46u64,
+        crate::generated::static_variants::FeeParameters::AssetClaimPoolOperationFeeParamsT(_) => 47u64,
+        crate::generated::static_variants::FeeParameters::AssetUpdateIssuerOperationFeeParamsT(_) => 48u64,
+        crate::generated::static_variants::FeeParameters::HtlcCreateOperationFeeParamsT(_) => 49u64,
+        crate::generated::static_variants::FeeParameters::HtlcRedeemOperationFeeParamsT(_) => 50u64,
+        crate::generated::static_variants::FeeParameters::HtlcRedeemedOperationFeeParamsT(_) => 51u64,
+        crate::generated::static_variants::FeeParameters::HtlcExtendOperationFeeParamsT(_) => 52u64,
+        crate::generated::static_variants::FeeParameters::HtlcRefundOperationFeeParamsT(_) => 53u64,
+        crate::generated::static_variants::FeeParameters::CustomAuthorityCreateOperationFeeParamsT(_) => 54u64,
+        crate::generated::static_variants::FeeParameters::CustomAuthorityUpdateOperationFeeParamsT(_) => 55u64,
+        crate::generated::static_variants::FeeParameters::CustomAuthorityDeleteOperationFeeParamsT(_) => 56u64,
+        crate::generated::static_variants::FeeParameters::TicketCreateOperationFeeParamsT(_) => 57u64,
+        crate::generated::static_variants::FeeParameters::TicketUpdateOperationFeeParamsT(_) => 58u64,
+        crate::generated::static_variants::FeeParameters::LiquidityPoolCreateOperationFeeParamsT(_) => 59u64,
+        crate::generated::static_variants::FeeParameters::LiquidityPoolDeleteOperationFeeParamsT(_) => 60u64,
+        crate::generated::static_variants::FeeParameters::LiquidityPoolDepositOperationFeeParamsT(_) => 61u64,
+        crate::generated::static_variants::FeeParameters::LiquidityPoolWithdrawOperationFeeParamsT(_) => 62u64,
+        crate::generated::static_variants::FeeParameters::LiquidityPoolExchangeOperationFeeParamsT(_) => 63u64,
+        crate::generated::static_variants::FeeParameters::SametFundCreateOperationFeeParamsT(_) => 64u64,
+        crate::generated::static_variants::FeeParameters::SametFundDeleteOperationFeeParamsT(_) => 65u64,
+        crate::generated::static_variants::FeeParameters::SametFundUpdateOperationFeeParamsT(_) => 66u64,
+        crate::generated::static_variants::FeeParameters::SametFundBorrowOperationFeeParamsT(_) => 67u64,
+        crate::generated::static_variants::FeeParameters::SametFundRepayOperationFeeParamsT(_) => 68u64,
+        crate::generated::static_variants::FeeParameters::CreditOfferCreateOperationFeeParamsT(_) => 69u64,
+        crate::generated::static_variants::FeeParameters::CreditOfferDeleteOperationFeeParamsT(_) => 70u64,
+        crate::generated::static_variants::FeeParameters::CreditOfferUpdateOperationFeeParamsT(_) => 71u64,
+        crate::generated::static_variants::FeeParameters::CreditOfferAcceptOperationFeeParamsT(_) => 72u64,
+        crate::generated::static_variants::FeeParameters::CreditDealRepayOperationFeeParamsT(_) => 73u64,
+        crate::generated::static_variants::FeeParameters::CreditDealExpiredOperationFeeParamsT(_) => 74u64,
+        crate::generated::static_variants::FeeParameters::LiquidityPoolUpdateOperationFeeParamsT(_) => 75u64,
+        crate::generated::static_variants::FeeParameters::CreditDealUpdateOperationFeeParamsT(_) => 76u64,
+        crate::generated::static_variants::FeeParameters::LimitOrderUpdateOperationFeeParamsT(_) => 77u64,
+    }
+}
+
+impl FcSerialize for crate::generated::static_variants::FeeParameters {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        match self {
+            Self::TransferOperationFeeParamsT(value) => {
+                write_varint(0u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::LimitOrderCreateOperationFeeParamsT(value) => {
+                write_varint(1u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::LimitOrderCancelOperationFeeParamsT(value) => {
+                write_varint(2u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::CallOrderUpdateOperationFeeParamsT(value) => {
+                write_varint(3u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::FillOrderOperationFeeParamsT(value) => {
+                write_varint(4u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AccountCreateOperationFeeParamsT(value) => {
+                write_varint(5u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AccountUpdateOperationFeeParamsT(value) => {
+                write_varint(6u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AccountWhitelistOperationFeeParamsT(value) => {
+                write_varint(7u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AccountUpgradeOperationFeeParamsT(value) => {
+                write_varint(8u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AccountTransferOperationFeeParamsT(value) => {
+                write_varint(9u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AssetCreateOperationFeeParamsT(value) => {
+                write_varint(10u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AssetUpdateOperationFeeParamsT(value) => {
+                write_varint(11u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AssetUpdateBitassetOperationFeeParamsT(value) => {
+                write_varint(12u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AssetUpdateFeedProducersOperationFeeParamsT(value) => {
+                write_varint(13u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AssetIssueOperationFeeParamsT(value) => {
+                write_varint(14u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AssetReserveOperationFeeParamsT(value) => {
+                write_varint(15u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AssetFundFeePoolOperationFeeParamsT(value) => {
+                write_varint(16u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AssetSettleOperationFeeParamsT(value) => {
+                write_varint(17u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AssetGlobalSettleOperationFeeParamsT(value) => {
+                write_varint(18u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AssetPublishFeedOperationFeeParamsT(value) => {
+                write_varint(19u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::WitnessCreateOperationFeeParamsT(value) => {
+                write_varint(20u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::WitnessUpdateOperationFeeParamsT(value) => {
+                write_varint(21u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ProposalCreateOperationFeeParamsT(value) => {
+                write_varint(22u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ProposalUpdateOperationFeeParamsT(value) => {
+                write_varint(23u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ProposalDeleteOperationFeeParamsT(value) => {
+                write_varint(24u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::WithdrawPermissionCreateOperationFeeParamsT(value) => {
+                write_varint(25u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::WithdrawPermissionUpdateOperationFeeParamsT(value) => {
+                write_varint(26u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::WithdrawPermissionClaimOperationFeeParamsT(value) => {
+                write_varint(27u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::WithdrawPermissionDeleteOperationFeeParamsT(value) => {
+                write_varint(28u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::CommitteeMemberCreateOperationFeeParamsT(value) => {
+                write_varint(29u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::CommitteeMemberUpdateOperationFeeParamsT(value) => {
+                write_varint(30u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::CommitteeMemberUpdateGlobalParametersOperationFeeParamsT(value) => {
+                write_varint(31u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::VestingBalanceCreateOperationFeeParamsT(value) => {
+                write_varint(32u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::VestingBalanceWithdrawOperationFeeParamsT(value) => {
+                write_varint(33u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::WorkerCreateOperationFeeParamsT(value) => {
+                write_varint(34u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::CustomOperationFeeParamsT(value) => {
+                write_varint(35u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AssertOperationFeeParamsT(value) => {
+                write_varint(36u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::BalanceClaimOperationFeeParamsT(value) => {
+                write_varint(37u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::OverrideTransferOperationFeeParamsT(value) => {
+                write_varint(38u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::TransferToBlindOperationFeeParamsT(value) => {
+                write_varint(39u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::BlindTransferOperationFeeParamsT(value) => {
+                write_varint(40u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::TransferFromBlindOperationFeeParamsT(value) => {
+                write_varint(41u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AssetSettleCancelOperationFeeParamsT(value) => {
+                write_varint(42u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AssetClaimFeesOperationFeeParamsT(value) => {
+                write_varint(43u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::FbaDistributeOperationFeeParamsT(value) => {
+                write_varint(44u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::BidCollateralOperationFeeParamsT(value) => {
+                write_varint(45u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ExecuteBidOperationFeeParamsT(value) => {
+                write_varint(46u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AssetClaimPoolOperationFeeParamsT(value) => {
+                write_varint(47u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AssetUpdateIssuerOperationFeeParamsT(value) => {
+                write_varint(48u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::HtlcCreateOperationFeeParamsT(value) => {
+                write_varint(49u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::HtlcRedeemOperationFeeParamsT(value) => {
+                write_varint(50u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::HtlcRedeemedOperationFeeParamsT(value) => {
+                write_varint(51u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::HtlcExtendOperationFeeParamsT(value) => {
+                write_varint(52u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::HtlcRefundOperationFeeParamsT(value) => {
+                write_varint(53u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::CustomAuthorityCreateOperationFeeParamsT(value) => {
+                write_varint(54u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::CustomAuthorityUpdateOperationFeeParamsT(value) => {
+                write_varint(55u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::CustomAuthorityDeleteOperationFeeParamsT(value) => {
+                write_varint(56u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::TicketCreateOperationFeeParamsT(value) => {
+                write_varint(57u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::TicketUpdateOperationFeeParamsT(value) => {
+                write_varint(58u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::LiquidityPoolCreateOperationFeeParamsT(value) => {
+                write_varint(59u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::LiquidityPoolDeleteOperationFeeParamsT(value) => {
+                write_varint(60u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::LiquidityPoolDepositOperationFeeParamsT(value) => {
+                write_varint(61u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::LiquidityPoolWithdrawOperationFeeParamsT(value) => {
+                write_varint(62u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::LiquidityPoolExchangeOperationFeeParamsT(value) => {
+                write_varint(63u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::SametFundCreateOperationFeeParamsT(value) => {
+                write_varint(64u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::SametFundDeleteOperationFeeParamsT(value) => {
+                write_varint(65u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::SametFundUpdateOperationFeeParamsT(value) => {
+                write_varint(66u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::SametFundBorrowOperationFeeParamsT(value) => {
+                write_varint(67u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::SametFundRepayOperationFeeParamsT(value) => {
+                write_varint(68u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::CreditOfferCreateOperationFeeParamsT(value) => {
+                write_varint(69u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::CreditOfferDeleteOperationFeeParamsT(value) => {
+                write_varint(70u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::CreditOfferUpdateOperationFeeParamsT(value) => {
+                write_varint(71u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::CreditOfferAcceptOperationFeeParamsT(value) => {
+                write_varint(72u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::CreditDealRepayOperationFeeParamsT(value) => {
+                write_varint(73u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::CreditDealExpiredOperationFeeParamsT(value) => {
+                write_varint(74u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::LiquidityPoolUpdateOperationFeeParamsT(value) => {
+                write_varint(75u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::CreditDealUpdateOperationFeeParamsT(value) => {
+                write_varint(76u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::LimitOrderUpdateOperationFeeParamsT(value) => {
+                write_varint(77u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+        }
+    }
+}
+
 impl FcSerialize for crate::generated::operations::TransferOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -1750,6 +2204,14 @@ impl FcSerialize for crate::generated::operations::CommitteeMemberUpdateOperatio
         self.committee_member.fc_serialize(out)?;
         self.committee_member_account.fc_serialize(out)?;
         self.new_url.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::CommitteeMemberUpdateGlobalParametersOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.new_parameters.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -2391,7 +2853,7 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             Self::WithdrawPermissionDeleteOperation(value) => { write_varint(28u64, out); value.as_ref().fc_serialize(out) }
             Self::CommitteeMemberCreateOperation(value) => { write_varint(29u64, out); value.as_ref().fc_serialize(out) }
             Self::CommitteeMemberUpdateOperation(value) => { write_varint(30u64, out); value.as_ref().fc_serialize(out) }
-            Self::CommitteeMemberUpdateGlobalParametersOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "CommitteeMemberUpdateGlobalParametersOperation" }),
+            Self::CommitteeMemberUpdateGlobalParametersOperation(value) => { write_varint(31u64, out); value.as_ref().fc_serialize(out) }
             Self::VestingBalanceCreateOperation(value) => { write_varint(32u64, out); value.as_ref().fc_serialize(out) }
             Self::VestingBalanceWithdrawOperation(value) => { write_varint(33u64, out); value.as_ref().fc_serialize(out) }
             Self::WorkerCreateOperation(value) => { write_varint(34u64, out); value.as_ref().fc_serialize(out) }
