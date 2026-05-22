@@ -111,6 +111,14 @@ pub enum TypeRef {
         #[serde(rename = "objectType")]
         object_type: String,
     },
+    /// Any known protocol object serialized as JSON.
+    ///
+    /// Generators can expand this to a union/oneOf over [`crate::defs::ObjectTypeDef`]
+    /// entries that have a `structRef`.
+    ProtocolObjectUnion {
+        #[serde(rename = "objectTypes", default, skip_serializing_if = "Vec::is_empty")]
+        object_types: Vec<String>,
+    },
     VoteId,
     Optional {
         inner: Box<TypeRef>,
@@ -141,6 +149,13 @@ pub enum TypeRef {
     },
     StaticVariantRef {
         name: String,
+    },
+    #[serde(rename_all = "camelCase")]
+    AnyJson {
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        reason: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        source: Option<SourceMeta>,
     },
     #[serde(rename_all = "camelCase")]
     Unsupported {

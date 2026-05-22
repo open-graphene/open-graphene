@@ -85,6 +85,46 @@
         "publicKeyPrefix"
       ]
     },
+    "DependentReturnDef": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "idParamIndex": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0
+            },
+            "kind": {
+              "type": "string",
+              "const": "object_by_id"
+            }
+          },
+          "required": [
+            "kind",
+            "idParamIndex"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "idParamIndex": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0
+            },
+            "kind": {
+              "type": "string",
+              "const": "object_by_id_vector"
+            }
+          },
+          "required": [
+            "kind",
+            "idParamIndex"
+          ]
+        }
+      ]
+    },
     "EnumDef": {
       "type": "object",
       "properties": {
@@ -255,6 +295,12 @@
             }
           ]
         },
+        "structRef": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "support": {
           "anyOf": [
             {
@@ -338,6 +384,29 @@
         "unresolved"
       ]
     },
+    "RpcBindingHintsDef": {
+      "type": "object",
+      "properties": {
+        "callbackParamIndex": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "dependentReturn": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DependentReturnDef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
     "RpcMethodDef": {
       "type": "object",
       "properties": {
@@ -348,6 +417,16 @@
           "type": [
             "string",
             "null"
+          ]
+        },
+        "bindingHints": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RpcBindingHintsDef"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "isSubscription": {
@@ -935,6 +1014,25 @@
           ]
         },
         {
+          "description": "Any known protocol object serialized as JSON.\n\nGenerators can expand this to a union/oneOf over [`crate::defs::ObjectTypeDef`]\nentries that have a `structRef`.",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "protocol_object_union"
+            },
+            "objectTypes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
           "type": "object",
           "properties": {
             "kind": {
@@ -1096,6 +1194,34 @@
           "required": [
             "kind",
             "name"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "any_json"
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "source": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/SourceMeta"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "kind"
           ]
         },
         {

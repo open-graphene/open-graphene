@@ -120,6 +120,8 @@ pub struct ObjectTypeDef {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub type_id: Option<u32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub struct_ref: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub source: Option<SourceMeta>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub support: Option<SupportDef>,
@@ -140,9 +142,29 @@ pub struct RpcMethodDef {
     #[serde(default)]
     pub is_subscription: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub binding_hints: Option<RpcBindingHintsDef>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub source: Option<SourceMeta>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub support: Option<SupportDef>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct RpcBindingHintsDef {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub callback_param_index: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dependent_return: Option<DependentReturnDef>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum DependentReturnDef {
+    #[serde(rename_all = "camelCase")]
+    ObjectById { id_param_index: u32 },
+    #[serde(rename_all = "camelCase")]
+    ObjectByIdVector { id_param_index: u32 },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]

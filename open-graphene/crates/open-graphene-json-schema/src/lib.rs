@@ -18,8 +18,9 @@ pub mod support;
 pub mod types;
 
 pub use defs::{
-    ChainDef, EnumDef, EnumValueDef, FieldDef, ObjectTypeDef, OperationDef, RpcMethodDef,
-    StaticVariantArmDef, StaticVariantDef, StrictModeDef, StructDef, StructKind,
+    ChainDef, DependentReturnDef, EnumDef, EnumValueDef, FieldDef, ObjectTypeDef, OperationDef,
+    RpcBindingHintsDef, RpcMethodDef, StaticVariantArmDef, StaticVariantDef, StrictModeDef,
+    StructDef, StructKind,
 };
 pub use support::{SourceMeta, SupportDef, SupportStatus};
 pub use types::{FcEncoding, JsonShape, OrderingRule, TypeRef};
@@ -139,6 +140,7 @@ mod tests {
             cpp_alias: "account_id_type".to_string(),
             object_space: Some(1),
             type_id: Some(2),
+            struct_ref: Some("account_object".to_string()),
             source: Some(SourceMeta {
                 name: Some("object_id<1,2>".to_string()),
                 legacy_name: None,
@@ -153,9 +155,17 @@ mod tests {
             api_name: Some("database".to_string()),
             params: vec![],
             returns: Some(TypeRef::Vector {
-                inner: Box::new(TypeRef::ObjectId),
+                inner: Box::new(TypeRef::Optional {
+                    inner: Box::new(TypeRef::ProtocolObjectUnion {
+                        object_types: vec![],
+                    }),
+                }),
             }),
             is_subscription: false,
+            binding_hints: Some(RpcBindingHintsDef {
+                callback_param_index: None,
+                dependent_return: Some(DependentReturnDef::ObjectByIdVector { id_param_index: 0 }),
+            }),
             source: None,
             support: None,
         };
@@ -180,9 +190,23 @@ mod tests {
         assert_eq!(json["objectTypes"][0]["cppAlias"], "account_id_type");
         assert_eq!(json["objectTypes"][0]["objectSpace"], 1);
         assert_eq!(json["objectTypes"][0]["typeId"], 2);
+        assert_eq!(json["objectTypes"][0]["structRef"], "account_object");
         assert_eq!(json["objectTypes"][0]["source"]["line"], 42);
         assert_eq!(json["rpcMethods"][0]["apiClass"], "database_api");
         assert_eq!(json["rpcMethods"][0]["apiName"], "database");
+        assert_eq!(json["rpcMethods"][0]["returns"]["kind"], "vector");
+        assert_eq!(
+            json["rpcMethods"][0]["returns"]["inner"]["kind"],
+            "optional"
+        );
+        assert_eq!(
+            json["rpcMethods"][0]["returns"]["inner"]["inner"]["kind"],
+            "protocol_object_union"
+        );
+        assert_eq!(
+            json["rpcMethods"][0]["bindingHints"]["dependentReturn"]["kind"],
+            "object_by_id_vector"
+        );
     }
 
     #[test]
