@@ -1,6 +1,6 @@
 use graphene_chain_swaplock_bindings::generated::{
-    AccountId, Asset, AssetId, CallOrderUpdateOperation, FcSerialize, FcSerializeError,
-    FutureExtensions, LimitOrderCancelOperation, LimitOrderCreateOperation, LimitOrderId, Operation,
+    AccountId, Asset, AssetId, FcSerialize, FcSerializeError, FillOrderOperation, FutureExtensions,
+    LimitOrderCancelOperation, LimitOrderCreateOperation, LimitOrderId, ObjectId, Operation, Price,
     TransferOperation,
 };
 
@@ -169,21 +169,32 @@ fn operation_fc_serializes_limit_order_cancel_tag_and_payload() {
 
 #[test]
 fn operation_fc_reports_unsupported_variant() {
-    let operation = Operation::CallOrderUpdateOperation(Box::new(CallOrderUpdateOperation {
+    let operation = Operation::FillOrderOperation(Box::new(FillOrderOperation {
         fee: Asset {
             amount: 0,
             asset_id: AssetId("1.3.0".to_string()),
         },
-        funding_account: AccountId("1.2.1".to_string()),
-        delta_collateral: Asset {
+        order_id: ObjectId("1.7.1".to_string()),
+        account_id: AccountId("1.2.1".to_string()),
+        pays: Asset {
             amount: 1,
             asset_id: AssetId("1.3.0".to_string()),
         },
-        delta_debt: Asset {
+        receives: Asset {
             amount: 2,
             asset_id: AssetId("1.3.0".to_string()),
         },
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        fill_price: Price {
+            base: Asset {
+                amount: 1,
+                asset_id: AssetId("1.3.0".to_string()),
+            },
+            quote: Asset {
+                amount: 2,
+                asset_id: AssetId("1.3.0".to_string()),
+            },
+        },
+        is_maker: true,
     }));
 
     let err = operation.to_fc_bytes().expect_err("unsupported variant fails explicitly");
@@ -191,7 +202,7 @@ fn operation_fc_reports_unsupported_variant() {
     assert!(matches!(
         err,
         FcSerializeError::UnsupportedVariant {
-            variant: "CallOrderUpdateOperation"
+            variant: "FillOrderOperation"
         }
     ));
 }

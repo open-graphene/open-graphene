@@ -379,60 +379,7 @@ fn render_fc_transfer_path_impls(out: &mut String, protocol: &Protocol) -> Resul
         out.push_str("}\n\n");
     }
 
-    let transfer_operation = protocol
-        .operations
-        .iter()
-        .find(|operation| operation.name == "transfer_operation");
-    if transfer_operation.is_some() {
-        out.push_str("impl FcSerialize for crate::generated::operations::TransferOperation {\n");
-        out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
-        out.push_str("        self.fee.fc_serialize(out)?;\n");
-        out.push_str("        self.from.fc_serialize(out)?;\n");
-        out.push_str("        self.to.fc_serialize(out)?;\n");
-        out.push_str("        self.amount.fc_serialize(out)?;\n");
-        out.push_str("        if self.memo.is_some() {\n");
-        out.push_str("            return Err(FcSerializeError::UnsupportedValue { type_name: \"MemoData\", reason: \"memo FC serialization is not implemented in the minimal transfer slice\" });\n");
-        out.push_str("        }\n");
-        out.push_str("        out.push(0);\n");
-        out.push_str("        self.extensions.fc_serialize(out)?;\n");
-        out.push_str("        Ok(())\n");
-        out.push_str("    }\n");
-        out.push_str("}\n\n");
-    }
-
-    let limit_order_create_operation = protocol
-        .operations
-        .iter()
-        .find(|operation| operation.name == "limit_order_create_operation");
-    if limit_order_create_operation.is_some() {
-        out.push_str("impl FcSerialize for crate::generated::operations::LimitOrderCreateOperation {\n");
-        out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
-        out.push_str("        self.fee.fc_serialize(out)?;\n");
-        out.push_str("        self.seller.fc_serialize(out)?;\n");
-        out.push_str("        self.amount_to_sell.fc_serialize(out)?;\n");
-        out.push_str("        self.min_to_receive.fc_serialize(out)?;\n");
-        out.push_str("        self.fill_or_kill.fc_serialize(out)?;\n");
-        out.push_str("        self.extensions.fc_serialize(out)?;\n");
-        out.push_str("        Ok(())\n");
-        out.push_str("    }\n");
-        out.push_str("}\n\n");
-    }
-
-    let limit_order_cancel_operation = protocol
-        .operations
-        .iter()
-        .find(|operation| operation.name == "limit_order_cancel_operation");
-    if limit_order_cancel_operation.is_some() {
-        out.push_str("impl FcSerialize for crate::generated::operations::LimitOrderCancelOperation {\n");
-        out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
-        out.push_str("        self.fee.fc_serialize(out)?;\n");
-        out.push_str("        self.fee_paying_account.fc_serialize(out)?;\n");
-        out.push_str("        self.order.fc_serialize(out)?;\n");
-        out.push_str("        self.extensions.fc_serialize(out)?;\n");
-        out.push_str("        Ok(())\n");
-        out.push_str("    }\n");
-        out.push_str("}\n\n");
-    }
+    let supported_operations = render_fc_operation_impls(out, protocol)?;
 
     let operation_variant = protocol
         .static_variants
@@ -446,12 +393,7 @@ fn render_fc_transfer_path_impls(out: &mut String, protocol: &Protocol) -> Resul
         arms.sort_by_key(|arm| arm.tag);
         for arm in arms {
             let variant_name = rust_variant_name(&arm.name);
-            if matches!(
-                arm.name.as_str(),
-                "transfer_operation"
-                    | "limit_order_create_operation"
-                    | "limit_order_cancel_operation"
-            ) {
+            if supported_operations.contains(&arm.name) {
                 out.push_str(&format!(
                     "            Self::{variant_name}(value) => {{ write_varint({}u64, out); value.as_ref().fc_serialize(out) }}\n",
                     arm.tag
@@ -469,6 +411,100 @@ fn render_fc_transfer_path_impls(out: &mut String, protocol: &Protocol) -> Resul
     }
 
     Ok(())
+}
+
+fn render_fc_operation_impls(out: &mut String, protocol: &Protocol) -> Result<BTreeSet<String>> {
+    let mut supported_operations = BTreeSet::new();
+
+    for operation in sorted_operations(&protocol.operations) {
+        if operation.name == "transfer_operation" {
+            render_fc_transfer_operation_impl(out);
+            supported_operations.insert(operation.name);
+            continue;
+        }
+
+        if !is_fc_supported_operation(protocol, &operation) {
+            continue;
+        }
+
+        let operation_name = rust_type_name(&operation.name);
+        out.push_str(&format!(
+            "impl FcSerialize for crate::generated::operations::{operation_name} {{\n"
+        ));
+        out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
+        let mut fields = operation.fields.clone();
+        fields.sort_by_key(|field| field.index);
+        for field in fields {
+            let field_name = rust_field_name(&field.name);
+            out.push_str(&format!("        self.{field_name}.fc_serialize(out)?;\n"));
+        }
+        out.push_str("        Ok(())\n");
+        out.push_str("    }\n");
+        out.push_str("}\n\n");
+        supported_operations.insert(operation.name);
+    }
+
+    Ok(supported_operations)
+}
+
+fn render_fc_transfer_operation_impl(out: &mut String) {
+    out.push_str("impl FcSerialize for crate::generated::operations::TransferOperation {\n");
+    out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
+    out.push_str("        self.fee.fc_serialize(out)?;\n");
+    out.push_str("        self.from.fc_serialize(out)?;\n");
+    out.push_str("        self.to.fc_serialize(out)?;\n");
+    out.push_str("        self.amount.fc_serialize(out)?;\n");
+    out.push_str("        if self.memo.is_some() {\n");
+    out.push_str("            return Err(FcSerializeError::UnsupportedValue { type_name: \"MemoData\", reason: \"memo FC serialization is not implemented in the minimal transfer slice\" });\n");
+    out.push_str("        }\n");
+    out.push_str("        out.push(0);\n");
+    out.push_str("        self.extensions.fc_serialize(out)?;\n");
+    out.push_str("        Ok(())\n");
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
+}
+
+fn is_fc_supported_operation(protocol: &Protocol, operation: &OperationDef) -> bool {
+    operation
+        .fields
+        .iter()
+        .all(|field| is_fc_supported_type(protocol, &field.ty))
+}
+
+fn is_fc_supported_type(protocol: &Protocol, ty: &TypeRef) -> bool {
+    match ty {
+        TypeRef::Void | TypeRef::Bool | TypeRef::Int64 { json: None, .. } => true,
+        TypeRef::ObjectId | TypeRef::ProtocolObjectId { .. } => true,
+        TypeRef::Ref { name } => name == "asset" && has_type(protocol, "asset"),
+        TypeRef::StaticVariantRef { name } => name == "future_extensions",
+        TypeRef::Optional { .. }
+        | TypeRef::Vector { .. }
+        | TypeRef::Set { .. }
+        | TypeRef::Map { .. }
+        | TypeRef::FlatMap { .. }
+        | TypeRef::Pair { .. }
+        | TypeRef::Uint8
+        | TypeRef::Uint16
+        | TypeRef::Uint32
+        | TypeRef::Int32 { .. }
+        | TypeRef::Int64 { .. }
+        | TypeRef::Uint64 { .. }
+        | TypeRef::UnsignedVarint
+        | TypeRef::CallbackHandle
+        | TypeRef::String
+        | TypeRef::Bytes
+        | TypeRef::FixedHex { .. }
+        | TypeRef::FixedBytes { .. }
+        | TypeRef::TimePointSec
+        | TypeRef::TimePoint
+        | TypeRef::PublicKey { .. }
+        | TypeRef::Address
+        | TypeRef::Signature
+        | TypeRef::ProtocolObjectUnion { .. }
+        | TypeRef::VoteId
+        | TypeRef::AnyJson { .. }
+        | TypeRef::Unsupported { .. } => false,
+    }
 }
 
 fn has_type(protocol: &Protocol, name: &str) -> bool {
@@ -1067,9 +1103,58 @@ mod tests {
             support: None,
         });
         protocol.operations.push(OperationDef {
+            name: "custom_supported_operation".to_string(),
+            wire_tag: 9,
+            fields: vec![
+                FieldDef {
+                    index: 0,
+                    name: "fee".to_string(),
+                    ty: TypeRef::Ref {
+                        name: "asset".to_string(),
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 1,
+                    name: "enabled".to_string(),
+                    ty: TypeRef::Bool,
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 2,
+                    name: "account".to_string(),
+                    ty: TypeRef::ProtocolObjectId {
+                        object_type: "account".to_string(),
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 3,
+                    name: "extensions".to_string(),
+                    ty: TypeRef::StaticVariantRef {
+                        name: "future_extensions".to_string(),
+                    },
+                    source: None,
+                    support: None,
+                },
+            ],
+            is_virtual: false,
+            source: None,
+            support: None,
+        });
+        protocol.operations.push(OperationDef {
             name: "call_order_update_operation".to_string(),
             wire_tag: 3,
-            fields: vec![],
+            fields: vec![FieldDef {
+                index: 0,
+                name: "unsupported_string".to_string(),
+                ty: TypeRef::String,
+                source: None,
+                support: None,
+            }],
             is_virtual: false,
             source: None,
             support: None,
@@ -1112,6 +1197,14 @@ mod tests {
                     },
                     support: None,
                 },
+                open_graphene_json_schema::StaticVariantArmDef {
+                    tag: 9,
+                    name: "custom_supported_operation".to_string(),
+                    ty: TypeRef::Ref {
+                        name: "custom_supported_operation".to_string(),
+                    },
+                    support: None,
+                },
             ],
             source: None,
             support: None,
@@ -1126,6 +1219,12 @@ mod tests {
         assert!(output.contains("Self::LimitOrderCreateOperation(value) => { write_varint(1u64, out); value.as_ref().fc_serialize(out) }"));
         assert!(output.contains("impl FcSerialize for crate::generated::operations::LimitOrderCancelOperation"));
         assert!(output.contains("Self::LimitOrderCancelOperation(value) => { write_varint(2u64, out); value.as_ref().fc_serialize(out) }"));
+        assert!(output.contains("impl FcSerialize for crate::generated::operations::CustomSupportedOperation"));
+        assert!(output.contains("self.fee.fc_serialize(out)?;"));
+        assert!(output.contains("self.enabled.fc_serialize(out)?;"));
+        assert!(output.contains("self.account.fc_serialize(out)?;"));
+        assert!(output.contains("self.extensions.fc_serialize(out)?;"));
+        assert!(output.contains("Self::CustomSupportedOperation(value) => { write_varint(9u64, out); value.as_ref().fc_serialize(out) }"));
         assert!(output.contains(
             "Self::CallOrderUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant"
         ));
