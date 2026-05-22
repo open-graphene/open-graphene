@@ -71,8 +71,13 @@
         }
       ],
       "returns": {
-        "kind": "any_json",
-        "reason": "unstructured Graphene variant type: fc::variants"
+        "kind": "vector",
+        "inner": {
+          "kind": "optional",
+          "inner": {
+            "kind": "protocol_object_union"
+          }
+        }
       },
       "isSubscription": false,
       "source": {

@@ -128,7 +128,7 @@ fn provisional_rpc_method(
             reason: Some("signature extraction pending".to_string()),
             source: None,
         },
-        |method| resolve_cpp_type(&method.return_type),
+        |method| resolve_rpc_return_type(api_config, method),
     );
     let support_reason = if raw_method.is_some() {
         "selected in config, present in FC_API, and signature found"
@@ -151,6 +151,23 @@ fn provisional_rpc_method(
             reason: Some(support_reason.to_string()),
         }),
     }
+}
+
+fn resolve_rpc_return_type(api_config: &RpcApiConfig, method: &RawMethod) -> TypeRef {
+    if api_config.name == "database"
+        && class_matches(&api_config.api_class, "database_api")
+        && method.name == "get_objects"
+    {
+        return TypeRef::Vector {
+            inner: Box::new(TypeRef::Optional {
+                inner: Box::new(TypeRef::ProtocolObjectUnion {
+                    object_types: vec![],
+                }),
+            }),
+        };
+    }
+
+    resolve_cpp_type(&method.return_type)
 }
 
 fn rpc_params_from_raw_method(method: &RawMethod) -> Vec<RpcParamDef> {
@@ -228,6 +245,23 @@ mod tests {
         assert!(matches!(
             resolution.methods[0].returns,
             Some(TypeRef::Vector { .. })
+        ));
+    }
+
+    #[test]
+    fn database_get_objects_returns_optional_protocol_object_union_vector() {
+        let config = config_with_methods(vec!["get_objects"]);
+        let mut facts = facts_with_database_methods(vec!["get_objects"]);
+        facts.classes = vec![raw_database_class_with_method("get_objects", vec![])];
+
+        let resolution = resolve_rpc_methods(&config, &facts);
+
+        assert!(matches!(
+            resolution.methods[0].returns,
+            Some(TypeRef::Vector { ref inner })
+                if matches!(inner.as_ref(), TypeRef::Optional { inner }
+                    if matches!(inner.as_ref(), TypeRef::ProtocolObjectUnion { object_types }
+                        if object_types.is_empty()))
         ));
     }
 
