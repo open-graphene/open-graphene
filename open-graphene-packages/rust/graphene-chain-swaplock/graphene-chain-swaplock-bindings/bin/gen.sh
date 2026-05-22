@@ -6,12 +6,12 @@ PACKAGE_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 CHAIN_DIR="$(cd "${PACKAGE_DIR}/.." && pwd)"
 REPO_ROOT="$(cd "${PACKAGE_DIR}/../../../.." && pwd)"
 OPEN_GRAPHENE_DIR="${REPO_ROOT}/open-graphene"
-SPEC_FILE="${CHAIN_DIR}/graphene-swaplock-spec/dist/swaplock.open-graphene.json"
+SPEC_FILE="${CHAIN_DIR}/graphene-chain-swaplock-spec/dist/swaplock.open-graphene.json"
 OUT_DIR="${PACKAGE_DIR}/src/generated"
 
 if [[ ! -f "${SPEC_FILE}" ]]; then
   echo "Missing Swaplock spec: ${SPEC_FILE}" >&2
-  echo "Run: ${CHAIN_DIR}/graphene-swaplock-spec/bin/gen.sh" >&2
+  echo "Run: ${CHAIN_DIR}/graphene-chain-swaplock-spec/bin/gen.sh" >&2
   exit 1
 fi
 

@@ -3,7 +3,7 @@
 version = 4
 
 [[package]]
-name = "graphene-swaplock-bindings"
+name = "graphene-chain-swaplock-bindings"
 version = "0.1.0"
 dependencies = [
  "open-graphene-fc",

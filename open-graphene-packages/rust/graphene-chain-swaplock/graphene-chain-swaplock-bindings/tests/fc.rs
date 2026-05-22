@@ -1,4 +1,4 @@
-use graphene_swaplock_bindings::generated::{
+use graphene_chain_swaplock_bindings::generated::{
     AccountId, Asset, AssetId, FcSerialize, FcSerializeError, FutureExtensions,
     LimitOrderCreateOperation, Operation, TransferOperation,
 };

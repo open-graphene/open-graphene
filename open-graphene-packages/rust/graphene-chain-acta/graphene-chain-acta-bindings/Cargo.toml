@@ -1,5 +1,5 @@
 [package]
-name = "graphene-acta-bindings"
+name = "graphene-chain-acta-bindings"
 version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
