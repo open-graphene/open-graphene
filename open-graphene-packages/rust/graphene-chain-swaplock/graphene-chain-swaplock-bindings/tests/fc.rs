@@ -1,7 +1,7 @@
 use graphene_chain_swaplock_bindings::generated::{
-    AccountId, Asset, AssetId, FcSerialize, FcSerializeError, FutureExtensions,
-    LimitOrderCancelOperation, LimitOrderCreateOperation, LimitOrderId, Operation, TransferOperation,
-    WitnessCreateOperation,
+    AccountCreateOperation, AccountCreateOperationExt, AccountId, AccountOptions, Asset, AssetId,
+    Authority, FcSerialize, FcSerializeError, FutureExtensions, LimitOrderCancelOperation,
+    LimitOrderCreateOperation, LimitOrderId, Operation, TransferOperation,
 };
 
 fn sample_transfer_operation() -> TransferOperation {
@@ -169,14 +169,30 @@ fn operation_fc_serializes_limit_order_cancel_tag_and_payload() {
 
 #[test]
 fn operation_fc_reports_unsupported_variant() {
-    let operation = Operation::WitnessCreateOperation(Box::new(WitnessCreateOperation {
+    let operation = Operation::AccountCreateOperation(Box::new(AccountCreateOperation {
         fee: Asset {
             amount: 0,
             asset_id: AssetId("1.3.0".to_string()),
         },
-        witness_account: AccountId("1.2.1".to_string()),
-        url: "https://example.invalid".to_string(),
-        block_signing_key: "BTS1111111111111111111111111111111114T1Anm".to_string(),
+        registrar: AccountId("1.2.1".to_string()),
+        referrer: AccountId("1.2.2".to_string()),
+        referrer_percent: 0,
+        name: "alice".to_string(),
+        owner: Authority {},
+        active: Authority {},
+        options: AccountOptions {
+            memo_key: "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV".to_string(),
+            voting_account: AccountId("1.2.5".to_string()),
+            num_witness: 0,
+            num_committee: 0,
+            votes: Vec::new(),
+            extensions: FutureExtensions::VoidT(Box::new(())),
+        },
+        extensions: AccountCreateOperationExt {
+            null_ext: None,
+            owner_special_authority: None,
+            active_special_authority: None,
+        },
     }));
 
     let err = operation.to_fc_bytes().expect_err("unsupported variant fails explicitly");
@@ -184,7 +200,7 @@ fn operation_fc_reports_unsupported_variant() {
     assert!(matches!(
         err,
         FcSerializeError::UnsupportedVariant {
-            variant: "WitnessCreateOperation"
+            variant: "AccountCreateOperation"
         }
     ));
 }

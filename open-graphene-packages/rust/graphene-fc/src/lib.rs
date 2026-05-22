@@ -1,9 +1,16 @@
+use ripemd::Digest;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FcSerializeError {
     InvalidProtocolObjectId {
         value: String,
         expected_space: Option<u32>,
         expected_type: Option<u32>,
+    },
+    InvalidPublicKey {
+        value: String,
+        expected_prefix: Option<String>,
+        reason: &'static str,
     },
     UnsupportedVariant {
         variant: &'static str,
@@ -24,6 +31,14 @@ impl std::fmt::Display for FcSerializeError {
             } => write!(
                 f,
                 "invalid protocol object id `{value}` for expected space {expected_space:?} and type {expected_type:?}"
+            ),
+            Self::InvalidPublicKey {
+                value,
+                expected_prefix,
+                reason,
+            } => write!(
+                f,
+                "invalid public key `{value}` for expected prefix {expected_prefix:?}: {reason}"
             ),
             Self::UnsupportedVariant { variant } => {
                 write!(
@@ -122,6 +137,54 @@ pub fn write_protocol_object_id(
     Ok(())
 }
 
+pub fn write_public_key(
+    value: &str,
+    expected_prefix: Option<&str>,
+    out: &mut Vec<u8>,
+) -> Result<()> {
+    let payload = match expected_prefix {
+        Some(prefix) => value.strip_prefix(prefix).ok_or_else(|| invalid_public_key(
+            value,
+            expected_prefix,
+            "missing expected chain prefix",
+        ))?,
+        None => value,
+    };
+
+    let decoded = bs58::decode(payload).into_vec().map_err(|_| {
+        invalid_public_key(value, expected_prefix, "base58 payload is invalid")
+    })?;
+
+    if decoded.len() != 37 {
+        return Err(invalid_public_key(
+            value,
+            expected_prefix,
+            "expected 33 byte compressed key plus 4 byte checksum",
+        ));
+    }
+
+    let (key, checksum) = decoded.split_at(33);
+    if !matches!(key.first(), Some(0x02 | 0x03)) {
+        return Err(invalid_public_key(
+            value,
+            expected_prefix,
+            "invalid compressed public key prefix",
+        ));
+    }
+
+    let digest = ripemd::Ripemd160::digest(key);
+    if checksum != &digest[..4] {
+        return Err(invalid_public_key(
+            value,
+            expected_prefix,
+            "RIPEMD160 checksum mismatch",
+        ));
+    }
+
+    out.extend_from_slice(key);
+    Ok(())
+}
+
 fn invalid_protocol_object_id(
     value: &str,
     expected_space: Option<u32>,
@@ -131,6 +194,18 @@ fn invalid_protocol_object_id(
         value: value.to_string(),
         expected_space,
         expected_type,
+    }
+}
+
+fn invalid_public_key(
+    value: &str,
+    expected_prefix: Option<&str>,
+    reason: &'static str,
+) -> FcSerializeError {
+    FcSerializeError::InvalidPublicKey {
+        value: value.to_string(),
+        expected_prefix: expected_prefix.map(str::to_string),
+        reason,
     }
 }
 
@@ -250,6 +325,45 @@ mod tests {
     }
 
     #[test]
+    fn public_key_writes_compressed_key_bytes_and_validates_checksum() {
+        let key = "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV";
+        let mut out = Vec::new();
+        write_public_key(key, Some("BTS"), &mut out).unwrap();
+
+        assert_eq!(out.len(), 33);
+        assert_eq!(out[0], 0x02);
+        assert_eq!(
+            hex_string(&out),
+            "02c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf"
+        );
+
+        let err = write_public_key(key, Some("GPH"), &mut Vec::new())
+            .expect_err("wrong prefix fails");
+        assert!(matches!(
+            err,
+            FcSerializeError::InvalidPublicKey {
+                expected_prefix: Some(prefix),
+                reason: "missing expected chain prefix",
+                ..
+            } if prefix == "GPH"
+        ));
+
+        let err = write_public_key(
+            "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CW",
+            Some("BTS"),
+            &mut Vec::new(),
+        )
+        .expect_err("checksum mismatch fails");
+        assert!(matches!(
+            err,
+            FcSerializeError::InvalidPublicKey {
+                reason: "RIPEMD160 checksum mismatch",
+                ..
+            }
+        ));
+    }
+
+    #[test]
     fn protocol_object_id_validates_expected_space_and_type() {
         let mut out = Vec::new();
         write_protocol_object_id("1.2.345", Some(1), Some(2), &mut out).unwrap();
@@ -265,5 +379,9 @@ mod tests {
                 ..
             }
         ));
+    }
+
+    fn hex_string(bytes: &[u8]) -> String {
+        bytes.iter().map(|byte| format!("{byte:02x}")).collect()
     }
 }

@@ -2,7 +2,7 @@
 // Chain: swaplock | schema version: 1 | module: minimal FC serialization for transfer path.
 // Do not edit by hand.
 
-pub use open_graphene_fc::{write_protocol_object_id, write_varint, FcSerialize, FcSerializeError, Result};
+pub use open_graphene_fc::{write_protocol_object_id, write_public_key, write_varint, FcSerialize, FcSerializeError, Result};
 
 impl FcSerialize for crate::generated::ids::AccountId {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
@@ -893,6 +893,21 @@ impl FcSerialize for crate::generated::types::SametFundUpdateOperationFeeParamsT
     }
 }
 
+impl FcSerialize for crate::generated::types::StealthConfirmation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_public_key(&self.one_time_key, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;
+        match &self.to {
+            Some(value) => {
+                out.push(1);
+                write_public_key(value, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;
+            }
+            None => out.push(0),
+        }
+        self.encrypted_memo.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::TicketCreateOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -1182,6 +1197,33 @@ impl FcSerialize for crate::generated::operations::AssetPublishFeedOperation {
     }
 }
 
+impl FcSerialize for crate::generated::operations::WitnessCreateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.witness_account.fc_serialize(out)?;
+        self.url.fc_serialize(out)?;
+        write_public_key(&self.block_signing_key, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::WitnessUpdateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.witness.fc_serialize(out)?;
+        self.witness_account.fc_serialize(out)?;
+        self.new_url.fc_serialize(out)?;
+        match &self.new_signing_key {
+            Some(value) => {
+                out.push(1);
+                write_public_key(value, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;
+            }
+            None => out.push(0),
+        }
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::operations::ProposalDeleteOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -1228,6 +1270,17 @@ impl FcSerialize for crate::generated::operations::VestingBalanceWithdrawOperati
         self.vesting_balance.fc_serialize(out)?;
         self.owner.fc_serialize(out)?;
         self.amount.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::BalanceClaimOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.deposit_to_account.fc_serialize(out)?;
+        self.balance_to_claim.fc_serialize(out)?;
+        write_public_key(&self.balance_owner_key, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;
+        self.total_claimed.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -1572,8 +1625,8 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             Self::AssetSettleOperation(value) => { write_varint(17u64, out); value.as_ref().fc_serialize(out) }
             Self::AssetGlobalSettleOperation(value) => { write_varint(18u64, out); value.as_ref().fc_serialize(out) }
             Self::AssetPublishFeedOperation(value) => { write_varint(19u64, out); value.as_ref().fc_serialize(out) }
-            Self::WitnessCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "WitnessCreateOperation" }),
-            Self::WitnessUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "WitnessUpdateOperation" }),
+            Self::WitnessCreateOperation(value) => { write_varint(20u64, out); value.as_ref().fc_serialize(out) }
+            Self::WitnessUpdateOperation(value) => { write_varint(21u64, out); value.as_ref().fc_serialize(out) }
             Self::ProposalCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "ProposalCreateOperation" }),
             Self::ProposalUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "ProposalUpdateOperation" }),
             Self::ProposalDeleteOperation(value) => { write_varint(24u64, out); value.as_ref().fc_serialize(out) }
@@ -1589,7 +1642,7 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             Self::WorkerCreateOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "WorkerCreateOperation" }),
             Self::CustomOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "CustomOperation" }),
             Self::AssertOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "AssertOperation" }),
-            Self::BalanceClaimOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "BalanceClaimOperation" }),
+            Self::BalanceClaimOperation(value) => { write_varint(37u64, out); value.as_ref().fc_serialize(out) }
             Self::OverrideTransferOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "OverrideTransferOperation" }),
             Self::TransferToBlindOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "TransferToBlindOperation" }),
             Self::BlindTransferOperation(_) => Err(FcSerializeError::UnsupportedVariant { variant: "BlindTransferOperation" }),

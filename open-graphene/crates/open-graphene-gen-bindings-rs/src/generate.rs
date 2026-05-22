@@ -301,7 +301,7 @@ fn render_fields(out: &mut String, protocol: &Protocol, fields: &[FieldDef]) -> 
 
 fn render_fc(protocol: &Protocol) -> Result<String> {
     let mut out = generated_header(protocol, "minimal FC serialization for transfer path");
-    out.push_str("pub use open_graphene_fc::{write_protocol_object_id, write_varint, FcSerialize, FcSerializeError, Result};\n\n");
+    out.push_str("pub use open_graphene_fc::{write_protocol_object_id, write_public_key, write_varint, FcSerialize, FcSerializeError, Result};\n\n");
 
     render_fc_id_impls(&mut out, protocol)?;
     render_fc_transfer_path_impls(&mut out, protocol)?;
@@ -424,8 +424,7 @@ fn render_fc_struct_impls(out: &mut String, protocol: &Protocol) -> Result<BTree
             out.push_str("        let _ = out;\n");
         }
         for field in fields {
-            let field_name = rust_field_name(&field.name);
-            out.push_str(&format!("        self.{field_name}.fc_serialize(out)?;\n"));
+            out.push_str(&render_fc_field_serialize_line(&field)?);
         }
         out.push_str("        Ok(())\n");
         out.push_str("    }\n");
@@ -492,8 +491,7 @@ fn render_fc_operation_impls(
             out.push_str("        let _ = out;\n");
         }
         for field in fields {
-            let field_name = rust_field_name(&field.name);
-            out.push_str(&format!("        self.{field_name}.fc_serialize(out)?;\n"));
+            out.push_str(&render_fc_field_serialize_line(&field)?);
         }
         out.push_str("        Ok(())\n");
         out.push_str("    }\n");
@@ -502,6 +500,68 @@ fn render_fc_operation_impls(
     }
 
     Ok(supported_operations)
+}
+
+fn render_fc_field_serialize_line(field: &FieldDef) -> Result<String> {
+    let field_name = rust_field_name(&field.name);
+    render_fc_value_serialize_lines(&format!("self.{field_name}"), &field.ty, "        ")
+}
+
+fn render_fc_value_serialize_lines(value_expr: &str, ty: &TypeRef, indent: &str) -> Result<String> {
+    match ty {
+        TypeRef::PublicKey { .. } => {
+            let prefix = render_public_key_prefix_expr(ty)?;
+            Ok(format!(
+                "{indent}write_public_key(&{value_expr}, {prefix}, out)?;\n"
+            ))
+        }
+        TypeRef::Optional { inner } if matches!(inner.as_ref(), TypeRef::PublicKey { .. }) => {
+            let prefix = render_public_key_prefix_expr(inner)?;
+            Ok(format!(
+                "{indent}match &{value_expr} {{\n\
+                 {indent}    Some(value) => {{\n\
+                 {indent}        out.push(1);\n\
+                 {indent}        write_public_key(value, {prefix}, out)?;\n\
+                 {indent}    }}\n\
+                 {indent}    None => out.push(0),\n\
+                 {indent}}}\n"
+            ))
+        }
+        TypeRef::Vector { inner } if matches!(inner.as_ref(), TypeRef::PublicKey { .. }) => {
+            let prefix = render_public_key_prefix_expr(inner)?;
+            Ok(format!(
+                "{indent}write_varint({value_expr}.len() as u64, out);\n\
+                 {indent}for value in &{value_expr} {{\n\
+                 {indent}    write_public_key(value, {prefix}, out)?;\n\
+                 {indent}}}\n"
+            ))
+        }
+        _ => Ok(format!("{indent}{value_expr}.fc_serialize(out)?;\n")),
+    }
+}
+
+fn render_public_key_prefix_expr(ty: &TypeRef) -> Result<String> {
+    match ty {
+        TypeRef::PublicKey {
+            chain_prefix,
+            prefix_ref,
+        } => {
+            if let Some(prefix) = chain_prefix {
+                Ok(format!("Some({})", rust_string_literal(prefix)))
+            } else if prefix_ref.as_deref() == Some("chain.publicKeyPrefix") {
+                Ok("Some(crate::generated::ids::PUBLIC_KEY_PREFIX)".to_string())
+            } else if let Some(prefix_ref) = prefix_ref {
+                Err(GenBindingsRsError::Render {
+                    message: format!("unsupported public key prefix reference `{prefix_ref}`"),
+                })
+            } else {
+                Ok("None".to_string())
+            }
+        }
+        _ => Err(GenBindingsRsError::Render {
+            message: "internal error: expected public key type".to_string(),
+        }),
+    }
 }
 
 fn render_fc_transfer_operation_impl(out: &mut String) {
@@ -546,7 +606,8 @@ fn is_fc_supported_type(
         | TypeRef::Int32 { .. }
         | TypeRef::Int64 { json: None, .. }
         | TypeRef::Uint64 { json: None, .. }
-        | TypeRef::String => true,
+        | TypeRef::String
+        | TypeRef::PublicKey { .. } => true,
         TypeRef::ObjectId | TypeRef::ProtocolObjectId { .. } => true,
         TypeRef::Ref { name } => supported_structs.contains(name),
         TypeRef::StaticVariantRef { name } => name == "future_extensions",
@@ -566,7 +627,6 @@ fn is_fc_supported_type(
         | TypeRef::FixedBytes { .. }
         | TypeRef::TimePointSec
         | TypeRef::TimePoint
-        | TypeRef::PublicKey { .. }
         | TypeRef::Address
         | TypeRef::Signature
         | TypeRef::ProtocolObjectUnion { .. }
@@ -1162,17 +1222,14 @@ mod tests {
             support: None,
         });
         protocol.structs.push(StructDef {
-            name: "unsupported_public_key_struct".to_string(),
+            name: "unsupported_signature_struct".to_string(),
             source_name: None,
             kind: StructKind::Struct,
             wire_tag: None,
             fields: vec![FieldDef {
                 index: 0,
                 name: "value".to_string(),
-                ty: TypeRef::PublicKey {
-                    chain_prefix: None,
-                    prefix_ref: Some("chain.publicKeyPrefix".to_string()),
-                },
+                ty: TypeRef::Signature,
                 source: None,
                 support: None,
             }],
@@ -1272,6 +1329,28 @@ mod tests {
                 },
                 FieldDef {
                     index: 8,
+                    name: "signing_key".to_string(),
+                    ty: TypeRef::PublicKey {
+                        chain_prefix: None,
+                        prefix_ref: Some("chain.publicKeyPrefix".to_string()),
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 9,
+                    name: "optional_signing_key".to_string(),
+                    ty: TypeRef::Optional {
+                        inner: Box::new(TypeRef::PublicKey {
+                            chain_prefix: None,
+                            prefix_ref: Some("chain.publicKeyPrefix".to_string()),
+                        }),
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 10,
                     name: "account".to_string(),
                     ty: TypeRef::ProtocolObjectId {
                         object_type: "account".to_string(),
@@ -1280,7 +1359,7 @@ mod tests {
                     support: None,
                 },
                 FieldDef {
-                    index: 9,
+                    index: 11,
                     name: "extensions".to_string(),
                     ty: TypeRef::StaticVariantRef {
                         name: "future_extensions".to_string(),
@@ -1298,11 +1377,8 @@ mod tests {
             wire_tag: 3,
             fields: vec![FieldDef {
                 index: 0,
-                name: "unsupported_public_key".to_string(),
-                ty: TypeRef::PublicKey {
-                    chain_prefix: None,
-                    prefix_ref: Some("chain.publicKeyPrefix".to_string()),
-                },
+                name: "unsupported_signature".to_string(),
+                ty: TypeRef::Signature,
                 source: None,
                 support: None,
             }],
@@ -1363,11 +1439,11 @@ mod tests {
 
         let output = render_fc(&protocol).expect("render fc");
 
-        assert!(output.contains("pub use open_graphene_fc::{write_protocol_object_id, write_varint, FcSerialize, FcSerializeError, Result};"));
+        assert!(output.contains("pub use open_graphene_fc::{write_protocol_object_id, write_public_key, write_varint, FcSerialize, FcSerializeError, Result};"));
         assert!(output.contains("impl FcSerialize for crate::generated::types::Asset"));
         assert!(output.contains("self.amount.fc_serialize(out)?;"));
         assert!(output.contains("self.asset_id.fc_serialize(out)?;"));
-        assert!(!output.contains("impl FcSerialize for crate::generated::types::UnsupportedPublicKeyStruct"));
+        assert!(!output.contains("impl FcSerialize for crate::generated::types::UnsupportedSignatureStruct"));
         assert!(output.contains("Self::TransferOperation(value) => { write_varint(0u64, out); value.as_ref().fc_serialize(out) }"));
         assert!(output.contains("impl FcSerialize for crate::generated::operations::LimitOrderCreateOperation"));
         assert!(output.contains("Self::LimitOrderCreateOperation(value) => { write_varint(1u64, out); value.as_ref().fc_serialize(out) }"));
@@ -1382,6 +1458,9 @@ mod tests {
         assert!(output.contains("self.huge.fc_serialize(out)?;"));
         assert!(output.contains("self.signed.fc_serialize(out)?;"));
         assert!(output.contains("self.label.fc_serialize(out)?;"));
+        assert!(output.contains("write_public_key(&self.signing_key, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;"));
+        assert!(output.contains("match &self.optional_signing_key"));
+        assert!(output.contains("write_public_key(value, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;"));
         assert!(output.contains("self.account.fc_serialize(out)?;"));
         assert!(output.contains("self.extensions.fc_serialize(out)?;"));
         assert!(output.contains("Self::CustomSupportedOperation(value) => { write_varint(9u64, out); value.as_ref().fc_serialize(out) }"));
