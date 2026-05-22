@@ -168,8 +168,8 @@
       "returns": {
         "kind": "vector",
         "inner": {
-          "kind": "any_json",
-          "reason": "unsupported C++ type mapping: operation_history_object"
+          "kind": "ref",
+          "name": "operation_history_object"
         }
       },
       "isSubscription": false,

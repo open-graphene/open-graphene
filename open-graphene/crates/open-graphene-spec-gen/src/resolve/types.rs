@@ -55,6 +55,9 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         _ if normalized.ends_with("_id_type") => TypeRef::ProtocolObjectId {
             object_type: normalized.trim_end_matches("_id_type").to_string(),
         },
+        _ if normalized.ends_with("_object") => TypeRef::Ref {
+            name: normalized.to_string(),
+        },
         _ => TypeRef::AnyJson {
             reason: Some(format!("unsupported C++ type mapping: {normalized}")),
             source: None,
@@ -128,6 +131,24 @@ mod tests {
             resolve_cpp_type("operation_history_id_type"),
             TypeRef::ProtocolObjectId {
                 object_type: "operation_history".to_string()
+            }
+        );
+    }
+
+    #[test]
+    fn maps_object_struct_aliases_to_refs() {
+        assert_eq!(
+            resolve_cpp_type("operation_history_object"),
+            TypeRef::Ref {
+                name: "operation_history_object".to_string()
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("vector<operation_history_object>"),
+            TypeRef::Vector {
+                inner: Box::new(TypeRef::Ref {
+                    name: "operation_history_object".to_string()
+                })
             }
         );
     }
