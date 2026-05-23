@@ -11810,6 +11810,120 @@
       }
     },
     {
+      "name": "signed_transaction",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "ref_block_num",
+          "type": {
+            "kind": "uint16"
+          },
+          "source": {
+            "name": "ref_block_num",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 71
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "ref_block_prefix",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "ref_block_prefix",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 75
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "expiration",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "expiration",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 81
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "operations",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "static_variant_ref",
+              "name": "operation"
+            }
+          },
+          "source": {
+            "name": "operations",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 86
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "extensions",
+          "type": {
+            "kind": "static_variant_ref",
+            "name": "future_extensions"
+          },
+          "source": {
+            "name": "extensions",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 88
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 5,
+          "name": "signatures",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "signature"
+            }
+          },
+          "source": {
+            "name": "signatures",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 213
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
       "name": "stealth_confirmation",
       "kind": "struct",
       "fields": [

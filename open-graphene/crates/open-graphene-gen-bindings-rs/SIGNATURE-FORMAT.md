@@ -163,7 +163,7 @@ The local C++ tree calls `private_key_type::sign_compact(...)`, but the bundled 
    - layout: `[header/recovery: u8][r: 32][s: 32]`
    - `signed_transaction.signatures` wire shape: `Vec<Signature>` where FC writes vector length, then each signature's 65 raw bytes
 
-3. Do not serialize `TypeRef::Signature` via `String::fc_serialize`. The current generated Rust type mapping for signatures is string-shaped for JSON compatibility, but FC serialization of signatures must be fixed raw bytes.
+3. Do not serialize `TypeRef::Signature` via `String::fc_serialize`. Generated Rust now maps signatures to a dedicated `Signature` wrapper so FC serialization can enforce the fixed 65-byte compact signature shape.
 
 4. Signing implementation must use recoverable secp256k1 ECDSA and produce Graphene-compatible compact signatures:
    - digest input is exactly `Transaction::signature_digest_bytes()`
@@ -177,17 +177,17 @@ The local C++ tree calls `private_key_type::sign_compact(...)`, but the bundled 
    - reject unknown string encodings rather than guessing
    - do not introduce `signed_transaction` FC serialization until signature bytes have a real fixed-byte representation
 
-## Proposed next implementation slice
+## Implemented follow-up
 
-A safe next code slice is **Signature raw bytes support without private-key signing**:
+The raw-signature slice is implemented in the generated Rust bindings:
 
-- Add a generated or runtime-backed `SignatureBytes([u8; 65])` / `Signature(Vec<u8>)` boundary.
-- Add FC serialization that writes exactly 65 bytes, no inner length prefix.
-- Generate `SignedTransaction` only if its `signatures` field maps to `Vec<SignatureBytes>` or an equivalent fixed-byte representation.
-- Add tests that `signed_transaction` FC bytes equal:
+- `Signature` is a generated wrapper over bytes.
+- FC serialization accepts exactly 65 bytes and writes them without an inner length prefix.
+- `SignedTransaction` is generated from the C++ reflected `signed_transaction` shape.
+- `SignedTransaction` FC bytes are:
 
 ```text
 transaction_fc_bytes || varint(signature_count) || signature_65_bytes...
 ```
 
-Then a later slice can add secp256k1 signing against `Transaction::signature_digest_bytes()`.
+A later slice can add secp256k1 signing against `Transaction::signature_digest_bytes()`.

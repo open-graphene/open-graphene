@@ -9,7 +9,7 @@ pub const CHAIN_ID: &str = "swaplock";
 pub const CHAIN_ID_HEX: &str = "2267f694d96b7ffdcba1a98c63c09e720a18a85ad34954e299c66d5a42234098";
 pub const PUBLIC_KEY_PREFIX: &str = "BTS";
 
-pub const STRUCT_COUNT: usize = 204;
+pub const STRUCT_COUNT: usize = 205;
 pub const ENUM_COUNT: usize = 11;
 pub const STATIC_VARIANT_COUNT: usize = 11;
 pub const OPERATION_COUNT: usize = 78;

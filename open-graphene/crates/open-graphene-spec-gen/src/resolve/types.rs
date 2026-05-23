@@ -163,6 +163,7 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         | "price_feed"
         | "processed_transaction"
         | "restriction"
+        | "signed_transaction"
         | "signed_block"
         | "signed_block_header"
         | "stealth_confirmation"

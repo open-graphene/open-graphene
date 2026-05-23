@@ -11,11 +11,11 @@ use graphene_chain_swaplock_bindings::generated::{
     HtlcHash, HtlcId, HtlcRefundOperation, InstantVestingPolicyInitializer, LimitOrderAutoAction,
     LimitOrderCancelOperation, LimitOrderCreateOperation, LimitOrderId, LimitOrderUpdateOperation,
     LinearVestingPolicyInitializer, MemoData, NoSpecialAuthority, OpWrapper, Operation, Predicate,
-    Price, ProposalCreateOperation, RefundWorkerInitializer, Restriction, SpecialAuthority,
-    TopHoldersSpecialAuthority, Transaction, TransferOperation, TransferOperationFeeParamsT,
-    VestingBalanceCreateOperation, VestingBalanceWorkerInitializer, VestingPolicyInitializer,
-    VoteId, WithdrawPermissionCreateOperation, WorkerCreateOperation, WorkerInitializer,
-    sha256_bytes,
+    Price, ProposalCreateOperation, RefundWorkerInitializer, Restriction, Signature,
+    SignedTransaction, SpecialAuthority, TopHoldersSpecialAuthority, Transaction,
+    TransferOperation, TransferOperationFeeParamsT, VestingBalanceCreateOperation,
+    VestingBalanceWorkerInitializer, VestingPolicyInitializer, VoteId,
+    WithdrawPermissionCreateOperation, WorkerCreateOperation, WorkerInitializer, sha256_bytes,
 };
 
 fn sample_transfer_operation() -> TransferOperation {
@@ -86,6 +86,20 @@ fn sample_transaction_with_operations(operations: Vec<Operation>) -> Transaction
     }
 }
 
+fn sample_signed_transaction_with_operations(
+    operations: Vec<Operation>,
+    signatures: Vec<Signature>,
+) -> SignedTransaction {
+    SignedTransaction {
+        ref_block_num: 1,
+        ref_block_prefix: 2,
+        expiration: "1970-01-01T00:00:03".to_string(),
+        operations,
+        extensions: FutureExtensions::VoidT(Box::new(())),
+        signatures,
+    }
+}
+
 fn expected_transaction_payload(operation_payloads: &[Vec<u8>]) -> Vec<u8> {
     let mut bytes = Vec::new();
     // ref_block_num 1, ref_block_prefix 2, expiration 3
@@ -96,6 +110,25 @@ fn expected_transaction_payload(operation_payloads: &[Vec<u8>]) -> Vec<u8> {
     }
     // extensions tag 0
     bytes.push(0);
+    bytes
+}
+
+fn sample_signature_bytes() -> Vec<u8> {
+    let mut signature = Vec::with_capacity(65);
+    signature.push(31);
+    signature.extend(1u8..=64);
+    signature
+}
+
+fn expected_signed_transaction_payload(
+    operation_payloads: &[Vec<u8>],
+    signatures: &[Vec<u8>],
+) -> Vec<u8> {
+    let mut bytes = expected_transaction_payload(operation_payloads);
+    bytes.push(signatures.len() as u8);
+    for signature in signatures {
+        bytes.extend(signature);
+    }
     bytes
 }
 
@@ -1842,6 +1875,76 @@ fn transaction_fc_serializes_proposal_operation_vector() {
             .expect("serialize transaction with proposal"),
         expected_transaction_payload(&[operation_payload])
     );
+}
+
+#[test]
+fn signature_fc_serializes_exact_65_raw_bytes() {
+    let signature = sample_signature_bytes();
+    assert_eq!(
+        Signature(signature.clone())
+            .to_fc_bytes()
+            .expect("serialize compact signature bytes"),
+        signature
+    );
+}
+
+#[test]
+fn signature_fc_rejects_invalid_lengths() {
+    for length in [64usize, 66] {
+        let err = Signature(vec![0; length])
+            .to_fc_bytes()
+            .expect_err("invalid compact signature length fails");
+        assert!(matches!(
+            err,
+            FcSerializeError::InvalidFixedBytes {
+                type_name: "signature",
+                expected_len: 65,
+                actual_len,
+            } if actual_len == length
+        ));
+    }
+}
+
+#[test]
+fn signed_transaction_fc_serializes_transaction_fields_and_signature_vector() {
+    let signature = sample_signature_bytes();
+    let signed_transaction = sample_signed_transaction_with_operations(
+        vec![Operation::TransferOperation(Box::new(
+            sample_transfer_operation(),
+        ))],
+        vec![Signature(signature.clone())],
+    );
+
+    let mut operation_payload = vec![0];
+    operation_payload.extend(expected_transfer_payload());
+    assert_eq!(
+        signed_transaction
+            .to_fc_bytes()
+            .expect("serialize signed transaction with transfer"),
+        expected_signed_transaction_payload(&[operation_payload], &[signature])
+    );
+}
+
+#[test]
+fn signed_transaction_fc_propagates_signature_length_errors() {
+    let signed_transaction = sample_signed_transaction_with_operations(
+        vec![Operation::TransferOperation(Box::new(
+            sample_transfer_operation(),
+        ))],
+        vec![Signature(vec![0; 64])],
+    );
+
+    let err = signed_transaction
+        .to_fc_bytes()
+        .expect_err("invalid signature length propagates through signed transaction");
+    assert!(matches!(
+        err,
+        FcSerializeError::InvalidFixedBytes {
+            type_name: "signature",
+            expected_len: 65,
+            actual_len: 64,
+        }
+    ));
 }
 
 #[test]

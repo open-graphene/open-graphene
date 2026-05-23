@@ -4,6 +4,11 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Graphene compact recoverable ECDSA signature bytes.
+/// Wire layout: one compact header byte followed by 32-byte r and 32-byte s.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Signature(pub Vec<u8>);
+
 /// Raw enum `account_listing`. Numeric wire serde is not implemented yet.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AccountListing {
@@ -784,7 +789,7 @@ pub struct MaybeSignedBlockHeader {
     pub witness: crate::generated::ids::WitnessId,
     pub transaction_merkle_root: Vec<u8>,
     pub extensions: crate::generated::static_variants::FutureExtensions,
-    pub witness_signature: Option<String>,
+    pub witness_signature: Option<crate::generated::types::Signature>,
 }
 
 /// Raw protocol struct `memo_data`.
@@ -852,7 +857,7 @@ pub struct ProcessedTransaction {
     pub expiration: String,
     pub operations: Vec<crate::generated::static_variants::Operation>,
     pub extensions: crate::generated::static_variants::FutureExtensions,
-    pub signatures: Vec<String>,
+    pub signatures: Vec<crate::generated::types::Signature>,
     pub operation_results: Vec<crate::generated::static_variants::OperationResult>,
 }
 
@@ -926,8 +931,19 @@ pub struct SignedBlock {
     pub witness: crate::generated::ids::WitnessId,
     pub transaction_merkle_root: Vec<u8>,
     pub extensions: crate::generated::static_variants::FutureExtensions,
-    pub witness_signature: String,
+    pub witness_signature: crate::generated::types::Signature,
     pub transactions: Vec<crate::generated::types::ProcessedTransaction>,
+}
+
+/// Raw protocol struct `signed_transaction`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SignedTransaction {
+    pub ref_block_num: u16,
+    pub ref_block_prefix: u32,
+    pub expiration: String,
+    pub operations: Vec<crate::generated::static_variants::Operation>,
+    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub signatures: Vec<crate::generated::types::Signature>,
 }
 
 /// Raw protocol struct `stealth_confirmation`.

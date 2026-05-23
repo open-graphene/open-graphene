@@ -187,6 +187,10 @@ fn render_types(protocol: &Protocol) -> Result<String> {
     out.push_str("use serde::{Deserialize, Serialize};\n\n");
 
     let mut emitted = BTreeSet::new();
+    if protocol_uses_signature(protocol) {
+        ensure_unique(&mut emitted, "Signature", "type")?;
+        render_signature_type(&mut out);
+    }
     for enum_def in sorted_enums(&protocol.enums) {
         let name = rust_type_name(&enum_def.name);
         ensure_unique(&mut emitted, &name, "type")?;
@@ -237,6 +241,13 @@ fn render_static_variants(protocol: &Protocol) -> Result<String> {
     }
 
     Ok(out)
+}
+
+fn render_signature_type(out: &mut String) {
+    out.push_str("/// Graphene compact recoverable ECDSA signature bytes.\n");
+    out.push_str("/// Wire layout: one compact header byte followed by 32-byte r and 32-byte s.\n");
+    out.push_str("#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]\n");
+    out.push_str("pub struct Signature(pub Vec<u8>);\n\n");
 }
 
 fn render_enum(out: &mut String, enum_def: &EnumDef) -> Result<()> {
@@ -310,8 +321,21 @@ fn render_fc(protocol: &Protocol) -> Result<String> {
     out.push_str("pub use open_graphene_fc::{decode_chain_id_hex, parse_protocol_object_id, sha256_bytes, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};\n\n");
 
     render_fc_id_impls(&mut out, protocol)?;
+    render_fc_signature_impl(&mut out, protocol);
     render_fc_transfer_path_impls(&mut out, protocol)?;
     Ok(out)
+}
+
+fn render_fc_signature_impl(out: &mut String, protocol: &Protocol) {
+    if !protocol_uses_signature(protocol) {
+        return;
+    }
+
+    out.push_str("impl FcSerialize for crate::generated::types::Signature {\n");
+    out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
+    out.push_str("        write_fixed_bytes(&self.0, 65, \"signature\", out)\n");
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
 }
 
 fn render_fc_id_impls(out: &mut String, protocol: &Protocol) -> Result<()> {
@@ -1291,7 +1315,8 @@ fn is_fc_supported_type(
         | TypeRef::FixedBytes { .. }
         | TypeRef::PublicKey { .. }
         | TypeRef::TimePointSec
-        | TypeRef::VoteId => true,
+        | TypeRef::VoteId
+        | TypeRef::Signature => true,
         TypeRef::ObjectId | TypeRef::ProtocolObjectId { .. } => true,
         TypeRef::Ref { name } => supported_structs.contains(name),
         TypeRef::StaticVariantRef { name } => {
@@ -1327,7 +1352,6 @@ fn is_fc_supported_type(
         | TypeRef::FixedHex { .. }
         | TypeRef::TimePoint
         | TypeRef::Address
-        | TypeRef::Signature
         | TypeRef::ProtocolObjectUnion { .. }
         | TypeRef::AnyJson { .. }
         | TypeRef::Unsupported { .. } => false,
@@ -1457,8 +1481,8 @@ fn render_type_ref(protocol: &Protocol, ty: &TypeRef) -> Result<String> {
         | TypeRef::TimePoint
         | TypeRef::PublicKey { .. }
         | TypeRef::Address
-        | TypeRef::Signature
         | TypeRef::VoteId => "String".to_string(),
+        TypeRef::Signature => "crate::generated::types::Signature".to_string(),
         TypeRef::Bytes | TypeRef::FixedBytes { .. } => "Vec<u8>".to_string(),
         TypeRef::ObjectId => "crate::generated::ids::ObjectId".to_string(),
         TypeRef::ProtocolObjectId { object_type } => {
@@ -1511,6 +1535,66 @@ fn is_operation_ref(protocol: &Protocol, name: &str) -> bool {
             .structs
             .iter()
             .any(|struct_def| struct_def.name == name && struct_def.kind == StructKind::Operation)
+}
+
+fn protocol_uses_signature(protocol: &Protocol) -> bool {
+    protocol.structs.iter().any(|struct_def| {
+        struct_def
+            .fields
+            .iter()
+            .any(|field| type_uses_signature(&field.ty))
+    }) || protocol.operations.iter().any(|operation| {
+        operation
+            .fields
+            .iter()
+            .any(|field| type_uses_signature(&field.ty))
+    }) || protocol.static_variants.iter().any(|variant| {
+        variant
+            .variants
+            .iter()
+            .any(|arm| type_uses_signature(&arm.ty))
+    })
+}
+
+fn type_uses_signature(ty: &TypeRef) -> bool {
+    match ty {
+        TypeRef::Signature => true,
+        TypeRef::Optional { inner } | TypeRef::Vector { inner } | TypeRef::Set { inner, .. } => {
+            type_uses_signature(inner)
+        }
+        TypeRef::Map { key, value, .. } | TypeRef::FlatMap { key, value, .. } => {
+            type_uses_signature(key) || type_uses_signature(value)
+        }
+        TypeRef::Pair { first, second } => {
+            type_uses_signature(first) || type_uses_signature(second)
+        }
+        TypeRef::Void
+        | TypeRef::Bool
+        | TypeRef::Uint8
+        | TypeRef::Uint16
+        | TypeRef::Uint32
+        | TypeRef::Int32 { .. }
+        | TypeRef::Int64 { .. }
+        | TypeRef::Uint64 { .. }
+        | TypeRef::UnsignedVarint
+        | TypeRef::CallbackHandle
+        | TypeRef::String
+        | TypeRef::Bytes
+        | TypeRef::FixedHex { .. }
+        | TypeRef::FixedBytes { .. }
+        | TypeRef::TimePointSec
+        | TypeRef::TimePoint
+        | TypeRef::PublicKey { .. }
+        | TypeRef::Address
+        | TypeRef::ObjectId
+        | TypeRef::ProtocolObjectId { .. }
+        | TypeRef::ProtocolObjectUnion { .. }
+        | TypeRef::VoteId
+        | TypeRef::Ref { .. }
+        | TypeRef::StaticVariantRef { .. }
+        | TypeRef::AnyJson { .. }
+        | TypeRef::Unsupported { .. } => false,
+    }
 }
 
 fn collect_protocol_object_id_names(protocol: &Protocol) -> BTreeSet<String> {
@@ -2451,8 +2535,10 @@ mod tests {
         assert!(output.contains("Self::CreateTakeProfitOrderAction(value)"));
         assert!(output.contains("self.amount.fc_serialize(out)?;"));
         assert!(output.contains("self.asset_id.fc_serialize(out)?;"));
+        assert!(output.contains("impl FcSerialize for crate::generated::types::Signature"));
+        assert!(output.contains("write_fixed_bytes(&self.0, 65, \"signature\", out)"));
         assert!(
-            !output.contains(
+            output.contains(
                 "impl FcSerialize for crate::generated::types::UnsupportedSignatureStruct"
             )
         );
@@ -2516,8 +2602,10 @@ mod tests {
         assert!(output.contains("self.extensions.fc_serialize(out)?;"));
         assert!(output.contains("Self::CustomSupportedOperation(value) => { write_varint(9u64, out); value.as_ref().fc_serialize(out) }"));
         assert!(output.contains(
-            "Self::CallOrderUpdateOperation(_) => Err(FcSerializeError::UnsupportedVariant"
+            "impl FcSerialize for crate::generated::operations::CallOrderUpdateOperation"
         ));
+        assert!(output.contains("self.unsupported_signature.fc_serialize(out)?;"));
+        assert!(output.contains("Self::CallOrderUpdateOperation(value) => { write_varint(3u64, out); value.as_ref().fc_serialize(out) }"));
     }
 
     #[test]
@@ -2689,6 +2777,65 @@ mod tests {
             ],
             support: None,
         });
+        protocol.structs.push(StructDef {
+            name: "signed_transaction".to_string(),
+            source_name: None,
+            kind: StructKind::Struct,
+            wire_tag: None,
+            fields: vec![
+                FieldDef {
+                    index: 0,
+                    name: "ref_block_num".to_string(),
+                    ty: TypeRef::Uint16,
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 1,
+                    name: "ref_block_prefix".to_string(),
+                    ty: TypeRef::Uint32,
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 2,
+                    name: "expiration".to_string(),
+                    ty: TypeRef::TimePointSec,
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 3,
+                    name: "operations".to_string(),
+                    ty: TypeRef::Vector {
+                        inner: Box::new(TypeRef::StaticVariantRef {
+                            name: "operation".to_string(),
+                        }),
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 4,
+                    name: "extensions".to_string(),
+                    ty: TypeRef::StaticVariantRef {
+                        name: "future_extensions".to_string(),
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 5,
+                    name: "signatures".to_string(),
+                    ty: TypeRef::Vector {
+                        inner: Box::new(TypeRef::Signature),
+                    },
+                    source: None,
+                    support: None,
+                },
+            ],
+            support: None,
+        });
         protocol.operations.push(OperationDef {
             name: "transfer_operation".to_string(),
             wire_tag: 0,
@@ -2734,6 +2881,7 @@ mod tests {
         ));
 
         let types = render_types(&protocol).expect("render types");
+        assert!(types.contains("pub struct Signature(pub Vec<u8>);"));
         assert!(types.contains("pub struct Transaction"));
         assert!(types.contains("pub ref_block_num: u16,"));
         assert!(types.contains("pub ref_block_prefix: u32,"));
@@ -2744,8 +2892,12 @@ mod tests {
         assert!(
             types.contains("pub extensions: crate::generated::static_variants::FutureExtensions,")
         );
+        assert!(types.contains("pub struct SignedTransaction"));
+        assert!(types.contains("pub signatures: Vec<crate::generated::types::Signature>,"));
 
         let fc = render_fc(&protocol).expect("render fc");
+        assert!(fc.contains("impl FcSerialize for crate::generated::types::Signature"));
+        assert!(fc.contains("write_fixed_bytes(&self.0, 65, \"signature\", out)"));
         assert!(fc.contains("impl FcSerialize for crate::generated::types::Transaction"));
         assert!(fc.contains("self.ref_block_num.fc_serialize(out)?;"));
         assert!(fc.contains("self.ref_block_prefix.fc_serialize(out)?;"));
@@ -2759,6 +2911,8 @@ mod tests {
         assert!(fc.contains("self.fc_serialize(&mut out)?;"));
         assert!(fc.contains("pub fn signature_digest_bytes(&self) -> Result<[u8; 32]>"));
         assert!(fc.contains("Ok(sha256_bytes(&self.signature_preimage_bytes()?))"));
+        assert!(fc.contains("impl FcSerialize for crate::generated::types::SignedTransaction"));
+        assert!(fc.contains("self.signatures.fc_serialize(out)?;"));
     }
 
     fn minimal_protocol() -> Protocol {

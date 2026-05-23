@@ -19,6 +19,7 @@ This crate generates raw Rust bindings from an Open Graphene protocol spec. FC s
 - `vote_id` as packed Graphene vote ID.
 - Operation static variants as `varint tag + operation payload`.
 - Base `transaction` FC bytes, generated signature preimage bytes as `chain_id + transaction_fc_bytes`, and generated SHA-256 signature digest bytes when the spec provides `chain.chainId`.
+- Raw Graphene compact signatures as exact 65-byte fixed payloads, plus `signed_transaction` FC bytes as transaction fields followed by `array(bytes(65))` signatures.
 - `future_extensions` empty variant support.
 - Audited static variants:
   - `special_authority`
@@ -35,7 +36,6 @@ This crate generates raw Rust bindings from an Open Graphene protocol spec. FC s
 
 These are not modeled as fake shapes and must not be serialized as ordinary strings or generic JSON:
 
-- `Signature` FC serialization.
 - `Address` FC serialization. Current authority support accepts empty `address_auths` and rejects non-empty values.
 - `MemoData` in `TransferOperation`. `memo: None` is supported; `memo: Some(_)` returns an explicit unsupported-value error.
 - Unknown or unaudited future static variant payloads.
@@ -61,7 +61,9 @@ Generated Rust payloads are `Vec<u8>`, but FC wire payloads are fixed-size byte 
 
 ### Transaction signature preimage and digest
 
-When a spec contains `chain.chainId` and a generated `Transaction` type, bindings expose `Transaction::signature_preimage_bytes()`. The preimage is exactly 32 decoded chain-id bytes followed by the transaction FC bytes. Bindings also expose `Transaction::signature_digest_bytes()`, which returns SHA-256 of that preimage. These helpers do not sign, do not serialize signatures, and must keep propagating nested operation serialization errors.
+When a spec contains `chain.chainId` and a generated `Transaction` type, bindings expose `Transaction::signature_preimage_bytes()`. The preimage is exactly 32 decoded chain-id bytes followed by the transaction FC bytes. Bindings also expose `Transaction::signature_digest_bytes()`, which returns SHA-256 of that preimage. These helpers do not sign and must keep propagating nested operation serialization errors.
+
+Generated `Signature` values serialize only as exact 65-byte compact recoverable ECDSA payloads. Generated `SignedTransaction` values serialize as the transaction fields followed by the signatures vector; each signature payload is fixed bytes with no inner length prefix. This is still not signing support: private keys and secp256k1 signing remain out of scope.
 
 See `SIGNATURE-FORMAT.md` for the local C++/bitsharesjs evidence behind the next signing-related steps. In short: Graphene signatures are compact recoverable ECDSA signatures with a 65-byte wire shape, not ordinary strings.
 

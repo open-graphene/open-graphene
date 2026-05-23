@@ -268,6 +268,12 @@ impl FcSerialize for crate::generated::ids::ObjectId {
     }
 }
 
+impl FcSerialize for crate::generated::types::Signature {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_fixed_bytes(&self.0, 65, "signature", out)
+    }
+}
+
 impl FcSerialize for crate::generated::types::AccountCreateOperationExt {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.null_ext.fc_serialize(out)?;
@@ -1020,6 +1026,18 @@ impl FcSerialize for crate::generated::types::LiquidityPoolWithdrawOperationFeeP
     }
 }
 
+impl FcSerialize for crate::generated::types::MaybeSignedBlockHeader {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_fixed_bytes(&self.previous, 20, "fixed_bytes_20", out)?;
+        write_time_point_sec(&self.timestamp, out)?;
+        self.witness.fc_serialize(out)?;
+        write_fixed_bytes(&self.transaction_merkle_root, 20, "fixed_bytes_20", out)?;
+        self.extensions.fc_serialize(out)?;
+        self.witness_signature.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::MemoData {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         match &self.from {
@@ -1146,6 +1164,18 @@ impl FcSerialize for crate::generated::types::SametFundRepayOperationFeeParamsT 
 impl FcSerialize for crate::generated::types::SametFundUpdateOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::SignedTransaction {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.ref_block_num.fc_serialize(out)?;
+        self.ref_block_prefix.fc_serialize(out)?;
+        write_time_point_sec(&self.expiration, out)?;
+        self.operations.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
+        self.signatures.fc_serialize(out)?;
         Ok(())
     }
 }
