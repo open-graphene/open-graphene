@@ -105,14 +105,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         .map(|value| value.parse::<i64>())
         .transpose()?
         .unwrap_or(1_000_000);
-    let amount = env::var("SWAPLOCK_TRANSFER_AMOUNT")
-        .ok()
-        .map(|value| value.parse::<i64>())
-        .transpose()?
-        .unwrap_or(1);
+    let human_amount = env::var("SWAPLOCK_TRANSFER_AMOUNT").unwrap_or_else(|_| "1".to_string());
 
     let mut rpc = GrapheneRpc::connect(&rpc_url)?;
     let database_api_id = rpc.database_api_id()?;
+    let asset_precision = asset_precision(&mut rpc, database_api_id, &asset_id)?;
+    let amount = transfer_amount_raw(&human_amount, asset_precision)?;
 
     let dgp = rpc
         .call_database(database_api_id, "get_objects", json!([["2.1.0"]]))?
@@ -172,7 +170,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             to: AccountId(to_id),
             amount: Asset {
                 amount,
-                asset_id: AssetId(asset_id),
+                asset_id: AssetId(asset_id.clone()),
             },
             memo: None,
             extensions: FutureExtensions::VoidT(Box::new(())),
@@ -204,6 +202,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("from_account: {from_account}");
     println!("from_id: {}", account_id_string(&transaction.operations[0]));
     println!("to_account: {to_account}");
+    println!("asset_id: {asset_id}");
+    println!("asset_precision: {asset_precision}");
+    println!("amount: {human_amount}");
+    println!("amount_raw: {amount}");
     println!("head_block_number: {head_block_number}");
     println!("ref_block_num: {ref_block_num}");
     println!("ref_block_prefix: {ref_block_prefix}");
@@ -355,6 +357,62 @@ fn active_public_key_for_account(
         .map(str::to_string))
 }
 
+fn asset_precision(
+    rpc: &mut GrapheneRpc,
+    api_id: u64,
+    asset_id: &str,
+) -> Result<u8, Box<dyn Error>> {
+    let asset = rpc
+        .call_database(api_id, "get_objects", json!([[asset_id]]))?
+        .get(0)
+        .cloned()
+        .ok_or("asset object was not returned")?;
+    let precision = asset
+        .get("precision")
+        .and_then(Value::as_u64)
+        .ok_or("asset object missing precision")?;
+    u8::try_from(precision).map_err(|_| "asset precision out of u8 range".into())
+}
+
+fn transfer_amount_raw(human_amount: &str, precision: u8) -> Result<i64, Box<dyn Error>> {
+    if let Ok(raw_amount) = env::var("SWAPLOCK_TRANSFER_RAW_AMOUNT") {
+        return Ok(raw_amount.parse()?);
+    }
+    decimal_to_raw_amount(human_amount, precision)
+}
+
+fn decimal_to_raw_amount(value: &str, precision: u8) -> Result<i64, Box<dyn Error>> {
+    let value = value.trim();
+    if value.is_empty() {
+        return Err("amount must not be empty".into());
+    }
+    if value.starts_with('-') {
+        return Err("amount must not be negative".into());
+    }
+    let parts = value.split('.').collect::<Vec<_>>();
+    if parts.len() > 2
+        || parts
+            .iter()
+            .any(|part| !part.chars().all(|c| c.is_ascii_digit()))
+    {
+        return Err("amount must be a decimal number".into());
+    }
+    let integer = if parts[0].is_empty() { "0" } else { parts[0] };
+    let mut fractional = parts.get(1).copied().unwrap_or("").to_string();
+    while fractional.ends_with('0') {
+        fractional.pop();
+    }
+    if fractional.len() > precision as usize {
+        return Err(format!("amount supports at most {precision} decimal places").into());
+    }
+    while fractional.len() < precision as usize {
+        fractional.push('0');
+    }
+    let raw = format!("{integer}{fractional}");
+    let raw = raw.trim_start_matches('0');
+    Ok(if raw.is_empty() { 0 } else { raw.parse()? })
+}
+
 fn required_transfer_fee(
     rpc: &mut GrapheneRpc,
     api_id: u64,
@@ -471,5 +529,19 @@ mod tests {
         unsafe {
             env::remove_var("SWAPLOCK_TO_ACCOUNT");
         }
+    }
+
+    #[test]
+    fn decimal_amount_converts_to_raw_amount_using_asset_precision() {
+        assert_eq!(decimal_to_raw_amount("1", 5).unwrap(), 100_000);
+        assert_eq!(decimal_to_raw_amount("1.23", 5).unwrap(), 123_000);
+        assert_eq!(decimal_to_raw_amount("0.00001", 5).unwrap(), 1);
+        assert_eq!(decimal_to_raw_amount("1.23000", 5).unwrap(), 123_000);
+        assert_eq!(
+            decimal_to_raw_amount("0.000001", 5)
+                .expect_err("too many decimals fail")
+                .to_string(),
+            "amount supports at most 5 decimal places"
+        );
     }
 }
