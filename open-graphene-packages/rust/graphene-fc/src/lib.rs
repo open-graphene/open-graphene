@@ -438,13 +438,40 @@ pub fn sign_digest_compact(digest: [u8; 32], private_key: [u8; 32]) -> Result<[u
             reason: "digest must be 32 bytes",
         })?;
     let secp = Secp256k1::new();
-    let signature = secp.sign_ecdsa_recoverable(&message, &secret_key);
-    let (recovery_id, signature_bytes) = signature.serialize_compact();
 
-    let mut out = [0u8; 65];
-    out[0] = 27 + 4 + recovery_id.to_i32() as u8;
-    out[1..].copy_from_slice(&signature_bytes);
-    Ok(out)
+    for attempt in 0u32..256 {
+        let signature = if attempt == 0 {
+            secp.sign_ecdsa_recoverable(&message, &secret_key)
+        } else {
+            let mut nonce_seed = Vec::with_capacity(68);
+            nonce_seed.extend_from_slice(&private_key);
+            nonce_seed.extend_from_slice(&digest);
+            nonce_seed.extend_from_slice(&attempt.to_le_bytes());
+            let noncedata = sha256_bytes(&nonce_seed);
+            secp.sign_ecdsa_recoverable_with_noncedata(&message, &secret_key, &noncedata)
+        };
+        let (recovery_id, signature_bytes) = signature.serialize_compact();
+
+        let mut out = [0u8; 65];
+        out[0] = 27 + 4 + recovery_id.to_i32() as u8;
+        out[1..].copy_from_slice(&signature_bytes);
+        if is_graphene_canonical_compact_signature(&out) {
+            return Ok(out);
+        }
+    }
+
+    Err(FcSerializeError::SigningFailed {
+        reason: "could not produce canonical compact signature",
+    })
+}
+
+pub fn is_graphene_canonical_compact_signature(signature: &[u8]) -> bool {
+    signature.len() == 65
+        && (31..=34).contains(&signature[0])
+        && (signature[1] & 0x80) == 0
+        && !(signature[1] == 0 && (signature[2] & 0x80) == 0)
+        && (signature[33] & 0x80) == 0
+        && !(signature[33] == 0 && (signature[34] & 0x80) == 0)
 }
 
 pub fn sign_digest_compact_with_wif(digest: [u8; 32], wif: &str) -> Result<[u8; 65]> {
@@ -787,6 +814,7 @@ mod tests {
             decode_chain_id_hex("b459775b7ac4c1f0d1e5988d112846c0a9b75c8b8bbbd613f80499366d9be635")
                 .expect("fixture digest is 32-byte hex");
         let signature = sign_digest_compact(digest, [1u8; 32]).expect("sign fixture digest");
+        assert!(is_graphene_canonical_compact_signature(&signature));
         assert_eq!(
             signature,
             [
@@ -862,6 +890,7 @@ mod tests {
             decode_chain_id_hex("b459775b7ac4c1f0d1e5988d112846c0a9b75c8b8bbbd613f80499366d9be635")
                 .expect("fixture digest is 32-byte hex");
         let signature = sign_digest_compact_with_wif(digest, &wif).expect("sign fixture digest");
+        assert!(is_graphene_canonical_compact_signature(&signature));
         assert_eq!(
             signature,
             [

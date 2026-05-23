@@ -171,6 +171,7 @@ The local C++ tree calls `private_key_type::sign_compact(...)`, but the bundled 
    - digest input is exactly `Transaction::signature_digest_bytes()`
    - libsecp256k1 normalizes signatures to low-S
    - compact header is `27 + 4 + recovery_id`
+   - signatures are retried with deterministic noncedata until the compact `r/s` bytes satisfy Graphene `is_canonical` rules
    - produced signatures are returned through the generated 65-byte `Signature` wrapper
    - recovered public keys can be compared with expected compressed public keys before any broadcast path exists
    - the committed bitsharesjs fixture verifies byte-for-byte compatibility for the current signing path

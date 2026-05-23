@@ -318,7 +318,7 @@ fn render_fields(out: &mut String, protocol: &Protocol, fields: &[FieldDef]) -> 
 
 fn render_fc(protocol: &Protocol) -> Result<String> {
     let mut out = generated_header(protocol, "minimal FC serialization for transfer path");
-    out.push_str("pub use open_graphene_fc::{decode_chain_id_hex, decode_public_key, parse_protocol_object_id, recover_public_key_from_compact_signature, sha256_bytes, sign_digest_compact_with_wif, verify_compact_signature_public_key, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};\n\n");
+    out.push_str("pub use open_graphene_fc::{decode_chain_id_hex, decode_public_key, is_graphene_canonical_compact_signature, parse_protocol_object_id, recover_public_key_from_compact_signature, sha256_bytes, sign_digest_compact_with_wif, verify_compact_signature_public_key, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};\n\n");
 
     render_fc_id_impls(&mut out, protocol)?;
     render_fc_signature_impl(&mut out, protocol);
@@ -2513,7 +2513,7 @@ mod tests {
 
         let output = render_fc(&protocol).expect("render fc");
 
-        assert!(output.contains("pub use open_graphene_fc::{decode_chain_id_hex, decode_public_key, parse_protocol_object_id, recover_public_key_from_compact_signature, sha256_bytes, sign_digest_compact_with_wif, verify_compact_signature_public_key, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};"));
+        assert!(output.contains("pub use open_graphene_fc::{decode_chain_id_hex, decode_public_key, is_graphene_canonical_compact_signature, parse_protocol_object_id, recover_public_key_from_compact_signature, sha256_bytes, sign_digest_compact_with_wif, verify_compact_signature_public_key, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};"));
         assert!(output.contains("impl FcSerialize for crate::generated::types::Asset"));
         assert!(
             output.contains(

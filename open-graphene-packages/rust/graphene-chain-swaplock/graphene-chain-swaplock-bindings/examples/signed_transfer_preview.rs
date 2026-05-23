@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use graphene_chain_swaplock_bindings::generated::FcSerialize;
 use graphene_chain_swaplock_bindings::generated::fc::{
-    decode_public_key, verify_compact_signature_public_key,
+    decode_public_key, is_graphene_canonical_compact_signature, verify_compact_signature_public_key,
 };
 use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId};
 use graphene_chain_swaplock_bindings::generated::operations::TransferOperation;
@@ -181,6 +181,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let signed_transaction = transaction.signed_with_wif(&wif)?;
+    if !is_graphene_canonical_compact_signature(&signed_transaction.signatures[0].0) {
+        return Err("signature is not Graphene canonical; refusing to broadcast".into());
+    }
     let signature_public_key_match = expected_public_key
         .as_ref()
         .map(|(source, public_key)| {
