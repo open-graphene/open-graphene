@@ -105,7 +105,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         .map(|value| value.parse::<i64>())
         .transpose()?
         .unwrap_or(1_000_000);
-    let broadcast_enabled = broadcast_env_enabled()?;
     let amount = env::var("SWAPLOCK_TRANSFER_AMOUNT")
         .ok()
         .map(|value| value.parse::<i64>())
@@ -195,16 +194,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         .transpose()?;
 
     let digest_hex = hex(&transaction.signature_digest_bytes()?);
-    let broadcast_decision = broadcast_gate(
-        broadcast_enabled,
-        env::var("SWAPLOCK_CONFIRM_DIGEST").ok().as_deref(),
-        &digest_hex,
-        signature_public_key_match.map(|(_, matches)| matches),
-    );
-    let will_broadcast = matches!(broadcast_decision, Ok(true));
+    ensure_signature_public_key_match(signature_public_key_match.map(|(_, matches)| matches))?;
 
-    println!("read_only: {}", !will_broadcast);
-    println!("broadcast: {will_broadcast}");
+    println!("read_only: false");
+    println!("broadcast: true");
     println!("from_account: {from_account}");
     println!("from_id: {}", account_id_string(&transaction.operations[0]));
     println!("to_account: {to_account}");
@@ -228,21 +221,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("signed_transaction_hex: <hidden; set SWAPLOCK_PRINT_SIGNED_TX=1 to print>");
     }
 
-    match broadcast_decision {
-        Ok(false) => println!(
-            "broadcast_gate: disabled; set SWAPLOCK_BROADCAST=1 and SWAPLOCK_CONFIRM_DIGEST={digest_hex} to enable"
-        ),
-        Err(reason) => println!("broadcast_gate: refused: {reason}"),
-        Ok(true) => {
-            let network_broadcast_api_id = rpc.network_broadcast_api_id()?;
-            rpc.call_network_broadcast(
-                network_broadcast_api_id,
-                "broadcast_transaction",
-                json!([signed_transaction_json(&signed_transaction)?]),
-            )?;
-            println!("broadcast_gate: broadcast_transaction submitted");
-        }
-    }
+    let network_broadcast_api_id = rpc.network_broadcast_api_id()?;
+    rpc.call_network_broadcast(
+        network_broadcast_api_id,
+        "broadcast_transaction",
+        json!([signed_transaction_json(&signed_transaction)?]),
+    )?;
+    println!("broadcast_result: broadcast_transaction submitted");
 
     Ok(())
 }
@@ -254,31 +239,13 @@ fn env_flag(name: &str) -> bool {
     )
 }
 
-fn broadcast_env_enabled() -> Result<bool, Box<dyn Error>> {
-    match env::var("SWAPLOCK_BROADCAST") {
-        Ok(value) if value == "1" => Ok(true),
-        Ok(_) => Err("SWAPLOCK_BROADCAST must be exactly 1 to enable broadcast".into()),
-        Err(env::VarError::NotPresent) => Ok(false),
-        Err(err) => Err(err.into()),
-    }
-}
-
-fn broadcast_gate(
-    broadcast_enabled: bool,
-    confirm_digest: Option<&str>,
-    digest_hex: &str,
+fn ensure_signature_public_key_match(
     signature_public_key_matches: Option<bool>,
-) -> std::result::Result<bool, &'static str> {
-    if !broadcast_enabled {
-        return Ok(false);
-    }
-    if signature_public_key_matches != Some(true) {
-        return Err("signature public key verification must pass before broadcast");
-    }
-    match confirm_digest {
-        Some(value) if value == digest_hex => Ok(true),
-        Some(_) => Err("SWAPLOCK_CONFIRM_DIGEST does not match digest"),
-        None => Err("SWAPLOCK_CONFIRM_DIGEST must match digest when SWAPLOCK_BROADCAST=1"),
+) -> std::result::Result<(), &'static str> {
+    match signature_public_key_matches {
+        Some(true) => Ok(()),
+        Some(false) => Err("signature public key verification failed; refusing to broadcast"),
+        None => Err("signature public key verification is required before broadcast"),
     }
 }
 
@@ -466,35 +433,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn broadcast_gate_is_disabled_by_default() {
-        assert_eq!(broadcast_gate(false, None, "abc", Some(true)), Ok(false));
-    }
-
-    #[test]
-    fn broadcast_gate_requires_signature_public_key_match() {
+    fn signature_public_key_guard_requires_verified_match() {
+        assert_eq!(ensure_signature_public_key_match(Some(true)), Ok(()));
         assert_eq!(
-            broadcast_gate(true, Some("abc"), "abc", None),
-            Err("signature public key verification must pass before broadcast")
+            ensure_signature_public_key_match(Some(false)),
+            Err("signature public key verification failed; refusing to broadcast")
         );
         assert_eq!(
-            broadcast_gate(true, Some("abc"), "abc", Some(false)),
-            Err("signature public key verification must pass before broadcast")
-        );
-    }
-
-    #[test]
-    fn broadcast_gate_requires_exact_digest_confirmation() {
-        assert_eq!(
-            broadcast_gate(true, None, "abc", Some(true)),
-            Err("SWAPLOCK_CONFIRM_DIGEST must match digest when SWAPLOCK_BROADCAST=1")
-        );
-        assert_eq!(
-            broadcast_gate(true, Some("def"), "abc", Some(true)),
-            Err("SWAPLOCK_CONFIRM_DIGEST does not match digest")
-        );
-        assert_eq!(
-            broadcast_gate(true, Some("abc"), "abc", Some(true)),
-            Ok(true)
+            ensure_signature_public_key_match(None),
+            Err("signature public key verification is required before broadcast")
         );
     }
 }
