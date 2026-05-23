@@ -11,7 +11,7 @@ use graphene_chain_swaplock_bindings::generated::{
     HtlcRefundOperation, InstantVestingPolicyInitializer, LimitOrderAutoAction, LinearVestingPolicyInitializer,
     LimitOrderCancelOperation, LimitOrderCreateOperation, LimitOrderId, LimitOrderUpdateOperation,
     MemoData, NoSpecialAuthority, OpWrapper, Operation, Predicate, Price, ProposalCreateOperation, RefundWorkerInitializer,
-    Restriction, SpecialAuthority, TopHoldersSpecialAuthority, TransferOperation,
+    Restriction, SpecialAuthority, TopHoldersSpecialAuthority, Transaction, TransferOperation,
     TransferOperationFeeParamsT, VestingBalanceCreateOperation, VestingBalanceWorkerInitializer, VestingPolicyInitializer, VoteId,
     WorkerCreateOperation, WorkerInitializer, WithdrawPermissionCreateOperation,
 };
@@ -71,6 +71,29 @@ fn expected_proposal_create_payload() -> Vec<u8> {
     bytes.extend(expected_transfer_payload());
     // review_period_seconds Some(60), extensions tag 0
     bytes.extend_from_slice(&[1, 60, 0, 0, 0, 0]);
+    bytes
+}
+
+fn sample_transaction_with_operations(operations: Vec<Operation>) -> Transaction {
+    Transaction {
+        ref_block_num: 1,
+        ref_block_prefix: 2,
+        expiration: "1970-01-01T00:00:03".to_string(),
+        operations,
+        extensions: FutureExtensions::VoidT(Box::new(())),
+    }
+}
+
+fn expected_transaction_payload(operation_payloads: &[Vec<u8>]) -> Vec<u8> {
+    let mut bytes = Vec::new();
+    // ref_block_num 1, ref_block_prefix 2, expiration 3
+    bytes.extend_from_slice(&[1, 0, 2, 0, 0, 0, 3, 0, 0, 0]);
+    bytes.push(operation_payloads.len() as u8);
+    for payload in operation_payloads {
+        bytes.extend(payload);
+    }
+    // extensions tag 0
+    bytes.push(0);
     bytes
 }
 
@@ -1768,6 +1791,68 @@ fn account_id_set_fc_rejects_unsorted_or_duplicate_values() {
         FcSerializeError::UnsupportedValue {
             type_name: "Set",
             reason: "set values must be sorted and unique"
+        }
+    ));
+}
+
+#[test]
+fn transaction_fc_serializes_transfer_operation_vector() {
+    let transaction = sample_transaction_with_operations(vec![Operation::TransferOperation(Box::new(
+        sample_transfer_operation(),
+    ))]);
+
+    let mut operation_payload = vec![0];
+    operation_payload.extend(expected_transfer_payload());
+    assert_eq!(
+        transaction
+            .to_fc_bytes()
+            .expect("serialize transaction with transfer"),
+        expected_transaction_payload(&[operation_payload])
+    );
+}
+
+#[test]
+fn transaction_fc_serializes_proposal_operation_vector() {
+    let transaction = sample_transaction_with_operations(vec![Operation::ProposalCreateOperation(
+        Box::new(sample_proposal_create_operation()),
+    )]);
+
+    let mut operation_payload = vec![22];
+    operation_payload.extend(expected_proposal_create_payload());
+    assert_eq!(
+        transaction
+            .to_fc_bytes()
+            .expect("serialize transaction with proposal"),
+        expected_transaction_payload(&[operation_payload])
+    );
+}
+
+#[test]
+fn transaction_fc_propagates_operation_errors() {
+    let mut transfer = sample_transfer_operation();
+    transfer.memo = Some(MemoData {
+        from: None,
+        amount: Asset {
+            amount: 1,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        blinding_factor: Vec::new(),
+        commitment: Vec::new(),
+        check: 0,
+    });
+    let transaction = sample_transaction_with_operations(vec![Operation::TransferOperation(Box::new(
+        transfer,
+    ))]);
+
+    let err = transaction
+        .to_fc_bytes()
+        .expect_err("nested operation error propagates through transaction");
+
+    assert!(matches!(
+        err,
+        FcSerializeError::UnsupportedValue {
+            type_name: "MemoData",
+            reason: "memo FC serialization is not implemented in the minimal transfer slice"
         }
     ));
 }

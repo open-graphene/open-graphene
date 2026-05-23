@@ -2542,6 +2542,116 @@ mod tests {
         ));
     }
 
+    #[test]
+    fn renders_transaction_type_and_fc_impl() {
+        let mut protocol = minimal_protocol();
+        protocol.structs.push(StructDef {
+            name: "transaction".to_string(),
+            source_name: None,
+            kind: StructKind::Struct,
+            wire_tag: None,
+            fields: vec![
+                FieldDef {
+                    index: 0,
+                    name: "ref_block_num".to_string(),
+                    ty: TypeRef::Uint16,
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 1,
+                    name: "ref_block_prefix".to_string(),
+                    ty: TypeRef::Uint32,
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 2,
+                    name: "expiration".to_string(),
+                    ty: TypeRef::TimePointSec,
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 3,
+                    name: "operations".to_string(),
+                    ty: TypeRef::Vector {
+                        inner: Box::new(TypeRef::StaticVariantRef {
+                            name: "operation".to_string(),
+                        }),
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 4,
+                    name: "extensions".to_string(),
+                    ty: TypeRef::StaticVariantRef {
+                        name: "future_extensions".to_string(),
+                    },
+                    source: None,
+                    support: None,
+                },
+            ],
+            support: None,
+        });
+        protocol.operations.push(OperationDef {
+            name: "transfer_operation".to_string(),
+            wire_tag: 0,
+            fields: vec![],
+            is_virtual: false,
+            source: None,
+            support: None,
+        });
+        protocol.static_variants.push(StaticVariantDef {
+            name: "operation".to_string(),
+            kind: "static_variant".to_string(),
+            json: "tagged_tuple".to_string(),
+            fc: "static_variant".to_string(),
+            variants: vec![open_graphene_json_schema::StaticVariantArmDef {
+                tag: 0,
+                name: "transfer_operation".to_string(),
+                ty: TypeRef::Ref {
+                    name: "transfer_operation".to_string(),
+                },
+                support: None,
+            }],
+            source: None,
+            support: None,
+        });
+        protocol.static_variants.push(StaticVariantDef {
+            name: "future_extensions".to_string(),
+            kind: "static_variant".to_string(),
+            json: "tagged_tuple".to_string(),
+            fc: "static_variant".to_string(),
+            variants: vec![open_graphene_json_schema::StaticVariantArmDef {
+                tag: 0,
+                name: "void_t".to_string(),
+                ty: TypeRef::Void,
+                support: None,
+            }],
+            source: None,
+            support: None,
+        });
+
+        let types = render_types(&protocol).expect("render types");
+        assert!(types.contains("pub struct Transaction"));
+        assert!(types.contains("pub ref_block_num: u16,"));
+        assert!(types.contains("pub ref_block_prefix: u32,"));
+        assert!(types.contains("pub expiration: String,"));
+        assert!(types.contains("pub operations: Vec<crate::generated::static_variants::Operation>,"));
+        assert!(types.contains("pub extensions: crate::generated::static_variants::FutureExtensions,"));
+
+        let fc = render_fc(&protocol).expect("render fc");
+        assert!(fc.contains("impl FcSerialize for crate::generated::types::Transaction"));
+        assert!(fc.contains("self.ref_block_num.fc_serialize(out)?;"));
+        assert!(fc.contains("self.ref_block_prefix.fc_serialize(out)?;"));
+        assert!(fc.contains("write_time_point_sec(&self.expiration, out)?;"));
+        assert!(fc.contains("self.operations.fc_serialize(out)?;"));
+        assert!(fc.contains("self.extensions.fc_serialize(out)?;"));
+        assert!(fc.contains("Self::TransferOperation(value) => { write_varint(0u64, out); value.as_ref().fc_serialize(out) }"));
+    }
+
     fn minimal_protocol() -> Protocol {
         Protocol {
             schema_version: 1,

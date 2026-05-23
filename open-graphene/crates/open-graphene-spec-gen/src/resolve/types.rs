@@ -167,6 +167,7 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         | "signed_block_header"
         | "stealth_confirmation"
         | "top_holders_special_authority"
+        | "transaction"
         | "void_result" => TypeRef::Ref {
             name: normalized.to_string(),
         },
@@ -625,6 +626,12 @@ mod tests {
             resolve_cpp_type("processed_transaction"),
             TypeRef::Ref {
                 name: "processed_transaction".to_string()
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("transaction"),
+            TypeRef::Ref {
+                name: "transaction".to_string()
             }
         );
     }

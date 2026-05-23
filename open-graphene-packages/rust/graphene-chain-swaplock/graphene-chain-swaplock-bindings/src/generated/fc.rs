@@ -1187,6 +1187,17 @@ impl FcSerialize for crate::generated::types::TopHoldersSpecialAuthority {
     }
 }
 
+impl FcSerialize for crate::generated::types::Transaction {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.ref_block_num.fc_serialize(out)?;
+        self.ref_block_prefix.fc_serialize(out)?;
+        write_time_point_sec(&self.expiration, out)?;
+        self.operations.fc_serialize(out)?;
+        self.extensions.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::TransferFromBlindOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;

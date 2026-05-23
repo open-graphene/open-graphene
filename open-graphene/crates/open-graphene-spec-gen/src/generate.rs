@@ -95,6 +95,7 @@ fn build_type_graph(
             collect_refs_from_type(&param.ty, &mut struct_refs, &mut static_variant_refs);
         }
     }
+    seed_protocol_root_struct_refs(&mut struct_refs);
 
     loop {
         let mut changed = false;
@@ -152,6 +153,10 @@ fn build_type_graph(
     structs.sort_by(|left, right| left.name.cmp(&right.name));
     static_variants.sort_by(|left, right| left.name.cmp(&right.name));
     (structs, static_variants)
+}
+
+fn seed_protocol_root_struct_refs(struct_refs: &mut BTreeSet<String>) {
+    struct_refs.insert("transaction".to_string());
 }
 
 fn build_enums(facts: &SourceFacts) -> Vec<EnumDef> {
@@ -840,6 +845,163 @@ mod tests {
         assert_eq!(protocol.operations[0].wire_tag, 0);
         assert_eq!(protocol.operations[0].fields.len(), 1);
         assert_eq!(protocol.operations[0].fields[0].name, "fee");
+    }
+
+    #[test]
+    fn build_protocol_seeds_base_transaction_struct() {
+        let config: GeneratorConfig = toml::from_str(
+            r#"
+            [chain]
+            id = "bitshares"
+            public_key_prefix = "BTS"
+
+            [output]
+            dist = "./dist/bitshares.open-graphene.json"
+
+            [source]
+            chain_repo = "../../blockchains/bitshares/bitshares-core"
+            "#,
+        )
+        .expect("parse config");
+        let facts = SourceFacts {
+            classes: vec![RawClass {
+                name: "transaction".to_string(),
+                qualified_name: Some("graphene::protocol::transaction".to_string()),
+                methods: vec![],
+                fields: vec![
+                    RawField {
+                        name: "ref_block_num".to_string(),
+                        type_expr: "uint16_t".to_string(),
+                        source: SourceLoc {
+                            file: PathBuf::from("transaction.hpp"),
+                            line: 78,
+                        },
+                    },
+                    RawField {
+                        name: "ref_block_prefix".to_string(),
+                        type_expr: "uint32_t".to_string(),
+                        source: SourceLoc {
+                            file: PathBuf::from("transaction.hpp"),
+                            line: 84,
+                        },
+                    },
+                    RawField {
+                        name: "expiration".to_string(),
+                        type_expr: "fc::time_point_sec".to_string(),
+                        source: SourceLoc {
+                            file: PathBuf::from("transaction.hpp"),
+                            line: 91,
+                        },
+                    },
+                    RawField {
+                        name: "operations".to_string(),
+                        type_expr: "vector<operation>".to_string(),
+                        source: SourceLoc {
+                            file: PathBuf::from("transaction.hpp"),
+                            line: 93,
+                        },
+                    },
+                    RawField {
+                        name: "extensions".to_string(),
+                        type_expr: "extensions_type".to_string(),
+                        source: SourceLoc {
+                            file: PathBuf::from("transaction.hpp"),
+                            line: 94,
+                        },
+                    },
+                ],
+                source: SourceLoc {
+                    file: PathBuf::from("transaction.hpp"),
+                    line: 69,
+                },
+            }],
+            reflects: vec![RawReflect {
+                type_name: "graphene::protocol::transaction".to_string(),
+                bases: vec![],
+                fields: vec![
+                    "ref_block_num".to_string(),
+                    "ref_block_prefix".to_string(),
+                    "expiration".to_string(),
+                    "operations".to_string(),
+                    "extensions".to_string(),
+                ],
+                source: SourceLoc {
+                    file: PathBuf::from("transaction.hpp"),
+                    line: 307,
+                },
+                derived: false,
+            }],
+            static_variants: vec![
+                RawStaticVariant {
+                    name: "operation".to_string(),
+                    variants: vec!["transfer_operation".to_string()],
+                    source: SourceLoc {
+                        file: PathBuf::from("operations.hpp"),
+                        line: 70,
+                    },
+                },
+                RawStaticVariant {
+                    name: "future_extensions".to_string(),
+                    variants: vec!["void_t".to_string()],
+                    source: SourceLoc {
+                        file: PathBuf::from("types.hpp"),
+                        line: 30,
+                    },
+                },
+            ],
+            ..SourceFacts::default()
+        };
+
+        let protocol = build_protocol(&config, &facts, vec![]);
+        let transaction = protocol
+            .structs
+            .iter()
+            .find(|struct_def| struct_def.name == "transaction")
+            .expect("transaction emitted");
+
+        assert_eq!(
+            transaction
+                .fields
+                .iter()
+                .map(|field| field.name.as_str())
+                .collect::<Vec<_>>(),
+            vec![
+                "ref_block_num",
+                "ref_block_prefix",
+                "expiration",
+                "operations",
+                "extensions"
+            ]
+        );
+        assert_eq!(transaction.fields[0].ty, TypeRef::Uint16);
+        assert_eq!(transaction.fields[1].ty, TypeRef::Uint32);
+        assert_eq!(transaction.fields[2].ty, TypeRef::TimePointSec);
+        assert_eq!(
+            transaction.fields[3].ty,
+            TypeRef::Vector {
+                inner: Box::new(TypeRef::StaticVariantRef {
+                    name: "operation".to_string()
+                })
+            }
+        );
+        assert_eq!(
+            transaction.fields[4].ty,
+            TypeRef::StaticVariantRef {
+                name: "future_extensions".to_string()
+            }
+        );
+        assert!(protocol
+            .static_variants
+            .iter()
+            .any(|variant| variant.name == "operation"));
+        assert!(protocol
+            .static_variants
+            .iter()
+            .any(|variant| variant.name == "future_extensions"));
+        assert!(!protocol
+            .structs
+            .iter()
+            .any(|struct_def| struct_def.name == "signed_transaction"));
     }
 
     #[test]

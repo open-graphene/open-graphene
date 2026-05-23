@@ -8,7 +8,7 @@ pub const SCHEMA_VERSION: u32 = 1;
 pub const CHAIN_ID: &str = "swaplock";
 pub const PUBLIC_KEY_PREFIX: &str = "BTS";
 
-pub const STRUCT_COUNT: usize = 203;
+pub const STRUCT_COUNT: usize = 204;
 pub const ENUM_COUNT: usize = 11;
 pub const STATIC_VARIANT_COUNT: usize = 11;
 pub const OPERATION_COUNT: usize = 78;

@@ -957,6 +957,16 @@ pub struct TopHoldersSpecialAuthority {
     pub num_top_holders: u8,
 }
 
+/// Raw protocol struct `transaction`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Transaction {
+    pub ref_block_num: u16,
+    pub ref_block_prefix: u32,
+    pub expiration: String,
+    pub operations: Vec<crate::generated::static_variants::Operation>,
+    pub extensions: crate::generated::static_variants::FutureExtensions,
+}
+
 /// Raw protocol struct `transfer_from_blind_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TransferFromBlindOperationFeeParamsT {
