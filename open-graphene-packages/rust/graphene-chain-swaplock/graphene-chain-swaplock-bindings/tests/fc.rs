@@ -2121,6 +2121,49 @@ fn transaction_sign_with_wif_matches_bitsharesjs_signature_fixture() {
 }
 
 #[test]
+fn transaction_signed_with_wif_matches_bitsharesjs_signed_transaction_fixture() {
+    let Ok(wif) = std::env::var("SWAPLOCK_ACTIVE_WIF") else {
+        eprintln!(
+            "skipping signed transaction fixture test because SWAPLOCK_ACTIVE_WIF is not set"
+        );
+        return;
+    };
+    let transaction = sample_transaction_with_operations(vec![Operation::TransferOperation(
+        Box::new(sample_transfer_operation()),
+    )]);
+
+    assert_eq!(
+        transaction
+            .signed_with_wif(&wif)
+            .expect("sign fixture transaction")
+            .to_fc_bytes()
+            .expect("serialize generated signed transaction"),
+        decode_hex(
+            "0100020000000300000001000000000000000000000102a08601000000000000000000011f4a8b0c4b54ffd78ee503c2e9112932b2caa726086aa1acb72cc550e1fea0407e4765ad8766314c4e8eb2b42017ac1048ebece448639f63d8082a1e893009a874",
+        )
+    );
+}
+
+#[test]
+fn transaction_signed_with_wif_propagates_invalid_wif_without_echoing_secret() {
+    let transaction = sample_transaction_with_operations(vec![Operation::TransferOperation(
+        Box::new(sample_transfer_operation()),
+    )]);
+    let secret_like_value = "not-a-wif-secret-like-value";
+
+    let err = transaction
+        .signed_with_wif(secret_like_value)
+        .expect_err("invalid WIF fails");
+    assert!(matches!(
+        err,
+        FcSerializeError::InvalidPrivateKey {
+            reason: "WIF is not valid base58",
+        }
+    ));
+    assert!(!err.to_string().contains(secret_like_value));
+}
+
+#[test]
 fn transaction_signature_preimage_propagates_operation_errors() {
     let mut transfer = sample_transfer_operation();
     transfer.memo = Some(MemoData {

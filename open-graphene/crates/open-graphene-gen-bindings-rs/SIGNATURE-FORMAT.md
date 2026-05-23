@@ -158,6 +158,7 @@ The local C++ tree calls `private_key_type::sign_compact(...)`, but the bundled 
    - `Transaction::signature_preimage_bytes()` = `chain_id_bytes || transaction_fc_bytes`
    - `Transaction::signature_digest_bytes()` = `sha256(signature_preimage)`
    - `Transaction::sign_with_wif(wif)` = compact signature bytes for the digest, returned as generated `Signature`
+   - `Transaction::signed_with_wif(wif)` = one-signature generated `SignedTransaction`
 
 2. Model Graphene signatures as raw compact bytes, not strings:
    - fixed length: 65 bytes

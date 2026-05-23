@@ -3429,5 +3429,16 @@ impl crate::generated::types::Transaction {
     pub fn sign_with_wif(&self, wif: &str) -> Result<crate::generated::types::Signature> {
         Ok(crate::generated::types::Signature(sign_digest_compact_with_wif(self.signature_digest_bytes()?, wif)?.to_vec()))
     }
+
+    pub fn signed_with_wif(&self, wif: &str) -> Result<crate::generated::types::SignedTransaction> {
+        Ok(crate::generated::types::SignedTransaction {
+            ref_block_num: self.ref_block_num,
+            ref_block_prefix: self.ref_block_prefix,
+            expiration: self.expiration.clone(),
+            operations: self.operations.clone(),
+            extensions: self.extensions.clone(),
+            signatures: vec![self.sign_with_wif(wif)?],
+        })
+    }
 }
 

@@ -481,6 +481,10 @@ fn render_fc_transaction_helpers(out: &mut String, protocol: &Protocol) {
     {
         return;
     }
+    let has_signed_transaction = protocol
+        .structs
+        .iter()
+        .any(|struct_def| struct_def.name == "signed_transaction");
 
     out.push_str("impl crate::generated::types::Transaction {\n");
     out.push_str("    pub fn signature_preimage_bytes(&self) -> Result<Vec<u8>> {\n");
@@ -495,6 +499,19 @@ fn render_fc_transaction_helpers(out: &mut String, protocol: &Protocol) {
     out.push_str("    pub fn sign_with_wif(&self, wif: &str) -> Result<crate::generated::types::Signature> {\n");
     out.push_str("        Ok(crate::generated::types::Signature(sign_digest_compact_with_wif(self.signature_digest_bytes()?, wif)?.to_vec()))\n");
     out.push_str("    }\n");
+    if has_signed_transaction {
+        out.push_str("\n");
+        out.push_str("    pub fn signed_with_wif(&self, wif: &str) -> Result<crate::generated::types::SignedTransaction> {\n");
+        out.push_str("        Ok(crate::generated::types::SignedTransaction {\n");
+        out.push_str("            ref_block_num: self.ref_block_num,\n");
+        out.push_str("            ref_block_prefix: self.ref_block_prefix,\n");
+        out.push_str("            expiration: self.expiration.clone(),\n");
+        out.push_str("            operations: self.operations.clone(),\n");
+        out.push_str("            extensions: self.extensions.clone(),\n");
+        out.push_str("            signatures: vec![self.sign_with_wif(wif)?],\n");
+        out.push_str("        })\n");
+        out.push_str("    }\n");
+    }
     out.push_str("}\n\n");
 }
 
@@ -2920,6 +2937,10 @@ mod tests {
         assert!(fc.contains(
             "sign_digest_compact_with_wif(self.signature_digest_bytes()?, wif)?.to_vec()"
         ));
+        assert!(fc.contains(
+            "pub fn signed_with_wif(&self, wif: &str) -> Result<crate::generated::types::SignedTransaction>"
+        ));
+        assert!(fc.contains("signatures: vec![self.sign_with_wif(wif)?]"));
         assert!(fc.contains("impl FcSerialize for crate::generated::types::SignedTransaction"));
         assert!(fc.contains("self.signatures.fc_serialize(out)?;"));
     }
