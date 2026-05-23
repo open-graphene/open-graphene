@@ -215,39 +215,65 @@ fn main() -> Result<(), Box<dyn Error>> {
     let digest_hex = hex(&transaction.signature_digest_bytes()?);
     ensure_signature_public_key_match(signature_public_key_match.map(|(_, matches)| matches))?;
 
-    println!("read_only: false");
-    println!("broadcast: true");
-    println!("from_account: {from_account}");
-    println!("from_id: {}", account_id_string(&transaction.operations[0]));
-    println!("to_account: {to_account}");
-    println!("asset_id: {asset_id}");
-    println!("asset_precision: {asset_precision}");
-    println!("amount: {human_amount}");
-    println!("amount_raw: {amount}");
-    println!("fee_raw: {}", expected_fee_amount);
-    println!("balance_before_raw: {balance_before}");
     println!(
-        "balance_after_raw: {}",
-        balance_before - amount - expected_fee_amount
+        "Sending {} asset {} from {} to {}",
+        format_raw_amount(amount, asset_precision),
+        asset_id,
+        from_account,
+        to_account
     );
-    println!("head_block_number: {head_block_number}");
-    println!("ref_block_num: {ref_block_num}");
-    println!("ref_block_prefix: {ref_block_prefix}");
-    if let Some((source, matches_expected_public_key)) = signature_public_key_match {
-        println!("signature_public_key_source: {source}");
-        println!("signature_public_key_matches: {matches_expected_public_key}");
-    } else {
-        println!("signature_public_key_matches: <skipped; no single active public key found>");
-    }
-    println!("transaction_hex: {}", hex(&transaction.to_fc_bytes()?));
-    println!("digest_hex: {digest_hex}");
-    if env_flag("SWAPLOCK_PRINT_SIGNED_TX") {
+    println!(
+        "Fee: {} asset {}",
+        format_raw_amount(expected_fee_amount, asset_precision),
+        asset_id
+    );
+    println!(
+        "Balance: {} -> {} asset {}",
+        format_raw_amount(balance_before, asset_precision),
+        format_raw_amount(
+            balance_before - amount - expected_fee_amount,
+            asset_precision
+        ),
+        asset_id
+    );
+    println!("Digest: {digest_hex}");
+
+    if env_flag("SWAPLOCK_DEBUG") {
+        println!("debug_read_only: false");
+        println!("debug_broadcast: true");
         println!(
-            "signed_transaction_hex: {}",
-            hex(&signed_transaction.to_fc_bytes()?)
+            "debug_from_id: {}",
+            account_id_string(&transaction.operations[0])
         );
-    } else {
-        println!("signed_transaction_hex: <hidden; set SWAPLOCK_PRINT_SIGNED_TX=1 to print>");
+        println!("debug_asset_precision: {asset_precision}");
+        println!("debug_amount_raw: {amount}");
+        println!("debug_fee_raw: {}", expected_fee_amount);
+        println!("debug_balance_before_raw: {balance_before}");
+        println!("debug_head_block_number: {head_block_number}");
+        println!("debug_ref_block_num: {ref_block_num}");
+        println!("debug_ref_block_prefix: {ref_block_prefix}");
+        if let Some((source, matches_expected_public_key)) = signature_public_key_match {
+            println!("debug_signature_public_key_source: {source}");
+            println!("debug_signature_public_key_matches: {matches_expected_public_key}");
+        } else {
+            println!(
+                "debug_signature_public_key_matches: <skipped; no single active public key found>"
+            );
+        }
+        println!(
+            "debug_transaction_hex: {}",
+            hex(&transaction.to_fc_bytes()?)
+        );
+        if env_flag("SWAPLOCK_PRINT_SIGNED_TX") {
+            println!(
+                "debug_signed_transaction_hex: {}",
+                hex(&signed_transaction.to_fc_bytes()?)
+            );
+        } else {
+            println!(
+                "debug_signed_transaction_hex: <hidden; set SWAPLOCK_PRINT_SIGNED_TX=1 to print>"
+            );
+        }
     }
 
     let network_broadcast_api_id = rpc.network_broadcast_api_id()?;
@@ -257,7 +283,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         "broadcast_transaction",
         json!([signed_transaction_json(&signed_transaction)?]),
     )?;
-    println!("broadcast_result: broadcast_transaction submitted");
+    println!("Broadcast: submitted");
 
     let confirmation = wait_for_transfer_confirmation(
         &mut rpc,
@@ -273,12 +299,18 @@ fn main() -> Result<(), Box<dyn Error>> {
         },
     )?
     .ok_or("broadcast submitted but transfer was not found in account history")?;
-    println!("confirmation: found");
-    println!("confirmation_id: {}", confirmation.id);
-    println!("confirmation_block_num: {}", confirmation.block_num);
-    println!("confirmation_trx_in_block: {}", confirmation.trx_in_block);
-    println!("confirmation_op_in_trx: {}", confirmation.op_in_trx);
-    println!("confirmation_virtual_op: {}", confirmation.virtual_op);
+    println!(
+        "Confirmed: block {}, history {}",
+        confirmation.block_num, confirmation.id
+    );
+    if env_flag("SWAPLOCK_DEBUG") {
+        println!(
+            "debug_confirmation_trx_in_block: {}",
+            confirmation.trx_in_block
+        );
+        println!("debug_confirmation_op_in_trx: {}", confirmation.op_in_trx);
+        println!("debug_confirmation_virtual_op: {}", confirmation.virtual_op);
+    }
 
     Ok(())
 }
@@ -547,6 +579,21 @@ fn transfer_amount_raw(human_amount: &str, precision: u8) -> Result<i64, Box<dyn
     decimal_to_raw_amount(human_amount, precision)
 }
 
+fn format_raw_amount(amount: i64, precision: u8) -> String {
+    let sign = if amount < 0 { "-" } else { "" };
+    let amount = amount.unsigned_abs().to_string();
+    if precision == 0 {
+        return format!("{sign}{amount}");
+    }
+    let precision = precision as usize;
+    if amount.len() <= precision {
+        let zeroes = "0".repeat(precision - amount.len());
+        return format!("{sign}0.{zeroes}{amount}");
+    }
+    let split = amount.len() - precision;
+    format!("{sign}{}.{}", &amount[..split], &amount[split..])
+}
+
 fn account_balance(
     rpc: &mut GrapheneRpc,
     api_id: u64,
@@ -755,6 +802,16 @@ mod tests {
                 .to_string(),
             "amount supports at most 5 decimal places"
         );
+    }
+
+    #[test]
+    fn raw_amount_formats_using_asset_precision() {
+        assert_eq!(format_raw_amount(100_000, 5), "1.00000");
+        assert_eq!(format_raw_amount(123_000, 5), "1.23000");
+        assert_eq!(format_raw_amount(1, 5), "0.00001");
+        assert_eq!(format_raw_amount(0, 5), "0.00000");
+        assert_eq!(format_raw_amount(-123_000, 5), "-1.23000");
+        assert_eq!(format_raw_amount(42, 0), "42");
     }
 
     #[test]
