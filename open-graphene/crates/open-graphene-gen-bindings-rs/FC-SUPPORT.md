@@ -63,6 +63,8 @@ Generated Rust payloads are `Vec<u8>`, but FC wire payloads are fixed-size byte 
 
 When a spec contains `chain.chainId` and a generated `Transaction` type, bindings expose `Transaction::signature_preimage_bytes()`. The preimage is exactly 32 decoded chain-id bytes followed by the transaction FC bytes. Bindings also expose `Transaction::signature_digest_bytes()`, which returns SHA-256 of that preimage. These helpers do not sign, do not serialize signatures, and must keep propagating nested operation serialization errors.
 
+See `SIGNATURE-FORMAT.md` for the local C++/bitsharesjs evidence behind the next signing-related steps. In short: Graphene signatures are compact recoverable ECDSA signatures with a 65-byte wire shape, not ordinary strings.
+
 ## Verification expectations
 
 When changing FC support, run at minimum:
