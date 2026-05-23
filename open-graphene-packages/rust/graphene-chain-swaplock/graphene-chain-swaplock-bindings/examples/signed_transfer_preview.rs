@@ -9,7 +9,7 @@ use graphene_chain_swaplock_bindings::generated::fc::{
 use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId};
 use graphene_chain_swaplock_bindings::generated::operations::TransferOperation;
 use graphene_chain_swaplock_bindings::generated::static_variants::{FutureExtensions, Operation};
-use graphene_chain_swaplock_bindings::generated::types::{Asset, Transaction};
+use graphene_chain_swaplock_bindings::generated::types::{Asset, SignedTransaction, Transaction};
 use serde_json::{Value, json};
 use time::PrimitiveDateTime;
 use time::format_description;
@@ -63,7 +63,22 @@ impl GrapheneRpc {
             .ok_or_else(|| "database API id is not an integer".into())
     }
 
+    fn network_broadcast_api_id(&mut self) -> Result<u64, Box<dyn Error>> {
+        self.call_raw(json!([1, "network_broadcast", []]))?
+            .as_u64()
+            .ok_or_else(|| "network_broadcast API id is not an integer".into())
+    }
+
     fn call_database(
+        &mut self,
+        api_id: u64,
+        method: &str,
+        params: Value,
+    ) -> Result<Value, Box<dyn Error>> {
+        self.call_raw(json!([api_id, method, params]))
+    }
+
+    fn call_network_broadcast(
         &mut self,
         api_id: u64,
         method: &str,
@@ -90,6 +105,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .map(|value| value.parse::<i64>())
         .transpose()?
         .unwrap_or(1_000_000);
+    let broadcast_enabled = broadcast_env_enabled()?;
     let amount = env::var("SWAPLOCK_TRANSFER_AMOUNT")
         .ok()
         .map(|value| value.parse::<i64>())
@@ -178,8 +194,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         })
         .transpose()?;
 
-    println!("read_only: true");
-    println!("broadcast: false");
+    let digest_hex = hex(&transaction.signature_digest_bytes()?);
+    let broadcast_decision = broadcast_gate(
+        broadcast_enabled,
+        env::var("SWAPLOCK_CONFIRM_DIGEST").ok().as_deref(),
+        &digest_hex,
+        signature_public_key_match.map(|(_, matches)| matches),
+    );
+    let will_broadcast = matches!(broadcast_decision, Ok(true));
+
+    println!("read_only: {}", !will_broadcast);
+    println!("broadcast: {will_broadcast}");
     println!("from_account: {from_account}");
     println!("from_id: {}", account_id_string(&transaction.operations[0]));
     println!("to_account: {to_account}");
@@ -193,10 +218,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("signature_public_key_matches: <skipped; no single active public key found>");
     }
     println!("transaction_hex: {}", hex(&transaction.to_fc_bytes()?));
-    println!(
-        "digest_hex: {}",
-        hex(&transaction.signature_digest_bytes()?)
-    );
+    println!("digest_hex: {digest_hex}");
     if env_flag("SWAPLOCK_PRINT_SIGNED_TX") {
         println!(
             "signed_transaction_hex: {}",
@@ -204,6 +226,22 @@ fn main() -> Result<(), Box<dyn Error>> {
         );
     } else {
         println!("signed_transaction_hex: <hidden; set SWAPLOCK_PRINT_SIGNED_TX=1 to print>");
+    }
+
+    match broadcast_decision {
+        Ok(false) => println!(
+            "broadcast_gate: disabled; set SWAPLOCK_BROADCAST=1 and SWAPLOCK_CONFIRM_DIGEST={digest_hex} to enable"
+        ),
+        Err(reason) => println!("broadcast_gate: refused: {reason}"),
+        Ok(true) => {
+            let network_broadcast_api_id = rpc.network_broadcast_api_id()?;
+            rpc.call_network_broadcast(
+                network_broadcast_api_id,
+                "broadcast_transaction",
+                json!([signed_transaction_json(&signed_transaction)?]),
+            )?;
+            println!("broadcast_gate: broadcast_transaction submitted");
+        }
     }
 
     Ok(())
@@ -214,6 +252,79 @@ fn env_flag(name: &str) -> bool {
         env::var(name).as_deref(),
         Ok("1") | Ok("true") | Ok("TRUE") | Ok("yes") | Ok("YES")
     )
+}
+
+fn broadcast_env_enabled() -> Result<bool, Box<dyn Error>> {
+    match env::var("SWAPLOCK_BROADCAST") {
+        Ok(value) if value == "1" => Ok(true),
+        Ok(_) => Err("SWAPLOCK_BROADCAST must be exactly 1 to enable broadcast".into()),
+        Err(env::VarError::NotPresent) => Ok(false),
+        Err(err) => Err(err.into()),
+    }
+}
+
+fn broadcast_gate(
+    broadcast_enabled: bool,
+    confirm_digest: Option<&str>,
+    digest_hex: &str,
+    signature_public_key_matches: Option<bool>,
+) -> std::result::Result<bool, &'static str> {
+    if !broadcast_enabled {
+        return Ok(false);
+    }
+    if signature_public_key_matches != Some(true) {
+        return Err("signature public key verification must pass before broadcast");
+    }
+    match confirm_digest {
+        Some(value) if value == digest_hex => Ok(true),
+        Some(_) => Err("SWAPLOCK_CONFIRM_DIGEST does not match digest"),
+        None => Err("SWAPLOCK_CONFIRM_DIGEST must match digest when SWAPLOCK_BROADCAST=1"),
+    }
+}
+
+fn signed_transaction_json(
+    signed_transaction: &SignedTransaction,
+) -> Result<Value, Box<dyn Error>> {
+    Ok(json!({
+        "ref_block_num": signed_transaction.ref_block_num,
+        "ref_block_prefix": signed_transaction.ref_block_prefix,
+        "expiration": signed_transaction.expiration,
+        "operations": signed_transaction
+            .operations
+            .iter()
+            .map(operation_json)
+            .collect::<Result<Vec<_>, _>>()?,
+        "extensions": [],
+        "signatures": signed_transaction
+            .signatures
+            .iter()
+            .map(|signature| hex(&signature.0))
+            .collect::<Vec<_>>(),
+    }))
+}
+
+fn operation_json(operation: &Operation) -> Result<Value, Box<dyn Error>> {
+    match operation {
+        Operation::TransferOperation(operation) => Ok(json!([
+            0,
+            {
+                "fee": asset_json(&operation.fee),
+                "from": operation.from.0,
+                "to": operation.to.0,
+                "amount": asset_json(&operation.amount),
+                "memo": null,
+                "extensions": []
+            }
+        ])),
+        _ => Err("signed transfer preview can only broadcast transfer operations".into()),
+    }
+}
+
+fn asset_json(asset: &Asset) -> Value {
+    json!({
+        "amount": asset.amount,
+        "asset_id": asset.asset_id.0,
+    })
 }
 
 fn lookup_account_id(
@@ -347,5 +458,43 @@ fn account_id_string(operation: &Operation) -> &str {
     match operation {
         Operation::TransferOperation(operation) => &operation.from.0,
         _ => "",
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn broadcast_gate_is_disabled_by_default() {
+        assert_eq!(broadcast_gate(false, None, "abc", Some(true)), Ok(false));
+    }
+
+    #[test]
+    fn broadcast_gate_requires_signature_public_key_match() {
+        assert_eq!(
+            broadcast_gate(true, Some("abc"), "abc", None),
+            Err("signature public key verification must pass before broadcast")
+        );
+        assert_eq!(
+            broadcast_gate(true, Some("abc"), "abc", Some(false)),
+            Err("signature public key verification must pass before broadcast")
+        );
+    }
+
+    #[test]
+    fn broadcast_gate_requires_exact_digest_confirmation() {
+        assert_eq!(
+            broadcast_gate(true, None, "abc", Some(true)),
+            Err("SWAPLOCK_CONFIRM_DIGEST must match digest when SWAPLOCK_BROADCAST=1")
+        );
+        assert_eq!(
+            broadcast_gate(true, Some("def"), "abc", Some(true)),
+            Err("SWAPLOCK_CONFIRM_DIGEST does not match digest")
+        );
+        assert_eq!(
+            broadcast_gate(true, Some("abc"), "abc", Some(true)),
+            Ok(true)
+        );
     }
 }
