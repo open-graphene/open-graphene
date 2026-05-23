@@ -177,6 +177,20 @@ The local C++ tree calls `private_key_type::sign_compact(...)`, but the bundled 
    - reject unknown string encodings rather than guessing
    - do not introduce `signed_transaction` FC serialization until signature bytes have a real fixed-byte representation
 
+## BitSharesJS fixture
+
+A local bitsharesjs fixture was generated offline from the same sample transfer transaction used by `tests/fc.rs`. The private WIF was read from the local environment and was not written to the repository. The fixture proves that generated Rust transaction bytes, preimage bytes, digest bytes, compact signature bytes, and signed-transaction bytes match the bitsharesjs serializer/signature path.
+
+Fixture values committed in tests:
+
+```text
+transaction_hex = 0100020000000300000001000000000000000000000102a08601000000000000000000
+preimage_hex = 2267f694d96b7ffdcba1a98c63c09e720a18a85ad34954e299c66d5a422340980100020000000300000001000000000000000000000102a08601000000000000000000
+digest_hex = b459775b7ac4c1f0d1e5988d112846c0a9b75c8b8bbbd613f80499366d9be635
+signature_hex = 1f4a8b0c4b54ffd78ee503c2e9112932b2caa726086aa1acb72cc550e1fea0407e4765ad8766314c4e8eb2b42017ac1048ebece448639f63d8082a1e893009a874
+signed_transaction_hex = 0100020000000300000001000000000000000000000102a08601000000000000000000011f4a8b0c4b54ffd78ee503c2e9112932b2caa726086aa1acb72cc550e1fea0407e4765ad8766314c4e8eb2b42017ac1048ebece448639f63d8082a1e893009a874
+```
+
 ## Implemented follow-up
 
 The raw-signature slice is implemented in the generated Rust bindings:

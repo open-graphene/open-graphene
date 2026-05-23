@@ -120,6 +120,30 @@ fn sample_signature_bytes() -> Vec<u8> {
     signature
 }
 
+fn bitsharesjs_signature_vector_bytes() -> Vec<u8> {
+    decode_hex(
+        "1f4a8b0c4b54ffd78ee503c2e9112932b2caa726086aa1acb72cc550e1fea0407e4765ad8766314c4e8eb2b42017ac1048ebece448639f63d8082a1e893009a874",
+    )
+}
+
+fn decode_hex(value: &str) -> Vec<u8> {
+    assert_eq!(value.len() % 2, 0, "hex string must have even length");
+    value
+        .as_bytes()
+        .chunks_exact(2)
+        .map(|pair| (decode_hex_nibble(pair[0]) << 4) | decode_hex_nibble(pair[1]))
+        .collect()
+}
+
+fn decode_hex_nibble(byte: u8) -> u8 {
+    match byte {
+        b'0'..=b'9' => byte - b'0',
+        b'a'..=b'f' => byte - b'a' + 10,
+        b'A'..=b'F' => byte - b'A' + 10,
+        _ => panic!("invalid hex nibble"),
+    }
+}
+
 fn expected_signed_transaction_payload(
     operation_payloads: &[Vec<u8>],
     signatures: &[Vec<u8>],
@@ -1926,6 +1950,26 @@ fn signed_transaction_fc_serializes_transaction_fields_and_signature_vector() {
 }
 
 #[test]
+fn signed_transaction_fc_matches_bitsharesjs_signature_fixture_bytes() {
+    let signature = bitsharesjs_signature_vector_bytes();
+    let signed_transaction = sample_signed_transaction_with_operations(
+        vec![Operation::TransferOperation(Box::new(
+            sample_transfer_operation(),
+        ))],
+        vec![Signature(signature)],
+    );
+
+    assert_eq!(
+        signed_transaction
+            .to_fc_bytes()
+            .expect("serialize fixture signed transaction"),
+        decode_hex(
+            "0100020000000300000001000000000000000000000102a08601000000000000000000011f4a8b0c4b54ffd78ee503c2e9112932b2caa726086aa1acb72cc550e1fea0407e4765ad8766314c4e8eb2b42017ac1048ebece448639f63d8082a1e893009a874",
+        )
+    );
+}
+
+#[test]
 fn signed_transaction_fc_propagates_signature_length_errors() {
     let signed_transaction = sample_signed_transaction_with_operations(
         vec![Operation::TransferOperation(Box::new(
@@ -1997,6 +2041,20 @@ fn transaction_signature_preimage_prefixes_chain_id_bytes() {
 }
 
 #[test]
+fn transaction_fc_matches_bitsharesjs_signature_fixture_transaction_bytes() {
+    let transaction = sample_transaction_with_operations(vec![Operation::TransferOperation(
+        Box::new(sample_transfer_operation()),
+    )]);
+
+    assert_eq!(
+        transaction
+            .to_fc_bytes()
+            .expect("serialize fixture transaction"),
+        decode_hex("0100020000000300000001000000000000000000000102a08601000000000000000000")
+    );
+}
+
+#[test]
 fn transaction_signature_digest_hashes_signature_preimage() {
     let transaction = sample_transaction_with_operations(vec![Operation::TransferOperation(
         Box::new(sample_transfer_operation()),
@@ -2013,6 +2071,32 @@ fn transaction_signature_digest_hashes_signature_preimage() {
             .signature_digest_bytes()
             .expect("build transaction signature digest"),
         sha256_bytes(&expected_preimage)
+    );
+}
+
+#[test]
+fn transaction_signature_digest_matches_bitsharesjs_signature_fixture_digest() {
+    let transaction = sample_transaction_with_operations(vec![Operation::TransferOperation(
+        Box::new(sample_transfer_operation()),
+    )]);
+
+    assert_eq!(
+        transaction
+            .signature_preimage_bytes()
+            .expect("build fixture signature preimage"),
+        decode_hex(
+            "2267f694d96b7ffdcba1a98c63c09e720a18a85ad34954e299c66d5a422340980100020000000300000001000000000000000000000102a08601000000000000000000",
+        )
+    );
+    let expected_digest: [u8; 32] =
+        decode_hex("b459775b7ac4c1f0d1e5988d112846c0a9b75c8b8bbbd613f80499366d9be635")
+            .try_into()
+            .expect("digest fixture is 32 bytes");
+    assert_eq!(
+        transaction
+            .signature_digest_bytes()
+            .expect("build fixture signature digest"),
+        expected_digest
     );
 }
 
