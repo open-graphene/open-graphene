@@ -98,7 +98,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let wif = env::var("SWAPLOCK_ACTIVE_WIF")?;
     let from_account = env::var("SWAPLOCK_ACCOUNT")?;
-    let to_account = env::var("SWAPLOCK_TO_ACCOUNT").unwrap_or_else(|_| from_account.clone());
+    let to_account = transfer_recipient_account(&from_account)?;
     let asset_id = env::var("SWAPLOCK_ASSET_ID").unwrap_or_else(|_| "1.3.0".to_string());
     let max_fee = env::var("SWAPLOCK_MAX_FEE")
         .ok()
@@ -237,6 +237,16 @@ fn env_flag(name: &str) -> bool {
         env::var(name).as_deref(),
         Ok("1") | Ok("true") | Ok("TRUE") | Ok("yes") | Ok("YES")
     )
+}
+
+fn transfer_recipient_account(from_account: &str) -> Result<String, Box<dyn Error>> {
+    let to_account = env::var("SWAPLOCK_TO_ACCOUNT")?;
+    if to_account == from_account {
+        return Err(
+            "SWAPLOCK_TO_ACCOUNT must differ from SWAPLOCK_ACCOUNT for transfer_operation".into(),
+        );
+    }
+    Ok(to_account)
 }
 
 fn ensure_signature_public_key_match(
@@ -443,5 +453,20 @@ mod tests {
             ensure_signature_public_key_match(None),
             Err("signature public key verification is required before broadcast")
         );
+    }
+
+    #[test]
+    fn transfer_recipient_must_not_equal_sender() {
+        unsafe {
+            env::set_var("SWAPLOCK_TO_ACCOUNT", "swaplock");
+        }
+        let err = transfer_recipient_account("swaplock").expect_err("self-transfer fails locally");
+        assert_eq!(
+            err.to_string(),
+            "SWAPLOCK_TO_ACCOUNT must differ from SWAPLOCK_ACCOUNT for transfer_operation"
+        );
+        unsafe {
+            env::remove_var("SWAPLOCK_TO_ACCOUNT");
+        }
     }
 }
