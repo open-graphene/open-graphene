@@ -69,6 +69,12 @@ impl GrapheneRpc {
             .ok_or_else(|| "network_broadcast API id is not an integer".into())
     }
 
+    fn history_api_id(&mut self) -> Result<u64, Box<dyn Error>> {
+        self.call_raw(json!([1, "history", []]))?
+            .as_u64()
+            .ok_or_else(|| "history API id is not an integer".into())
+    }
+
     fn call_database(
         &mut self,
         api_id: u64,
@@ -79,6 +85,15 @@ impl GrapheneRpc {
     }
 
     fn call_network_broadcast(
+        &mut self,
+        api_id: u64,
+        method: &str,
+        params: Value,
+    ) -> Result<Value, Box<dyn Error>> {
+        self.call_raw(json!([api_id, method, params]))
+    }
+
+    fn call_history(
         &mut self,
         api_id: u64,
         method: &str,
@@ -152,6 +167,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         amount,
         &asset_id,
     )?;
+    let expected_fee_amount = fee.amount;
     if fee.amount > max_fee {
         return Err(format!(
             "required fee {} exceeds SWAPLOCK_MAX_FEE {}; refusing to sign",
@@ -166,8 +182,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         expiration,
         operations: vec![Operation::TransferOperation(Box::new(TransferOperation {
             fee,
-            from: AccountId(from_id),
-            to: AccountId(to_id),
+            from: AccountId(from_id.clone()),
+            to: AccountId(to_id.clone()),
             amount: Asset {
                 amount,
                 asset_id: AssetId(asset_id.clone()),
@@ -227,6 +243,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let network_broadcast_api_id = rpc.network_broadcast_api_id()?;
+    let history_api_id = rpc.history_api_id()?;
     rpc.call_network_broadcast(
         network_broadcast_api_id,
         "broadcast_transaction",
@@ -234,7 +251,148 @@ fn main() -> Result<(), Box<dyn Error>> {
     )?;
     println!("broadcast_result: broadcast_transaction submitted");
 
+    let confirmation = wait_for_transfer_confirmation(
+        &mut rpc,
+        history_api_id,
+        &from_id,
+        &TransferConfirmationCriteria {
+            from_id: &from_id,
+            to_id: &to_id,
+            amount,
+            asset_id: &asset_id,
+            fee_amount: expected_fee_amount,
+            min_block_num: head_block_number,
+        },
+    )?
+    .ok_or("broadcast submitted but transfer was not found in account history")?;
+    println!("confirmation: found");
+    println!("confirmation_id: {}", confirmation.id);
+    println!("confirmation_block_num: {}", confirmation.block_num);
+    println!("confirmation_trx_in_block: {}", confirmation.trx_in_block);
+    println!("confirmation_op_in_trx: {}", confirmation.op_in_trx);
+    println!("confirmation_virtual_op: {}", confirmation.virtual_op);
+
     Ok(())
+}
+
+struct TransferConfirmationCriteria<'a> {
+    from_id: &'a str,
+    to_id: &'a str,
+    amount: i64,
+    asset_id: &'a str,
+    fee_amount: i64,
+    min_block_num: u64,
+}
+
+struct TransferConfirmation {
+    id: String,
+    block_num: u64,
+    trx_in_block: u64,
+    op_in_trx: u64,
+    virtual_op: u64,
+}
+
+fn wait_for_transfer_confirmation(
+    rpc: &mut GrapheneRpc,
+    history_api_id: u64,
+    account_id: &str,
+    criteria: &TransferConfirmationCriteria<'_>,
+) -> Result<Option<TransferConfirmation>, Box<dyn Error>> {
+    let attempts = env::var("SWAPLOCK_CONFIRM_ATTEMPTS")
+        .ok()
+        .map(|value| value.parse::<u64>())
+        .transpose()?
+        .unwrap_or(10);
+    let delay = Duration::from_millis(
+        env::var("SWAPLOCK_CONFIRM_DELAY_MS")
+            .ok()
+            .map(|value| value.parse::<u64>())
+            .transpose()?
+            .unwrap_or(2_000),
+    );
+
+    for attempt in 0..attempts {
+        let history = rpc.call_history(
+            history_api_id,
+            "get_account_history",
+            json!([account_id, "1.11.0", 20, "1.11.0"]),
+        )?;
+        if let Some(confirmation) = find_transfer_confirmation(&history, criteria)? {
+            return Ok(Some(confirmation));
+        }
+        if attempt + 1 < attempts {
+            std::thread::sleep(delay);
+        }
+    }
+
+    Ok(None)
+}
+
+fn find_transfer_confirmation(
+    history: &Value,
+    criteria: &TransferConfirmationCriteria<'_>,
+) -> Result<Option<TransferConfirmation>, Box<dyn Error>> {
+    let Some(entries) = history.as_array() else {
+        return Err("get_account_history result is not an array".into());
+    };
+    for entry in entries {
+        if history_entry_matches_transfer(entry, criteria) {
+            return Ok(Some(TransferConfirmation {
+                id: entry
+                    .get("id")
+                    .and_then(Value::as_str)
+                    .ok_or("history entry missing id")?
+                    .to_string(),
+                block_num: entry
+                    .get("block_num")
+                    .and_then(Value::as_u64)
+                    .ok_or("history entry missing block_num")?,
+                trx_in_block: entry
+                    .get("trx_in_block")
+                    .and_then(Value::as_u64)
+                    .ok_or("history entry missing trx_in_block")?,
+                op_in_trx: entry
+                    .get("op_in_trx")
+                    .and_then(Value::as_u64)
+                    .ok_or("history entry missing op_in_trx")?,
+                virtual_op: entry
+                    .get("virtual_op")
+                    .and_then(Value::as_u64)
+                    .ok_or("history entry missing virtual_op")?,
+            }));
+        }
+    }
+    Ok(None)
+}
+
+fn history_entry_matches_transfer(
+    entry: &Value,
+    criteria: &TransferConfirmationCriteria<'_>,
+) -> bool {
+    if entry.get("block_num").and_then(Value::as_u64) < Some(criteria.min_block_num) {
+        return false;
+    }
+    let Some(operation) = entry.get("op").and_then(Value::as_array) else {
+        return false;
+    };
+    if operation.first().and_then(Value::as_u64) != Some(0) {
+        return false;
+    }
+    let Some(payload) = operation.get(1) else {
+        return false;
+    };
+    payload.get("from").and_then(Value::as_str) == Some(criteria.from_id)
+        && payload.get("to").and_then(Value::as_str) == Some(criteria.to_id)
+        && asset_value_matches(payload.get("amount"), criteria.amount, criteria.asset_id)
+        && asset_value_matches(payload.get("fee"), criteria.fee_amount, criteria.asset_id)
+}
+
+fn asset_value_matches(value: Option<&Value>, amount: i64, asset_id: &str) -> bool {
+    let Some(value) = value else {
+        return false;
+    };
+    value.get("amount").and_then(json_i64) == Some(amount)
+        && value.get("asset_id").and_then(Value::as_str) == Some(asset_id)
 }
 
 fn env_flag(name: &str) -> bool {
@@ -542,6 +700,83 @@ mod tests {
                 .expect_err("too many decimals fail")
                 .to_string(),
             "amount supports at most 5 decimal places"
+        );
+    }
+
+    #[test]
+    fn account_history_confirmation_matches_transfer_fields() {
+        let history = json!([
+            {
+                "id": "1.11.22",
+                "block_num": 123,
+                "trx_in_block": 1,
+                "op_in_trx": 0,
+                "virtual_op": 0,
+                "op": [0, {
+                    "fee": { "amount": 10, "asset_id": "1.3.0" },
+                    "from": "1.2.100",
+                    "to": "1.2.0",
+                    "amount": { "amount": 100000, "asset_id": "1.3.0" },
+                    "memo": null,
+                    "extensions": []
+                }]
+            }
+        ]);
+        let confirmation = find_transfer_confirmation(
+            &history,
+            &TransferConfirmationCriteria {
+                from_id: "1.2.100",
+                to_id: "1.2.0",
+                amount: 100000,
+                asset_id: "1.3.0",
+                fee_amount: 10,
+                min_block_num: 123,
+            },
+        )
+        .unwrap()
+        .expect("matching transfer is confirmed");
+
+        assert_eq!(confirmation.id, "1.11.22");
+        assert_eq!(confirmation.block_num, 123);
+        assert_eq!(confirmation.trx_in_block, 1);
+        assert_eq!(confirmation.op_in_trx, 0);
+        assert_eq!(confirmation.virtual_op, 0);
+    }
+
+    #[test]
+    fn account_history_confirmation_rejects_wrong_amount() {
+        let history = json!([
+            {
+                "id": "1.11.22",
+                "block_num": 123,
+                "trx_in_block": 1,
+                "op_in_trx": 0,
+                "virtual_op": 0,
+                "op": [0, {
+                    "fee": { "amount": 10, "asset_id": "1.3.0" },
+                    "from": "1.2.100",
+                    "to": "1.2.0",
+                    "amount": { "amount": 1, "asset_id": "1.3.0" },
+                    "memo": null,
+                    "extensions": []
+                }]
+            }
+        ]);
+
+        assert!(
+            find_transfer_confirmation(
+                &history,
+                &TransferConfirmationCriteria {
+                    from_id: "1.2.100",
+                    to_id: "1.2.0",
+                    amount: 100000,
+                    asset_id: "1.3.0",
+                    fee_amount: 10,
+                    min_block_num: 123,
+                },
+            )
+            .unwrap()
+            .is_none()
         );
     }
 }
