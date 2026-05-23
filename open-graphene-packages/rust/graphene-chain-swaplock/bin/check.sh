@@ -22,6 +22,9 @@ step "Generate Swaplock Rust bindings"
 step "Test Swaplock Rust bindings"
 cargo test --manifest-path "${BINDINGS_MANIFEST}"
 
+step "Check Swaplock Rust examples"
+cargo check --manifest-path "${BINDINGS_MANIFEST}" --examples
+
 step "Test shared graphene-fc runtime"
 cargo test --manifest-path "${FC_MANIFEST}"
 

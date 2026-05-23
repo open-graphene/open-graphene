@@ -206,4 +206,4 @@ The raw-signature slice is implemented in the generated Rust bindings:
 transaction_fc_bytes || varint(signature_count) || signature_65_bytes...
 ```
 
-A later slice can add live transaction construction and broadcast once the user explicitly approves a concrete transaction.
+A read-only live preview example exists at `open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-bindings/examples/signed_transfer_preview.rs`. It uses read-only database RPC calls to resolve head block data, account IDs, and required fee, then signs locally and prints transaction/digest metadata. It requires `wss://` by default, refuses fees above `SWAPLOCK_MAX_FEE` (default `1000000` raw units), and hides the broadcastable signed transaction hex unless `SWAPLOCK_PRINT_SIGNED_TX=1` is explicitly set. It does not broadcast; broadcast remains a later slice that requires explicit approval for a concrete transaction.
