@@ -157,6 +157,7 @@ The local C++ tree calls `private_key_type::sign_compact(...)`, but the bundled 
 1. Preserve the existing generated helpers:
    - `Transaction::signature_preimage_bytes()` = `chain_id_bytes || transaction_fc_bytes`
    - `Transaction::signature_digest_bytes()` = `sha256(signature_preimage)`
+   - `Transaction::sign_with_wif(wif)` = compact signature bytes for the digest, returned as generated `Signature`
 
 2. Model Graphene signatures as raw compact bytes, not strings:
    - fixed length: 65 bytes
@@ -165,12 +166,12 @@ The local C++ tree calls `private_key_type::sign_compact(...)`, but the bundled 
 
 3. Do not serialize `TypeRef::Signature` via `String::fc_serialize`. Generated Rust now maps signatures to a dedicated `Signature` wrapper so FC serialization can enforce the fixed 65-byte compact signature shape.
 
-4. Signing implementation must use recoverable secp256k1 ECDSA and produce Graphene-compatible compact signatures:
+4. Signing implementation uses recoverable secp256k1 ECDSA and produces Graphene-compatible compact signatures:
    - digest input is exactly `Transaction::signature_digest_bytes()`
-   - enforce low-S
-   - set compact header as `27 + 4 + recovery_id`
-   - ensure the produced `r` and `s` are each represented as exactly 32 bytes
-   - if matching bitsharesjs canonical DER-length behavior is required, retry deterministic signing with an incrementing nonce or equivalent deterministic extra entropy until both lengths are 32 bytes
+   - libsecp256k1 normalizes signatures to low-S
+   - compact header is `27 + 4 + recovery_id`
+   - produced signatures are returned through the generated 65-byte `Signature` wrapper
+   - the committed bitsharesjs fixture verifies byte-for-byte compatibility for the current signing path
 
 5. Keep fail-closed behavior:
    - reject signature byte arrays that are not exactly 65 bytes
@@ -204,4 +205,4 @@ The raw-signature slice is implemented in the generated Rust bindings:
 transaction_fc_bytes || varint(signature_count) || signature_65_bytes...
 ```
 
-A later slice can add secp256k1 signing against `Transaction::signature_digest_bytes()`.
+A later slice can add live transaction construction and broadcast once the user explicitly approves a concrete transaction.

@@ -2,7 +2,7 @@
 // Chain: swaplock | schema version: 1 | module: minimal FC serialization for transfer path.
 // Do not edit by hand.
 
-pub use open_graphene_fc::{decode_chain_id_hex, parse_protocol_object_id, sha256_bytes, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};
+pub use open_graphene_fc::{decode_chain_id_hex, parse_protocol_object_id, sha256_bytes, sign_digest_compact_with_wif, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};
 
 impl FcSerialize for crate::generated::ids::AccountId {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
@@ -3424,6 +3424,10 @@ impl crate::generated::types::Transaction {
 
     pub fn signature_digest_bytes(&self) -> Result<[u8; 32]> {
         Ok(sha256_bytes(&self.signature_preimage_bytes()?))
+    }
+
+    pub fn sign_with_wif(&self, wif: &str) -> Result<crate::generated::types::Signature> {
+        Ok(crate::generated::types::Signature(sign_digest_compact_with_wif(self.signature_digest_bytes()?, wif)?.to_vec()))
     }
 }
 

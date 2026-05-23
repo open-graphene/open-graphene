@@ -1,4 +1,5 @@
 use ripemd::Digest;
+use secp256k1::{Message, Secp256k1, SecretKey};
 use sha2::Sha256;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -28,6 +29,12 @@ pub enum FcSerializeError {
     },
     InvalidChainId {
         value: String,
+        reason: &'static str,
+    },
+    InvalidPrivateKey {
+        reason: &'static str,
+    },
+    SigningFailed {
         reason: &'static str,
     },
     UnsupportedVariant {
@@ -75,6 +82,8 @@ impl std::fmt::Display for FcSerializeError {
             Self::InvalidChainId { value, reason } => {
                 write!(f, "invalid chain id `{value}`: {reason}")
             }
+            Self::InvalidPrivateKey { reason } => write!(f, "invalid private key: {reason}"),
+            Self::SigningFailed { reason } => write!(f, "signing failed: {reason}"),
             Self::UnsupportedVariant { variant } => {
                 write!(
                     f,
@@ -387,6 +396,54 @@ pub fn sha256_bytes(value: &[u8]) -> [u8; 32] {
     Sha256::digest(value).into()
 }
 
+pub fn decode_wif_private_key(value: &str) -> Result<[u8; 32]> {
+    let decoded = bs58::decode(value)
+        .into_vec()
+        .map_err(|_| invalid_private_key("WIF is not valid base58"))?;
+    if decoded.len() != 37 {
+        return Err(invalid_private_key(
+            "WIF must contain version, 32-byte key, and checksum",
+        ));
+    }
+
+    let (payload, checksum) = decoded.split_at(decoded.len() - 4);
+    if payload.first().copied() != Some(0x80) {
+        return Err(invalid_private_key("WIF version must be 0x80"));
+    }
+
+    let computed_checksum = sha256_bytes(&sha256_bytes(payload));
+    if checksum != &computed_checksum[..4] {
+        return Err(invalid_private_key("WIF checksum mismatch"));
+    }
+
+    let mut private_key = [0u8; 32];
+    private_key.copy_from_slice(&payload[1..33]);
+    SecretKey::from_slice(&private_key)
+        .map_err(|_| invalid_private_key("private key scalar is out of range"))?;
+    Ok(private_key)
+}
+
+pub fn sign_digest_compact(digest: [u8; 32], private_key: [u8; 32]) -> Result<[u8; 65]> {
+    let secret_key = SecretKey::from_slice(&private_key)
+        .map_err(|_| invalid_private_key("private key scalar is out of range"))?;
+    let message =
+        Message::from_digest_slice(&digest).map_err(|_| FcSerializeError::SigningFailed {
+            reason: "digest must be 32 bytes",
+        })?;
+    let secp = Secp256k1::new();
+    let signature = secp.sign_ecdsa_recoverable(&message, &secret_key);
+    let (recovery_id, signature_bytes) = signature.serialize_compact();
+
+    let mut out = [0u8; 65];
+    out[0] = 27 + 4 + recovery_id.to_i32() as u8;
+    out[1..].copy_from_slice(&signature_bytes);
+    Ok(out)
+}
+
+pub fn sign_digest_compact_with_wif(digest: [u8; 32], wif: &str) -> Result<[u8; 65]> {
+    sign_digest_compact(digest, decode_wif_private_key(wif)?)
+}
+
 fn decode_lower_hex_nibble(byte: u8) -> u8 {
     match byte {
         b'0'..=b'9' => byte - b'0',
@@ -477,6 +534,10 @@ fn invalid_chain_id(value: &str, reason: &'static str) -> FcSerializeError {
         value: value.to_string(),
         reason,
     }
+}
+
+fn invalid_private_key(reason: &'static str) -> FcSerializeError {
+    FcSerializeError::InvalidPrivateKey { reason }
 }
 
 impl FcSerialize for () {
@@ -662,6 +723,58 @@ mod tests {
                 0x78, 0x52, 0xb8, 0x55,
             ]
         );
+    }
+
+    #[test]
+    fn signing_helpers_sign_digest_with_non_secret_private_key_fixture() {
+        let digest =
+            decode_chain_id_hex("b459775b7ac4c1f0d1e5988d112846c0a9b75c8b8bbbd613f80499366d9be635")
+                .expect("fixture digest is 32-byte hex");
+        let signature = sign_digest_compact(digest, [1u8; 32]).expect("sign fixture digest");
+        assert_eq!(
+            signature,
+            [
+                0x20, 0x77, 0xf9, 0xad, 0x0a, 0x1b, 0x61, 0xb8, 0x61, 0xee, 0xa4, 0x48, 0xf7, 0x39,
+                0x1f, 0x2a, 0xbb, 0x79, 0x59, 0x88, 0x70, 0x80, 0x7f, 0x18, 0xdd, 0xb8, 0x56, 0xb1,
+                0x4e, 0xa3, 0xa4, 0xdc, 0x88, 0x05, 0x71, 0xb8, 0x9c, 0x5c, 0x75, 0x9a, 0x40, 0xbb,
+                0x9a, 0x45, 0xfb, 0x24, 0x69, 0x2e, 0x21, 0x9f, 0x0e, 0xc1, 0xd8, 0x3b, 0x0b, 0xc9,
+                0x6f, 0xe9, 0x0b, 0xfe, 0x0e, 0x0c, 0xcb, 0xa4, 0x3b,
+            ]
+        );
+    }
+
+    #[test]
+    fn signing_helpers_decode_wif_and_match_bitsharesjs_fixture() {
+        let Ok(wif) = std::env::var("SWAPLOCK_ACTIVE_WIF") else {
+            eprintln!("skipping signing fixture test because SWAPLOCK_ACTIVE_WIF is not set");
+            return;
+        };
+        let digest =
+            decode_chain_id_hex("b459775b7ac4c1f0d1e5988d112846c0a9b75c8b8bbbd613f80499366d9be635")
+                .expect("fixture digest is 32-byte hex");
+        let signature = sign_digest_compact_with_wif(digest, &wif).expect("sign fixture digest");
+        assert_eq!(
+            signature,
+            [
+                0x1f, 0x4a, 0x8b, 0x0c, 0x4b, 0x54, 0xff, 0xd7, 0x8e, 0xe5, 0x03, 0xc2, 0xe9, 0x11,
+                0x29, 0x32, 0xb2, 0xca, 0xa7, 0x26, 0x08, 0x6a, 0xa1, 0xac, 0xb7, 0x2c, 0xc5, 0x50,
+                0xe1, 0xfe, 0xa0, 0x40, 0x7e, 0x47, 0x65, 0xad, 0x87, 0x66, 0x31, 0x4c, 0x4e, 0x8e,
+                0xb2, 0xb4, 0x20, 0x17, 0xac, 0x10, 0x48, 0xeb, 0xec, 0xe4, 0x48, 0x63, 0x9f, 0x63,
+                0xd8, 0x08, 0x2a, 0x1e, 0x89, 0x30, 0x09, 0xa8, 0x74,
+            ]
+        );
+    }
+
+    #[test]
+    fn private_key_helpers_reject_invalid_wif_without_echoing_secret() {
+        let err = decode_wif_private_key("not-a-wif").expect_err("invalid WIF fails");
+        assert!(matches!(
+            err,
+            FcSerializeError::InvalidPrivateKey {
+                reason: "WIF is not valid base58",
+            }
+        ));
+        assert!(!err.to_string().contains("not-a-wif"));
     }
 
     #[test]

@@ -2101,6 +2101,26 @@ fn transaction_signature_digest_matches_bitsharesjs_signature_fixture_digest() {
 }
 
 #[test]
+fn transaction_sign_with_wif_matches_bitsharesjs_signature_fixture() {
+    let Ok(wif) = std::env::var("SWAPLOCK_ACTIVE_WIF") else {
+        eprintln!("skipping signing fixture test because SWAPLOCK_ACTIVE_WIF is not set");
+        return;
+    };
+    let transaction = sample_transaction_with_operations(vec![Operation::TransferOperation(
+        Box::new(sample_transfer_operation()),
+    )]);
+
+    assert_eq!(
+        transaction
+            .sign_with_wif(&wif)
+            .expect("sign fixture transaction")
+            .to_fc_bytes()
+            .expect("serialize generated signature"),
+        bitsharesjs_signature_vector_bytes()
+    );
+}
+
+#[test]
 fn transaction_signature_preimage_propagates_operation_errors() {
     let mut transfer = sample_transfer_operation();
     transfer.memo = Some(MemoData {
