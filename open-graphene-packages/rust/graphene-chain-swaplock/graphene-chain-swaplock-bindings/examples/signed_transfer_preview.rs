@@ -175,6 +175,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         )
         .into());
     }
+    let balance_before = account_balance(&mut rpc, database_api_id, &from_id, &asset_id)?;
+    ensure_sufficient_balance(balance_before, amount, &fee, &asset_id)?;
 
     let transaction = Transaction {
         ref_block_num,
@@ -222,6 +224,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("asset_precision: {asset_precision}");
     println!("amount: {human_amount}");
     println!("amount_raw: {amount}");
+    println!("fee_raw: {}", expected_fee_amount);
+    println!("balance_before_raw: {balance_before}");
+    println!(
+        "balance_after_raw: {}",
+        balance_before - amount - expected_fee_amount
+    );
     println!("head_block_number: {head_block_number}");
     println!("ref_block_num: {ref_block_num}");
     println!("ref_block_prefix: {ref_block_prefix}");
@@ -539,6 +547,52 @@ fn transfer_amount_raw(human_amount: &str, precision: u8) -> Result<i64, Box<dyn
     decimal_to_raw_amount(human_amount, precision)
 }
 
+fn account_balance(
+    rpc: &mut GrapheneRpc,
+    api_id: u64,
+    account_id: &str,
+    asset_id: &str,
+) -> Result<i64, Box<dyn Error>> {
+    let balances = rpc.call_database(
+        api_id,
+        "get_account_balances",
+        json!([account_id, [asset_id]]),
+    )?;
+    let balance = balances
+        .as_array()
+        .and_then(|values| values.first())
+        .ok_or("get_account_balances returned no balance")?;
+    if balance.get("asset_id").and_then(Value::as_str) != Some(asset_id) {
+        return Err("get_account_balances returned unexpected asset_id".into());
+    }
+    balance
+        .get("amount")
+        .and_then(json_i64)
+        .ok_or_else(|| "balance missing integer amount".into())
+}
+
+fn ensure_sufficient_balance(
+    balance: i64,
+    amount: i64,
+    fee: &Asset,
+    transfer_asset_id: &str,
+) -> Result<(), Box<dyn Error>> {
+    let required = if fee.asset_id.0 == transfer_asset_id {
+        amount
+            .checked_add(fee.amount)
+            .ok_or("amount plus fee overflows i64")?
+    } else {
+        amount
+    };
+    if balance < required {
+        return Err(format!(
+            "insufficient balance for asset {transfer_asset_id}: balance {balance}, required {required}"
+        )
+        .into());
+    }
+    Ok(())
+}
+
 fn decimal_to_raw_amount(value: &str, precision: u8) -> Result<i64, Box<dyn Error>> {
     let value = value.trim();
     if value.is_empty() {
@@ -700,6 +754,38 @@ mod tests {
                 .expect_err("too many decimals fail")
                 .to_string(),
             "amount supports at most 5 decimal places"
+        );
+    }
+
+    #[test]
+    fn balance_guard_requires_amount_plus_fee_when_fee_uses_transfer_asset() {
+        let fee = Asset {
+            amount: 10,
+            asset_id: AssetId("1.3.0".to_string()),
+        };
+
+        ensure_sufficient_balance(110, 100, &fee, "1.3.0").unwrap();
+        assert_eq!(
+            ensure_sufficient_balance(109, 100, &fee, "1.3.0")
+                .expect_err("insufficient balance fails")
+                .to_string(),
+            "insufficient balance for asset 1.3.0: balance 109, required 110"
+        );
+    }
+
+    #[test]
+    fn balance_guard_requires_only_amount_when_fee_uses_another_asset() {
+        let fee = Asset {
+            amount: 10,
+            asset_id: AssetId("1.3.1".to_string()),
+        };
+
+        ensure_sufficient_balance(100, 100, &fee, "1.3.0").unwrap();
+        assert_eq!(
+            ensure_sufficient_balance(99, 100, &fee, "1.3.0")
+                .expect_err("insufficient balance fails")
+                .to_string(),
+            "insufficient balance for asset 1.3.0: balance 99, required 100"
         );
     }
 
