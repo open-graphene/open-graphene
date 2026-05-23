@@ -2,7 +2,8 @@
   "schemaVersion": 1,
   "chain": {
     "id": "swaplock",
-    "publicKeyPrefix": "BTS"
+    "publicKeyPrefix": "BTS",
+    "chainId": "2267f694d96b7ffdcba1a98c63c09e720a18a85ad34954e299c66d5a42234098"
   },
   "structs": [
     {

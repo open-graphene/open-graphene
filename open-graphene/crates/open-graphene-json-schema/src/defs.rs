@@ -9,6 +9,8 @@ use crate::types::{IntType, TypeRef};
 pub struct ChainDef {
     pub id: String,
     pub public_key_prefix: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub chain_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]

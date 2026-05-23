@@ -18,6 +18,7 @@ pub struct GeneratorConfig {
 pub struct ChainConfig {
     pub id: String,
     pub public_key_prefix: String,
+    pub chain_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]

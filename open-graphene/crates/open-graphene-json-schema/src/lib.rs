@@ -66,6 +66,7 @@ mod tests {
             chain: ChainDef {
                 id: "swaplock-minimal".to_string(),
                 public_key_prefix: "SWP".to_string(),
+                chain_id: None,
             },
             structs: vec![],
             enums: vec![],
@@ -212,6 +213,7 @@ mod tests {
             chain: ChainDef {
                 id: "swaplock-minimal".to_string(),
                 public_key_prefix: "SWP".to_string(),
+                chain_id: None,
             },
             structs: vec![],
             enums: vec![],

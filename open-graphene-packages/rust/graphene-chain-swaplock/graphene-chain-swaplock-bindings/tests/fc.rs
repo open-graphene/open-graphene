@@ -1,19 +1,20 @@
 use graphene_chain_swaplock_bindings::generated::{
     AccountCreateOperation, AccountCreateOperationExt, AccountId, AccountNameEqLitPredicate,
-    AccountOptions, Asset, AssetId, AssetSymbolEqLitPredicate, AssetUpdateFeedProducersOperation,
-    ArgumentType, AssertOperation, Authority, BlockIdPredicate, BurnWorkerInitializer,
+    AccountOptions, ArgumentType, AssertOperation, Asset, AssetId, AssetSymbolEqLitPredicate,
+    AssetUpdateFeedProducersOperation, Authority, BlockIdPredicate, BurnWorkerInitializer,
     CddVestingPolicyInitializer, ChainParameters, ChainParametersExt,
     CommitteeMemberUpdateGlobalParametersOperation,
     CommitteeMemberUpdateGlobalParametersOperationFeeParamsT, CreateTakeProfitOrderAction,
-    CreditOfferCreateOperation, CreditOfferId, CreditOfferUpdateOperation, CustomAuthorityCreateOperation,
-    CustomAuthorityId, CustomAuthorityUpdateOperation, CustomOperation, FcSerialize, FcSerializeError,
-    FeeParameters, FeeSchedule, FutureExtensions, HtlcHash, HtlcId,
-    HtlcRefundOperation, InstantVestingPolicyInitializer, LimitOrderAutoAction, LinearVestingPolicyInitializer,
+    CreditOfferCreateOperation, CreditOfferId, CreditOfferUpdateOperation,
+    CustomAuthorityCreateOperation, CustomAuthorityId, CustomAuthorityUpdateOperation,
+    CustomOperation, FcSerialize, FcSerializeError, FeeParameters, FeeSchedule, FutureExtensions,
+    HtlcHash, HtlcId, HtlcRefundOperation, InstantVestingPolicyInitializer, LimitOrderAutoAction,
     LimitOrderCancelOperation, LimitOrderCreateOperation, LimitOrderId, LimitOrderUpdateOperation,
-    MemoData, NoSpecialAuthority, OpWrapper, Operation, Predicate, Price, ProposalCreateOperation, RefundWorkerInitializer,
-    Restriction, SpecialAuthority, TopHoldersSpecialAuthority, Transaction, TransferOperation,
-    TransferOperationFeeParamsT, VestingBalanceCreateOperation, VestingBalanceWorkerInitializer, VestingPolicyInitializer, VoteId,
-    WorkerCreateOperation, WorkerInitializer, WithdrawPermissionCreateOperation,
+    LinearVestingPolicyInitializer, MemoData, NoSpecialAuthority, OpWrapper, Operation, Predicate,
+    Price, ProposalCreateOperation, RefundWorkerInitializer, Restriction, SpecialAuthority,
+    TopHoldersSpecialAuthority, Transaction, TransferOperation, TransferOperationFeeParamsT,
+    VestingBalanceCreateOperation, VestingBalanceWorkerInitializer, VestingPolicyInitializer,
+    VoteId, WithdrawPermissionCreateOperation, WorkerCreateOperation, WorkerInitializer,
 };
 
 fn sample_transfer_operation() -> TransferOperation {
@@ -97,6 +98,14 @@ fn expected_transaction_payload(operation_payloads: &[Vec<u8>]) -> Vec<u8> {
     bytes
 }
 
+fn expected_swaplock_chain_id_bytes() -> Vec<u8> {
+    vec![
+        0x22, 0x67, 0xf6, 0x94, 0xd9, 0x6b, 0x7f, 0xfd, 0xcb, 0xa1, 0xa9, 0x8c, 0x63, 0xc0, 0x9e,
+        0x72, 0x0a, 0x18, 0xa8, 0x5a, 0xd3, 0x49, 0x54, 0xe2, 0x99, 0xc6, 0x6d, 0x5a, 0x42, 0x23,
+        0x40, 0x98,
+    ]
+}
+
 fn sample_limit_order_create_operation() -> LimitOrderCreateOperation {
     LimitOrderCreateOperation {
         fee: Asset {
@@ -140,16 +149,16 @@ fn sample_limit_order_update_operation() -> LimitOrderUpdateOperation {
         new_price: None,
         delta_amount_to_sell: None,
         new_expiration: None,
-        on_fill: Some(vec![LimitOrderAutoAction::CreateTakeProfitOrderAction(Box::new(
-            CreateTakeProfitOrderAction {
+        on_fill: Some(vec![LimitOrderAutoAction::CreateTakeProfitOrderAction(
+            Box::new(CreateTakeProfitOrderAction {
                 fee_asset_id: AssetId("1.3.0".to_string()),
                 spread_percent: 25,
                 size_percent: 50,
                 expiration_seconds: 3_600,
                 repeat: true,
                 extensions: FutureExtensions::VoidT(Box::new(())),
-            },
-        ))]),
+            }),
+        )]),
         extensions: FutureExtensions::VoidT(Box::new(())),
     }
 }
@@ -261,8 +270,8 @@ fn sample_chain_parameters() -> ChainParameters {
     }
 }
 
-fn sample_committee_member_update_global_parameters_operation(
-) -> CommitteeMemberUpdateGlobalParametersOperation {
+fn sample_committee_member_update_global_parameters_operation()
+-> CommitteeMemberUpdateGlobalParametersOperation {
     CommitteeMemberUpdateGlobalParametersOperation {
         fee: Asset {
             amount: 0,
@@ -363,7 +372,10 @@ fn sample_asset_update_feed_producers_operation() -> AssetUpdateFeedProducersOpe
         },
         issuer: AccountId("1.2.1".to_string()),
         asset_to_update: AssetId("1.3.4".to_string()),
-        new_feed_producers: vec![AccountId("1.2.2".to_string()), AccountId("1.2.5".to_string())],
+        new_feed_producers: vec![
+            AccountId("1.2.2".to_string()),
+            AccountId("1.2.5".to_string()),
+        ],
         extensions: FutureExtensions::VoidT(Box::new(())),
     }
 }
@@ -500,7 +512,10 @@ fn sample_authority_with_two_key_auths() -> Authority {
     Authority {
         weight_threshold: 2,
         account_auths: Vec::new(),
-        key_auths: vec![(generated_test_public_key(1), 1), (generated_test_public_key(2), 2)],
+        key_auths: vec![
+            (generated_test_public_key(1), 1),
+            (generated_test_public_key(2), 2),
+        ],
         address_auths: Vec::new(),
     }
 }
@@ -508,16 +523,11 @@ fn sample_authority_with_two_key_auths() -> Authority {
 fn expected_limit_order_create_payload() -> Vec<u8> {
     vec![
         // fee: amount 0 + asset instance 0
-        0, 0, 0, 0, 0, 0, 0, 0, 0,
-        // seller account instance 1
-        1,
-        // amount_to_sell: amount 1 + asset instance 0
-        1, 0, 0, 0, 0, 0, 0, 0, 0,
-        // min_to_receive: amount 2 + asset instance 0
-        2, 0, 0, 0, 0, 0, 0, 0, 0,
-        // fill_or_kill true
-        1,
-        // extensions: future_extensions VoidT static variant tag 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, // seller account instance 1
+        1, // amount_to_sell: amount 1 + asset instance 0
+        1, 0, 0, 0, 0, 0, 0, 0, 0, // min_to_receive: amount 2 + asset instance 0
+        2, 0, 0, 0, 0, 0, 0, 0, 0, // fill_or_kill true
+        1, // extensions: future_extensions VoidT static variant tag 0
         0,
     ]
 }
@@ -525,12 +535,9 @@ fn expected_limit_order_create_payload() -> Vec<u8> {
 fn expected_limit_order_cancel_payload() -> Vec<u8> {
     vec![
         // fee: amount 0 + asset instance 0
-        0, 0, 0, 0, 0, 0, 0, 0, 0,
-        // fee_paying_account account instance 1
-        1,
-        // order limit_order instance 1
-        1,
-        // extensions: future_extensions VoidT static variant tag 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, // fee_paying_account account instance 1
+        1, // order limit_order instance 1
+        1, // extensions: future_extensions VoidT static variant tag 0
         0,
     ]
 }
@@ -555,8 +562,7 @@ fn expected_limit_order_update_payload() -> Vec<u8> {
 fn expected_price_payload() -> Vec<u8> {
     vec![
         // base asset: amount 1 + asset instance 0
-        1, 0, 0, 0, 0, 0, 0, 0, 0,
-        // quote asset: amount 2 + asset instance 1
+        1, 0, 0, 0, 0, 0, 0, 0, 0, // quote asset: amount 2 + asset instance 1
         2, 0, 0, 0, 0, 0, 0, 0, 1,
     ]
 }
@@ -674,18 +680,12 @@ fn expected_custom_authority_update_payload() -> Vec<u8> {
 fn expected_withdraw_permission_create_payload() -> Vec<u8> {
     vec![
         // fee: amount 0 + asset instance 0
-        0, 0, 0, 0, 0, 0, 0, 0, 0,
-        // withdraw_from_account account instance 1
-        1,
-        // authorized_account account instance 2
-        2,
-        // withdrawal_limit: amount 3 + asset instance 0
-        3, 0, 0, 0, 0, 0, 0, 0, 0,
-        // withdrawal_period_sec 86400
-        0x80, 0x51, 0x01, 0x00,
-        // periods_until_expiration 7
-        7, 0, 0, 0,
-        // period_start_time 1970-01-01T00:00:01 as u32 little-endian seconds
+        0, 0, 0, 0, 0, 0, 0, 0, 0, // withdraw_from_account account instance 1
+        1, // authorized_account account instance 2
+        2, // withdrawal_limit: amount 3 + asset instance 0
+        3, 0, 0, 0, 0, 0, 0, 0, 0, // withdrawal_period_sec 86400
+        0x80, 0x51, 0x01, 0x00, // periods_until_expiration 7
+        7, 0, 0, 0, // period_start_time 1970-01-01T00:00:01 as u32 little-endian seconds
         1, 0, 0, 0,
     ]
 }
@@ -694,9 +694,9 @@ fn expected_account_options_payload() -> Vec<u8> {
     let mut bytes = Vec::new();
     // memo_key: compressed public key bytes
     bytes.extend_from_slice(&[
-        0x02, 0xc0, 0xde, 0xd2, 0xbc, 0x1f, 0x13, 0x05, 0xfb, 0x0f, 0xaa, 0xc5, 0xe6,
-        0xc0, 0x3e, 0xe3, 0xa1, 0x92, 0x42, 0x34, 0x98, 0x54, 0x27, 0xb6, 0x16, 0x7c,
-        0xa5, 0x69, 0xd1, 0x3d, 0xf4, 0x35, 0xcf,
+        0x02, 0xc0, 0xde, 0xd2, 0xbc, 0x1f, 0x13, 0x05, 0xfb, 0x0f, 0xaa, 0xc5, 0xe6, 0xc0, 0x3e,
+        0xe3, 0xa1, 0x92, 0x42, 0x34, 0x98, 0x54, 0x27, 0xb6, 0x16, 0x7c, 0xa5, 0x69, 0xd1, 0x3d,
+        0xf4, 0x35, 0xcf,
     ]);
     // voting_account account instance 5
     bytes.push(5);
@@ -718,9 +718,9 @@ fn expected_authority_with_account_and_key_auths_payload() -> Vec<u8> {
     // key_auths length 1, public key bytes, weight 2
     bytes.push(1);
     bytes.extend_from_slice(&[
-        0x02, 0xc0, 0xde, 0xd2, 0xbc, 0x1f, 0x13, 0x05, 0xfb, 0x0f, 0xaa, 0xc5, 0xe6,
-        0xc0, 0x3e, 0xe3, 0xa1, 0x92, 0x42, 0x34, 0x98, 0x54, 0x27, 0xb6, 0x16, 0x7c,
-        0xa5, 0x69, 0xd1, 0x3d, 0xf4, 0x35, 0xcf,
+        0x02, 0xc0, 0xde, 0xd2, 0xbc, 0x1f, 0x13, 0x05, 0xfb, 0x0f, 0xaa, 0xc5, 0xe6, 0xc0, 0x3e,
+        0xe3, 0xa1, 0x92, 0x42, 0x34, 0x98, 0x54, 0x27, 0xb6, 0x16, 0x7c, 0xa5, 0x69, 0xd1, 0x3d,
+        0xf4, 0x35, 0xcf,
     ]);
     bytes.extend_from_slice(&[2, 0]);
     // address_auths length 0
@@ -750,8 +750,7 @@ fn expected_authority_with_two_key_auths_payload() -> Vec<u8> {
 fn expected_empty_authority_payload() -> Vec<u8> {
     vec![
         // weight_threshold 1
-        1, 0, 0, 0,
-        // account_auths, key_auths, address_auths lengths
+        1, 0, 0, 0, // account_auths, key_auths, address_auths lengths
         0, 0, 0,
     ]
 }
@@ -777,10 +776,8 @@ fn expected_asset_update_feed_producers_payload() -> Vec<u8> {
         // fee: amount 0 + asset instance 0
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         // issuer account instance 1, asset_to_update asset instance 4
-        1, 4,
-        // new_feed_producers set length 2, account instances 2 and 5
-        2, 2, 5,
-        // extensions: future_extensions VoidT static variant tag 0
+        1, 4, // new_feed_producers set length 2, account instances 2 and 5
+        2, 2, 5, // extensions: future_extensions VoidT static variant tag 0
         0,
     ]
 }
@@ -788,14 +785,10 @@ fn expected_asset_update_feed_producers_payload() -> Vec<u8> {
 fn expected_custom_operation_payload() -> Vec<u8> {
     vec![
         // fee: amount 0 + asset instance 0
-        0, 0, 0, 0, 0, 0, 0, 0, 0,
-        // payer account instance 1
-        1,
-        // required_auths set length 1, account instance 1
-        1, 1,
-        // id 0x1234 little-endian
-        0x34, 0x12,
-        // data bytes length 2 + raw bytes
+        0, 0, 0, 0, 0, 0, 0, 0, 0, // payer account instance 1
+        1, // required_auths set length 1, account instance 1
+        1, 1, // id 0x1234 little-endian
+        0x34, 0x12, // data bytes length 2 + raw bytes
         2, 0xab, 0xcd,
     ]
 }
@@ -839,8 +832,8 @@ fn expected_worker_create_payload() -> Vec<u8> {
     // name and URL as length-prefixed UTF-8 strings
     bytes.extend_from_slice(&[6, b'w', b'o', b'r', b'k', b'e', b'r']);
     bytes.extend_from_slice(&[
-        20, b'h', b't', b't', b'p', b's', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p',
-        b'l', b'e', b'.', b't', b'e', b's', b't',
+        20, b'h', b't', b't', b'p', b's', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l',
+        b'e', b'.', b't', b'e', b's', b't',
     ]);
     // vesting_balance_worker_initializer tag 1 + pay_vesting_period_days 7
     bytes.extend_from_slice(&[1, 7, 0]);
@@ -879,7 +872,9 @@ fn transfer_operation_fc_rejects_invalid_account_id() {
     let mut transfer = sample_transfer_operation();
     transfer.from = AccountId("bad".to_string());
 
-    let err = transfer.to_fc_bytes().expect_err("invalid account id fails");
+    let err = transfer
+        .to_fc_bytes()
+        .expect_err("invalid account id fails");
 
     assert!(matches!(
         err,
@@ -894,7 +889,9 @@ fn transfer_operation_fc_rejects_invalid_account_id() {
 #[test]
 fn account_options_fc_serializes_vote_ids() {
     assert_eq!(
-        sample_account_options().to_fc_bytes().expect("serialize account options"),
+        sample_account_options()
+            .to_fc_bytes()
+            .expect("serialize account options"),
         expected_account_options_payload()
     );
 }
@@ -1017,14 +1014,17 @@ fn limit_order_create_operation_fc_serializes_known_fields() {
     let operation = sample_limit_order_create_operation();
 
     assert_eq!(
-        operation.to_fc_bytes().expect("serialize limit order create"),
+        operation
+            .to_fc_bytes()
+            .expect("serialize limit order create"),
         expected_limit_order_create_payload()
     );
 }
 
 #[test]
 fn operation_fc_serializes_limit_order_create_tag_and_payload() {
-    let operation = Operation::LimitOrderCreateOperation(Box::new(sample_limit_order_create_operation()));
+    let operation =
+        Operation::LimitOrderCreateOperation(Box::new(sample_limit_order_create_operation()));
     let bytes = operation.to_fc_bytes().expect("serialize operation");
 
     let mut expected = vec![1];
@@ -1038,14 +1038,17 @@ fn limit_order_cancel_operation_fc_serializes_known_fields() {
     let operation = sample_limit_order_cancel_operation();
 
     assert_eq!(
-        operation.to_fc_bytes().expect("serialize limit order cancel"),
+        operation
+            .to_fc_bytes()
+            .expect("serialize limit order cancel"),
         expected_limit_order_cancel_payload()
     );
 }
 
 #[test]
 fn operation_fc_serializes_limit_order_cancel_tag_and_payload() {
-    let operation = Operation::LimitOrderCancelOperation(Box::new(sample_limit_order_cancel_operation()));
+    let operation =
+        Operation::LimitOrderCancelOperation(Box::new(sample_limit_order_cancel_operation()));
     let bytes = operation.to_fc_bytes().expect("serialize operation");
 
     let mut expected = vec![2];
@@ -1083,7 +1086,8 @@ fn limit_order_update_operation_fc_serializes_on_fill_action() {
 
 #[test]
 fn operation_fc_serializes_limit_order_update_tag_and_payload() {
-    let operation = Operation::LimitOrderUpdateOperation(Box::new(sample_limit_order_update_operation()));
+    let operation =
+        Operation::LimitOrderUpdateOperation(Box::new(sample_limit_order_update_operation()));
     let bytes = operation
         .to_fc_bytes()
         .expect("serialize limit order update variant");
@@ -1152,16 +1156,18 @@ fn credit_offer_flat_maps_reject_unsorted_or_duplicate_keys() {
 
 #[test]
 fn operation_fc_serializes_credit_offer_tags_and_payloads() {
-    let bytes = Operation::CreditOfferCreateOperation(Box::new(sample_credit_offer_create_operation()))
-        .to_fc_bytes()
-        .expect("serialize credit offer create variant");
+    let bytes =
+        Operation::CreditOfferCreateOperation(Box::new(sample_credit_offer_create_operation()))
+            .to_fc_bytes()
+            .expect("serialize credit offer create variant");
     let mut expected = vec![69];
     expected.extend(expected_credit_offer_create_payload());
     assert_eq!(bytes, expected);
 
-    let bytes = Operation::CreditOfferUpdateOperation(Box::new(sample_credit_offer_update_operation()))
-        .to_fc_bytes()
-        .expect("serialize credit offer update variant");
+    let bytes =
+        Operation::CreditOfferUpdateOperation(Box::new(sample_credit_offer_update_operation()))
+            .to_fc_bytes()
+            .expect("serialize credit offer update variant");
     let mut expected = vec![71];
     expected.extend(expected_credit_offer_update_payload());
     assert_eq!(bytes, expected);
@@ -1274,7 +1280,9 @@ fn argument_type_fc_serializes_scalar_set_and_recursive_pair_variants() {
         ArgumentType::FlatSetInt64T(Box::new(vec![-1, 2]))
             .to_fc_bytes()
             .expect("serialize sorted int64 set argument"),
-        vec![21, 2, 255, 255, 255, 255, 255, 255, 255, 255, 2, 0, 0, 0, 0, 0, 0, 0]
+        vec![
+            21, 2, 255, 255, 255, 255, 255, 255, 255, 255, 2, 0, 0, 0, 0, 0, 0, 0
+        ]
     );
 
     let bytes = ArgumentType::VariantAssertArgumentType(Box::new((9, vec![sample_restriction()])))
@@ -1381,7 +1389,9 @@ fn withdraw_permission_create_operation_fc_serializes_time_point_sec() {
     let operation = sample_withdraw_permission_create_operation();
 
     assert_eq!(
-        operation.to_fc_bytes().expect("serialize withdraw permission create"),
+        operation
+            .to_fc_bytes()
+            .expect("serialize withdraw permission create"),
         expected_withdraw_permission_create_payload()
     );
 }
@@ -1766,7 +1776,10 @@ fn operation_fc_serializes_worker_create_tag_and_payload() {
 #[test]
 fn account_id_set_fc_rejects_unsorted_or_duplicate_values() {
     let mut operation = sample_asset_update_feed_producers_operation();
-    operation.new_feed_producers = vec![AccountId("1.2.5".to_string()), AccountId("1.2.2".to_string())];
+    operation.new_feed_producers = vec![
+        AccountId("1.2.5".to_string()),
+        AccountId("1.2.2".to_string()),
+    ];
 
     let err = operation
         .to_fc_bytes()
@@ -1780,7 +1793,10 @@ fn account_id_set_fc_rejects_unsorted_or_duplicate_values() {
         }
     ));
 
-    operation.new_feed_producers = vec![AccountId("1.2.2".to_string()), AccountId("1.2.2".to_string())];
+    operation.new_feed_producers = vec![
+        AccountId("1.2.2".to_string()),
+        AccountId("1.2.2".to_string()),
+    ];
 
     let err = operation
         .to_fc_bytes()
@@ -1797,9 +1813,9 @@ fn account_id_set_fc_rejects_unsorted_or_duplicate_values() {
 
 #[test]
 fn transaction_fc_serializes_transfer_operation_vector() {
-    let transaction = sample_transaction_with_operations(vec![Operation::TransferOperation(Box::new(
-        sample_transfer_operation(),
-    ))]);
+    let transaction = sample_transaction_with_operations(vec![Operation::TransferOperation(
+        Box::new(sample_transfer_operation()),
+    )]);
 
     let mut operation_payload = vec![0];
     operation_payload.extend(expected_transfer_payload());
@@ -1840,13 +1856,61 @@ fn transaction_fc_propagates_operation_errors() {
         commitment: Vec::new(),
         check: 0,
     });
-    let transaction = sample_transaction_with_operations(vec![Operation::TransferOperation(Box::new(
-        transfer,
-    ))]);
+    let transaction =
+        sample_transaction_with_operations(vec![Operation::TransferOperation(Box::new(transfer))]);
 
     let err = transaction
         .to_fc_bytes()
         .expect_err("nested operation error propagates through transaction");
+
+    assert!(matches!(
+        err,
+        FcSerializeError::UnsupportedValue {
+            type_name: "MemoData",
+            reason: "memo FC serialization is not implemented in the minimal transfer slice"
+        }
+    ));
+}
+
+#[test]
+fn transaction_signature_preimage_prefixes_chain_id_bytes() {
+    let transaction = sample_transaction_with_operations(vec![Operation::TransferOperation(
+        Box::new(sample_transfer_operation()),
+    )]);
+
+    let mut operation_payload = vec![0];
+    operation_payload.extend(expected_transfer_payload());
+    let transaction_bytes = expected_transaction_payload(&[operation_payload]);
+    let mut expected = expected_swaplock_chain_id_bytes();
+    expected.extend(transaction_bytes);
+
+    assert_eq!(
+        transaction
+            .signature_preimage_bytes()
+            .expect("build transaction signature preimage"),
+        expected
+    );
+}
+
+#[test]
+fn transaction_signature_preimage_propagates_operation_errors() {
+    let mut transfer = sample_transfer_operation();
+    transfer.memo = Some(MemoData {
+        from: None,
+        amount: Asset {
+            amount: 1,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        blinding_factor: Vec::new(),
+        commitment: Vec::new(),
+        check: 0,
+    });
+    let transaction =
+        sample_transaction_with_operations(vec![Operation::TransferOperation(Box::new(transfer))]);
+
+    let err = transaction
+        .signature_preimage_bytes()
+        .expect_err("nested operation error propagates through signature preimage");
 
     assert!(matches!(
         err,

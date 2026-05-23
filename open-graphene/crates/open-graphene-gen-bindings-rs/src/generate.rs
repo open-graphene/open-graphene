@@ -93,6 +93,12 @@ fn render_ids(protocol: &Protocol) -> Result<String> {
         "pub const CHAIN_ID: &str = {};\n",
         rust_string_literal(&protocol.chain.id)
     ));
+    if let Some(chain_id) = &protocol.chain.chain_id {
+        out.push_str(&format!(
+            "pub const CHAIN_ID_HEX: &str = {};\n",
+            rust_string_literal(chain_id)
+        ));
+    }
     out.push_str(&format!(
         "pub const PUBLIC_KEY_PREFIX: &str = {};\n\n",
         rust_string_literal(&protocol.chain.public_key_prefix)
@@ -301,7 +307,7 @@ fn render_fields(out: &mut String, protocol: &Protocol, fields: &[FieldDef]) -> 
 
 fn render_fc(protocol: &Protocol) -> Result<String> {
     let mut out = generated_header(protocol, "minimal FC serialization for transfer path");
-    out.push_str("pub use open_graphene_fc::{parse_protocol_object_id, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};\n\n");
+    out.push_str("pub use open_graphene_fc::{decode_chain_id_hex, parse_protocol_object_id, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};\n\n");
 
     render_fc_id_impls(&mut out, protocol)?;
     render_fc_transfer_path_impls(&mut out, protocol)?;
@@ -437,7 +443,29 @@ fn render_fc_transfer_path_impls(out: &mut String, protocol: &Protocol) -> Resul
         out.push_str("}\n\n");
     }
 
+    render_fc_transaction_helpers(out, protocol);
+
     Ok(())
+}
+
+fn render_fc_transaction_helpers(out: &mut String, protocol: &Protocol) {
+    if protocol.chain.chain_id.is_none()
+        || !protocol
+            .structs
+            .iter()
+            .any(|struct_def| struct_def.name == "transaction")
+    {
+        return;
+    }
+
+    out.push_str("impl crate::generated::types::Transaction {\n");
+    out.push_str("    pub fn signature_preimage_bytes(&self) -> Result<Vec<u8>> {\n");
+    out.push_str("        let mut out = Vec::new();\n");
+    out.push_str("        out.extend_from_slice(&decode_chain_id_hex(crate::generated::ids::CHAIN_ID_HEX)?);\n");
+    out.push_str("        self.fc_serialize(&mut out)?;\n");
+    out.push_str("        Ok(out)\n");
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
 }
 
 fn render_fc_struct_impls(out: &mut String, protocol: &Protocol) -> Result<BTreeSet<String>> {
@@ -553,7 +581,9 @@ fn render_fc_vesting_policy_initializer_impl(out: &mut String, protocol: &Protoc
         return Ok(());
     };
 
-    out.push_str("impl FcSerialize for crate::generated::static_variants::VestingPolicyInitializer {\n");
+    out.push_str(
+        "impl FcSerialize for crate::generated::static_variants::VestingPolicyInitializer {\n",
+    );
     out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
     out.push_str("        match self {\n");
 
@@ -627,7 +657,9 @@ fn render_fc_limit_order_auto_action_impl(out: &mut String, protocol: &Protocol)
         return Ok(());
     };
 
-    out.push_str("impl FcSerialize for crate::generated::static_variants::LimitOrderAutoAction {\n");
+    out.push_str(
+        "impl FcSerialize for crate::generated::static_variants::LimitOrderAutoAction {\n",
+    );
     out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
     out.push_str("        match self {\n");
 
@@ -730,7 +762,8 @@ fn render_fc_argument_type_impl(out: &mut String, protocol: &Protocol) -> Result
             });
         }
         let variant_name = rust_variant_name(&arm.name);
-        let payload_lines = render_fc_value_serialize_lines("(**value)", &arm.ty, "                ")?;
+        let payload_lines =
+            render_fc_value_serialize_lines("(**value)", &arm.ty, "                ")?;
         out.push_str(&format!(
             "            Self::{variant_name}(value) => {{\n                write_varint({}u64, out);\n{payload_lines}                Ok(())\n            }}\n",
             arm.tag
@@ -848,15 +881,17 @@ fn render_fc_value_serialize_lines(value_expr: &str, ty: &TypeRef, indent: &str)
                  {indent}}}\n"
             ))
         }
-        TypeRef::Optional { inner } if matches!(inner.as_ref(), TypeRef::TimePointSec) => Ok(format!(
-            "{indent}match &{value_expr} {{\n\
+        TypeRef::Optional { inner } if matches!(inner.as_ref(), TypeRef::TimePointSec) => {
+            Ok(format!(
+                "{indent}match &{value_expr} {{\n\
              {indent}    Some(value) => {{\n\
              {indent}        out.push(1);\n\
              {indent}        write_time_point_sec(value, out)?;\n\
              {indent}    }}\n\
              {indent}    None => out.push(0),\n\
              {indent}}}\n"
-        )),
+            ))
+        }
         TypeRef::Optional { inner } if is_vote_id_type(inner) => Ok(format!(
             "{indent}match &{value_expr} {{\n\
              {indent}    Some(value) => {{\n\
@@ -867,8 +902,7 @@ fn render_fc_value_serialize_lines(value_expr: &str, ty: &TypeRef, indent: &str)
              {indent}}}\n",
             render_vote_id_arg("value", inner)?
         )),
-        TypeRef::Optional { inner }
-            if matches!(inner.as_ref(), TypeRef::FlatMap { key, value, .. } if is_fc_supported_flat_map(key, value)) =>
+        TypeRef::Optional { inner } if matches!(inner.as_ref(), TypeRef::FlatMap { key, value, .. } if is_fc_supported_flat_map(key, value)) =>
         {
             let TypeRef::FlatMap { key, value, .. } = inner.as_ref() else {
                 unreachable!("guard checked flat_map inner")
@@ -892,22 +926,28 @@ fn render_fc_value_serialize_lines(value_expr: &str, ty: &TypeRef, indent: &str)
                  {indent}}}\n"
             ))
         }
-        TypeRef::Vector { inner } if matches!(inner.as_ref(), TypeRef::TimePointSec) => Ok(format!(
-            "{indent}write_varint({value_expr}.len() as u64, out);\n\
+        TypeRef::Vector { inner } if matches!(inner.as_ref(), TypeRef::TimePointSec) => {
+            Ok(format!(
+                "{indent}write_varint({value_expr}.len() as u64, out);\n\
              {indent}for value in &{value_expr} {{\n\
              {indent}    write_time_point_sec(value, out)?;\n\
              {indent}}}\n"
-        )),
-        TypeRef::Vector { inner } | TypeRef::Set { inner, .. } if is_vote_id_type(inner) => Ok(format!(
-            "{indent}write_varint({value_expr}.len() as u64, out);\n\
+            ))
+        }
+        TypeRef::Vector { inner } | TypeRef::Set { inner, .. } if is_vote_id_type(inner) => {
+            Ok(format!(
+                "{indent}write_varint({value_expr}.len() as u64, out);\n\
              {indent}for value in &{value_expr} {{\n\
              {indent}    write_vote_id({}, out)?;\n\
              {indent}}}\n",
-            render_vote_id_arg("value", inner)?
-        )),
+                render_vote_id_arg("value", inner)?
+            ))
+        }
         TypeRef::Pair { first, second } => {
-            let first_lines = render_fc_value_serialize_lines(&format!("{value_expr}.0"), first, indent)?;
-            let second_lines = render_fc_value_serialize_lines(&format!("{value_expr}.1"), second, indent)?;
+            let first_lines =
+                render_fc_value_serialize_lines(&format!("{value_expr}.0"), first, indent)?;
+            let second_lines =
+                render_fc_value_serialize_lines(&format!("{value_expr}.1"), second, indent)?;
             Ok(format!("{first_lines}{second_lines}"))
         }
         TypeRef::Set { inner, .. } if is_fee_parameters_type(inner) => {
@@ -931,7 +971,11 @@ fn is_vote_id_type(ty: &TypeRef) -> bool {
     }
 }
 
-fn render_fc_set_serialize_lines(value_expr: &str, inner: &TypeRef, indent: &str) -> Result<String> {
+fn render_fc_set_serialize_lines(
+    value_expr: &str,
+    inner: &TypeRef,
+    indent: &str,
+) -> Result<String> {
     match inner {
         TypeRef::Bool => Ok(format!(
             "{indent}write_varint({value_expr}.len() as u64, out);\n\
@@ -946,9 +990,15 @@ fn render_fc_set_serialize_lines(value_expr: &str, inner: &TypeRef, indent: &str
         )),
         TypeRef::Uint16 => render_fc_ordered_copy_set_serialize_lines(value_expr, "u16", indent),
         TypeRef::Uint32 => render_fc_ordered_copy_set_serialize_lines(value_expr, "u32", indent),
-        TypeRef::Int32 { .. } => render_fc_ordered_copy_set_serialize_lines(value_expr, "i32", indent),
-        TypeRef::Int64 { json: None, .. } => render_fc_ordered_copy_set_serialize_lines(value_expr, "i64", indent),
-        TypeRef::Uint64 { json: None, .. } => render_fc_ordered_copy_set_serialize_lines(value_expr, "u64", indent),
+        TypeRef::Int32 { .. } => {
+            render_fc_ordered_copy_set_serialize_lines(value_expr, "i32", indent)
+        }
+        TypeRef::Int64 { json: None, .. } => {
+            render_fc_ordered_copy_set_serialize_lines(value_expr, "i64", indent)
+        }
+        TypeRef::Uint64 { json: None, .. } => {
+            render_fc_ordered_copy_set_serialize_lines(value_expr, "u64", indent)
+        }
         TypeRef::String => Ok(format!(
             "{indent}write_varint({value_expr}.len() as u64, out);\n\
              {indent}let mut previous_key: Option<&str> = None;\n\
@@ -1280,7 +1330,6 @@ fn is_fc_supported_type(
         | TypeRef::Unsupported { .. } => false,
     }
 }
-
 
 fn render_static_variant(
     out: &mut String,
@@ -2357,35 +2406,65 @@ mod tests {
 
         let output = render_fc(&protocol).expect("render fc");
 
-        assert!(output.contains("pub use open_graphene_fc::{parse_protocol_object_id, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};"));
+        assert!(output.contains("pub use open_graphene_fc::{decode_chain_id_hex, parse_protocol_object_id, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};"));
         assert!(output.contains("impl FcSerialize for crate::generated::types::Asset"));
-        assert!(output.contains("impl FcSerialize for crate::generated::static_variants::SpecialAuthority"));
+        assert!(
+            output.contains(
+                "impl FcSerialize for crate::generated::static_variants::SpecialAuthority"
+            )
+        );
         assert!(output.contains("Self::NoSpecialAuthority(value)"));
         assert!(output.contains("Self::TopHoldersSpecialAuthority(value)"));
-        assert!(output.contains("impl FcSerialize for crate::generated::static_variants::HtlcHash"));
+        assert!(
+            output.contains("impl FcSerialize for crate::generated::static_variants::HtlcHash")
+        );
         assert!(output.contains("Self::HtlcAlgoRipemd160(value)"));
-        assert!(output.contains("write_fixed_bytes(value.as_ref(), 20, \"htlc_hash::htlc_algo_ripemd160\", out)"));
+        assert!(output.contains(
+            "write_fixed_bytes(value.as_ref(), 20, \"htlc_hash::htlc_algo_ripemd160\", out)"
+        ));
         assert!(output.contains("Self::HtlcAlgoSha256(value)"));
-        assert!(output.contains("write_fixed_bytes(value.as_ref(), 32, \"htlc_hash::htlc_algo_sha256\", out)"));
-        assert!(output.contains("impl FcSerialize for crate::generated::static_variants::Predicate"));
+        assert!(output.contains(
+            "write_fixed_bytes(value.as_ref(), 32, \"htlc_hash::htlc_algo_sha256\", out)"
+        ));
+        assert!(
+            output.contains("impl FcSerialize for crate::generated::static_variants::Predicate")
+        );
         assert!(output.contains("Self::BlockIdPredicate(value)"));
         assert!(output.contains("write_varint(2u64, out);"));
-        assert!(output.contains("impl FcSerialize for crate::generated::static_variants::VestingPolicyInitializer"));
+        assert!(output.contains(
+            "impl FcSerialize for crate::generated::static_variants::VestingPolicyInitializer"
+        ));
         assert!(output.contains("Self::CddVestingPolicyInitializer(value)"));
         assert!(output.contains("write_varint(1u64, out);"));
-        assert!(output.contains("impl FcSerialize for crate::generated::static_variants::WorkerInitializer"));
+        assert!(
+            output.contains(
+                "impl FcSerialize for crate::generated::static_variants::WorkerInitializer"
+            )
+        );
         assert!(output.contains("Self::VestingBalanceWorkerInitializer(value)"));
-        assert!(output.contains("impl FcSerialize for crate::generated::static_variants::LimitOrderAutoAction"));
+        assert!(output.contains(
+            "impl FcSerialize for crate::generated::static_variants::LimitOrderAutoAction"
+        ));
         assert!(output.contains("Self::CreateTakeProfitOrderAction(value)"));
         assert!(output.contains("self.amount.fc_serialize(out)?;"));
         assert!(output.contains("self.asset_id.fc_serialize(out)?;"));
-        assert!(!output.contains("impl FcSerialize for crate::generated::types::UnsupportedSignatureStruct"));
+        assert!(
+            !output.contains(
+                "impl FcSerialize for crate::generated::types::UnsupportedSignatureStruct"
+            )
+        );
         assert!(output.contains("Self::TransferOperation(value) => { write_varint(0u64, out); value.as_ref().fc_serialize(out) }"));
-        assert!(output.contains("impl FcSerialize for crate::generated::operations::LimitOrderCreateOperation"));
+        assert!(output.contains(
+            "impl FcSerialize for crate::generated::operations::LimitOrderCreateOperation"
+        ));
         assert!(output.contains("Self::LimitOrderCreateOperation(value) => { write_varint(1u64, out); value.as_ref().fc_serialize(out) }"));
-        assert!(output.contains("impl FcSerialize for crate::generated::operations::LimitOrderCancelOperation"));
+        assert!(output.contains(
+            "impl FcSerialize for crate::generated::operations::LimitOrderCancelOperation"
+        ));
         assert!(output.contains("Self::LimitOrderCancelOperation(value) => { write_varint(2u64, out); value.as_ref().fc_serialize(out) }"));
-        assert!(output.contains("impl FcSerialize for crate::generated::operations::CustomSupportedOperation"));
+        assert!(output.contains(
+            "impl FcSerialize for crate::generated::operations::CustomSupportedOperation"
+        ));
         assert!(output.contains("self.fee.fc_serialize(out)?;"));
         assert!(output.contains("self.enabled.fc_serialize(out)?;"));
         assert!(output.contains("self.small.fc_serialize(out)?;"));
@@ -2396,7 +2475,9 @@ mod tests {
         assert!(output.contains("self.label.fc_serialize(out)?;"));
         assert!(output.contains("write_public_key(&self.signing_key, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;"));
         assert!(output.contains("match &self.optional_signing_key"));
-        assert!(output.contains("write_public_key(value, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;"));
+        assert!(output.contains(
+            "write_public_key(value, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;"
+        ));
         assert!(output.contains("write_time_point_sec(&self.expires_at, out)?;"));
         assert!(output.contains("match &self.optional_expiration"));
         assert!(output.contains("write_time_point_sec(value, out)?;"));
@@ -2462,7 +2543,10 @@ mod tests {
         )
         .expect("render fixed bytes set");
         assert!(fixed_bytes_set.contains("let mut key_bytes = Vec::new();"));
-        assert!(fixed_bytes_set.contains("write_fixed_bytes(value, 32, \"fixed_bytes_32\", &mut key_bytes)?;"));
+        assert!(
+            fixed_bytes_set
+                .contains("write_fixed_bytes(value, 32, \"fixed_bytes_32\", &mut key_bytes)?;")
+        );
         assert!(fixed_bytes_set.contains("previous >= &key_bytes"));
         assert!(fixed_bytes_set.contains("out.extend_from_slice(&key_bytes);"));
         assert!(!fixed_bytes_set.contains(".sort"));
@@ -2501,7 +2585,10 @@ mod tests {
                     tag: 41,
                     name: "variant_assert_argument_type".to_string(),
                     ty: TypeRef::Pair {
-                        first: Box::new(TypeRef::Int64 { json: None, fc: None }),
+                        first: Box::new(TypeRef::Int64 {
+                            json: None,
+                            fc: None,
+                        }),
                         second: Box::new(TypeRef::Vector {
                             inner: Box::new(TypeRef::Ref {
                                 name: "restriction".to_string(),
@@ -2518,7 +2605,9 @@ mod tests {
         let mut output = String::new();
         render_fc_argument_type_impl(&mut output, &protocol).expect("render argument_type");
 
-        assert!(output.contains("impl FcSerialize for crate::generated::static_variants::ArgumentType"));
+        assert!(
+            output.contains("impl FcSerialize for crate::generated::static_variants::ArgumentType")
+        );
         assert!(output.contains("Self::Bool(value)"));
         assert!(output.contains("write_varint(1u64, out);"));
         assert!(output.contains("(**value).fc_serialize(out)?;"));
@@ -2545,6 +2634,8 @@ mod tests {
     #[test]
     fn renders_transaction_type_and_fc_impl() {
         let mut protocol = minimal_protocol();
+        protocol.chain.chain_id =
+            Some("2267f694d96b7ffdcba1a98c63c09e720a18a85ad34954e299c66d5a42234098".to_string());
         protocol.structs.push(StructDef {
             name: "transaction".to_string(),
             source_name: None,
@@ -2634,13 +2725,22 @@ mod tests {
             support: None,
         });
 
+        let ids = render_ids(&protocol).expect("render ids");
+        assert!(ids.contains(
+            "pub const CHAIN_ID_HEX: &str = \"2267f694d96b7ffdcba1a98c63c09e720a18a85ad34954e299c66d5a42234098\";"
+        ));
+
         let types = render_types(&protocol).expect("render types");
         assert!(types.contains("pub struct Transaction"));
         assert!(types.contains("pub ref_block_num: u16,"));
         assert!(types.contains("pub ref_block_prefix: u32,"));
         assert!(types.contains("pub expiration: String,"));
-        assert!(types.contains("pub operations: Vec<crate::generated::static_variants::Operation>,"));
-        assert!(types.contains("pub extensions: crate::generated::static_variants::FutureExtensions,"));
+        assert!(
+            types.contains("pub operations: Vec<crate::generated::static_variants::Operation>,")
+        );
+        assert!(
+            types.contains("pub extensions: crate::generated::static_variants::FutureExtensions,")
+        );
 
         let fc = render_fc(&protocol).expect("render fc");
         assert!(fc.contains("impl FcSerialize for crate::generated::types::Transaction"));
@@ -2650,6 +2750,10 @@ mod tests {
         assert!(fc.contains("self.operations.fc_serialize(out)?;"));
         assert!(fc.contains("self.extensions.fc_serialize(out)?;"));
         assert!(fc.contains("Self::TransferOperation(value) => { write_varint(0u64, out); value.as_ref().fc_serialize(out) }"));
+        assert!(fc.contains("impl crate::generated::types::Transaction"));
+        assert!(fc.contains("pub fn signature_preimage_bytes(&self) -> Result<Vec<u8>>"));
+        assert!(fc.contains("decode_chain_id_hex(crate::generated::ids::CHAIN_ID_HEX)?"));
+        assert!(fc.contains("self.fc_serialize(&mut out)?;"));
     }
 
     fn minimal_protocol() -> Protocol {
@@ -2658,6 +2762,7 @@ mod tests {
             chain: ChainDef {
                 id: "swaplock".to_string(),
                 public_key_prefix: "BTS".to_string(),
+                chain_id: None,
             },
             structs: vec![],
             enums: vec![],

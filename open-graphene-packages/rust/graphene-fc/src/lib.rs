@@ -25,6 +25,10 @@ pub enum FcSerializeError {
         expected_len: usize,
         actual_len: usize,
     },
+    InvalidChainId {
+        value: String,
+        reason: &'static str,
+    },
     UnsupportedVariant {
         variant: &'static str,
     },
@@ -67,6 +71,9 @@ impl std::fmt::Display for FcSerializeError {
                 f,
                 "invalid fixed bytes `{type_name}`: expected {expected_len} bytes, got {actual_len}"
             ),
+            Self::InvalidChainId { value, reason } => {
+                write!(f, "invalid chain id `{value}`: {reason}")
+            }
             Self::UnsupportedVariant { variant } => {
                 write!(
                     f,
@@ -177,17 +184,15 @@ pub fn write_public_key(
     out: &mut Vec<u8>,
 ) -> Result<()> {
     let payload = match expected_prefix {
-        Some(prefix) => value.strip_prefix(prefix).ok_or_else(|| invalid_public_key(
-            value,
-            expected_prefix,
-            "missing expected chain prefix",
-        ))?,
+        Some(prefix) => value.strip_prefix(prefix).ok_or_else(|| {
+            invalid_public_key(value, expected_prefix, "missing expected chain prefix")
+        })?,
         None => value,
     };
 
-    let decoded = bs58::decode(payload).into_vec().map_err(|_| {
-        invalid_public_key(value, expected_prefix, "base58 payload is invalid")
-    })?;
+    let decoded = bs58::decode(payload)
+        .into_vec()
+        .map_err(|_| invalid_public_key(value, expected_prefix, "base58 payload is invalid"))?;
 
     if decoded.len() != 37 {
         return Err(invalid_public_key(
@@ -296,7 +301,10 @@ pub fn parse_vote_id(value: &str) -> Result<VoteIdParts> {
     if !type_part.bytes().all(|byte| byte.is_ascii_digit())
         || !instance_part.bytes().all(|byte| byte.is_ascii_digit())
     {
-        return Err(invalid_vote_id(value, "type and instance must be decimal integers"));
+        return Err(invalid_vote_id(
+            value,
+            "type and instance must be decimal integers",
+        ));
     }
 
     let type_id = type_part
@@ -350,7 +358,44 @@ pub fn write_fixed_bytes(
     Ok(())
 }
 
-fn parse_fixed_digits(value: &str, start: usize, len: usize, component: &'static str) -> Result<u32> {
+pub fn decode_chain_id_hex(value: &str) -> Result<[u8; 32]> {
+    if value.len() != 64 {
+        return Err(invalid_chain_id(
+            value,
+            "chain id must be 64 lowercase hex characters",
+        ));
+    }
+    if !value
+        .bytes()
+        .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+    {
+        return Err(invalid_chain_id(value, "chain id must be lowercase hex"));
+    }
+
+    let mut out = [0u8; 32];
+    let bytes = value.as_bytes();
+    for index in 0..32 {
+        let high = decode_lower_hex_nibble(bytes[index * 2]);
+        let low = decode_lower_hex_nibble(bytes[index * 2 + 1]);
+        out[index] = (high << 4) | low;
+    }
+    Ok(out)
+}
+
+fn decode_lower_hex_nibble(byte: u8) -> u8 {
+    match byte {
+        b'0'..=b'9' => byte - b'0',
+        b'a'..=b'f' => byte - b'a' + 10,
+        _ => unreachable!("decode_chain_id_hex validates lowercase hex before decoding"),
+    }
+}
+
+fn parse_fixed_digits(
+    value: &str,
+    start: usize,
+    len: usize,
+    component: &'static str,
+) -> Result<u32> {
     let part = &value[start..start + len];
     if !part.bytes().all(|byte| byte.is_ascii_digit()) {
         return Err(invalid_time_point_sec(value, component));
@@ -417,6 +462,13 @@ fn invalid_time_point_sec(value: &str, reason: &'static str) -> FcSerializeError
 
 fn invalid_vote_id(value: &str, reason: &'static str) -> FcSerializeError {
     FcSerializeError::InvalidVoteId {
+        value: value.to_string(),
+        reason,
+    }
+}
+
+fn invalid_chain_id(value: &str, reason: &'static str) -> FcSerializeError {
+    FcSerializeError::InvalidChainId {
         value: value.to_string(),
         reason,
     }
@@ -521,13 +573,19 @@ mod tests {
     fn fixed_width_integers_serialize_little_endian() {
         assert_eq!(0xabu8.to_fc_bytes().unwrap(), [0xab]);
         assert_eq!(0x1234u16.to_fc_bytes().unwrap(), [0x34, 0x12]);
-        assert_eq!(0x1234_5678u32.to_fc_bytes().unwrap(), [0x78, 0x56, 0x34, 0x12]);
+        assert_eq!(
+            0x1234_5678u32.to_fc_bytes().unwrap(),
+            [0x78, 0x56, 0x34, 0x12]
+        );
         assert_eq!(
             0x0123_4567_89ab_cdefu64.to_fc_bytes().unwrap(),
             [0xef, 0xcd, 0xab, 0x89, 0x67, 0x45, 0x23, 0x01]
         );
         assert_eq!((-2i32).to_fc_bytes().unwrap(), [0xfe, 0xff, 0xff, 0xff]);
-        assert_eq!((-2i64).to_fc_bytes().unwrap(), [0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]);
+        assert_eq!(
+            (-2i64).to_fc_bytes().unwrap(),
+            [0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]
+        );
     }
 
     #[test]
@@ -559,6 +617,33 @@ mod tests {
                 expected_len: 2,
                 actual_len: 1,
             }
+        ));
+    }
+
+    #[test]
+    fn chain_id_hex_decodes_exact_32_byte_lowercase_hex() {
+        let decoded =
+            decode_chain_id_hex("2267f694d96b7ffdcba1a98c63c09e720a18a85ad34954e299c66d5a42234098")
+                .expect("decode valid chain id");
+        assert_eq!(decoded[0..4], [0x22, 0x67, 0xf6, 0x94]);
+        assert_eq!(decoded[28..32], [0x42, 0x23, 0x40, 0x98]);
+    }
+
+    #[test]
+    fn chain_id_hex_rejects_invalid_length_or_characters() {
+        assert!(matches!(
+            decode_chain_id_hex("abcd"),
+            Err(FcSerializeError::InvalidChainId {
+                reason: "chain id must be 64 lowercase hex characters",
+                ..
+            })
+        ));
+        assert!(matches!(
+            decode_chain_id_hex("2267F694d96b7ffdcba1a98c63c09e720a18a85ad34954e299c66d5a42234098"),
+            Err(FcSerializeError::InvalidChainId {
+                reason: "chain id must be lowercase hex",
+                ..
+            })
         ));
     }
 
@@ -653,8 +738,8 @@ mod tests {
             "02c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf"
         );
 
-        let err = write_public_key(key, Some("GPH"), &mut Vec::new())
-            .expect_err("wrong prefix fails");
+        let err =
+            write_public_key(key, Some("GPH"), &mut Vec::new()).expect_err("wrong prefix fails");
         assert!(matches!(
             err,
             FcSerializeError::InvalidPublicKey {

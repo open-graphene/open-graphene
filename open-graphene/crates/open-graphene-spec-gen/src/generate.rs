@@ -52,6 +52,7 @@ pub fn build_protocol(
         chain: ChainDef {
             id: config.chain.id.clone(),
             public_key_prefix: config.chain.public_key_prefix.clone(),
+            chain_id: config.chain.chain_id.clone(),
         },
         structs,
         enums,
@@ -990,18 +991,24 @@ mod tests {
                 name: "future_extensions".to_string()
             }
         );
-        assert!(protocol
-            .static_variants
-            .iter()
-            .any(|variant| variant.name == "operation"));
-        assert!(protocol
-            .static_variants
-            .iter()
-            .any(|variant| variant.name == "future_extensions"));
-        assert!(!protocol
-            .structs
-            .iter()
-            .any(|struct_def| struct_def.name == "signed_transaction"));
+        assert!(
+            protocol
+                .static_variants
+                .iter()
+                .any(|variant| variant.name == "operation")
+        );
+        assert!(
+            protocol
+                .static_variants
+                .iter()
+                .any(|variant| variant.name == "future_extensions")
+        );
+        assert!(
+            !protocol
+                .structs
+                .iter()
+                .any(|struct_def| struct_def.name == "signed_transaction")
+        );
     }
 
     #[test]

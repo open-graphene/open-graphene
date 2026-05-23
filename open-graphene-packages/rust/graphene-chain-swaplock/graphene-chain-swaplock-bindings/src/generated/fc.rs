@@ -2,7 +2,7 @@
 // Chain: swaplock | schema version: 1 | module: minimal FC serialization for transfer path.
 // Do not edit by hand.
 
-pub use open_graphene_fc::{parse_protocol_object_id, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};
+pub use open_graphene_fc::{decode_chain_id_hex, parse_protocol_object_id, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};
 
 impl FcSerialize for crate::generated::ids::AccountId {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
@@ -3381,6 +3381,15 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             Self::CreditDealUpdateOperation(value) => { write_varint(76u64, out); value.as_ref().fc_serialize(out) }
             Self::LimitOrderUpdateOperation(value) => { write_varint(77u64, out); value.as_ref().fc_serialize(out) }
         }
+    }
+}
+
+impl crate::generated::types::Transaction {
+    pub fn signature_preimage_bytes(&self) -> Result<Vec<u8>> {
+        let mut out = Vec::new();
+        out.extend_from_slice(&decode_chain_id_hex(crate::generated::ids::CHAIN_ID_HEX)?);
+        self.fc_serialize(&mut out)?;
+        Ok(out)
     }
 }
 
