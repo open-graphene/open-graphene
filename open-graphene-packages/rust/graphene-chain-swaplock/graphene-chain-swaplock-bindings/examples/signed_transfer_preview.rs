@@ -3,6 +3,9 @@ use std::error::Error;
 use std::time::Duration;
 
 use graphene_chain_swaplock_bindings::generated::FcSerialize;
+use graphene_chain_swaplock_bindings::generated::fc::{
+    decode_public_key, verify_compact_signature_public_key,
+};
 use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId};
 use graphene_chain_swaplock_bindings::generated::operations::TransferOperation;
 use graphene_chain_swaplock_bindings::generated::static_variants::{FutureExtensions, Operation};
@@ -116,6 +119,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let from_id = lookup_account_id(&mut rpc, database_api_id, &from_account)?;
     let to_id = lookup_account_id(&mut rpc, database_api_id, &to_account)?;
+    let expected_public_key = match env::var("SWAPLOCK_ACTIVE_PUBLIC_KEY") {
+        Ok(public_key) => Some(("env", public_key)),
+        Err(env::VarError::NotPresent) => {
+            active_public_key_for_account(&mut rpc, database_api_id, &from_id)?
+                .map(|public_key| ("chain_active_authority", public_key))
+        }
+        Err(err) => return Err(err.into()),
+    };
     let expiration = expiration_from_head_time(head_time, Duration::from_secs(60))?;
     let ref_block_num = (head_block_number & 0xffff) as u16;
     let ref_block_prefix = ref_block_prefix_from_block_id(head_block_id)?;
@@ -155,6 +166,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let signed_transaction = transaction.signed_with_wif(&wif)?;
+    let signature_public_key_match = expected_public_key
+        .as_ref()
+        .map(|(source, public_key)| {
+            verify_compact_signature_public_key(
+                transaction.signature_digest_bytes()?,
+                &signed_transaction.signatures[0].0,
+                decode_public_key(public_key, Some("BTS"))?,
+            )
+            .map(|matches| (*source, matches))
+        })
+        .transpose()?;
 
     println!("read_only: true");
     println!("broadcast: false");
@@ -164,6 +186,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("head_block_number: {head_block_number}");
     println!("ref_block_num: {ref_block_num}");
     println!("ref_block_prefix: {ref_block_prefix}");
+    if let Some((source, matches_expected_public_key)) = signature_public_key_match {
+        println!("signature_public_key_source: {source}");
+        println!("signature_public_key_matches: {matches_expected_public_key}");
+    } else {
+        println!("signature_public_key_matches: <skipped; no single active public key found>");
+    }
     println!("transaction_hex: {}", hex(&transaction.to_fc_bytes()?));
     println!(
         "digest_hex: {}",
@@ -208,6 +236,32 @@ fn lookup_account_id(
         .and_then(Value::as_str)
         .map(str::to_string)
         .ok_or_else(|| "lookup_accounts result missing account id".into())
+}
+
+fn active_public_key_for_account(
+    rpc: &mut GrapheneRpc,
+    api_id: u64,
+    account_id: &str,
+) -> Result<Option<String>, Box<dyn Error>> {
+    let account = rpc
+        .call_database(api_id, "get_objects", json!([[account_id]]))?
+        .get(0)
+        .cloned()
+        .ok_or("account object was not returned")?;
+    let Some(key_auths) = account
+        .get("active")
+        .and_then(|active| active.get("key_auths"))
+        .and_then(Value::as_array)
+    else {
+        return Ok(None);
+    };
+    if key_auths.len() != 1 {
+        return Ok(None);
+    }
+    Ok(key_auths[0]
+        .get(0)
+        .and_then(Value::as_str)
+        .map(str::to_string))
 }
 
 fn required_transfer_fee(

@@ -172,6 +172,7 @@ The local C++ tree calls `private_key_type::sign_compact(...)`, but the bundled 
    - libsecp256k1 normalizes signatures to low-S
    - compact header is `27 + 4 + recovery_id`
    - produced signatures are returned through the generated 65-byte `Signature` wrapper
+   - recovered public keys can be compared with expected compressed public keys before any broadcast path exists
    - the committed bitsharesjs fixture verifies byte-for-byte compatibility for the current signing path
 
 5. Keep fail-closed behavior:
@@ -206,4 +207,4 @@ The raw-signature slice is implemented in the generated Rust bindings:
 transaction_fc_bytes || varint(signature_count) || signature_65_bytes...
 ```
 
-A read-only live preview example exists at `open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-bindings/examples/signed_transfer_preview.rs`. It uses read-only database RPC calls to resolve head block data, account IDs, and required fee, then signs locally and prints transaction/digest metadata. It requires `wss://` by default, refuses fees above `SWAPLOCK_MAX_FEE` (default `1000000` raw units), and hides the broadcastable signed transaction hex unless `SWAPLOCK_PRINT_SIGNED_TX=1` is explicitly set. It does not broadcast; broadcast remains a later slice that requires explicit approval for a concrete transaction.
+A read-only live preview example exists at `open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-bindings/examples/signed_transfer_preview.rs`. It uses read-only database RPC calls to resolve head block data, account IDs, required fee, and the account active public key when a single active key is present. It then signs locally, verifies the recovered signature public key against `SWAPLOCK_ACTIVE_PUBLIC_KEY` or the chain active authority key, and prints transaction/digest metadata. It requires `wss://` by default, refuses fees above `SWAPLOCK_MAX_FEE` (default `1000000` raw units), and hides the broadcastable signed transaction hex unless `SWAPLOCK_PRINT_SIGNED_TX=1` is explicitly set. It does not broadcast; broadcast remains a later slice that requires explicit approval for a concrete transaction.

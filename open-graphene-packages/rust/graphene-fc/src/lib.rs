@@ -1,4 +1,5 @@
 use ripemd::Digest;
+use secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
 use secp256k1::{Message, Secp256k1, SecretKey};
 use sha2::Sha256;
 
@@ -188,11 +189,7 @@ pub fn write_protocol_object_id(
     Ok(())
 }
 
-pub fn write_public_key(
-    value: &str,
-    expected_prefix: Option<&str>,
-    out: &mut Vec<u8>,
-) -> Result<()> {
+pub fn decode_public_key(value: &str, expected_prefix: Option<&str>) -> Result<[u8; 33]> {
     let payload = match expected_prefix {
         Some(prefix) => value.strip_prefix(prefix).ok_or_else(|| {
             invalid_public_key(value, expected_prefix, "missing expected chain prefix")
@@ -230,7 +227,17 @@ pub fn write_public_key(
         ));
     }
 
-    out.extend_from_slice(key);
+    let mut out = [0u8; 33];
+    out.copy_from_slice(key);
+    Ok(out)
+}
+
+pub fn write_public_key(
+    value: &str,
+    expected_prefix: Option<&str>,
+    out: &mut Vec<u8>,
+) -> Result<()> {
+    out.extend_from_slice(&decode_public_key(value, expected_prefix)?);
     Ok(())
 }
 
@@ -442,6 +449,55 @@ pub fn sign_digest_compact(digest: [u8; 32], private_key: [u8; 32]) -> Result<[u
 
 pub fn sign_digest_compact_with_wif(digest: [u8; 32], wif: &str) -> Result<[u8; 65]> {
     sign_digest_compact(digest, decode_wif_private_key(wif)?)
+}
+
+pub fn recover_public_key_from_compact_signature(
+    digest: [u8; 32],
+    signature: &[u8],
+) -> Result<[u8; 33]> {
+    if signature.len() != 65 {
+        return Err(FcSerializeError::InvalidFixedBytes {
+            type_name: "signature",
+            expected_len: 65,
+            actual_len: signature.len(),
+        });
+    }
+    let header = signature[0];
+    if !(31..=34).contains(&header) {
+        return Err(FcSerializeError::SigningFailed {
+            reason: "compact signature header must be 27 + 4 + recovery_id",
+        });
+    }
+    let recovery_id = RecoveryId::from_i32((header - 31) as i32).map_err(|_| {
+        FcSerializeError::SigningFailed {
+            reason: "compact signature recovery id is invalid",
+        }
+    })?;
+    let compact_signature = RecoverableSignature::from_compact(&signature[1..], recovery_id)
+        .map_err(|_| FcSerializeError::SigningFailed {
+            reason: "compact signature payload is invalid",
+        })?;
+    let message =
+        Message::from_digest_slice(&digest).map_err(|_| FcSerializeError::SigningFailed {
+            reason: "digest must be 32 bytes",
+        })?;
+    let public_key = Secp256k1::new()
+        .recover_ecdsa(&message, &compact_signature)
+        .map_err(|_| FcSerializeError::SigningFailed {
+            reason: "public key recovery failed",
+        })?;
+    Ok(public_key.serialize())
+}
+
+pub fn verify_compact_signature_public_key(
+    digest: [u8; 32],
+    signature: &[u8],
+    expected_compressed_public_key: [u8; 33],
+) -> Result<bool> {
+    Ok(
+        recover_public_key_from_compact_signature(digest, signature)?
+            == expected_compressed_public_key,
+    )
 }
 
 fn decode_lower_hex_nibble(byte: u8) -> u8 {
@@ -741,6 +797,59 @@ mod tests {
                 0x6f, 0xe9, 0x0b, 0xfe, 0x0e, 0x0c, 0xcb, 0xa4, 0x3b,
             ]
         );
+    }
+
+    #[test]
+    fn compact_signature_recovers_and_verifies_public_key() {
+        let digest =
+            decode_chain_id_hex("b459775b7ac4c1f0d1e5988d112846c0a9b75c8b8bbbd613f80499366d9be635")
+                .expect("fixture digest is 32-byte hex");
+        let signature = sign_digest_compact(digest, [1u8; 32]).expect("sign fixture digest");
+        let expected_public_key = [
+            0x03, 0x1b, 0x84, 0xc5, 0x56, 0x7b, 0x12, 0x64, 0x40, 0x99, 0x5d, 0x3e, 0xd5, 0xaa,
+            0xba, 0x05, 0x65, 0xd7, 0x1e, 0x18, 0x34, 0x60, 0x48, 0x19, 0xff, 0x9c, 0x17, 0xf5,
+            0xe9, 0xd5, 0xdd, 0x07, 0x8f,
+        ];
+
+        assert_eq!(
+            recover_public_key_from_compact_signature(digest, &signature)
+                .expect("recover public key"),
+            expected_public_key,
+        );
+        assert!(
+            verify_compact_signature_public_key(digest, &signature, expected_public_key)
+                .expect("verify public key")
+        );
+        assert!(
+            !verify_compact_signature_public_key(digest, &signature, [2u8; 33])
+                .expect("verify wrong public key")
+        );
+    }
+
+    #[test]
+    fn compact_signature_recovery_rejects_invalid_length_or_header() {
+        let digest = [0u8; 32];
+        let err = recover_public_key_from_compact_signature(digest, &[0u8; 64])
+            .expect_err("short signature fails");
+        assert!(matches!(
+            err,
+            FcSerializeError::InvalidFixedBytes {
+                type_name: "signature",
+                expected_len: 65,
+                actual_len: 64,
+            }
+        ));
+
+        let mut signature = [0u8; 65];
+        signature[0] = 30;
+        let err = recover_public_key_from_compact_signature(digest, &signature)
+            .expect_err("bad header fails");
+        assert!(matches!(
+            err,
+            FcSerializeError::SigningFailed {
+                reason: "compact signature header must be 27 + 4 + recovery_id",
+            }
+        ));
     }
 
     #[test]
