@@ -1,4 +1,5 @@
 use ripemd::Digest;
+use sha2::Sha256;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FcSerializeError {
@@ -382,6 +383,10 @@ pub fn decode_chain_id_hex(value: &str) -> Result<[u8; 32]> {
     Ok(out)
 }
 
+pub fn sha256_bytes(value: &[u8]) -> [u8; 32] {
+    Sha256::digest(value).into()
+}
+
 fn decode_lower_hex_nibble(byte: u8) -> u8 {
     match byte {
         b'0'..=b'9' => byte - b'0',
@@ -645,6 +650,18 @@ mod tests {
                 ..
             })
         ));
+    }
+
+    #[test]
+    fn sha256_bytes_returns_raw_32_byte_digest() {
+        assert_eq!(
+            sha256_bytes(b""),
+            [
+                0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14, 0x9a, 0xfb, 0xf4, 0xc8, 0x99, 0x6f,
+                0xb9, 0x24, 0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b, 0x93, 0x4c, 0xa4, 0x95, 0x99, 0x1b,
+                0x78, 0x52, 0xb8, 0x55,
+            ]
+        );
     }
 
     #[test]

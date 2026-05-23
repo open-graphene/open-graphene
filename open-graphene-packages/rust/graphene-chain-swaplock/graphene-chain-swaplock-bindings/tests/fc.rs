@@ -15,6 +15,7 @@ use graphene_chain_swaplock_bindings::generated::{
     TopHoldersSpecialAuthority, Transaction, TransferOperation, TransferOperationFeeParamsT,
     VestingBalanceCreateOperation, VestingBalanceWorkerInitializer, VestingPolicyInitializer,
     VoteId, WithdrawPermissionCreateOperation, WorkerCreateOperation, WorkerInitializer,
+    sha256_bytes,
 };
 
 fn sample_transfer_operation() -> TransferOperation {
@@ -1893,6 +1894,26 @@ fn transaction_signature_preimage_prefixes_chain_id_bytes() {
 }
 
 #[test]
+fn transaction_signature_digest_hashes_signature_preimage() {
+    let transaction = sample_transaction_with_operations(vec![Operation::TransferOperation(
+        Box::new(sample_transfer_operation()),
+    )]);
+
+    let mut operation_payload = vec![0];
+    operation_payload.extend(expected_transfer_payload());
+    let transaction_bytes = expected_transaction_payload(&[operation_payload]);
+    let mut expected_preimage = expected_swaplock_chain_id_bytes();
+    expected_preimage.extend(transaction_bytes);
+
+    assert_eq!(
+        transaction
+            .signature_digest_bytes()
+            .expect("build transaction signature digest"),
+        sha256_bytes(&expected_preimage)
+    );
+}
+
+#[test]
 fn transaction_signature_preimage_propagates_operation_errors() {
     let mut transfer = sample_transfer_operation();
     transfer.memo = Some(MemoData {
@@ -1911,6 +1932,35 @@ fn transaction_signature_preimage_propagates_operation_errors() {
     let err = transaction
         .signature_preimage_bytes()
         .expect_err("nested operation error propagates through signature preimage");
+
+    assert!(matches!(
+        err,
+        FcSerializeError::UnsupportedValue {
+            type_name: "MemoData",
+            reason: "memo FC serialization is not implemented in the minimal transfer slice"
+        }
+    ));
+}
+
+#[test]
+fn transaction_signature_digest_propagates_operation_errors() {
+    let mut transfer = sample_transfer_operation();
+    transfer.memo = Some(MemoData {
+        from: None,
+        amount: Asset {
+            amount: 1,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        blinding_factor: Vec::new(),
+        commitment: Vec::new(),
+        check: 0,
+    });
+    let transaction =
+        sample_transaction_with_operations(vec![Operation::TransferOperation(Box::new(transfer))]);
+
+    let err = transaction
+        .signature_digest_bytes()
+        .expect_err("nested operation error propagates through signature digest");
 
     assert!(matches!(
         err,

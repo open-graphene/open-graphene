@@ -18,7 +18,7 @@ This crate generates raw Rust bindings from an Open Graphene protocol spec. FC s
 - `time_point_sec` as Unix seconds encoded as little-endian `u32`.
 - `vote_id` as packed Graphene vote ID.
 - Operation static variants as `varint tag + operation payload`.
-- Base `transaction` FC bytes and generated signature preimage bytes as `chain_id + transaction_fc_bytes` when the spec provides `chain.chainId`.
+- Base `transaction` FC bytes, generated signature preimage bytes as `chain_id + transaction_fc_bytes`, and generated SHA-256 signature digest bytes when the spec provides `chain.chainId`.
 - `future_extensions` empty variant support.
 - Audited static variants:
   - `special_authority`
@@ -59,9 +59,9 @@ Generated Rust payloads are `Vec<u8>`, but FC wire payloads are fixed-size byte 
 
 `op_wrapper.op` uses the generated `Operation` static variant. Nested operation bytes are `varint operation tag + operation payload`. Unsupported nested payloads must return the nested error rather than succeeding silently.
 
-### Transaction signature preimage
+### Transaction signature preimage and digest
 
-When a spec contains `chain.chainId` and a generated `Transaction` type, bindings expose `Transaction::signature_preimage_bytes()`. The preimage is exactly 32 decoded chain-id bytes followed by the transaction FC bytes. This helper does not sign, does not serialize signatures, and must keep propagating nested operation serialization errors.
+When a spec contains `chain.chainId` and a generated `Transaction` type, bindings expose `Transaction::signature_preimage_bytes()`. The preimage is exactly 32 decoded chain-id bytes followed by the transaction FC bytes. Bindings also expose `Transaction::signature_digest_bytes()`, which returns SHA-256 of that preimage. These helpers do not sign, do not serialize signatures, and must keep propagating nested operation serialization errors.
 
 ## Verification expectations
 
