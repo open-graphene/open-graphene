@@ -7,3 +7,4 @@ repository = "https://github.com/open-graphene/open-graphene"
 
 [dependencies]
 open-graphene-sdk-core = { path = "../graphene-sdk-core" }
+open-graphene-sdk-primitives = { path = "../graphene-sdk-primitives" }

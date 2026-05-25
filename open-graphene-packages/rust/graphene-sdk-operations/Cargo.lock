@@ -27,6 +27,7 @@ checksum = "521739c6d2bac4aa25192232afe6841231376b2b26d4d9fae5ecf8ca5772e441"
 name = "open-graphene-sdk-core"
 version = "0.1.0"
 dependencies = [
+ "open-graphene-sdk-primitives",
  "thiserror",
  "time",
 ]
@@ -36,6 +37,14 @@ name = "open-graphene-sdk-operations"
 version = "0.1.0"
 dependencies = [
  "open-graphene-sdk-core",
+ "open-graphene-sdk-primitives",
+]
+
+[[package]]
+name = "open-graphene-sdk-primitives"
+version = "0.1.0"
+dependencies = [
+ "thiserror",
 ]
 
 [[package]]

@@ -58,7 +58,7 @@ The proof is deliberately narrow:
 - Existing chain-local builder wrappers and operation-specific broadcast JSON renderers remain public and chain-specific.
 - Tests compare generated FC bytes from common-input adapters with FC bytes from the existing chain-local builder path.
 
-This proves the SDK seam without extracting shared protocol primitives and without adding generator-emitted SDK modules.
+This proves the SDK seam without extracting shared generated protocol primitives and without adding generator-emitted SDK modules.
 
 ## Layering
 
@@ -68,13 +68,13 @@ Recommended implemented layering:
 open-graphene-fc
   FC encoding, signatures, WIF, digest helpers
 
-open-graphene-protocol
-  optional future shared protocol primitives:
-  Asset, AssetId, Price, Signature, TimePointSec, stable object-id wrappers
+open-graphene-sdk-primitives
+  stable SDK value references and validators:
+  ObjectId, AccountIdRef, AssetIdRef, OperationHistoryIdRef
 
 open-graphene-sdk-core
   pure SDK helpers:
-  TransactionHeader, amount/header/balance helpers, object id refs
+  TransactionHeader, amount/header/balance helpers; re-exports SDK primitives for compatibility
 
 open-graphene-sdk-operations
   common operation input models, adapter traits, and generic trait-based builders:
@@ -102,7 +102,7 @@ Common SDK input models should describe user intent in stable Graphene terms, no
 
 ### Shared primitive-style operation inputs
 
-The first common operation input types live in `open-graphene-sdk-operations` without depending on generated chain bindings:
+The first common operation input types live in `open-graphene-sdk-operations` without depending on generated chain bindings. They keep string fields as the storage shape, and expose validation helpers that parse through `open-graphene-sdk-primitives` ID references:
 
 ```rust
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -128,7 +128,10 @@ pub struct PublicKeyInput {
 }
 ```
 
-These can later change to use `open-graphene-protocol::{Asset, AssetId, AccountId}` once the shared primitive crate exists. Starting with strings keeps the first design independent from the primitive extraction.
+These inputs may later become stricter, but the current design intentionally separates two kinds of shared values:
+
+- SDK primitives such as `AccountIdRef` and `AssetIdRef` validate stable Graphene reference syntax and live in `open-graphene-sdk-primitives`.
+- Generated protocol wrappers such as chain-local `AccountId`, `AssetId`, `Asset`, and `Price` remain generated per chain for now.
 
 `TransactionHeader` already exists in `open-graphene-sdk-core` and should be reused:
 
@@ -315,9 +318,20 @@ This is expected. Shared inputs reduce duplication; they do not erase operation-
 
 ## Where shared protocol primitives fit
 
-Shared primitives become useful after the input boundary is clear.
+The project now distinguishes SDK primitives from generated protocol primitives.
 
-First candidates:
+SDK primitives live in `open-graphene-sdk-primitives` and cover stable, chain-agnostic references such as:
+
+```text
+ObjectId
+AccountIdRef
+AssetIdRef
+OperationHistoryIdRef
+```
+
+These are input and validation helpers. They do not replace generated wire types.
+
+Generated protocol primitives may become useful later, after the input boundary is clear. First candidates would be:
 
 ```text
 AssetId + Asset
@@ -327,7 +341,7 @@ AccountId
 TimePointSec
 ```
 
-If `open-graphene-protocol::Asset` exists, the input models can become stricter:
+If a future shared protocol crate exposes `Asset`, the input models can become stricter:
 
 ```rust
 pub struct TransferInput {
@@ -349,7 +363,7 @@ pub use open_graphene_protocol::Asset;
 pub use open_graphene_protocol::AssetId;
 ```
 
-However, shared primitives are not required to prove the adapter shape. They should follow, not lead, the SDK input model.
+However, shared generated protocol primitives are not required to prove the adapter shape. SDK primitives already cover validated user-facing references; generated protocol types should become shared only when they reduce real adapter friction without hiding fork-specific wire differences.
 
 ## What remains chain-specific
 
@@ -382,7 +396,8 @@ Instead:
 - `open-graphene-sdk-operations` owns common operation input structs, adapter traits, and generic trait-based transaction builders.
 - Chain binding crates own generated-type bridge implementations and operation-specific JSON renderers.
 - The generator continues to emit protocol types.
-- Shared primitives are introduced only for proven stable value types.
+- SDK primitives are introduced for proven stable reference and validation helpers.
+- Shared generated protocol primitives are introduced only for proven stable wire value types.
 
 This avoids putting operation recipes, policy helpers, and SDK ergonomics into `open-graphene-gen-bindings-rs`.
 
@@ -392,7 +407,7 @@ This avoids putting operation recipes, policy helpers, and SDK ergonomics into `
 
 Status: complete.
 
-This document captured the decision to make common input models the SDK boundary before extracting shared protocol primitives or generating SDK adapters.
+This document captured the decision to make common input models the SDK boundary before extracting shared generated protocol primitives or generating SDK adapters.
 
 ### Phase 2: operation input models only
 
@@ -521,8 +536,8 @@ The current evidence says common input models plus trait-based builders are the 
 
 ## Open questions
 
-1. Should input IDs remain strings for now, or should a later `open-graphene-protocol` crate introduce typed shared `AccountId` and `AssetId` values?
-2. Should common inputs gain validation methods, or should validation remain caller-driven through existing `AccountIdRef` and `AssetIdRef` helpers?
+1. Should operation input fields keep storing strings plus validation helpers, or should a future breaking revision store `AccountIdRef` and `AssetIdRef` directly?
+2. Should common inputs gain checked constructors that return `ObjectIdError`, while preserving current infallible constructors?
 3. Should only the outer signed-transaction broadcast JSON shell be shared, while operation JSON stays chain-specific?
 4. Should adapter structs get ergonomic inherent methods so callers do not need to import the adapter traits explicitly?
 
@@ -530,6 +545,6 @@ The current evidence says common input models plus trait-based builders are the 
 
 Use common SDK input models plus trait-based builders as the proven SDK seam.
 
-Do not extract shared protocol primitives yet. Do not implement generated SDK adapters yet.
+Do not extract shared generated protocol primitives yet. Do not implement generated SDK adapters yet.
 
-The next implementation slice should improve validation, adapter-call ergonomics, or broadcast JSON shell reuse around the existing common inputs and adapter structs, not change the protocol model. Shared primitives should be revisited only when a concrete adapter friction point needs them.
+The next implementation slice should improve validation, adapter-call ergonomics, or broadcast JSON shell reuse around the existing common inputs and adapter structs, not change the protocol model. Shared generated protocol primitives should be revisited only when a concrete adapter friction point needs them.

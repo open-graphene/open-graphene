@@ -5,7 +5,8 @@ This directory contains Rust runtime crates, SDK helper crates, and generated ch
 ## Crates
 
 - `graphene-fc` (`open-graphene-fc`): FC serialization, signing, digest, and WIF helpers.
-- `graphene-sdk-core` (`open-graphene-sdk-core`): pure SDK helpers such as amount conversion, transaction headers, balance checks, and object id refs.
+- `graphene-sdk-primitives` (`open-graphene-sdk-primitives`): stable chain-agnostic SDK value references and validators such as object IDs, account IDs, asset IDs, and operation-history IDs.
+- `graphene-sdk-core` (`open-graphene-sdk-core`): pure SDK helpers such as amount conversion, transaction headers, and balance checks; re-exports SDK primitives for compatibility.
 - `graphene-sdk-operations` (`open-graphene-sdk-operations`): common operation input models, adapter traits, and generic trait-based transaction builders, split one operation per module.
 
 ## Architecture notes

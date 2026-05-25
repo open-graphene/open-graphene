@@ -1,4 +1,4 @@
-use open_graphene_sdk_core::{AccountIdRef, AssetIdRef, ObjectIdError};
+use open_graphene_sdk_primitives::{AccountIdRef, AssetIdRef, ObjectIdError};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FeeInput {
@@ -86,7 +86,7 @@ impl SingleKeyAuthorityInput {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use open_graphene_sdk_core::ObjectIdError;
+    use open_graphene_sdk_primitives::ObjectIdError;
 
     #[test]
     fn fee_input_defaults_to_core_asset() {
