@@ -15,6 +15,17 @@ Four flows now repeat across both chains:
 - asset issue
 - asset create
 
+Each flow also has a common-input adapter wrapper using `open-graphene-sdk-core` input models and adapter traits:
+
+| Flow | Common input | Swaplock wrapper | BitShares wrapper |
+| --- | --- | --- | --- |
+| transfer | `TransferInput` | `SwaplockTransferAdapter` | `BitSharesTransferAdapter` |
+| account create | `AccountCreateInput` | `SwaplockAccountCreateAdapter` | `BitSharesAccountCreateAdapter` |
+| asset issue | `AssetIssueInput` | `SwaplockAssetIssueAdapter` | `BitSharesAssetIssueAdapter` |
+| asset create | `AssetCreateInput` | `SwaplockAssetCreateAdapter` | `BitSharesAssetCreateAdapter` |
+
+The wrappers are deliberately thin: they map common SDK input values into the existing manual chain builders. They do not replace the operation-specific builders or broadcast JSON renderers.
+
 The pattern is intentionally manual for now. It is a candidate for future generator support, but it should not be generated until the seam remains stable across more chain pressure, more SDK flows, or downstream demand.
 
 ## Adapter responsibility
@@ -48,6 +59,31 @@ pub fn signed_transaction_json(
 Amounts are raw chain amounts, not human decimal amounts. Decimal conversion belongs outside chain adapters.
 
 Each `signed_transaction_json` function is intentionally operation-specific and fail-closed. A transfer renderer must not render account-create operations, and an account-create renderer must not render transfer operations.
+
+## Common-input wrapper API shape
+
+Each operation adapter may also expose a zero-sized wrapper struct implementing the corresponding `open-graphene-sdk-core` trait:
+
+```rust
+pub struct ChainSomeOperationAdapter;
+
+impl open_graphene_sdk_core::SomeOperationAdapter for ChainSomeOperationAdapter {
+    type Transaction = Transaction;
+    type Error = std::convert::Infallible;
+
+    fn build_some_operation_transaction(
+        input: open_graphene_sdk_core::SomeOperationInput,
+    ) -> Result<Self::Transaction, Self::Error> {
+        Ok(build_some_operation_transaction(SomeOperationTransactionInput {
+            // map common input fields into the existing manual input
+        }))
+    }
+}
+```
+
+These wrappers exist to prove a coherent cross-chain SDK input seam. They should remain boring pass-through adapters unless a real validation or ergonomics need appears.
+
+They must not bypass the manual builder or duplicate operation construction logic. The manual builder remains the source of chain-specific generated protocol construction.
 
 ## Transfer adapter
 
@@ -301,8 +337,9 @@ Those responsibilities belong in examples, CLIs, or higher-level SDK orchestrati
 Each adapter should have local tests proving:
 
 1. The build function produces the same FC bytes as an equivalent hand-built generated transaction.
-2. The JSON renderer emits the expected Graphene broadcast JSON shape.
-3. The JSON renderer fails closed when given a signed transaction containing a different operation.
+2. The common-input wrapper produces the same FC bytes as the manual builder path.
+3. The JSON renderer emits the expected Graphene broadcast JSON shape.
+4. The JSON renderer fails closed when given a signed transaction containing a different operation.
 
 For account-create, tests should also prove non-empty generated extension values fail closed until their wire and RPC JSON shapes are explicitly supported. For asset-issue, tests should prove memo JSON fails closed until memo broadcast semantics are explicitly supported. For asset-create, tests should prove bitasset options and non-empty additional asset options fail closed until those asset variants are explicitly supported.
 
@@ -311,7 +348,9 @@ These tests are enough for the adapter layer. Live chain tests belong to chain-s
 ## Why this is not generated yet
 
 The repeated Swaplock and BitShares implementations show that generator support is plausible for transfer, account-create, asset-issue, and asset-create.
-It is still deferred because manual adapters are small, the ergonomics are not fully proven, and generated SDK capabilities would freeze a public API.
+The common-input wrappers now show that the stable seam is not generator-emitted SDK code or shared protocol primitives; it is a shared caller input model mapped by explicit chain adapters.
+
+Generation is still deferred because manual adapters are small, the ergonomics are not fully proven, and generated SDK capabilities would freeze a public API.
 
 Until more pressure exists, keep adapters manual, explicit, and boring.
 
