@@ -36,6 +36,20 @@ use graphene_chain_swaplock_bindings::sdk::transfer::{
 use serde_json::{json, Value};
 use tungstenite::{connect, Message, WebSocket};
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct TradingScenarioResult {
+    pub registrar_id: String,
+    pub account_a: String,
+    pub account_b: String,
+    pub account_a_id: String,
+    pub account_b_id: String,
+    pub asset_a_symbol: String,
+    pub asset_b_symbol: String,
+    pub asset_a_id: String,
+    pub asset_b_id: String,
+    pub opened_order_id: String,
+}
+
 struct GrapheneRpc {
     socket: WebSocket<tungstenite::stream::MaybeTlsStream<std::net::TcpStream>>,
     next_id: u64,
@@ -103,7 +117,7 @@ impl GrapheneRpc {
     }
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+pub fn run_trading_scenario_from_env() -> Result<TradingScenarioResult, Box<dyn Error>> {
     let rpc_url = env::var("SWAPLOCK_RPC_URL")?;
     if !rpc_url.starts_with("wss://") && !env_flag("SWAPLOCK_ALLOW_INSECURE_WS") {
         return Err("SWAPLOCK_RPC_URL must use wss://; set SWAPLOCK_ALLOW_INSECURE_WS=1 only for local insecure test nodes".into());
@@ -302,7 +316,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     wait_for_order_gone(&mut rpc, database_api_id, &order_id)?;
 
     println!("Scenario complete: created accounts/assets, issued balances, opened and canceled {order_id}");
-    Ok(())
+    Ok(TradingScenarioResult {
+        registrar_id,
+        account_a,
+        account_b,
+        account_a_id,
+        account_b_id,
+        asset_a_symbol,
+        asset_b_symbol,
+        asset_a_id,
+        asset_b_id,
+        opened_order_id: order_id,
+    })
 }
 
 fn create_account_if_missing(

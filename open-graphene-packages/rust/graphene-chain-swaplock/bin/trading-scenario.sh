@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CHAIN_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PROJECT_ROOT="$(cd "${CHAIN_DIR}/../../.." && pwd)"
-BINDINGS_MANIFEST="${CHAIN_DIR}/graphene-chain-swaplock-bindings/Cargo.toml"
+CHAIN_MANIFEST="${CHAIN_DIR}/graphene-chain-swaplock/Cargo.toml"
 ENV_FILE="${PROJECT_ROOT}/.env"
 
 if [[ -f "${ENV_FILE}" ]]; then
@@ -19,4 +19,4 @@ fi
 : "${SWAPLOCK_ACCOUNT:?Set SWAPLOCK_ACCOUNT in .env or environment}"
 
 printf 'Broadcasting Swaplock trading scenario: registrar=%s\n' "${SWAPLOCK_ACCOUNT}"
-exec cargo run --manifest-path "${BINDINGS_MANIFEST}" --example trading_scenario
+exec cargo run --manifest-path "${CHAIN_MANIFEST}" --example trading_scenario
