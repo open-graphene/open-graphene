@@ -8,10 +8,11 @@ After reading it, a maintainer should be able to add a manual SDK adapter withou
 ## Current status
 
 Manual SDK adapters have been proven in two generated chain binding crates: Swaplock and BitShares.
-Two flows now repeat across both chains:
+Three flows now repeat across both chains:
 
 - transfer
 - account create
+- asset issue
 
 The pattern is intentionally manual for now. It is a candidate for future generator support, but it should not be generated until the seam remains stable across more chain pressure, more SDK flows, or downstream demand.
 
@@ -147,6 +148,55 @@ Operation::AccountCreateOperation(Box::new(AccountCreateOperation {
 
 The JSON renderer hand-renders nested `Authority`, `AccountOptions`, and empty `AccountCreateOperationExt` values into the object/list shapes accepted by Graphene RPC. Non-empty account-create extensions are rejected until their FC and RPC JSON shape is explicitly implemented and verified.
 
+## Asset-issue adapter
+
+The asset-issue adapter requires generated bindings for:
+
+```rust
+generated::types::Asset
+generated::types::Transaction
+generated::types::SignedTransaction
+generated::types::Signature
+generated::operations::AssetIssueOperation
+generated::static_variants::Operation
+generated::static_variants::FutureExtensions
+generated::ids::AccountId
+generated::ids::AssetId
+```
+
+The operation static variant must contain `AssetIssueOperation` at Graphene wire tag `14`.
+
+The adapter constructs a one-operation transaction with:
+
+```rust
+Operation::AssetIssueOperation(Box::new(AssetIssueOperation {
+    fee,
+    issuer,
+    asset_to_issue,
+    issue_to_account,
+    memo: None,
+    extensions: FutureExtensions::VoidT(Box::new(())),
+}))
+```
+
+Memo support is intentionally absent in the current asset-issue adapter. Issuer permissions and supply mutation are chain-state concerns and stay outside the adapter.
+
+The JSON operation shape is:
+
+```json
+[
+  14,
+  {
+    "fee": { "amount": 200000, "asset_id": "1.3.0" },
+    "issuer": "1.2.100",
+    "asset_to_issue": { "amount": 100000, "asset_id": "1.3.1" },
+    "issue_to_account": "1.2.101",
+    "memo": null,
+    "extensions": []
+  }
+]
+```
+
 ## What stays outside adapters
 
 Adapters must not do:
@@ -177,13 +227,13 @@ Each adapter should have local tests proving:
 2. The JSON renderer emits the expected Graphene broadcast JSON shape.
 3. The JSON renderer fails closed when given a signed transaction containing a different operation.
 
-For account-create, tests should also prove non-empty generated extension values fail closed until their wire and RPC JSON shapes are explicitly supported.
+For account-create, tests should also prove non-empty generated extension values fail closed until their wire and RPC JSON shapes are explicitly supported. For asset-issue, tests should prove memo JSON fails closed until memo broadcast semantics are explicitly supported.
 
 These tests are enough for the adapter layer. Live chain tests belong to chain-specific examples or integration tooling, not to the adapter itself.
 
 ## Why this is not generated yet
 
-The repeated Swaplock and BitShares implementations show that generator support is plausible for both transfer and account-create.
+The repeated Swaplock and BitShares implementations show that generator support is plausible for transfer, account-create, and asset-issue.
 It is still deferred because manual adapters are small, the ergonomics are not fully proven, and generated SDK capabilities would freeze a public API.
 
 Until more pressure exists, keep adapters manual, explicit, and boring.
