@@ -1,15 +1,19 @@
 use std::convert::Infallible;
 
-use open_graphene_sdk_operations::{AssetCreateAdapter, AssetCreateInput};
+use open_graphene_sdk_core::TransactionHeader;
+use open_graphene_sdk_operations::{
+    build_asset_create_transaction_for, AssetCreateAdapter, AssetCreateChainTypes, AssetCreateInput,
+};
 use serde_json::{json, Value};
 use thiserror::Error;
 
-use crate::generated::ids::{AccountId, AssetId};
+use crate::generated::ids::AssetId;
 use crate::generated::operations::AssetCreateOperation;
 use crate::generated::static_variants::{FutureExtensions, Operation};
 use crate::generated::types::{
     AdditionalAssetOptions, Asset, AssetOptions, Price, SignedTransaction, Transaction,
 };
+use crate::sdk::operation_builder_types::SwaplockOperationBuilderTypes;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct AssetCreateTransactionInput {
@@ -25,6 +29,71 @@ pub struct AssetCreateTransactionInput {
     pub description: String,
 }
 
+impl AssetCreateChainTypes for SwaplockOperationBuilderTypes {
+    type Price = Price;
+    type AdditionalAssetOptions = AdditionalAssetOptions;
+    type AssetOptions = AssetOptions;
+    type AssetCreateOperation = AssetCreateOperation;
+
+    fn price(base: Self::Asset, quote: Self::Asset) -> Self::Price {
+        Price { base, quote }
+    }
+
+    fn empty_asset_create_additional_options() -> Self::AdditionalAssetOptions {
+        crate::sdk::asset_create::empty_additional_asset_options()
+    }
+
+    fn asset_options(
+        max_supply: i64,
+        market_fee_percent: u16,
+        max_market_fee: i64,
+        issuer_permissions: u16,
+        flags: u16,
+        core_exchange_rate: Self::Price,
+        description: String,
+        extensions: Self::AdditionalAssetOptions,
+    ) -> Self::AssetOptions {
+        AssetOptions {
+            max_supply,
+            market_fee_percent,
+            max_market_fee,
+            issuer_permissions,
+            flags,
+            core_exchange_rate,
+            whitelist_authorities: Vec::new(),
+            blacklist_authorities: Vec::new(),
+            whitelist_markets: Vec::new(),
+            blacklist_markets: Vec::new(),
+            description,
+            extensions,
+        }
+    }
+
+    fn user_issued_asset_create_operation(
+        fee: Self::Asset,
+        issuer: Self::AccountId,
+        symbol: String,
+        precision: u8,
+        common_options: Self::AssetOptions,
+        extensions: Self::FutureExtensions,
+    ) -> Self::AssetCreateOperation {
+        AssetCreateOperation {
+            fee,
+            issuer,
+            symbol,
+            precision,
+            common_options,
+            bitasset_opts: None,
+            is_prediction_market: false,
+            extensions,
+        }
+    }
+
+    fn operation_asset_create(operation: Self::AssetCreateOperation) -> Self::Operation {
+        Operation::AssetCreateOperation(Box::new(operation))
+    }
+}
+
 pub struct SwaplockAssetCreateAdapter;
 
 impl AssetCreateAdapter for SwaplockAssetCreateAdapter {
@@ -34,20 +103,9 @@ impl AssetCreateAdapter for SwaplockAssetCreateAdapter {
     fn build_asset_create_transaction(
         input: AssetCreateInput,
     ) -> Result<Self::Transaction, Self::Error> {
-        Ok(crate::sdk::asset_create::build_asset_create_transaction(
-            AssetCreateTransactionInput {
-                ref_block_num: input.header.ref_block_num,
-                ref_block_prefix: input.header.ref_block_prefix,
-                expiration: input.header.expiration,
-                fee_amount: input.fee.amount,
-                fee_asset_id: input.fee.asset_id,
-                issuer_id: input.issuer.id,
-                symbol: input.symbol,
-                precision: input.precision,
-                max_supply: input.max_supply,
-                description: input.description,
-            },
-        ))
+        Ok(build_asset_create_transaction_for::<
+            SwaplockOperationBuilderTypes,
+        >(input))
     }
 }
 
@@ -68,27 +126,19 @@ pub enum AssetCreateJsonError {
 }
 
 pub fn build_asset_create_transaction(input: AssetCreateTransactionInput) -> Transaction {
-    Transaction {
-        ref_block_num: input.ref_block_num,
-        ref_block_prefix: input.ref_block_prefix,
-        expiration: input.expiration,
-        operations: vec![Operation::AssetCreateOperation(Box::new(
-            AssetCreateOperation {
-                fee: Asset {
-                    amount: input.fee_amount,
-                    asset_id: AssetId(input.fee_asset_id),
-                },
-                issuer: AccountId(input.issuer_id),
-                symbol: input.symbol,
-                precision: input.precision,
-                common_options: minimal_asset_options(input.max_supply, input.description),
-                bitasset_opts: None,
-                is_prediction_market: false,
-                extensions: FutureExtensions::VoidT(Box::new(())),
-            },
-        ))],
-        extensions: FutureExtensions::VoidT(Box::new(())),
-    }
+    build_asset_create_transaction_for::<SwaplockOperationBuilderTypes>(AssetCreateInput::uia(
+        TransactionHeader {
+            ref_block_num: input.ref_block_num,
+            ref_block_prefix: input.ref_block_prefix,
+            expiration: input.expiration,
+        },
+        open_graphene_sdk_operations::FeeInput::new(input.fee_amount, input.fee_asset_id),
+        input.issuer_id,
+        input.symbol,
+        input.precision,
+        input.max_supply,
+        input.description,
+    ))
 }
 
 pub fn minimal_asset_options(max_supply: i64, description: String) -> AssetOptions {
@@ -232,6 +282,7 @@ fn hex(bytes: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::generated::ids::AccountId;
     use crate::generated::operations::TransferOperation;
     use crate::generated::types::{BitassetOptions, BitassetOptionsExt, Signature};
     use crate::generated::FcSerialize;

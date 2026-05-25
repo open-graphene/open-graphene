@@ -1,5 +1,6 @@
 use open_graphene_sdk_core::TransactionHeader;
 
+use crate::builder::GrapheneOperationBuilderTypes;
 use crate::common::{AccountRefInput, FeeInput};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -42,6 +43,73 @@ pub trait AssetCreateAdapter {
     fn build_asset_create_transaction(
         input: AssetCreateInput,
     ) -> Result<Self::Transaction, Self::Error>;
+}
+
+pub trait AssetCreateChainTypes: GrapheneOperationBuilderTypes {
+    type Price;
+    type AdditionalAssetOptions;
+    type AssetOptions;
+    type AssetCreateOperation;
+
+    fn price(base: Self::Asset, quote: Self::Asset) -> Self::Price;
+
+    fn empty_asset_create_additional_options() -> Self::AdditionalAssetOptions;
+
+    fn asset_options(
+        max_supply: i64,
+        market_fee_percent: u16,
+        max_market_fee: i64,
+        issuer_permissions: u16,
+        flags: u16,
+        core_exchange_rate: Self::Price,
+        description: String,
+        extensions: Self::AdditionalAssetOptions,
+    ) -> Self::AssetOptions;
+
+    fn user_issued_asset_create_operation(
+        fee: Self::Asset,
+        issuer: Self::AccountId,
+        symbol: String,
+        precision: u8,
+        common_options: Self::AssetOptions,
+        extensions: Self::FutureExtensions,
+    ) -> Self::AssetCreateOperation;
+
+    fn operation_asset_create(operation: Self::AssetCreateOperation) -> Self::Operation;
+}
+
+pub fn build_asset_create_transaction_for<C: AssetCreateChainTypes>(
+    input: AssetCreateInput,
+) -> C::Transaction {
+    let fee = C::asset(input.fee.amount, input.fee.asset_id.into());
+    let core_exchange_rate = C::price(
+        C::asset(1, "1.3.0".to_string().into()),
+        C::asset(1, "1.3.1".to_string().into()),
+    );
+    let common_options = C::asset_options(
+        input.max_supply,
+        0,
+        0,
+        0,
+        0,
+        core_exchange_rate,
+        input.description,
+        C::empty_asset_create_additional_options(),
+    );
+    let operation = C::user_issued_asset_create_operation(
+        fee,
+        input.issuer.id.into(),
+        input.symbol,
+        input.precision,
+        common_options,
+        C::empty_extensions(),
+    );
+
+    C::transaction(
+        input.header,
+        vec![C::operation_asset_create(operation)],
+        C::empty_extensions(),
+    )
 }
 
 #[cfg(test)]

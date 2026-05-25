@@ -9,7 +9,9 @@ pub use account_create::{
     AccountCreateAdapter, AccountCreateChainTypes, AccountCreateInput,
     build_account_create_transaction_for,
 };
-pub use asset_create::{AssetCreateAdapter, AssetCreateInput};
+pub use asset_create::{
+    AssetCreateAdapter, AssetCreateChainTypes, AssetCreateInput, build_asset_create_transaction_for,
+};
 pub use asset_issue::{
     AssetIssueAdapter, AssetIssueChainTypes, AssetIssueInput, build_asset_issue_transaction_for,
 };
