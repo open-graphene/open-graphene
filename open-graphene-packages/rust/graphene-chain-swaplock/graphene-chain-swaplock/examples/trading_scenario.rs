@@ -15,12 +15,11 @@ use graphene_chain_swaplock::asset_issue::{
     build_asset_issue_transaction, signed_transaction_json as asset_issue_json,
     AssetIssueTransactionInput,
 };
-use graphene_chain_swaplock::bindings::generated::static_variants::Operation;
-use graphene_chain_swaplock::bindings::generated::types::{Asset, SignedTransaction, Transaction};
+use graphene_chain_swaplock::bindings::generated::types::{SignedTransaction, Transaction};
 use graphene_chain_swaplock::database_api::{
     account_balance, active_public_key_for_account, lookup_account_id, lookup_account_id_optional,
-    lookup_asset_id_optional, next_transaction_header, required_fee, wait_for_account,
-    wait_for_asset, wait_for_balance_at_least, wait_for_limit_order, wait_for_order_gone,
+    lookup_asset_id_optional, next_transaction_header, wait_for_account, wait_for_asset,
+    wait_for_balance_at_least, wait_for_limit_order, wait_for_order_gone,
 };
 use graphene_chain_swaplock::limit_order_cancel::{
     build_limit_order_cancel_transaction, signed_transaction_json as limit_order_cancel_json,
@@ -33,6 +32,7 @@ use graphene_chain_swaplock::limit_order_create::{
 use graphene_chain_swaplock::network_broadcast_api::broadcast_transaction;
 use graphene_chain_swaplock::rpc::GrapheneRpc;
 use graphene_chain_swaplock::signing::sign_transaction_checked;
+use graphene_chain_swaplock::transaction::apply_required_fee;
 use graphene_chain_swaplock::transfer::{
     build_transfer_transaction, signed_transaction_json as transfer_json, TransferTransactionInput,
 };
@@ -314,7 +314,7 @@ fn create_account_if_missing(
         options: account_options(signing_public_key.to_string(), registrar_id.to_string()),
         extensions: None,
     });
-    set_required_fee(
+    apply_required_fee(
         rpc,
         database_api_id,
         &mut transaction,
@@ -364,7 +364,7 @@ fn create_asset_if_missing(
         max_supply: 1_000_000_000_000_000,
         description: "open-graphene trading scenario asset".to_string(),
     });
-    set_required_fee(
+    apply_required_fee(
         rpc,
         database_api_id,
         &mut transaction,
@@ -415,7 +415,7 @@ fn fund_core(
         fee_amount: 0,
         fee_asset_id: fee_asset_id.to_string(),
     });
-    set_required_fee(
+    apply_required_fee(
         rpc,
         database_api_id,
         &mut transaction,
@@ -467,7 +467,7 @@ fn issue_asset(
         fee_amount: 0,
         fee_asset_id: fee_asset_id.to_string(),
     });
-    set_required_fee(
+    apply_required_fee(
         rpc,
         database_api_id,
         &mut transaction,
@@ -525,7 +525,7 @@ fn create_unmatched_order(
         order_expiration,
         fill_or_kill: false,
     });
-    set_required_fee(
+    apply_required_fee(
         rpc,
         database_api_id,
         &mut transaction,
@@ -572,7 +572,7 @@ fn cancel_order(
         fee_paying_account_id: seller_id.to_string(),
         order_id: order_id.to_string(),
     });
-    set_required_fee(
+    apply_required_fee(
         rpc,
         database_api_id,
         &mut transaction,
@@ -589,49 +589,6 @@ fn cancel_order(
         limit_order_cancel_json,
         &format!("limit_order_cancel {order_id}"),
     )?;
-    Ok(())
-}
-
-fn set_required_fee<F, E>(
-    rpc: &mut GrapheneRpc,
-    database_api_id: u64,
-    transaction: &mut Transaction,
-    fee_asset_id: &str,
-    max_fee: i64,
-    renderer: F,
-) -> Result<(), Box<dyn Error>>
-where
-    F: Fn(&SignedTransaction) -> Result<Value, E>,
-    E: Error + 'static,
-{
-    let fee = required_fee(rpc, database_api_id, transaction, fee_asset_id, renderer)?;
-    if fee.amount > max_fee {
-        return Err(format!(
-            "required fee {} exceeds SWAPLOCK_MAX_FEE {}; refusing to sign",
-            fee.amount, max_fee
-        )
-        .into());
-    }
-    set_first_operation_fee(transaction, fee)
-}
-
-fn set_first_operation_fee(
-    transaction: &mut Transaction,
-    fee: Asset,
-) -> Result<(), Box<dyn Error>> {
-    let operation = transaction
-        .operations
-        .first_mut()
-        .ok_or("transaction contains no operations")?;
-    match operation {
-        Operation::TransferOperation(operation) => operation.fee = fee,
-        Operation::LimitOrderCreateOperation(operation) => operation.fee = fee,
-        Operation::LimitOrderCancelOperation(operation) => operation.fee = fee,
-        Operation::AccountCreateOperation(operation) => operation.fee = fee,
-        Operation::AssetCreateOperation(operation) => operation.fee = fee,
-        Operation::AssetIssueOperation(operation) => operation.fee = fee,
-        _ => return Err("unsupported operation for fee injection".into()),
-    }
     Ok(())
 }
 
