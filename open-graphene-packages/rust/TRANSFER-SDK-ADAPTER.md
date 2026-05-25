@@ -117,7 +117,7 @@ generated::ids::AssetId
 
 The operation static variant must contain `AccountCreateOperation` at Graphene wire tag `5`.
 
-The adapter input accepts generated `Authority`, `AccountOptions`, and optional generated `AccountCreateOperationExt` values. This avoids inventing a parallel account model and preserves protocol fields such as special authorities.
+The adapter input accepts generated `Authority` and `AccountOptions` values. It also accepts optional generated `AccountCreateOperationExt`, but current FC and broadcast JSON support is fail-closed to the empty extension set only. This avoids inventing a parallel account model while not pretending special authority wire support is complete.
 
 The adapter provides small convenience constructors for the common simple case:
 
@@ -145,7 +145,7 @@ Operation::AccountCreateOperation(Box::new(AccountCreateOperation {
 }))
 ```
 
-The JSON renderer uses generated serde for nested `Authority`, `AccountOptions`, and `AccountCreateOperationExt` values instead of hand-rendering those structures. That keeps nested protocol JSON aligned with generated binding serde.
+The JSON renderer hand-renders nested `Authority`, `AccountOptions`, and empty `AccountCreateOperationExt` values into the object/list shapes accepted by Graphene RPC. Non-empty account-create extensions are rejected until their FC and RPC JSON shape is explicitly implemented and verified.
 
 ## What stays outside adapters
 
@@ -177,7 +177,7 @@ Each adapter should have local tests proving:
 2. The JSON renderer emits the expected Graphene broadcast JSON shape.
 3. The JSON renderer fails closed when given a signed transaction containing a different operation.
 
-For account-create, tests should also cover pass-through of generated extension values when practical.
+For account-create, tests should also prove non-empty generated extension values fail closed until their wire and RPC JSON shapes are explicitly supported.
 
 These tests are enough for the adapter layer. Live chain tests belong to chain-specific examples or integration tooling, not to the adapter itself.
 

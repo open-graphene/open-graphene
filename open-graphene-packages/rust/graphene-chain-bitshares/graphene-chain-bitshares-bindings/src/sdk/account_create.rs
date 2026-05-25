@@ -29,8 +29,8 @@ pub struct AccountCreateTransactionInput {
 pub enum AccountCreateJsonError {
     #[error("signed account-create JSON can only render account_create operations")]
     UnsupportedOperation,
-    #[error("failed to render generated account-create field as JSON: {reason}")]
-    JsonSerialization { reason: String },
+    #[error("account-create broadcast JSON only supports empty generated extension fields")]
+    UnsupportedExtensions,
 }
 
 pub fn build_account_create_transaction(input: AccountCreateTransactionInput) -> Transaction {
@@ -119,20 +119,61 @@ fn operation_json(operation: &Operation) -> Result<Value, AccountCreateJsonError
                 "referrer": operation.referrer.0,
                 "referrer_percent": operation.referrer_percent,
                 "name": operation.name,
-                "owner": generated_value(&operation.owner)?,
-                "active": generated_value(&operation.active)?,
-                "options": generated_value(&operation.options)?,
-                "extensions": generated_value(&operation.extensions)?,
+                "owner": authority_json(&operation.owner),
+                "active": authority_json(&operation.active),
+                "options": account_options_json(&operation.options)?,
+                "extensions": account_create_extensions_json(&operation.extensions)?,
             }
         ])),
         _ => Err(AccountCreateJsonError::UnsupportedOperation),
     }
 }
 
-fn generated_value<T: serde::Serialize>(value: &T) -> Result<Value, AccountCreateJsonError> {
-    serde_json::to_value(value).map_err(|error| AccountCreateJsonError::JsonSerialization {
-        reason: error.to_string(),
+fn authority_json(authority: &Authority) -> Value {
+    json!({
+        "weight_threshold": authority.weight_threshold,
+        "account_auths": authority
+            .account_auths
+            .iter()
+            .map(|(account, weight)| json!([account.0, weight]))
+            .collect::<Vec<_>>(),
+        "key_auths": authority
+            .key_auths
+            .iter()
+            .map(|(key, weight)| json!([key, weight]))
+            .collect::<Vec<_>>(),
+        "address_auths": authority
+            .address_auths
+            .iter()
+            .map(|(address, weight)| json!([address, weight]))
+            .collect::<Vec<_>>(),
     })
+}
+
+fn account_options_json(options: &AccountOptions) -> Result<Value, AccountCreateJsonError> {
+    if !matches!(options.extensions, FutureExtensions::VoidT(_)) {
+        return Err(AccountCreateJsonError::UnsupportedExtensions);
+    }
+    Ok(json!({
+        "memo_key": options.memo_key,
+        "voting_account": options.voting_account.0,
+        "num_witness": options.num_witness,
+        "num_committee": options.num_committee,
+        "votes": options.votes.iter().map(|vote| vote.0.clone()).collect::<Vec<_>>(),
+        "extensions": [],
+    }))
+}
+
+fn account_create_extensions_json(
+    extensions: &AccountCreateOperationExt,
+) -> Result<Value, AccountCreateJsonError> {
+    if extensions.null_ext.is_none()
+        && extensions.owner_special_authority.is_none()
+        && extensions.active_special_authority.is_none()
+    {
+        return Ok(json!([]));
+    }
+    Err(AccountCreateJsonError::UnsupportedExtensions)
 }
 
 fn asset_json(asset: &Asset) -> Value {
@@ -215,7 +256,7 @@ mod tests {
     }
 
     #[test]
-    fn builds_account_create_transaction_with_special_authority_extension() {
+    fn rejects_account_create_transaction_with_special_authority_extension() {
         let mut input = input();
         input.options.votes = vec![VoteId("1:5".to_string())];
         input.extensions = Some(AccountCreateOperationExt {
@@ -229,13 +270,9 @@ mod tests {
             active_special_authority: None,
         });
 
-        let transaction = build_account_create_transaction(input.clone());
-        let expected = expected_transaction(input);
+        let transaction = build_account_create_transaction(input);
 
-        assert_eq!(
-            transaction.to_fc_bytes().unwrap(),
-            expected.to_fc_bytes().unwrap()
-        );
+        assert!(transaction.to_fc_bytes().is_err());
     }
 
     #[test]
@@ -280,13 +317,9 @@ mod tests {
                         "num_witness": 0,
                         "num_committee": 0,
                         "votes": [],
-                        "extensions": [0, null]
+                        "extensions": []
                     },
-                    "extensions": {
-                        "null_ext": null,
-                        "owner_special_authority": null,
-                        "active_special_authority": null
-                    }
+                    "extensions": []
                 }]],
                 "extensions": [],
                 "signatures": ["1f".repeat(65)]

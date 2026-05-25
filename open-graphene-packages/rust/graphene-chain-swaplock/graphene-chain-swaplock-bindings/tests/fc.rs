@@ -824,8 +824,8 @@ fn expected_account_create_payload() -> Vec<u8> {
     bytes.extend(expected_empty_authority_payload());
     bytes.extend(expected_empty_authority_payload());
     bytes.extend(expected_account_options_payload());
-    // account_create_operation_ext: null_ext none, owner_special_authority none, active_special_authority none
-    bytes.extend_from_slice(&[0, 0, 0]);
+    // account_create_operation_ext: empty Graphene extension set
+    bytes.push(0);
     bytes
 }
 

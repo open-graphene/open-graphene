@@ -282,10 +282,17 @@ impl FcSerialize for crate::generated::types::Signature {
 
 impl FcSerialize for crate::generated::types::AccountCreateOperationExt {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        self.null_ext.fc_serialize(out)?;
-        self.owner_special_authority.fc_serialize(out)?;
-        self.active_special_authority.fc_serialize(out)?;
-        Ok(())
+        if self.null_ext.is_none()
+            && self.owner_special_authority.is_none()
+            && self.active_special_authority.is_none()
+        {
+            write_varint(0u64, out);
+            return Ok(());
+        }
+        Err(FcSerializeError::UnsupportedValue {
+            type_name: "account_create_operation_ext",
+            reason: "non-empty account_create operation extensions are not supported by FC serialization yet",
+        })
     }
 }
 
