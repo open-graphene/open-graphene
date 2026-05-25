@@ -43,18 +43,20 @@ The common input and chain adapter seam is now implemented for the current two-c
 
 | Flow | Common input | Adapter trait | Swaplock adapter | BitShares adapter | Proof |
 | --- | --- | --- | --- | --- | --- |
-| `transfer` | `TransferInput` | `TransferAdapter` | `SwaplockTransferAdapter` | `BitSharesTransferAdapter` | adapter FC bytes match manual builder |
-| `account_create` | `AccountCreateInput` | `AccountCreateAdapter` | `SwaplockAccountCreateAdapter` | `BitSharesAccountCreateAdapter` | adapter FC bytes match manual builder |
-| `asset_issue` | `AssetIssueInput` | `AssetIssueAdapter` | `SwaplockAssetIssueAdapter` | `BitSharesAssetIssueAdapter` | adapter FC bytes match manual builder |
-| `asset_create` | `AssetCreateInput` | `AssetCreateAdapter` | `SwaplockAssetCreateAdapter` | `BitSharesAssetCreateAdapter` | adapter FC bytes match manual builder |
+| `transfer` | `TransferInput` | `TransferAdapter` | `SwaplockTransferAdapter` | `BitSharesTransferAdapter` | adapter FC bytes match chain-local builder |
+| `account_create` | `AccountCreateInput` | `AccountCreateAdapter` | `SwaplockAccountCreateAdapter` | `BitSharesAccountCreateAdapter` | adapter FC bytes match chain-local builder |
+| `asset_issue` | `AssetIssueInput` | `AssetIssueAdapter` | `SwaplockAssetIssueAdapter` | `BitSharesAssetIssueAdapter` | adapter FC bytes match chain-local builder |
+| `asset_create` | `AssetCreateInput` | `AssetCreateAdapter` | `SwaplockAssetCreateAdapter` | `BitSharesAssetCreateAdapter` | adapter FC bytes match chain-local builder |
 
 The proof is deliberately narrow:
 
 - The common operation input models live in `open-graphene-sdk-operations`.
 - The operation adapter traits live in `open-graphene-sdk-operations`.
-- Each chain binding crate owns its adapter structs and maps common inputs to generated chain `Transaction` values.
-- Existing manual builders and operation-specific broadcast JSON renderers remain the source of chain-specific protocol construction.
-- Tests compare generated FC bytes from common-input adapters with FC bytes from the existing manual builders.
+- The trait-based generic transaction builders live in `open-graphene-sdk-operations`.
+- Each chain binding crate owns one generated-type bridge marker implementing the shared operation builder traits.
+- Each chain binding crate owns its adapter structs and maps common inputs to generated chain `Transaction` values through the generic builders.
+- Existing chain-local builder wrappers and operation-specific broadcast JSON renderers remain public and chain-specific.
+- Tests compare generated FC bytes from common-input adapters with FC bytes from the existing chain-local builder path.
 
 This proves the SDK seam without extracting shared protocol primitives and without adding generator-emitted SDK modules.
 
@@ -75,13 +77,18 @@ open-graphene-sdk-core
   TransactionHeader, amount/header/balance helpers, object id refs
 
 open-graphene-sdk-operations
-  common operation input models and adapter traits:
+  common operation input models, adapter traits, and generic trait-based builders:
   TransferInput, AccountCreateInput, AssetIssueInput, AssetCreateInput,
-  FeeInput, TransferAdapter, AccountCreateAdapter, AssetIssueAdapter, AssetCreateAdapter
+  FeeInput, TransferAdapter, AccountCreateAdapter, AssetIssueAdapter, AssetCreateAdapter,
+  GrapheneOperationBuilderTypes, TransferChainTypes, AccountCreateChainTypes,
+  AssetIssueChainTypes, AssetCreateChainTypes
 
 graphene-chain-*-bindings
-  generated protocol types and chain-specific adapters:
-  Operation, Transaction, operations, static variants, extension-heavy structs
+  generated protocol types, chain-specific generated-type bridges, adapter structs,
+  local builder wrappers, and broadcast JSON renderers:
+  Operation, Transaction, operations, static variants, extension-heavy structs,
+  ChainOperationBuilderTypes, ChainTransferAdapter, ChainAccountCreateAdapter,
+  ChainAssetIssueAdapter, ChainAssetCreateAdapter
 
 higher SDK or examples
   RPC, fee lookup, signing, broadcast, confirmation, CLI/env handling
@@ -209,9 +216,24 @@ pub struct AssetCreateInput {
 
 This is UIA-only. BitAssets, prediction markets, market fees, whitelists, blacklists, and additional asset options stay out of the common input until they are separately designed and verified.
 
-## Chain-specific adapter traits
+## Chain-specific adapter traits and generic builders
 
-The common SDK layer defines small adapter traits over common inputs, but does not implement them generically.
+The common SDK layer defines small adapter traits over common inputs. It also provides generic transaction builders parameterized by chain-specific generated-type bridges.
+
+There are two trait layers:
+
+1. `GrapheneOperationBuilderTypes` captures the generated types and constructors shared by the current operation builders: transaction, operation static variant, asset, account id, asset id, future extensions, and one-operation transaction construction.
+2. Per-operation chain traits add only operation-specific generated types and constructors: transfer operation, account-create operation and nested authority/options, asset-issue operation, or UIA asset-create operation and nested asset options.
+
+A chain binding crate implements the shared bridge once for its generated types, then implements only the operation-specific traits it supports. The current chains each use one marker type for this bridge.
+
+The resulting flow is:
+
+```text
+common input -> generic operation builder -> chain generated-type bridge -> generated Transaction
+```
+
+The adapter structs call these generic builders. They do not perform RPC, fee lookup, signing, broadcast, or confirmation.
 
 ### Transfer
 
@@ -224,20 +246,7 @@ pub trait TransferAdapter {
 }
 ```
 
-A chain binding crate implements this by mapping `TransferInput` to its generated types:
-
-```rust
-pub struct SwaplockTransferAdapter;
-
-impl TransferAdapter for SwaplockTransferAdapter {
-    type Transaction = crate::generated::types::Transaction;
-    type Error = SwaplockSdkError;
-
-    fn build_transfer_transaction(input: TransferInput) -> Result<Self::Transaction, Self::Error> {
-        // map shared input to generated::operations::TransferOperation
-    }
-}
-```
+The generic transfer builder maps `TransferInput` into a generated transfer operation through `TransferChainTypes`. Memo support is intentionally absent from the common transfer input and builder.
 
 ### Account create
 
@@ -252,7 +261,9 @@ pub trait AccountCreateAdapter {
 }
 ```
 
-The implementation owns the conversion from `SingleKeyAuthorityInput` into generated `Authority` and from `memo_key`/`voting_account` into generated `AccountOptions`.
+The generic account-create builder maps `AccountCreateInput` into generated `Authority`, `AccountOptions`, and `AccountCreateOperation` values through `AccountCreateChainTypes`.
+
+The common shape is deliberately the simple single-key account-create flow. Advanced authorities, vote lists, special authorities, and non-empty account-create extensions remain chain-local until explicitly designed and verified.
 
 ### Asset issue and asset create
 
@@ -272,7 +283,9 @@ pub trait AssetCreateAdapter {
 }
 ```
 
-These traits do not include RPC, fee lookup, signing, broadcast, or confirmation.
+The generic asset-issue builder maps `AssetIssueInput` through `AssetIssueChainTypes`. Memo support is intentionally absent from the common input and builder.
+
+The generic asset-create builder maps `AssetCreateInput::uia` through `AssetCreateChainTypes`. It is UIA-only by design: no bitasset options, no prediction market flag, no authority or market lists, and empty additional asset options only. The operation-specific trait names this explicitly as user-issued asset construction so the common API does not imply unsupported asset variants.
 
 ## Broadcast JSON boundary
 
@@ -366,8 +379,8 @@ The generator does not need to understand SDK intent models.
 
 Instead:
 
-- `open-graphene-sdk-operations` owns common operation input structs and adapter traits.
-- Chain binding crates own implementations that map common input into generated protocol types.
+- `open-graphene-sdk-operations` owns common operation input structs, adapter traits, and generic trait-based transaction builders.
+- Chain binding crates own generated-type bridge implementations and operation-specific JSON renderers.
 - The generator continues to emit protocol types.
 - Shared primitives are introduced only for proven stable value types.
 
@@ -425,25 +438,34 @@ TransferAdapter
 AccountCreateAdapter
 AssetIssueAdapter
 AssetCreateAdapter
+GrapheneOperationBuilderTypes
+TransferChainTypes
+AccountCreateChainTypes
+AssetIssueChainTypes
+AssetCreateChainTypes
+build_transfer_transaction_for(...)
+build_account_create_transaction_for(...)
+build_asset_issue_transaction_for(...)
+build_asset_create_transaction_for(...)
 ```
 
 ### Phase 3: implement transfer adapter pair
 
-Status: complete.
+Status: complete and superseded by generic builder extraction.
 
-Swaplock and BitShares implement `TransferAdapter` by mapping `TransferInput` into their existing generated transfer transaction builders. Tests prove the adapter transactions produce the same FC bytes as the manual builder path.
+Swaplock and BitShares implement `TransferAdapter`. The adapter path now maps `TransferInput` through the generic transfer builder and each chain's generated-type bridge. Tests prove the adapter transactions produce the same FC bytes as the chain-local builder path.
 
 ### Phase 4: expand to account_create
 
-Status: complete.
+Status: complete and superseded by generic builder extraction.
 
-Swaplock and BitShares implement `AccountCreateAdapter` by mapping `AccountCreateInput` into generated `Authority`, `AccountOptions`, and `AccountCreateOperation` values through the existing manual helpers. This proves the common input model handles nested generated structs without forcing those structs into shared primitives.
+Swaplock and BitShares implement `AccountCreateAdapter`. The adapter path now maps `AccountCreateInput` through the generic account-create builder and each chain's generated-type bridge. This proves the common input model handles nested generated authority/options construction without forcing those structs into shared primitives.
 
 ### Phase 5: expand to asset_issue and asset_create
 
-Status: complete.
+Status: complete and superseded by generic builder extraction.
 
-Swaplock and BitShares implement `AssetIssueAdapter` and `AssetCreateAdapter`. The asset-create adapter remains UIA-only and preserves the existing fail-closed behavior for bitassets, prediction markets, non-empty lists, and extension-heavy options.
+Swaplock and BitShares implement `AssetIssueAdapter` and `AssetCreateAdapter`. The adapter path now maps both inputs through generic builders and each chain's generated-type bridge. The asset-create builder remains UIA-only and preserves the existing fail-closed behavior for bitassets, prediction markets, non-empty lists, and extension-heavy options.
 
 ### Phase 6: add caller-facing input constructors
 
@@ -460,21 +482,38 @@ AssetCreateInput::uia(...)
 
 These constructors only wrap raw caller fields into existing common input structs. They do not add RPC, fee lookup, chain-state validation, generated protocol types, or new wire capabilities.
 
-### Phase 7: decide the next seam
+### Phase 7: extract generic trait-based builders
+
+Status: complete.
+
+`open-graphene-sdk-operations` now owns generic transaction builders for all four proven flows. These builders are parameterized by chain-specific generated-type bridge traits rather than by generated concrete types.
+
+The shared base trait captures common Graphene operation-building primitives. Per-operation traits add only the generated types and constructors needed for that operation. Swaplock and BitShares each provide one operation-builder marker type that implements the base trait once and the operation-specific traits for the supported flows.
+
+The builder layer changes the implementation path but not the responsibility boundary:
+
+```text
+common input -> generic builder -> chain generated-type bridge -> generated Transaction
+```
+
+Broadcast JSON rendering remains chain-local and operation-specific.
+
+### Phase 8: decide the next seam
 
 Status: next decision.
 
-The current evidence says common input models are the right SDK seam. The next decision should be one of:
+The current evidence says common input models plus trait-based builders are the right SDK seam. The next decision should be one of:
 
 1. **Validation:** add optional common input validation before mapping to generated chain types.
 2. **Adapter ergonomics:** add inherent methods on chain adapter structs so callers do not need to import traits explicitly.
 3. **Broadcast JSON shell reuse:** factor only the outer signed-transaction JSON shell if duplication remains obvious.
-4. **Shared primitives:** extract `AssetId + Asset` only if adapter ergonomics or validation clearly improve.
-5. **Generator support:** keep deferred until a third chain or downstream demand makes manual wrappers too costly.
+4. **Builder ergonomics:** reduce any remaining boilerplate in chain generated-type bridge implementations if more operations are added.
+5. **Shared primitives:** extract `AssetId + Asset` only if adapter ergonomics or validation clearly improve.
+6. **Generator support:** keep deferred until a third chain or downstream demand makes manual bridges too costly.
 
 ## Success criteria for this architecture
 
-- Common input models are stable across Swaplock and BitShares for all four current flows.
+- Common input models and trait-based builders are stable across Swaplock and BitShares for all four current flows.
 - Chain-specific adapter implementations remain thin and obvious.
 - No RPC/signing/broadcast behavior enters `open-graphene-sdk-operations` adapter traits.
 - No generator SDK surface is required to remove most duplicated intent modeling.
@@ -489,8 +528,8 @@ The current evidence says common input models are the right SDK seam. The next d
 
 ## Recommendation
 
-Use common SDK input models plus chain-specific adapters as the proven SDK seam.
+Use common SDK input models plus trait-based builders as the proven SDK seam.
 
 Do not extract shared protocol primitives yet. Do not implement generated SDK adapters yet.
 
-The next implementation slice should improve validation or adapter-call ergonomics around the existing common inputs and adapter structs, not change the protocol model. Shared primitives should be revisited only when a concrete adapter friction point needs them.
+The next implementation slice should improve validation, adapter-call ergonomics, or broadcast JSON shell reuse around the existing common inputs and adapter structs, not change the protocol model. Shared primitives should be revisited only when a concrete adapter friction point needs them.

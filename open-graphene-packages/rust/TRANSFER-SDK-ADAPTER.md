@@ -24,7 +24,9 @@ Each flow also has a common-input adapter wrapper using `open-graphene-sdk-opera
 | asset issue | `AssetIssueInput` | `SwaplockAssetIssueAdapter` | `BitSharesAssetIssueAdapter` |
 | asset create | `AssetCreateInput` | `SwaplockAssetCreateAdapter` | `BitSharesAssetCreateAdapter` |
 
-The wrappers are deliberately thin: they map common SDK input values into the existing manual chain builders. They do not replace the operation-specific builders or broadcast JSON renderers.
+The wrappers are deliberately thin: they pass common SDK input values into generic operation builders from `open-graphene-sdk-operations`. Each chain supplies a generated-type bridge that tells the generic builder how to construct that chain's raw generated operation and transaction types.
+
+The chain-local builder functions and broadcast JSON renderers remain public and operation-specific. The local builder functions preserve the old raw generated-type API shape, but for the current proven flows they delegate to the same common builder path used by the adapter structs.
 
 The pattern is intentionally manual for now. It is a candidate for future generator support, but it should not be generated until the seam remains stable across more chain pressure, more SDK flows, or downstream demand.
 
@@ -35,11 +37,16 @@ An operation adapter does two narrow things:
 1. Build a raw generated `Transaction` containing one generated operation.
 2. Render a generated `SignedTransaction` into the JSON object shape expected by Graphene `broadcast_transaction` for that operation.
 
-The adapter preserves protocol-level types. It does not introduce a parallel SDK transaction model.
+The transaction-building side now has two entry points:
+
+- A chain-local builder function that accepts operation-specific raw fields or generated helper values.
+- A common-input adapter wrapper that accepts the corresponding `open-graphene-sdk-operations` input model.
+
+For the current four proven flows, both entry points converge on the same generic trait-based builder from `open-graphene-sdk-operations` and a chain-local generated-type bridge. The adapter still preserves protocol-level types. It does not introduce a parallel SDK transaction model.
 
 ## Common transaction API shape
 
-Each operation adapter follows this shape:
+Each operation adapter follows this local raw-input shape:
 
 ```rust
 pub struct SomeOperationTransactionInput {
@@ -56,13 +63,15 @@ pub fn signed_transaction_json(
 ) -> Result<serde_json::Value, SomeOperationJsonError>;
 ```
 
+The build function may internally delegate to the common trait-based builder, but its public role is still to preserve a raw chain-local helper API.
+
 Amounts are raw chain amounts, not human decimal amounts. Decimal conversion belongs outside chain adapters.
 
 Each `signed_transaction_json` function is intentionally operation-specific and fail-closed. A transfer renderer must not render account-create operations, and an account-create renderer must not render transfer operations.
 
 ## Common-input wrapper API shape
 
-Each operation adapter may also expose a zero-sized wrapper struct implementing the corresponding `open-graphene-sdk-operations` trait:
+Each operation adapter may also expose a zero-sized wrapper struct implementing the corresponding `open-graphene-sdk-operations` adapter trait:
 
 ```rust
 pub struct ChainSomeOperationAdapter;
@@ -74,16 +83,24 @@ impl open_graphene_sdk_operations::SomeOperationAdapter for ChainSomeOperationAd
     fn build_some_operation_transaction(
         input: open_graphene_sdk_operations::SomeOperationInput,
     ) -> Result<Self::Transaction, Self::Error> {
-        Ok(build_some_operation_transaction(SomeOperationTransactionInput {
-            // map common input fields into the existing manual input
-        }))
+        Ok(open_graphene_sdk_operations::build_some_operation_transaction_for::<
+            ChainOperationBuilderTypes,
+        >(input))
     }
 }
 ```
 
 These wrappers exist to prove a coherent cross-chain SDK input seam. They should remain boring pass-through adapters unless a real validation or ergonomics need appears.
 
-They must not bypass the manual builder or duplicate operation construction logic. The manual builder remains the source of chain-specific generated protocol construction.
+They should not perform operation construction themselves. Operation construction should live in the generic builder plus the chain-local generated-type bridge. Broadcast JSON rendering remains operation-specific and chain-local.
+
+## Generated-type bridge API shape
+
+Each chain binding crate provides one zero-sized operation-builder marker for its generated protocol types. That marker implements a shared base trait for common Graphene construction primitives and per-operation traits for the operations it supports.
+
+The base trait supplies common generated-type construction such as assets, empty future extensions, and one-operation transactions. Per-operation traits supply only operation-specific generated values, such as transfer operations, account-create authority/options, asset-issue operations, or UIA asset-create options.
+
+This keeps generated concrete types out of `open-graphene-sdk-operations` while avoiding duplicated transaction assembly logic in every operation adapter.
 
 ## Transfer adapter
 
@@ -155,7 +172,7 @@ generated::ids::AssetId
 
 The operation static variant must contain `AccountCreateOperation` at Graphene wire tag `5`.
 
-The adapter input accepts generated `Authority` and `AccountOptions` values. It also accepts optional generated `AccountCreateOperationExt`, but current FC and broadcast JSON support is fail-closed to the empty extension set only. This avoids inventing a parallel account model while not pretending special authority wire support is complete.
+The chain-local raw builder input accepts generated `Authority` and `AccountOptions` values. It also accepts optional generated `AccountCreateOperationExt`, but current FC and broadcast JSON support is fail-closed to the empty extension set only. This avoids inventing a parallel account model while not pretending special authority wire support is complete.
 
 The adapter provides small convenience constructors for the common simple case:
 
@@ -337,7 +354,7 @@ Those responsibilities belong in examples, CLIs, or higher-level SDK orchestrati
 Each adapter should have local tests proving:
 
 1. The build function produces the same FC bytes as an equivalent hand-built generated transaction.
-2. The common-input wrapper produces the same FC bytes as the manual builder path.
+2. The common-input wrapper produces the same FC bytes as the chain-local builder path.
 3. The JSON renderer emits the expected Graphene broadcast JSON shape.
 4. The JSON renderer fails closed when given a signed transaction containing a different operation.
 
@@ -348,7 +365,7 @@ These tests are enough for the adapter layer. Live chain tests belong to chain-s
 ## Why this is not generated yet
 
 The repeated Swaplock and BitShares implementations show that generator support is plausible for transfer, account-create, asset-issue, and asset-create.
-The common-input wrappers now show that the stable seam is not generator-emitted SDK code or shared protocol primitives; it is a shared caller input model mapped by explicit chain adapters.
+The common-input wrappers and generic builders now show that the stable seam is not generator-emitted SDK code or shared protocol primitives; it is a shared caller input model plus explicit generated-type bridges in each chain crate.
 
 Generation is still deferred because manual adapters are small, the ergonomics are not fully proven, and generated SDK capabilities would freeze a public API.
 
