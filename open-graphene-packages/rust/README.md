@@ -14,4 +14,5 @@ This directory contains Rust runtime crates, SDK helper crates, and generated ch
 - [Manual SDK Adapter Patterns](TRANSFER-SDK-ADAPTER.md) describes the operation helper boundary used by chain binding crates and the current trait-builder pattern.
 - [Common SDK Input and Chain Adapter Design](SDK-INPUT-ADAPTER-DESIGN.md) describes the shared input-model seam and how chain-specific generated types plug into common operation builders.
 - [SDK Builder Bridge Ergonomics Spike](SDK-BUILDER-BRIDGE-ERGONOMICS.md) measures current Swaplock/BitShares bridge duplication and records why the explicit generated-type bridge remains preferable for now.
+- [Limit Order Create SDK Design Spike](LIMIT-ORDER-CREATE-SDK-DESIGN.md) compares raw protocol-shaped, price-based, and builder-style input designs for a future `limit_order_create` flow.
 - [Generated SDK Adapter Capability Design](../../open-graphene/crates/open-graphene-gen-bindings-rs/SDK-CAPABILITY-DESIGN.md) records the opt-in generated SDK adapter direction and the boundary for small protocol-level generated helpers.
