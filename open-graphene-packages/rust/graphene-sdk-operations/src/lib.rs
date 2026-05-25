@@ -5,7 +5,10 @@ pub mod builder;
 pub mod common;
 pub mod transfer;
 
-pub use account_create::{AccountCreateAdapter, AccountCreateInput};
+pub use account_create::{
+    AccountCreateAdapter, AccountCreateChainTypes, AccountCreateInput,
+    build_account_create_transaction_for,
+};
 pub use asset_create::{AssetCreateAdapter, AssetCreateInput};
 pub use asset_issue::{
     AssetIssueAdapter, AssetIssueChainTypes, AssetIssueInput, build_asset_issue_transaction_for,

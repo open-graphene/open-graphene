@@ -1,6 +1,9 @@
 use std::convert::Infallible;
 
-use open_graphene_sdk_operations::{AccountCreateAdapter, AccountCreateInput};
+use open_graphene_sdk_operations::{
+    build_account_create_transaction_for, AccountCreateAdapter, AccountCreateChainTypes,
+    AccountCreateInput,
+};
 use serde_json::{json, Value};
 use thiserror::Error;
 
@@ -10,6 +13,7 @@ use crate::generated::static_variants::{FutureExtensions, Operation};
 use crate::generated::types::{
     AccountCreateOperationExt, AccountOptions, Asset, Authority, SignedTransaction, Transaction,
 };
+use crate::sdk::operation_builder_types::SwaplockOperationBuilderTypes;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct AccountCreateTransactionInput {
@@ -28,6 +32,53 @@ pub struct AccountCreateTransactionInput {
     pub extensions: Option<AccountCreateOperationExt>,
 }
 
+impl AccountCreateChainTypes for SwaplockOperationBuilderTypes {
+    type Authority = Authority;
+    type AccountOptions = AccountOptions;
+    type AccountCreateOperation = AccountCreateOperation;
+    type AccountCreateOperationExtensions = AccountCreateOperationExt;
+
+    fn single_key_authority(public_key: String) -> Self::Authority {
+        crate::sdk::account_create::single_key_authority(public_key)
+    }
+
+    fn account_options(memo_key: String, voting_account: Self::AccountId) -> Self::AccountOptions {
+        crate::sdk::account_create::account_options(memo_key, voting_account.0)
+    }
+
+    fn empty_account_create_extensions() -> Self::AccountCreateOperationExtensions {
+        crate::sdk::account_create::empty_account_create_extensions()
+    }
+
+    fn account_create_operation(
+        fee: Self::Asset,
+        registrar: Self::AccountId,
+        referrer: Self::AccountId,
+        referrer_percent: u16,
+        name: String,
+        owner: Self::Authority,
+        active: Self::Authority,
+        options: Self::AccountOptions,
+        extensions: Self::AccountCreateOperationExtensions,
+    ) -> Self::AccountCreateOperation {
+        AccountCreateOperation {
+            fee,
+            registrar,
+            referrer,
+            referrer_percent,
+            name,
+            owner,
+            active,
+            options,
+            extensions,
+        }
+    }
+
+    fn operation_account_create(operation: Self::AccountCreateOperation) -> Self::Operation {
+        Operation::AccountCreateOperation(Box::new(operation))
+    }
+}
+
 pub struct SwaplockAccountCreateAdapter;
 
 impl AccountCreateAdapter for SwaplockAccountCreateAdapter {
@@ -37,25 +88,9 @@ impl AccountCreateAdapter for SwaplockAccountCreateAdapter {
     fn build_account_create_transaction(
         input: AccountCreateInput,
     ) -> Result<Self::Transaction, Self::Error> {
-        Ok(
-            crate::sdk::account_create::build_account_create_transaction(
-                AccountCreateTransactionInput {
-                    ref_block_num: input.header.ref_block_num,
-                    ref_block_prefix: input.header.ref_block_prefix,
-                    expiration: input.header.expiration,
-                    fee_amount: input.fee.amount,
-                    fee_asset_id: input.fee.asset_id,
-                    registrar_id: input.registrar.id,
-                    referrer_id: input.referrer.id,
-                    referrer_percent: input.referrer_percent,
-                    name: input.name,
-                    owner: single_key_authority(input.owner.public_key.value),
-                    active: single_key_authority(input.active.public_key.value),
-                    options: account_options(input.memo_key.value, input.voting_account.id),
-                    extensions: None,
-                },
-            ),
-        )
+        Ok(build_account_create_transaction_for::<
+            SwaplockOperationBuilderTypes,
+        >(input))
     }
 }
 

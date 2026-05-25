@@ -1,5 +1,6 @@
 use open_graphene_sdk_core::TransactionHeader;
 
+use crate::builder::GrapheneOperationBuilderTypes;
 use crate::common::{AccountRefInput, FeeInput, PublicKeyInput, SingleKeyAuthorityInput};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -51,6 +52,59 @@ pub trait AccountCreateAdapter {
     fn build_account_create_transaction(
         input: AccountCreateInput,
     ) -> Result<Self::Transaction, Self::Error>;
+}
+
+pub trait AccountCreateChainTypes: GrapheneOperationBuilderTypes {
+    type Authority;
+    type AccountOptions;
+    type AccountCreateOperation;
+    type AccountCreateOperationExtensions;
+
+    fn single_key_authority(public_key: String) -> Self::Authority;
+
+    fn account_options(memo_key: String, voting_account: Self::AccountId) -> Self::AccountOptions;
+
+    fn empty_account_create_extensions() -> Self::AccountCreateOperationExtensions;
+
+    fn account_create_operation(
+        fee: Self::Asset,
+        registrar: Self::AccountId,
+        referrer: Self::AccountId,
+        referrer_percent: u16,
+        name: String,
+        owner: Self::Authority,
+        active: Self::Authority,
+        options: Self::AccountOptions,
+        extensions: Self::AccountCreateOperationExtensions,
+    ) -> Self::AccountCreateOperation;
+
+    fn operation_account_create(operation: Self::AccountCreateOperation) -> Self::Operation;
+}
+
+pub fn build_account_create_transaction_for<C: AccountCreateChainTypes>(
+    input: AccountCreateInput,
+) -> C::Transaction {
+    let fee = C::asset(input.fee.amount, input.fee.asset_id.into());
+    let owner = C::single_key_authority(input.owner.public_key.value);
+    let active = C::single_key_authority(input.active.public_key.value);
+    let options = C::account_options(input.memo_key.value, input.voting_account.id.into());
+    let operation = C::account_create_operation(
+        fee,
+        input.registrar.id.into(),
+        input.referrer.id.into(),
+        input.referrer_percent,
+        input.name,
+        owner,
+        active,
+        options,
+        C::empty_account_create_extensions(),
+    );
+
+    C::transaction(
+        input.header,
+        vec![C::operation_account_create(operation)],
+        C::empty_extensions(),
+    )
 }
 
 #[cfg(test)]
