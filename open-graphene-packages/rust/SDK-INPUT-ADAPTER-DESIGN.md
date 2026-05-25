@@ -309,18 +309,18 @@ The generic asset-create builder maps `AssetCreateInput::uia` through `AssetCrea
 
 Common SDK inputs solve transaction construction intent. Broadcast JSON still needs chain-specific operation rendering because `Operation` is chain-specific.
 
-A common helper can render the outer signed transaction shell if a chain adapter supplies operation JSON and signatures:
+`open-graphene-sdk-operations` owns a common helper for the outer signed transaction shell. Chain adapters supply already-rendered operation JSON and signature bytes:
 
 ```rust
-pub struct SignedTransactionJsonParts {
+pub struct SignedTransactionJsonParts<'a> {
     pub ref_block_num: u16,
     pub ref_block_prefix: u32,
-    pub expiration: String,
+    pub expiration: &'a str,
     pub operations: Vec<serde_json::Value>,
-    pub signatures: Vec<Vec<u8>>,
+    pub signatures: Vec<&'a [u8]>,
 }
 
-pub fn signed_transaction_json(parts: SignedTransactionJsonParts) -> serde_json::Value;
+pub fn signed_transaction_broadcast_json(parts: SignedTransactionJsonParts<'_>) -> serde_json::Value;
 ```
 
 But each chain still needs a renderer such as:
@@ -527,7 +527,7 @@ The builder layer changes the implementation path but not the responsibility bou
 common input -> generic builder -> chain generated-type bridge -> generated Transaction
 ```
 
-Broadcast JSON rendering remains chain-local and operation-specific.
+The outer signed-transaction broadcast JSON shell is shared by `open-graphene-sdk-operations::signed_transaction_broadcast_json`. Operation JSON rendering remains chain-local and operation-specific.
 
 ### Phase 8: add validation and adapter-call ergonomics
 
@@ -537,16 +537,21 @@ The common input models remain string-backed, but ID-bearing inputs now have che
 
 The chain adapter structs also expose inherent build methods that delegate to their adapter trait implementations. Normal chain-package callers can call `ChainTransferAdapter::build_transfer_transaction(input)` without importing the corresponding common adapter trait, while generic code can still use the traits directly.
 
-### Phase 9: decide the next seam
+### Phase 9: share the broadcast JSON shell
+
+Status: complete.
+
+`open-graphene-sdk-operations` now exposes `signed_transaction_broadcast_json` and `SignedTransactionJsonParts` for the common Graphene signed-transaction broadcast envelope. Chain-local renderers still produce operation JSON first, so unsupported operations, non-empty extension sets, memo payloads, and unsupported asset variants remain fail-closed in the chain binding crates.
+
+### Phase 10: decide the next seam
 
 Status: next decision.
 
 The current evidence says common input models plus trait-based builders are the right SDK seam. The next decision should be one of:
 
-1. **Broadcast JSON shell reuse:** factor only the outer signed-transaction JSON shell if duplication remains obvious.
-2. **Builder ergonomics:** reduce any remaining boilerplate in chain generated-type bridge implementations if more operations are added.
-3. **Shared generated protocol primitives:** extract `AssetId + Asset` only if adapter ergonomics or validation clearly improve.
-4. **Generator support:** keep deferred until a third chain or downstream demand makes manual bridges too costly.
+1. **Builder ergonomics:** reduce any remaining boilerplate in chain generated-type bridge implementations if more operations are added.
+2. **Shared generated protocol primitives:** extract `AssetId + Asset` only if adapter ergonomics or validation clearly improve.
+3. **Generator support:** keep deferred until a third chain or downstream demand makes manual bridges too costly.
 
 ## Success criteria for this architecture
 
@@ -559,7 +564,6 @@ The current evidence says common input models plus trait-based builders are the 
 ## Open questions
 
 1. Should operation input fields keep storing strings plus validation helpers, or should a future breaking revision store `AccountIdRef` and `AssetIdRef` directly?
-2. Should only the outer signed-transaction broadcast JSON shell be shared, while operation JSON stays chain-specific?
 
 ## Recommendation
 
@@ -567,4 +571,4 @@ Use common SDK input models plus trait-based builders as the proven SDK seam.
 
 Do not extract shared generated protocol primitives yet. Do not implement generated SDK adapters yet.
 
-The next implementation slice should improve validation, adapter-call ergonomics, or broadcast JSON shell reuse around the existing common inputs and adapter structs, not change the protocol model. Shared generated protocol primitives should be revisited only when a concrete adapter friction point needs them.
+The next implementation slice should improve builder ergonomics or revisit shared generated protocol primitives around the existing common inputs and adapter structs, not change the protocol model. Shared generated protocol primitives should be revisited only when a concrete adapter friction point needs them.

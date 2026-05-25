@@ -362,6 +362,7 @@ version = "0.1.0"
 dependencies = [
  "open-graphene-sdk-core",
  "open-graphene-sdk-primitives",
+ "serde_json",
 ]
 
 [[package]]

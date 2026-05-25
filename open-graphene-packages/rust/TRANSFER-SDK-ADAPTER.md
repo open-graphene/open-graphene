@@ -102,7 +102,7 @@ The inherent method is for normal chain-package callers: it lets `ChainSomeOpera
 
 These wrappers exist to prove a coherent cross-chain SDK input seam. They should remain boring pass-through adapters unless a real validation or ergonomics need appears.
 
-They should not perform operation construction themselves. Operation construction should live in the generic builder plus the chain-local generated-type bridge. Broadcast JSON rendering remains operation-specific and chain-local.
+They should not perform operation construction themselves. Operation construction should live in the generic builder plus the chain-local generated-type bridge. The outer signed-transaction broadcast JSON envelope is shared by `open-graphene-sdk-operations::signed_transaction_broadcast_json`; operation JSON rendering remains operation-specific and chain-local.
 
 ## Generated-type bridge API shape
 

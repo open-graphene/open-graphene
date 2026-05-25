@@ -1,10 +1,10 @@
 use std::convert::Infallible;
 
 use open_graphene_sdk_operations::{
-    AccountCreateAdapter, AccountCreateChainTypes, AccountCreateInput,
-    build_account_create_transaction_for,
+    build_account_create_transaction_for, signed_transaction_broadcast_json, AccountCreateAdapter,
+    AccountCreateChainTypes, AccountCreateInput, SignedTransactionJsonParts,
 };
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use thiserror::Error;
 
 use crate::generated::ids::{AccountId, AssetId};
@@ -165,22 +165,25 @@ pub fn empty_account_create_extensions() -> AccountCreateOperationExt {
 pub fn signed_transaction_json(
     signed_transaction: &SignedTransaction,
 ) -> Result<Value, AccountCreateJsonError> {
-    Ok(json!({
-        "ref_block_num": signed_transaction.ref_block_num,
-        "ref_block_prefix": signed_transaction.ref_block_prefix,
-        "expiration": signed_transaction.expiration,
-        "operations": signed_transaction
-            .operations
-            .iter()
-            .map(operation_json)
-            .collect::<Result<Vec<_>, _>>()?,
-        "extensions": [],
-        "signatures": signed_transaction
-            .signatures
-            .iter()
-            .map(|signature| hex(&signature.0))
-            .collect::<Vec<_>>(),
-    }))
+    let operations = signed_transaction
+        .operations
+        .iter()
+        .map(operation_json)
+        .collect::<Result<Vec<_>, _>>()?;
+
+    Ok(signed_transaction_broadcast_json(
+        SignedTransactionJsonParts {
+            ref_block_num: signed_transaction.ref_block_num,
+            ref_block_prefix: signed_transaction.ref_block_prefix,
+            expiration: &signed_transaction.expiration,
+            operations,
+            signatures: signed_transaction
+                .signatures
+                .iter()
+                .map(|signature| signature.0.as_slice())
+                .collect(),
+        },
+    ))
 }
 
 fn operation_json(operation: &Operation) -> Result<Value, AccountCreateJsonError> {
@@ -258,18 +261,14 @@ fn asset_json(asset: &Asset) -> Value {
     })
 }
 
-fn hex(bytes: &[u8]) -> String {
-    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::generated::FcSerialize;
     use crate::generated::ids::VoteId;
     use crate::generated::operations::TransferOperation;
     use crate::generated::static_variants::SpecialAuthority;
     use crate::generated::types::{Signature, TopHoldersSpecialAuthority};
+    use crate::generated::FcSerialize;
 
     const PUBLIC_KEY: &str = "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV";
 
