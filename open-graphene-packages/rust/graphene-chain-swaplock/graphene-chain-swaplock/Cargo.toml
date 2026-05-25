@@ -3,10 +3,12 @@ name = "graphene-chain-swaplock"
 version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
-description = "High-level Swaplock SDK client and live scenario helpers for Open Graphene."
+description = "High-level Swaplock SDK operation helpers and examples for Open Graphene."
 
 [dependencies]
 graphene-chain-swaplock-bindings = { path = "../graphene-chain-swaplock-bindings" }
 open-graphene-sdk-core = { path = "../../graphene-sdk-core" }
+open-graphene-sdk-operations = { path = "../../graphene-sdk-operations" }
 serde_json = "1"
+thiserror = "2"
 tungstenite = { version = "0.24", features = ["native-tls"] }

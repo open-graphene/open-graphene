@@ -7,13 +7,13 @@ use open_graphene_sdk_operations::{
 use serde_json::{json, Value};
 use thiserror::Error;
 
-use crate::generated::ids::{AccountId, AssetId};
-use crate::generated::operations::AccountCreateOperation;
-use crate::generated::static_variants::{FutureExtensions, Operation};
-use crate::generated::types::{
+use crate::operation_builder_types::SwaplockOperationBuilderTypes;
+use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId};
+use graphene_chain_swaplock_bindings::generated::operations::AccountCreateOperation;
+use graphene_chain_swaplock_bindings::generated::static_variants::{FutureExtensions, Operation};
+use graphene_chain_swaplock_bindings::generated::types::{
     AccountCreateOperationExt, AccountOptions, Asset, Authority, SignedTransaction, Transaction,
 };
-use crate::sdk::operation_builder_types::SwaplockOperationBuilderTypes;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct AccountCreateTransactionInput {
@@ -39,15 +39,15 @@ impl AccountCreateChainTypes for SwaplockOperationBuilderTypes {
     type AccountCreateOperationExtensions = AccountCreateOperationExt;
 
     fn single_key_authority(public_key: String) -> Self::Authority {
-        crate::sdk::account_create::single_key_authority(public_key)
+        crate::account_create::single_key_authority(public_key)
     }
 
     fn account_options(memo_key: String, voting_account: Self::AccountId) -> Self::AccountOptions {
-        crate::sdk::account_create::account_options(memo_key, voting_account.0)
+        crate::account_create::account_options(memo_key, voting_account.0)
     }
 
     fn empty_account_create_extensions() -> Self::AccountCreateOperationExtensions {
-        crate::sdk::account_create::empty_account_create_extensions()
+        crate::account_create::empty_account_create_extensions()
     }
 
     fn account_create_operation(
@@ -264,11 +264,13 @@ fn asset_json(asset: &Asset) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::generated::ids::VoteId;
-    use crate::generated::operations::TransferOperation;
-    use crate::generated::static_variants::SpecialAuthority;
-    use crate::generated::types::{Signature, TopHoldersSpecialAuthority};
-    use crate::generated::FcSerialize;
+    use graphene_chain_swaplock_bindings::generated::ids::VoteId;
+    use graphene_chain_swaplock_bindings::generated::operations::TransferOperation;
+    use graphene_chain_swaplock_bindings::generated::static_variants::SpecialAuthority;
+    use graphene_chain_swaplock_bindings::generated::types::{
+        Signature, TopHoldersSpecialAuthority,
+    };
+    use graphene_chain_swaplock_bindings::generated::FcSerialize;
 
     const PUBLIC_KEY: &str = "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV";
 

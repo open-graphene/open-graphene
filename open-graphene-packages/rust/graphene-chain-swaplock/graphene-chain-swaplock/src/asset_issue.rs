@@ -8,10 +8,10 @@ use open_graphene_sdk_operations::{
 use serde_json::{json, Value};
 use thiserror::Error;
 
-use crate::generated::operations::AssetIssueOperation;
-use crate::generated::static_variants::Operation;
-use crate::generated::types::{Asset, SignedTransaction, Transaction};
-use crate::sdk::operation_builder_types::SwaplockOperationBuilderTypes;
+use crate::operation_builder_types::SwaplockOperationBuilderTypes;
+use graphene_chain_swaplock_bindings::generated::operations::AssetIssueOperation;
+use graphene_chain_swaplock_bindings::generated::static_variants::Operation;
+use graphene_chain_swaplock_bindings::generated::types::{Asset, SignedTransaction, Transaction};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct AssetIssueTransactionInput {
@@ -156,11 +156,11 @@ fn asset_json(asset: &Asset) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::generated::ids::{AccountId, AssetId};
-    use crate::generated::operations::TransferOperation;
-    use crate::generated::static_variants::FutureExtensions;
-    use crate::generated::types::{MemoData, Signature};
-    use crate::generated::FcSerialize;
+    use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId};
+    use graphene_chain_swaplock_bindings::generated::operations::TransferOperation;
+    use graphene_chain_swaplock_bindings::generated::static_variants::FutureExtensions;
+    use graphene_chain_swaplock_bindings::generated::types::{MemoData, Signature};
+    use graphene_chain_swaplock_bindings::generated::FcSerialize;
 
     fn input() -> AssetIssueTransactionInput {
         AssetIssueTransactionInput {

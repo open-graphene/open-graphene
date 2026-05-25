@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CHAIN_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PROJECT_ROOT="$(cd "${CHAIN_DIR}/../../.." && pwd)"
-BINDINGS_MANIFEST="${CHAIN_DIR}/graphene-chain-swaplock-bindings/Cargo.toml"
+CHAIN_MANIFEST="${CHAIN_DIR}/graphene-chain-swaplock/Cargo.toml"
 
 if [[ -f "${PROJECT_ROOT}/.env" ]]; then
   set -a
@@ -31,4 +31,4 @@ printf 'Broadcasting Swaplock transfer: %s -> %s amount=%s asset=%s\n' \
   "${SWAPLOCK_TRANSFER_AMOUNT}" \
   "${SWAPLOCK_ASSET_ID}"
 
-exec cargo run --manifest-path "${BINDINGS_MANIFEST}" --example signed_transfer_preview
+exec cargo run --manifest-path "${CHAIN_MANIFEST}" --example signed_transfer_preview

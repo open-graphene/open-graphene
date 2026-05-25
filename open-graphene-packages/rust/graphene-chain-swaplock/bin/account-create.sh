@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CHAIN_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PROJECT_ROOT="$(cd "${CHAIN_DIR}/../../.." && pwd)"
-BINDINGS_MANIFEST="${CHAIN_DIR}/graphene-chain-swaplock-bindings/Cargo.toml"
+CHAIN_MANIFEST="${CHAIN_DIR}/graphene-chain-swaplock/Cargo.toml"
 ENV_FILE="${PROJECT_ROOT}/.env"
 
 if [[ -f "${ENV_FILE}" ]]; then
@@ -21,4 +21,4 @@ fi
 NEW_ACCOUNT="${SWAPLOCK_NEW_ACCOUNT:-auto-generated}"
 echo "Broadcasting Swaplock account_create: registrar=${SWAPLOCK_ACCOUNT} new_account=${NEW_ACCOUNT}"
 
-exec cargo run --manifest-path "${BINDINGS_MANIFEST}" --example account_create_preview
+exec cargo run --manifest-path "${CHAIN_MANIFEST}" --example account_create_preview

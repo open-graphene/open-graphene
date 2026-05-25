@@ -8,7 +8,7 @@ This directory contains Rust runtime crates, SDK helper crates, and generated ch
 - `graphene-sdk-primitives` (`open-graphene-sdk-primitives`): stable chain-agnostic SDK value references and validators such as object IDs, account IDs, asset IDs, asset amounts, limit-order IDs, and operation-history IDs.
 - `graphene-sdk-core` (`open-graphene-sdk-core`): pure SDK helpers such as amount conversion, transaction headers, and balance checks; re-exports SDK primitives for compatibility.
 - `graphene-sdk-operations` (`open-graphene-sdk-operations`): common operation input models, adapter traits, and generic trait-based transaction builders, split one operation per module.
-- `graphene-chain-swaplock`: public Swaplock SDK facade exposing high-level operation modules backed by `graphene-chain-swaplock-bindings`; live RPC orchestration is kept in crate examples rather than the bindings crate.
+- `graphene-chain-swaplock`: Swaplock-specific SDK operation modules and examples; depends on `graphene-chain-swaplock-bindings` for generated protocol types, while the bindings crate itself contains no high-level SDK operation code.
 
 ## Architecture notes
 

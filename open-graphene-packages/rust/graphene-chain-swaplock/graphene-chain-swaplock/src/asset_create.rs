@@ -8,13 +8,13 @@ use open_graphene_sdk_operations::{
 use serde_json::{json, Value};
 use thiserror::Error;
 
-use crate::generated::ids::AssetId;
-use crate::generated::operations::AssetCreateOperation;
-use crate::generated::static_variants::{FutureExtensions, Operation};
-use crate::generated::types::{
+use crate::operation_builder_types::SwaplockOperationBuilderTypes;
+use graphene_chain_swaplock_bindings::generated::ids::AssetId;
+use graphene_chain_swaplock_bindings::generated::operations::AssetCreateOperation;
+use graphene_chain_swaplock_bindings::generated::static_variants::{FutureExtensions, Operation};
+use graphene_chain_swaplock_bindings::generated::types::{
     AdditionalAssetOptions, Asset, AssetOptions, Price, SignedTransaction, Transaction,
 };
-use crate::sdk::operation_builder_types::SwaplockOperationBuilderTypes;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct AssetCreateTransactionInput {
@@ -41,7 +41,7 @@ impl AssetCreateChainTypes for SwaplockOperationBuilderTypes {
     }
 
     fn empty_asset_create_additional_options() -> Self::AdditionalAssetOptions {
-        crate::sdk::asset_create::empty_additional_asset_options()
+        crate::asset_create::empty_additional_asset_options()
     }
 
     fn asset_options(
@@ -284,10 +284,12 @@ fn asset_json(asset: &Asset) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::generated::ids::AccountId;
-    use crate::generated::operations::TransferOperation;
-    use crate::generated::types::{BitassetOptions, BitassetOptionsExt, Signature};
-    use crate::generated::FcSerialize;
+    use graphene_chain_swaplock_bindings::generated::ids::AccountId;
+    use graphene_chain_swaplock_bindings::generated::operations::TransferOperation;
+    use graphene_chain_swaplock_bindings::generated::types::{
+        BitassetOptions, BitassetOptionsExt, Signature,
+    };
+    use graphene_chain_swaplock_bindings::generated::FcSerialize;
 
     fn input() -> AssetCreateTransactionInput {
         AssetCreateTransactionInput {

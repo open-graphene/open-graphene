@@ -209,7 +209,9 @@ version = "0.1.0"
 dependencies = [
  "graphene-chain-swaplock-bindings",
  "open-graphene-sdk-core",
+ "open-graphene-sdk-operations",
  "serde_json",
+ "thiserror 2.0.18",
  "tungstenite",
 ]
 

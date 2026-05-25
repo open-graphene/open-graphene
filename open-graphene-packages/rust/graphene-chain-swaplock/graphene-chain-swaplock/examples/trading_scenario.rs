@@ -3,34 +3,34 @@ use std::error::Error;
 use std::thread::sleep;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use graphene_chain_swaplock_bindings::generated::fc::{
-    decode_public_key, is_graphene_canonical_compact_signature, verify_compact_signature_public_key,
-};
-use graphene_chain_swaplock_bindings::generated::ids::AssetId;
-use graphene_chain_swaplock_bindings::generated::static_variants::Operation;
-use graphene_chain_swaplock_bindings::generated::types::{Asset, SignedTransaction, Transaction};
-use graphene_chain_swaplock_bindings::sdk::account_create::{
+use graphene_chain_swaplock::account_create::{
     account_options, build_account_create_transaction,
     signed_transaction_json as account_create_json, single_key_authority,
     AccountCreateTransactionInput,
 };
-use graphene_chain_swaplock_bindings::sdk::asset_create::{
+use graphene_chain_swaplock::asset_create::{
     build_asset_create_transaction, signed_transaction_json as asset_create_json,
     AssetCreateTransactionInput,
 };
-use graphene_chain_swaplock_bindings::sdk::asset_issue::{
+use graphene_chain_swaplock::asset_issue::{
     build_asset_issue_transaction, signed_transaction_json as asset_issue_json,
     AssetIssueTransactionInput,
 };
-use graphene_chain_swaplock_bindings::sdk::limit_order_cancel::{
+use graphene_chain_swaplock::bindings::generated::fc::{
+    decode_public_key, is_graphene_canonical_compact_signature, verify_compact_signature_public_key,
+};
+use graphene_chain_swaplock::bindings::generated::ids::AssetId;
+use graphene_chain_swaplock::bindings::generated::static_variants::Operation;
+use graphene_chain_swaplock::bindings::generated::types::{Asset, SignedTransaction, Transaction};
+use graphene_chain_swaplock::limit_order_cancel::{
     build_limit_order_cancel_transaction, signed_transaction_json as limit_order_cancel_json,
     LimitOrderCancelTransactionInput,
 };
-use graphene_chain_swaplock_bindings::sdk::limit_order_create::{
+use graphene_chain_swaplock::limit_order_create::{
     build_limit_order_create_transaction, signed_transaction_json as limit_order_create_json,
     LimitOrderCreateTransactionInput,
 };
-use graphene_chain_swaplock_bindings::sdk::transfer::{
+use graphene_chain_swaplock::transfer::{
     build_transfer_transaction, signed_transaction_json as transfer_json, TransferTransactionInput,
 };
 use serde_json::{json, Value};

@@ -2,17 +2,17 @@ use std::env;
 use std::error::Error;
 use std::time::Duration;
 
-use graphene_chain_swaplock_bindings::generated::FcSerialize;
-use graphene_chain_swaplock_bindings::generated::fc::{
+use graphene_chain_swaplock::bindings::generated::fc::{
     decode_public_key, is_graphene_canonical_compact_signature, verify_compact_signature_public_key,
 };
-use graphene_chain_swaplock_bindings::generated::ids::AssetId;
-use graphene_chain_swaplock_bindings::generated::types::Asset;
-use graphene_chain_swaplock_bindings::sdk::transfer::{
-    TransferTransactionInput, build_transfer_transaction, signed_transaction_json,
+use graphene_chain_swaplock::bindings::generated::ids::AssetId;
+use graphene_chain_swaplock::bindings::generated::types::Asset;
+use graphene_chain_swaplock::bindings::generated::FcSerialize;
+use graphene_chain_swaplock::transfer::{
+    build_transfer_transaction, signed_transaction_json, TransferTransactionInput,
 };
-use serde_json::{Value, json};
-use tungstenite::{Message, WebSocket, connect};
+use serde_json::{json, Value};
+use tungstenite::{connect, Message, WebSocket};
 
 struct GrapheneRpc {
     socket: WebSocket<tungstenite::stream::MaybeTlsStream<std::net::TcpStream>>,
@@ -715,20 +715,18 @@ mod tests {
             }
         ]);
 
-        assert!(
-            find_transfer_confirmation(
-                &history,
-                &TransferConfirmationCriteria {
-                    from_id: "1.2.100",
-                    to_id: "1.2.0",
-                    amount: 100000,
-                    asset_id: "1.3.0",
-                    fee_amount: 10,
-                    min_block_num: 123,
-                },
-            )
-            .unwrap()
-            .is_none()
-        );
+        assert!(find_transfer_confirmation(
+            &history,
+            &TransferConfirmationCriteria {
+                from_id: "1.2.100",
+                to_id: "1.2.0",
+                amount: 100000,
+                asset_id: "1.3.0",
+                fee_amount: 10,
+                min_block_num: 123,
+            },
+        )
+        .unwrap()
+        .is_none());
     }
 }

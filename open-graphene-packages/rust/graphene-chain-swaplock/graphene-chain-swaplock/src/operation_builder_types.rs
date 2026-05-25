@@ -1,9 +1,9 @@
 use open_graphene_sdk_core::TransactionHeader;
 use open_graphene_sdk_operations::GrapheneOperationBuilderTypes;
 
-use crate::generated::ids::{AccountId, AssetId, LimitOrderId};
-use crate::generated::static_variants::{FutureExtensions, Operation};
-use crate::generated::types::{Asset, Transaction};
+use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId, LimitOrderId};
+use graphene_chain_swaplock_bindings::generated::static_variants::{FutureExtensions, Operation};
+use graphene_chain_swaplock_bindings::generated::types::{Asset, Transaction};
 
 pub struct SwaplockOperationBuilderTypes;
 

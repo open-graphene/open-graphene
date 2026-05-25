@@ -15,4 +15,3 @@ thiserror = "2"
 
 [dev-dependencies]
 time = { version = "0.3", features = ["formatting", "parsing"] }
-tungstenite = { version = "0.24", features = ["native-tls"] }

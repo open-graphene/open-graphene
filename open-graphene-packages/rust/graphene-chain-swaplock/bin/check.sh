@@ -7,6 +7,7 @@ RUST_PACKAGES_DIR="$(cd "${CHAIN_DIR}/.." && pwd)"
 SPEC_GEN="${CHAIN_DIR}/graphene-chain-swaplock-spec/bin/gen.sh"
 BINDINGS_GEN="${CHAIN_DIR}/graphene-chain-swaplock-bindings/bin/gen.sh"
 BINDINGS_MANIFEST="${CHAIN_DIR}/graphene-chain-swaplock-bindings/Cargo.toml"
+CHAIN_MANIFEST="${CHAIN_DIR}/graphene-chain-swaplock/Cargo.toml"
 FC_MANIFEST="${RUST_PACKAGES_DIR}/graphene-fc/Cargo.toml"
 SDK_CORE_MANIFEST="${RUST_PACKAGES_DIR}/graphene-sdk-core/Cargo.toml"
 
@@ -23,8 +24,11 @@ step "Generate Swaplock Rust bindings"
 step "Test Swaplock Rust bindings"
 cargo test --manifest-path "${BINDINGS_MANIFEST}"
 
+step "Test Swaplock high-level crate"
+cargo test --manifest-path "${CHAIN_MANIFEST}"
+
 step "Test Swaplock Rust examples"
-cargo test --manifest-path "${BINDINGS_MANIFEST}" --examples
+cargo test --manifest-path "${CHAIN_MANIFEST}" --examples
 
 step "Test shared graphene-fc runtime"
 cargo test --manifest-path "${FC_MANIFEST}"

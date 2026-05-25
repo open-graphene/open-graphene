@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CHAIN_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PROJECT_ROOT="$(cd "${CHAIN_DIR}/../../.." && pwd)"
-BINDINGS_MANIFEST="${CHAIN_DIR}/graphene-chain-swaplock-bindings/Cargo.toml"
+CHAIN_MANIFEST="${CHAIN_DIR}/graphene-chain-swaplock/Cargo.toml"
 ENV_FILE="${PROJECT_ROOT}/.env"
 
 if [[ -f "${ENV_FILE}" ]]; then
@@ -21,4 +21,4 @@ fi
 ASSET_SYMBOL="${SWAPLOCK_ASSET_SYMBOL:-auto-generated}"
 echo "Broadcasting Swaplock asset_create: issuer=${SWAPLOCK_ACCOUNT} symbol=${ASSET_SYMBOL}"
 
-exec cargo run --manifest-path "${BINDINGS_MANIFEST}" --example asset_create_preview
+exec cargo run --manifest-path "${CHAIN_MANIFEST}" --example asset_create_preview
