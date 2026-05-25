@@ -1,3 +1,6 @@
+use std::convert::Infallible;
+
+use open_graphene_sdk_core::{TransferAdapter, TransferInput};
 use serde_json::{Value, json};
 use thiserror::Error;
 
@@ -17,6 +20,29 @@ pub struct TransferTransactionInput {
     pub amount: i64,
     pub fee_amount: i64,
     pub fee_asset_id: String,
+}
+
+pub struct BitSharesTransferAdapter;
+
+impl TransferAdapter for BitSharesTransferAdapter {
+    type Transaction = Transaction;
+    type Error = Infallible;
+
+    fn build_transfer_transaction(input: TransferInput) -> Result<Self::Transaction, Self::Error> {
+        Ok(crate::sdk::transfer::build_transfer_transaction(
+            TransferTransactionInput {
+                ref_block_num: input.header.ref_block_num,
+                ref_block_prefix: input.header.ref_block_prefix,
+                expiration: input.header.expiration,
+                from_id: input.from.id,
+                to_id: input.to.id,
+                asset_id: input.amount.asset_id,
+                amount: input.amount.amount,
+                fee_amount: input.fee.amount,
+                fee_asset_id: input.fee.asset_id,
+            },
+        ))
+    }
 }
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -141,6 +167,39 @@ mod tests {
         assert_eq!(
             transaction.to_fc_bytes().unwrap(),
             expected.to_fc_bytes().unwrap()
+        );
+    }
+
+    #[test]
+    fn common_transfer_adapter_matches_manual_bitshares_builder() {
+        let adapter_transaction =
+            BitSharesTransferAdapter::build_transfer_transaction(TransferInput {
+                header: open_graphene_sdk_core::TransactionHeader {
+                    ref_block_num: 2,
+                    ref_block_prefix: 3,
+                    expiration: "2026-05-25T12:01:00".to_string(),
+                },
+                from: open_graphene_sdk_core::AccountRefInput::new("1.2.100"),
+                to: open_graphene_sdk_core::AccountRefInput::new("1.2.0"),
+                amount: open_graphene_sdk_core::AssetAmountInput::new(100_000, "1.3.0"),
+                fee: open_graphene_sdk_core::FeeInput::new(200_000, "1.3.0"),
+            })
+            .unwrap();
+        let manual_transaction = build_transfer_transaction(TransferTransactionInput {
+            ref_block_num: 2,
+            ref_block_prefix: 3,
+            expiration: "2026-05-25T12:01:00".to_string(),
+            from_id: "1.2.100".to_string(),
+            to_id: "1.2.0".to_string(),
+            asset_id: "1.3.0".to_string(),
+            amount: 100_000,
+            fee_amount: 200_000,
+            fee_asset_id: "1.3.0".to_string(),
+        });
+
+        assert_eq!(
+            adapter_transaction.to_fc_bytes().unwrap(),
+            manual_transaction.to_fc_bytes().unwrap()
         );
     }
 
