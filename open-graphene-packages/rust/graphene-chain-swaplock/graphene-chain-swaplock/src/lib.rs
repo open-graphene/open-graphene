@@ -4,6 +4,7 @@
 //! renderers. The lower-level `graphene-chain-swaplock-bindings` crate owns only
 //! generated protocol bindings.
 
+pub mod broadcast;
 pub mod database_api;
 pub mod network_broadcast_api;
 pub mod operations;

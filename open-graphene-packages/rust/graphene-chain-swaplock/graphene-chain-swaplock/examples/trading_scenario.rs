@@ -16,6 +16,7 @@ use graphene_chain_swaplock::asset_issue::{
     AssetIssueTransactionInput,
 };
 use graphene_chain_swaplock::bindings::generated::types::{SignedTransaction, Transaction};
+use graphene_chain_swaplock::broadcast::sign_and_broadcast_transaction;
 use graphene_chain_swaplock::database_api::{
     account_balance, active_public_key_for_account, lookup_account_id, lookup_account_id_optional,
     lookup_asset_id_optional, next_transaction_header, wait_for_account, wait_for_asset,
@@ -29,9 +30,7 @@ use graphene_chain_swaplock::limit_order_create::{
     build_limit_order_create_transaction, signed_transaction_json as limit_order_create_json,
     LimitOrderCreateTransactionInput,
 };
-use graphene_chain_swaplock::network_broadcast_api::broadcast_transaction;
 use graphene_chain_swaplock::rpc::GrapheneRpc;
-use graphene_chain_swaplock::signing::sign_transaction_checked;
 use graphene_chain_swaplock::transaction::apply_required_fee;
 use graphene_chain_swaplock::transfer::{
     build_transfer_transaction, signed_transaction_json as transfer_json, TransferTransactionInput,
@@ -605,14 +604,15 @@ where
     F: Fn(&SignedTransaction) -> Result<Value, E>,
     E: Error + 'static,
 {
-    let signed_transaction = sign_transaction_checked(&transaction, wif, expected_public_key)?;
-
     println!("Broadcasting {label}");
     println!("Digest: {}", hex(&transaction.signature_digest_bytes()?));
-    broadcast_transaction(
+    let signed_transaction = sign_and_broadcast_transaction(
         rpc,
         network_broadcast_api_id,
-        renderer(&signed_transaction).map_err(|err| -> Box<dyn Error> { Box::new(err) })?,
+        &transaction,
+        wif,
+        expected_public_key,
+        renderer,
     )?;
     println!("Broadcast submitted: {label}");
     Ok(signed_transaction)
