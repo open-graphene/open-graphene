@@ -20,10 +20,47 @@ pub const RPC_METHOD_COUNT: usize = 4;
 #[serde(transparent)]
 pub struct ObjectId(pub String);
 
+impl ObjectId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for ObjectId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for ObjectId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 /// Object ID for `account` protocol objects.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct AccountId(pub String);
+
+impl AccountId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for AccountId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for AccountId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl AccountId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 2;
@@ -33,6 +70,25 @@ impl AccountId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct AccountBalanceId(pub String);
+
+impl AccountBalanceId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for AccountBalanceId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for AccountBalanceId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl AccountBalanceId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 5;
@@ -42,6 +98,25 @@ impl AccountBalanceId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct AccountHistoryId(pub String);
+
+impl AccountHistoryId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for AccountHistoryId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for AccountHistoryId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl AccountHistoryId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 9;
@@ -51,6 +126,25 @@ impl AccountHistoryId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct AccountStatisticsId(pub String);
+
+impl AccountStatisticsId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for AccountStatisticsId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for AccountStatisticsId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl AccountStatisticsId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 6;
@@ -60,6 +154,25 @@ impl AccountStatisticsId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct AssetId(pub String);
+
+impl AssetId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for AssetId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for AssetId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl AssetId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 3;
@@ -69,6 +182,25 @@ impl AssetId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct AssetBitassetDataId(pub String);
+
+impl AssetBitassetDataId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for AssetBitassetDataId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for AssetBitassetDataId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl AssetBitassetDataId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 4;
@@ -78,6 +210,25 @@ impl AssetBitassetDataId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct AssetDynamicDataId(pub String);
+
+impl AssetDynamicDataId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for AssetDynamicDataId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for AssetDynamicDataId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl AssetDynamicDataId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 3;
@@ -87,6 +238,25 @@ impl AssetDynamicDataId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct BalanceId(pub String);
+
+impl BalanceId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for BalanceId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for BalanceId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl BalanceId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 15;
@@ -96,6 +266,25 @@ impl BalanceId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct BaseId(pub String);
+
+impl BaseId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for BaseId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for BaseId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl BaseId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 1;
@@ -105,6 +294,25 @@ impl BaseId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct BlindedBalanceId(pub String);
+
+impl BlindedBalanceId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for BlindedBalanceId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for BlindedBalanceId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl BlindedBalanceId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 10;
@@ -114,6 +322,25 @@ impl BlindedBalanceId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct BlockSummaryId(pub String);
+
+impl BlockSummaryId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for BlockSummaryId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for BlockSummaryId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl BlockSummaryId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 8;
@@ -123,6 +350,25 @@ impl BlockSummaryId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct BudgetRecordId(pub String);
+
+impl BudgetRecordId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for BudgetRecordId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for BudgetRecordId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl BudgetRecordId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 13;
@@ -132,6 +378,25 @@ impl BudgetRecordId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct BuybackId(pub String);
+
+impl BuybackId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for BuybackId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for BuybackId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl BuybackId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 15;
@@ -141,6 +406,25 @@ impl BuybackId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct CallOrderId(pub String);
+
+impl CallOrderId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for CallOrderId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for CallOrderId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl CallOrderId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 8;
@@ -150,6 +434,25 @@ impl CallOrderId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct ChainPropertyId(pub String);
+
+impl ChainPropertyId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for ChainPropertyId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for ChainPropertyId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl ChainPropertyId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 11;
@@ -159,6 +462,25 @@ impl ChainPropertyId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct CollateralBidId(pub String);
+
+impl CollateralBidId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for CollateralBidId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for CollateralBidId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl CollateralBidId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 17;
@@ -168,6 +490,25 @@ impl CollateralBidId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct CommitteeMemberId(pub String);
+
+impl CommitteeMemberId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for CommitteeMemberId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for CommitteeMemberId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl CommitteeMemberId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 5;
@@ -177,6 +518,25 @@ impl CommitteeMemberId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct CreditDealId(pub String);
+
+impl CreditDealId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for CreditDealId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for CreditDealId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl CreditDealId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 22;
@@ -186,6 +546,25 @@ impl CreditDealId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct CreditDealSummaryId(pub String);
+
+impl CreditDealSummaryId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for CreditDealSummaryId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for CreditDealSummaryId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl CreditDealSummaryId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 18;
@@ -195,6 +574,25 @@ impl CreditDealSummaryId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct CreditOfferId(pub String);
+
+impl CreditOfferId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for CreditOfferId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for CreditOfferId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl CreditOfferId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 21;
@@ -204,6 +602,25 @@ impl CreditOfferId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct CustomId(pub String);
+
+impl CustomId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for CustomId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for CustomId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl CustomId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 9;
@@ -213,6 +630,25 @@ impl CustomId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct CustomAuthorityId(pub String);
+
+impl CustomAuthorityId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for CustomAuthorityId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for CustomAuthorityId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl CustomAuthorityId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 17;
@@ -222,6 +658,25 @@ impl CustomAuthorityId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct DynamicGlobalPropertyId(pub String);
+
+impl DynamicGlobalPropertyId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for DynamicGlobalPropertyId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for DynamicGlobalPropertyId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl DynamicGlobalPropertyId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 1;
@@ -231,6 +686,25 @@ impl DynamicGlobalPropertyId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct FbaAccumulatorId(pub String);
+
+impl FbaAccumulatorId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for FbaAccumulatorId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for FbaAccumulatorId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl FbaAccumulatorId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 16;
@@ -240,6 +714,25 @@ impl FbaAccumulatorId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct ForceSettlementId(pub String);
+
+impl ForceSettlementId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for ForceSettlementId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for ForceSettlementId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl ForceSettlementId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 4;
@@ -249,6 +742,25 @@ impl ForceSettlementId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct GlobalPropertyId(pub String);
+
+impl GlobalPropertyId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for GlobalPropertyId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for GlobalPropertyId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl GlobalPropertyId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 0;
@@ -258,6 +770,25 @@ impl GlobalPropertyId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct HtlcId(pub String);
+
+impl HtlcId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for HtlcId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for HtlcId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl HtlcId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 16;
@@ -267,6 +798,25 @@ impl HtlcId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct LimitOrderId(pub String);
+
+impl LimitOrderId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for LimitOrderId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for LimitOrderId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl LimitOrderId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 7;
@@ -276,6 +826,25 @@ impl LimitOrderId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct LiquidityPoolId(pub String);
+
+impl LiquidityPoolId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for LiquidityPoolId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for LiquidityPoolId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl LiquidityPoolId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 19;
@@ -285,6 +854,25 @@ impl LiquidityPoolId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct NullId(pub String);
+
+impl NullId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for NullId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for NullId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl NullId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 0;
@@ -294,6 +882,25 @@ impl NullId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct OperationHistoryId(pub String);
+
+impl OperationHistoryId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for OperationHistoryId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for OperationHistoryId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl OperationHistoryId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 11;
@@ -303,6 +910,25 @@ impl OperationHistoryId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct ProposalId(pub String);
+
+impl ProposalId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for ProposalId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for ProposalId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl ProposalId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 10;
@@ -312,6 +938,25 @@ impl ProposalId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct Reserved0Id(pub String);
+
+impl Reserved0Id {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for Reserved0Id {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for Reserved0Id {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl Reserved0Id {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 2;
@@ -321,6 +966,25 @@ impl Reserved0Id {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct SametFundId(pub String);
+
+impl SametFundId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for SametFundId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for SametFundId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl SametFundId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 20;
@@ -330,6 +994,25 @@ impl SametFundId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct SpecialAuthorityId(pub String);
+
+impl SpecialAuthorityId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for SpecialAuthorityId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for SpecialAuthorityId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl SpecialAuthorityId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 14;
@@ -339,6 +1022,25 @@ impl SpecialAuthorityId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct TicketId(pub String);
+
+impl TicketId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for TicketId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for TicketId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl TicketId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 18;
@@ -348,6 +1050,25 @@ impl TicketId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct TransactionHistoryId(pub String);
+
+impl TransactionHistoryId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for TransactionHistoryId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for TransactionHistoryId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl TransactionHistoryId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 7;
@@ -357,6 +1078,25 @@ impl TransactionHistoryId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct VestingBalanceId(pub String);
+
+impl VestingBalanceId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for VestingBalanceId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for VestingBalanceId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl VestingBalanceId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 13;
@@ -367,10 +1107,48 @@ impl VestingBalanceId {
 #[serde(transparent)]
 pub struct VoteId(pub String);
 
+impl VoteId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for VoteId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for VoteId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
+
 /// Object ID for `withdraw_permission` protocol objects.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct WithdrawPermissionId(pub String);
+
+impl WithdrawPermissionId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for WithdrawPermissionId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for WithdrawPermissionId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl WithdrawPermissionId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 12;
@@ -380,6 +1158,25 @@ impl WithdrawPermissionId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct WitnessId(pub String);
+
+impl WitnessId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for WitnessId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for WitnessId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl WitnessId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 6;
@@ -389,6 +1186,25 @@ impl WitnessId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct WitnessScheduleId(pub String);
+
+impl WitnessScheduleId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for WitnessScheduleId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for WitnessScheduleId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl WitnessScheduleId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 12;
@@ -398,6 +1214,25 @@ impl WitnessScheduleId {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct WorkerId(pub String);
+
+impl WorkerId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for WorkerId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for WorkerId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 impl WorkerId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 14;

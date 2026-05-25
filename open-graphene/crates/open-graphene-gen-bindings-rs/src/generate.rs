@@ -137,6 +137,7 @@ fn render_ids(protocol: &Protocol) -> Result<String> {
     );
     out.push_str("#[serde(transparent)]\n");
     out.push_str("pub struct ObjectId(pub String);\n\n");
+    render_string_id_conversions(&mut out, "ObjectId");
 
     let mut emitted = BTreeSet::new();
     let mut protocol_object_ids = collect_protocol_object_id_names(protocol);
@@ -165,7 +166,8 @@ fn render_ids(protocol: &Protocol) -> Result<String> {
         ));
         out.push_str("#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]\n");
         out.push_str("#[serde(transparent)]\n");
-        out.push_str(&format!("pub struct {id_name}(pub String);\n"));
+        out.push_str(&format!("pub struct {id_name}(pub String);\n\n"));
+        render_string_id_conversions(&mut out, &id_name);
         if let Some(object_type) = object_type {
             if let Some(space) = object_type.object_space {
                 out.push_str(&format!("impl {id_name} {{\n"));
@@ -180,6 +182,24 @@ fn render_ids(protocol: &Protocol) -> Result<String> {
     }
 
     Ok(out)
+}
+
+fn render_string_id_conversions(out: &mut String, id_name: &str) {
+    out.push_str(&format!("impl {id_name} {{\n"));
+    out.push_str("    pub fn new(value: impl Into<String>) -> Self {\n");
+    out.push_str("        Self(value.into())\n");
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
+    out.push_str(&format!("impl From<String> for {id_name} {{\n"));
+    out.push_str("    fn from(value: String) -> Self {\n");
+    out.push_str("        Self(value)\n");
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
+    out.push_str(&format!("impl From<&str> for {id_name} {{\n"));
+    out.push_str("    fn from(value: &str) -> Self {\n");
+    out.push_str("        Self(value.to_string())\n");
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
 }
 
 fn render_types(protocol: &Protocol) -> Result<String> {
@@ -2007,6 +2027,10 @@ mod tests {
         assert!(output.contains("pub use types::*;"));
         assert!(ids.contains("pub const CHAIN_ID: &str = \"swaplock\";"));
         assert!(ids.contains("pub const RPC_METHOD_COUNT: usize = 0;"));
+        assert!(ids.contains("impl ObjectId"));
+        assert!(ids.contains("pub fn new(value: impl Into<String>) -> Self"));
+        assert!(ids.contains("impl From<String> for ObjectId"));
+        assert!(ids.contains("impl From<&str> for ObjectId"));
     }
 
     #[test]

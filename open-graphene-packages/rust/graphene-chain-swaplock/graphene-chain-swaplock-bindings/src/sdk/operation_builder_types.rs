@@ -7,18 +7,6 @@ use crate::generated::types::{Asset, Transaction};
 
 pub struct SwaplockOperationBuilderTypes;
 
-impl From<String> for AccountId {
-    fn from(id: String) -> Self {
-        Self(id)
-    }
-}
-
-impl From<String> for AssetId {
-    fn from(id: String) -> Self {
-        Self(id)
-    }
-}
-
 impl GrapheneOperationBuilderTypes for SwaplockOperationBuilderTypes {
     type Transaction = Transaction;
     type Operation = Operation;
