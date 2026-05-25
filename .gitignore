@@ -26,9 +26,9 @@ Thumbs.db
 .idea/
 .vscode/
 *.code-workspace
-.env
-.env.*
-!.env.example
+# .env
+# .env.*
+# !.env.example
 node_modules/
 .next/
 dist/
