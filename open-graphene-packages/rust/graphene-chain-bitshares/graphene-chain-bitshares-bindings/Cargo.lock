@@ -96,6 +96,7 @@ version = "0.1.0"
 dependencies = [
  "open-graphene-fc",
  "open-graphene-sdk-core",
+ "open-graphene-sdk-operations",
  "serde",
  "serde_json",
  "thiserror",
@@ -141,6 +142,13 @@ version = "0.1.0"
 dependencies = [
  "thiserror",
  "time",
+]
+
+[[package]]
+name = "open-graphene-sdk-operations"
+version = "0.1.0"
+dependencies = [
+ "open-graphene-sdk-core",
 ]
 
 [[package]]

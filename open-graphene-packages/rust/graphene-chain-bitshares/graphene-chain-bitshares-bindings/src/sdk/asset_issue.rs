@@ -1,7 +1,7 @@
 use std::convert::Infallible;
 
-use open_graphene_sdk_core::{AssetIssueAdapter, AssetIssueInput};
-use serde_json::{Value, json};
+use open_graphene_sdk_operations::{AssetIssueAdapter, AssetIssueInput};
+use serde_json::{json, Value};
 use thiserror::Error;
 
 use crate::generated::ids::{AccountId, AssetId};
@@ -28,7 +28,9 @@ impl AssetIssueAdapter for BitSharesAssetIssueAdapter {
     type Transaction = Transaction;
     type Error = Infallible;
 
-    fn build_asset_issue_transaction(input: AssetIssueInput) -> Result<Self::Transaction, Self::Error> {
+    fn build_asset_issue_transaction(
+        input: AssetIssueInput,
+    ) -> Result<Self::Transaction, Self::Error> {
         Ok(crate::sdk::asset_issue::build_asset_issue_transaction(
             AssetIssueTransactionInput {
                 ref_block_num: input.header.ref_block_num,
@@ -58,20 +60,22 @@ pub fn build_asset_issue_transaction(input: AssetIssueTransactionInput) -> Trans
         ref_block_num: input.ref_block_num,
         ref_block_prefix: input.ref_block_prefix,
         expiration: input.expiration,
-        operations: vec![Operation::AssetIssueOperation(Box::new(AssetIssueOperation {
-            fee: Asset {
-                amount: input.fee_amount,
-                asset_id: AssetId(input.fee_asset_id),
+        operations: vec![Operation::AssetIssueOperation(Box::new(
+            AssetIssueOperation {
+                fee: Asset {
+                    amount: input.fee_amount,
+                    asset_id: AssetId(input.fee_asset_id),
+                },
+                issuer: AccountId(input.issuer_id),
+                asset_to_issue: Asset {
+                    amount: input.amount,
+                    asset_id: AssetId(input.asset_id),
+                },
+                issue_to_account: AccountId(input.issue_to_account_id),
+                memo: None,
+                extensions: FutureExtensions::VoidT(Box::new(())),
             },
-            issuer: AccountId(input.issuer_id),
-            asset_to_issue: Asset {
-                amount: input.amount,
-                asset_id: AssetId(input.asset_id),
-            },
-            issue_to_account: AccountId(input.issue_to_account_id),
-            memo: None,
-            extensions: FutureExtensions::VoidT(Box::new(())),
-        }))],
+        ))],
         extensions: FutureExtensions::VoidT(Box::new(())),
     }
 }
@@ -133,9 +137,9 @@ fn hex(bytes: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::generated::FcSerialize;
     use crate::generated::operations::TransferOperation;
     use crate::generated::types::{MemoData, Signature};
+    use crate::generated::FcSerialize;
 
     fn input() -> AssetIssueTransactionInput {
         AssetIssueTransactionInput {
@@ -156,20 +160,22 @@ mod tests {
             ref_block_num: input.ref_block_num,
             ref_block_prefix: input.ref_block_prefix,
             expiration: input.expiration,
-            operations: vec![Operation::AssetIssueOperation(Box::new(AssetIssueOperation {
-                fee: Asset {
-                    amount: input.fee_amount,
-                    asset_id: AssetId(input.fee_asset_id),
+            operations: vec![Operation::AssetIssueOperation(Box::new(
+                AssetIssueOperation {
+                    fee: Asset {
+                        amount: input.fee_amount,
+                        asset_id: AssetId(input.fee_asset_id),
+                    },
+                    issuer: AccountId(input.issuer_id),
+                    asset_to_issue: Asset {
+                        amount: input.amount,
+                        asset_id: AssetId(input.asset_id),
+                    },
+                    issue_to_account: AccountId(input.issue_to_account_id),
+                    memo: None,
+                    extensions: FutureExtensions::VoidT(Box::new(())),
                 },
-                issuer: AccountId(input.issuer_id),
-                asset_to_issue: Asset {
-                    amount: input.amount,
-                    asset_id: AssetId(input.asset_id),
-                },
-                issue_to_account: AccountId(input.issue_to_account_id),
-                memo: None,
-                extensions: FutureExtensions::VoidT(Box::new(())),
-            }))],
+            ))],
             extensions: FutureExtensions::VoidT(Box::new(())),
         }
     }
@@ -188,20 +194,21 @@ mod tests {
 
     #[test]
     fn common_asset_issue_adapter_matches_manual_bitshares_builder() {
-        let adapter_transaction = BitSharesAssetIssueAdapter::build_asset_issue_transaction(
-            AssetIssueInput {
+        let adapter_transaction =
+            BitSharesAssetIssueAdapter::build_asset_issue_transaction(AssetIssueInput {
                 header: open_graphene_sdk_core::TransactionHeader {
                     ref_block_num: 2,
                     ref_block_prefix: 3,
                     expiration: "2026-05-25T12:01:00".to_string(),
                 },
-                fee: open_graphene_sdk_core::FeeInput::new(200_000, "1.3.0"),
-                issuer: open_graphene_sdk_core::AccountRefInput::new("1.2.100"),
-                issue_to_account: open_graphene_sdk_core::AccountRefInput::new("1.2.101"),
-                asset_to_issue: open_graphene_sdk_core::AssetAmountInput::new(100_000, "1.3.1"),
-            },
-        )
-        .unwrap();
+                fee: open_graphene_sdk_operations::FeeInput::new(200_000, "1.3.0"),
+                issuer: open_graphene_sdk_operations::AccountRefInput::new("1.2.100"),
+                issue_to_account: open_graphene_sdk_operations::AccountRefInput::new("1.2.101"),
+                asset_to_issue: open_graphene_sdk_operations::AssetAmountInput::new(
+                    100_000, "1.3.1",
+                ),
+            })
+            .unwrap();
         let manual_transaction = build_asset_issue_transaction(input());
 
         assert_eq!(

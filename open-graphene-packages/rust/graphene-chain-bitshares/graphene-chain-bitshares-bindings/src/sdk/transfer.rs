@@ -1,7 +1,7 @@
 use std::convert::Infallible;
 
-use open_graphene_sdk_core::{TransferAdapter, TransferInput};
-use serde_json::{Value, json};
+use open_graphene_sdk_operations::{TransferAdapter, TransferInput};
+use serde_json::{json, Value};
 use thiserror::Error;
 
 use crate::generated::ids::{AccountId, AssetId};
@@ -126,8 +126,8 @@ fn hex(bytes: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::generated::FcSerialize;
     use crate::generated::types::Signature;
+    use crate::generated::FcSerialize;
 
     #[test]
     fn builds_transfer_transaction_with_generated_bitshares_types() {
@@ -179,10 +179,10 @@ mod tests {
                     ref_block_prefix: 3,
                     expiration: "2026-05-25T12:01:00".to_string(),
                 },
-                from: open_graphene_sdk_core::AccountRefInput::new("1.2.100"),
-                to: open_graphene_sdk_core::AccountRefInput::new("1.2.0"),
-                amount: open_graphene_sdk_core::AssetAmountInput::new(100_000, "1.3.0"),
-                fee: open_graphene_sdk_core::FeeInput::new(200_000, "1.3.0"),
+                from: open_graphene_sdk_operations::AccountRefInput::new("1.2.100"),
+                to: open_graphene_sdk_operations::AccountRefInput::new("1.2.0"),
+                amount: open_graphene_sdk_operations::AssetAmountInput::new(100_000, "1.3.0"),
+                fee: open_graphene_sdk_operations::FeeInput::new(200_000, "1.3.0"),
             })
             .unwrap();
         let manual_transaction = build_transfer_transaction(TransferTransactionInput {

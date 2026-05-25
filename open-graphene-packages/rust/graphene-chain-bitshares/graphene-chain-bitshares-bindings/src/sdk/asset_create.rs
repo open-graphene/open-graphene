@@ -1,7 +1,7 @@
 use std::convert::Infallible;
 
-use open_graphene_sdk_core::{AssetCreateAdapter, AssetCreateInput};
-use serde_json::{Value, json};
+use open_graphene_sdk_operations::{AssetCreateAdapter, AssetCreateInput};
+use serde_json::{json, Value};
 use thiserror::Error;
 
 use crate::generated::ids::{AccountId, AssetId};
@@ -232,9 +232,9 @@ fn hex(bytes: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::generated::FcSerialize;
     use crate::generated::operations::TransferOperation;
     use crate::generated::types::{BitassetOptions, BitassetOptionsExt, Signature};
+    use crate::generated::FcSerialize;
 
     fn input() -> AssetCreateTransactionInput {
         AssetCreateTransactionInput {
@@ -289,22 +289,21 @@ mod tests {
 
     #[test]
     fn common_asset_create_adapter_matches_manual_bitshares_builder() {
-        let adapter_transaction = BitSharesAssetCreateAdapter::build_asset_create_transaction(
-            AssetCreateInput {
+        let adapter_transaction =
+            BitSharesAssetCreateAdapter::build_asset_create_transaction(AssetCreateInput {
                 header: open_graphene_sdk_core::TransactionHeader {
                     ref_block_num: 2,
                     ref_block_prefix: 3,
                     expiration: "2026-05-25T12:01:00".to_string(),
                 },
-                fee: open_graphene_sdk_core::FeeInput::new(500_000, "1.3.0"),
-                issuer: open_graphene_sdk_core::AccountRefInput::new("1.2.100"),
+                fee: open_graphene_sdk_operations::FeeInput::new(500_000, "1.3.0"),
+                issuer: open_graphene_sdk_operations::AccountRefInput::new("1.2.100"),
                 symbol: "OGT12345".to_string(),
                 precision: 5,
                 max_supply: 1_000_000_000_000,
                 description: "open-graphene live asset_create proof".to_string(),
-            },
-        )
-        .unwrap();
+            })
+            .unwrap();
         let manual_transaction = build_asset_create_transaction(input());
 
         assert_eq!(

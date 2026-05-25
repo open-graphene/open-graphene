@@ -15,7 +15,7 @@ Four flows now repeat across both chains:
 - asset issue
 - asset create
 
-Each flow also has a common-input adapter wrapper using `open-graphene-sdk-core` input models and adapter traits:
+Each flow also has a common-input adapter wrapper using `open-graphene-sdk-operations` input models and adapter traits:
 
 | Flow | Common input | Swaplock wrapper | BitShares wrapper |
 | --- | --- | --- | --- |
@@ -62,17 +62,17 @@ Each `signed_transaction_json` function is intentionally operation-specific and 
 
 ## Common-input wrapper API shape
 
-Each operation adapter may also expose a zero-sized wrapper struct implementing the corresponding `open-graphene-sdk-core` trait:
+Each operation adapter may also expose a zero-sized wrapper struct implementing the corresponding `open-graphene-sdk-operations` trait:
 
 ```rust
 pub struct ChainSomeOperationAdapter;
 
-impl open_graphene_sdk_core::SomeOperationAdapter for ChainSomeOperationAdapter {
+impl open_graphene_sdk_operations::SomeOperationAdapter for ChainSomeOperationAdapter {
     type Transaction = Transaction;
     type Error = std::convert::Infallible;
 
     fn build_some_operation_transaction(
-        input: open_graphene_sdk_core::SomeOperationInput,
+        input: open_graphene_sdk_operations::SomeOperationInput,
     ) -> Result<Self::Transaction, Self::Error> {
         Ok(build_some_operation_transaction(SomeOperationTransactionInput {
             // map common input fields into the existing manual input

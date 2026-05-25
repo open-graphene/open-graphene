@@ -50,8 +50,8 @@ The common input and chain adapter seam is now implemented for the current two-c
 
 The proof is deliberately narrow:
 
-- The common input models live in `open-graphene-sdk-core`.
-- The adapter traits live in `open-graphene-sdk-core`.
+- The common operation input models live in `open-graphene-sdk-operations`.
+- The operation adapter traits live in `open-graphene-sdk-operations`.
 - Each chain binding crate owns its adapter structs and maps common inputs to generated chain `Transaction` values.
 - Existing manual builders and operation-specific broadcast JSON renderers remain the source of chain-specific protocol construction.
 - Tests compare generated FC bytes from common-input adapters with FC bytes from the existing manual builders.
@@ -71,9 +71,13 @@ open-graphene-protocol
   Asset, AssetId, Price, Signature, TimePointSec, stable object-id wrappers
 
 open-graphene-sdk-core
-  common SDK input models and pure helpers:
+  pure SDK helpers:
+  TransactionHeader, amount/header/balance helpers, object id refs
+
+open-graphene-sdk-operations
+  common operation input models and adapter traits:
   TransferInput, AccountCreateInput, AssetIssueInput, AssetCreateInput,
-  FeeInput, TransactionHeader, amount/header/balance helpers
+  FeeInput, TransferAdapter, AccountCreateAdapter, AssetIssueAdapter, AssetCreateAdapter
 
 graphene-chain-*-bindings
   generated protocol types and chain-specific adapters:
@@ -89,9 +93,9 @@ The generator remains responsible for protocol bindings. It should not own SDK o
 
 Common SDK input models should describe user intent in stable Graphene terms, not in generated chain-specific operation structs.
 
-### Shared primitive-style inputs
+### Shared primitive-style operation inputs
 
-The first common input types can live in `open-graphene-sdk-core` without depending on generated chain bindings:
+The first common operation input types live in `open-graphene-sdk-operations` without depending on generated chain bindings:
 
 ```rust
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -362,7 +366,7 @@ The generator does not need to understand SDK intent models.
 
 Instead:
 
-- `open-graphene-sdk-core` owns common input structs and adapter traits.
+- `open-graphene-sdk-operations` owns common operation input structs and adapter traits.
 - Chain binding crates own implementations that map common input into generated protocol types.
 - The generator continues to emit protocol types.
 - Shared primitives are introduced only for proven stable value types.
@@ -377,18 +381,35 @@ Status: complete.
 
 This document captured the decision to make common input models the SDK boundary before extracting shared protocol primitives or generating SDK adapters.
 
-### Phase 2: input models only
+### Phase 2: operation input models only
 
-Status: complete.
+Status: superseded by extraction.
 
-`open-graphene-sdk-core` now contains:
+The common operation input models and adapter traits now live in a separate crate:
 
 ```text
-input.rs
-adapter.rs
+open-graphene-packages/rust/graphene-sdk-operations
 ```
 
-with:
+Package name:
+
+```text
+open-graphene-sdk-operations
+```
+
+Module layout:
+
+```text
+src/common.rs
+src/transfer.rs
+src/account_create.rs
+src/asset_issue.rs
+src/asset_create.rs
+```
+
+Each operation has its own file. Shared value wrappers such as `FeeInput`, `AssetAmountInput`, `AccountRefInput`, `PublicKeyInput`, and `SingleKeyAuthorityInput` live in `common.rs`.
+
+The crate exports:
 
 ```text
 FeeInput
@@ -428,7 +449,7 @@ Swaplock and BitShares implement `AssetIssueAdapter` and `AssetCreateAdapter`. T
 
 Status: complete.
 
-`open-graphene-sdk-core` now exposes ergonomic constructors for the supported common input shapes:
+`open-graphene-sdk-operations` now exposes ergonomic constructors for the supported common operation input shapes:
 
 ```text
 TransferInput::new(...)
@@ -455,7 +476,7 @@ The current evidence says common input models are the right SDK seam. The next d
 
 - Common input models are stable across Swaplock and BitShares for all four current flows.
 - Chain-specific adapter implementations remain thin and obvious.
-- No RPC/signing/broadcast behavior enters `open-graphene-sdk-core` adapter traits.
+- No RPC/signing/broadcast behavior enters `open-graphene-sdk-operations` adapter traits.
 - No generator SDK surface is required to remove most duplicated intent modeling.
 - Shared primitives are introduced only where they reduce real adapter friction.
 
