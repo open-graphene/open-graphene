@@ -1,5 +1,6 @@
 use open_graphene_sdk_core::TransactionHeader;
 
+use crate::builder::GrapheneOperationBuilderTypes;
 use crate::common::{AccountRefInput, AssetAmountInput, FeeInput};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -39,17 +40,8 @@ pub trait AssetIssueAdapter {
     ) -> Result<Self::Transaction, Self::Error>;
 }
 
-pub trait AssetIssueChainTypes {
-    type Transaction;
-    type Operation;
+pub trait AssetIssueChainTypes: GrapheneOperationBuilderTypes {
     type AssetIssueOperation;
-    type Asset;
-    type AccountId: From<String>;
-    type AssetId: From<String>;
-    type FutureExtensions;
-
-    fn asset(amount: i64, asset_id: Self::AssetId) -> Self::Asset;
-    fn empty_extensions() -> Self::FutureExtensions;
 
     fn asset_issue_operation(
         fee: Self::Asset,
@@ -60,12 +52,6 @@ pub trait AssetIssueChainTypes {
     ) -> Self::AssetIssueOperation;
 
     fn operation_asset_issue(operation: Self::AssetIssueOperation) -> Self::Operation;
-
-    fn transaction(
-        header: TransactionHeader,
-        operations: Vec<Self::Operation>,
-        extensions: Self::FutureExtensions,
-    ) -> Self::Transaction;
 }
 
 pub fn build_asset_issue_transaction_for<C: AssetIssueChainTypes>(

@@ -7,10 +7,10 @@ use open_graphene_sdk_operations::{
 use serde_json::{json, Value};
 use thiserror::Error;
 
-use crate::generated::ids::{AccountId, AssetId};
 use crate::generated::operations::AssetIssueOperation;
-use crate::generated::static_variants::{FutureExtensions, Operation};
+use crate::generated::static_variants::Operation;
 use crate::generated::types::{Asset, SignedTransaction, Transaction};
+use crate::sdk::operation_builder_types::SwaplockOperationBuilderTypes;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct AssetIssueTransactionInput {
@@ -25,24 +25,11 @@ pub struct AssetIssueTransactionInput {
     pub fee_asset_id: String,
 }
 
-pub struct SwaplockAssetIssueTypes;
+#[deprecated(note = "use SwaplockOperationBuilderTypes instead")]
+pub type SwaplockAssetIssueTypes = SwaplockOperationBuilderTypes;
 
-impl AssetIssueChainTypes for SwaplockAssetIssueTypes {
-    type Transaction = Transaction;
-    type Operation = Operation;
+impl AssetIssueChainTypes for SwaplockOperationBuilderTypes {
     type AssetIssueOperation = AssetIssueOperation;
-    type Asset = Asset;
-    type AccountId = AccountId;
-    type AssetId = AssetId;
-    type FutureExtensions = FutureExtensions;
-
-    fn asset(amount: i64, asset_id: Self::AssetId) -> Self::Asset {
-        Asset { amount, asset_id }
-    }
-
-    fn empty_extensions() -> Self::FutureExtensions {
-        FutureExtensions::VoidT(Box::new(()))
-    }
 
     fn asset_issue_operation(
         fee: Self::Asset,
@@ -64,20 +51,6 @@ impl AssetIssueChainTypes for SwaplockAssetIssueTypes {
     fn operation_asset_issue(operation: Self::AssetIssueOperation) -> Self::Operation {
         Operation::AssetIssueOperation(Box::new(operation))
     }
-
-    fn transaction(
-        header: TransactionHeader,
-        operations: Vec<Self::Operation>,
-        extensions: Self::FutureExtensions,
-    ) -> Self::Transaction {
-        Transaction {
-            ref_block_num: header.ref_block_num,
-            ref_block_prefix: header.ref_block_prefix,
-            expiration: header.expiration,
-            operations,
-            extensions,
-        }
-    }
 }
 
 pub struct SwaplockAssetIssueAdapter;
@@ -89,7 +62,9 @@ impl AssetIssueAdapter for SwaplockAssetIssueAdapter {
     fn build_asset_issue_transaction(
         input: AssetIssueInput,
     ) -> Result<Self::Transaction, Self::Error> {
-        Ok(build_asset_issue_transaction_for::<SwaplockAssetIssueTypes>(input))
+        Ok(build_asset_issue_transaction_for::<
+            SwaplockOperationBuilderTypes,
+        >(input))
     }
 }
 
@@ -102,7 +77,7 @@ pub enum AssetIssueJsonError {
 }
 
 pub fn build_asset_issue_transaction(input: AssetIssueTransactionInput) -> Transaction {
-    build_asset_issue_transaction_for::<SwaplockAssetIssueTypes>(AssetIssueInput::new(
+    build_asset_issue_transaction_for::<SwaplockOperationBuilderTypes>(AssetIssueInput::new(
         TransactionHeader {
             ref_block_num: input.ref_block_num,
             ref_block_prefix: input.ref_block_prefix,
@@ -173,7 +148,9 @@ fn hex(bytes: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::generated::ids::{AccountId, AssetId};
     use crate::generated::operations::TransferOperation;
+    use crate::generated::static_variants::FutureExtensions;
     use crate::generated::types::{MemoData, Signature};
     use crate::generated::FcSerialize;
 

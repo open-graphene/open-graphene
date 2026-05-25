@@ -1,5 +1,6 @@
 use open_graphene_sdk_core::TransactionHeader;
 
+use crate::builder::GrapheneOperationBuilderTypes;
 use crate::common::{AccountRefInput, AssetAmountInput, FeeInput};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -38,17 +39,8 @@ pub trait TransferAdapter {
     fn build_transfer_transaction(input: TransferInput) -> Result<Self::Transaction, Self::Error>;
 }
 
-pub trait TransferChainTypes {
-    type Transaction;
-    type Operation;
+pub trait TransferChainTypes: GrapheneOperationBuilderTypes {
     type TransferOperation;
-    type Asset;
-    type AccountId: From<String>;
-    type AssetId: From<String>;
-    type FutureExtensions;
-
-    fn asset(amount: i64, asset_id: Self::AssetId) -> Self::Asset;
-    fn empty_extensions() -> Self::FutureExtensions;
 
     fn transfer_operation_without_memo(
         fee: Self::Asset,
@@ -59,12 +51,6 @@ pub trait TransferChainTypes {
     ) -> Self::TransferOperation;
 
     fn operation_transfer(operation: Self::TransferOperation) -> Self::Operation;
-
-    fn transaction(
-        header: TransactionHeader,
-        operations: Vec<Self::Operation>,
-        extensions: Self::FutureExtensions,
-    ) -> Self::Transaction;
 }
 
 pub fn build_transfer_transaction_for<C: TransferChainTypes>(

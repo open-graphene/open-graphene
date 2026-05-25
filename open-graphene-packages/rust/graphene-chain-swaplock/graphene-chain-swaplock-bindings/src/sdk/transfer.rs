@@ -7,10 +7,10 @@ use open_graphene_sdk_operations::{
 use serde_json::{json, Value};
 use thiserror::Error;
 
-use crate::generated::ids::{AccountId, AssetId};
 use crate::generated::operations::TransferOperation;
-use crate::generated::static_variants::{FutureExtensions, Operation};
+use crate::generated::static_variants::Operation;
 use crate::generated::types::{Asset, SignedTransaction, Transaction};
+use crate::sdk::operation_builder_types::SwaplockOperationBuilderTypes;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TransferTransactionInput {
@@ -25,36 +25,11 @@ pub struct TransferTransactionInput {
     pub fee_asset_id: String,
 }
 
-pub struct SwaplockTransferTypes;
+#[deprecated(note = "use SwaplockOperationBuilderTypes instead")]
+pub type SwaplockTransferTypes = SwaplockOperationBuilderTypes;
 
-impl From<String> for AccountId {
-    fn from(id: String) -> Self {
-        Self(id)
-    }
-}
-
-impl From<String> for AssetId {
-    fn from(id: String) -> Self {
-        Self(id)
-    }
-}
-
-impl TransferChainTypes for SwaplockTransferTypes {
-    type Transaction = Transaction;
-    type Operation = Operation;
+impl TransferChainTypes for SwaplockOperationBuilderTypes {
     type TransferOperation = TransferOperation;
-    type Asset = Asset;
-    type AccountId = AccountId;
-    type AssetId = AssetId;
-    type FutureExtensions = FutureExtensions;
-
-    fn asset(amount: i64, asset_id: Self::AssetId) -> Self::Asset {
-        Asset { amount, asset_id }
-    }
-
-    fn empty_extensions() -> Self::FutureExtensions {
-        FutureExtensions::VoidT(Box::new(()))
-    }
 
     fn transfer_operation_without_memo(
         fee: Self::Asset,
@@ -76,20 +51,6 @@ impl TransferChainTypes for SwaplockTransferTypes {
     fn operation_transfer(operation: Self::TransferOperation) -> Self::Operation {
         Operation::TransferOperation(Box::new(operation))
     }
-
-    fn transaction(
-        header: TransactionHeader,
-        operations: Vec<Self::Operation>,
-        extensions: Self::FutureExtensions,
-    ) -> Self::Transaction {
-        Transaction {
-            ref_block_num: header.ref_block_num,
-            ref_block_prefix: header.ref_block_prefix,
-            expiration: header.expiration,
-            operations,
-            extensions,
-        }
-    }
 }
 
 pub struct SwaplockTransferAdapter;
@@ -99,9 +60,9 @@ impl TransferAdapter for SwaplockTransferAdapter {
     type Error = Infallible;
 
     fn build_transfer_transaction(input: TransferInput) -> Result<Self::Transaction, Self::Error> {
-        Ok(build_transfer_transaction_for::<SwaplockTransferTypes>(
-            input,
-        ))
+        Ok(build_transfer_transaction_for::<
+            SwaplockOperationBuilderTypes,
+        >(input))
     }
 }
 
@@ -112,7 +73,7 @@ pub enum TransferJsonError {
 }
 
 pub fn build_transfer_transaction(input: TransferTransactionInput) -> Transaction {
-    build_transfer_transaction_for::<SwaplockTransferTypes>(TransferInput::new(
+    build_transfer_transaction_for::<SwaplockOperationBuilderTypes>(TransferInput::new(
         TransactionHeader {
             ref_block_num: input.ref_block_num,
             ref_block_prefix: input.ref_block_prefix,
@@ -179,6 +140,8 @@ fn hex(bytes: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::generated::ids::{AccountId, AssetId};
+    use crate::generated::static_variants::FutureExtensions;
     use crate::generated::types::Signature;
     use crate::generated::FcSerialize;
 
