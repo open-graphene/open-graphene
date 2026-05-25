@@ -33,6 +33,7 @@ use graphene_chain_swaplock::limit_order_create::{
     build_limit_order_create_transaction, signed_transaction_json as limit_order_create_json,
     LimitOrderCreateTransactionInput,
 };
+use graphene_chain_swaplock::network_broadcast_api::broadcast_transaction;
 use graphene_chain_swaplock::rpc::GrapheneRpc;
 use graphene_chain_swaplock::transfer::{
     build_transfer_transaction, signed_transaction_json as transfer_json, TransferTransactionInput,
@@ -671,10 +672,10 @@ where
 
     println!("Broadcasting {label}");
     println!("Digest: {}", hex(&transaction.signature_digest_bytes()?));
-    rpc.call_network_broadcast(
+    broadcast_transaction(
+        rpc,
         network_broadcast_api_id,
-        "broadcast_transaction",
-        json!([renderer(&signed_transaction).map_err(|err| -> Box<dyn Error> { Box::new(err) })?]),
+        renderer(&signed_transaction).map_err(|err| -> Box<dyn Error> { Box::new(err) })?,
     )?;
     println!("Broadcast submitted: {label}");
     Ok(signed_transaction)

@@ -5,6 +5,7 @@
 //! generated protocol bindings.
 
 pub mod database_api;
+pub mod network_broadcast_api;
 pub mod operations;
 pub mod rpc;
 
