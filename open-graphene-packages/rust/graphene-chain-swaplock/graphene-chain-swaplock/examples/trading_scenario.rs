@@ -1,6 +1,5 @@
 use std::env;
 use std::error::Error;
-use std::thread::sleep;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use graphene_chain_swaplock::account_create::{
@@ -19,12 +18,12 @@ use graphene_chain_swaplock::asset_issue::{
 use graphene_chain_swaplock::bindings::generated::fc::{
     decode_public_key, is_graphene_canonical_compact_signature, verify_compact_signature_public_key,
 };
-use graphene_chain_swaplock::bindings::generated::ids::AssetId;
 use graphene_chain_swaplock::bindings::generated::static_variants::Operation;
 use graphene_chain_swaplock::bindings::generated::types::{Asset, SignedTransaction, Transaction};
 use graphene_chain_swaplock::database_api::{
     account_balance, active_public_key_for_account, lookup_account_id, lookup_account_id_optional,
-    lookup_asset_id_optional, wait_for_account, wait_for_asset, wait_for_balance_at_least,
+    lookup_asset_id_optional, required_fee, wait_for_account, wait_for_asset,
+    wait_for_balance_at_least, wait_for_limit_order, wait_for_order_gone,
 };
 use graphene_chain_swaplock::limit_order_cancel::{
     build_limit_order_cancel_transaction, signed_transaction_json as limit_order_cancel_json,
@@ -620,45 +619,6 @@ where
     set_first_operation_fee(transaction, fee)
 }
 
-fn required_fee<F, E>(
-    rpc: &mut GrapheneRpc,
-    database_api_id: u64,
-    transaction: &Transaction,
-    fee_asset_id: &str,
-    renderer: F,
-) -> Result<Asset, Box<dyn Error>>
-where
-    F: Fn(&SignedTransaction) -> Result<Value, E>,
-    E: Error + 'static,
-{
-    let unsigned = SignedTransaction {
-        ref_block_num: transaction.ref_block_num,
-        ref_block_prefix: transaction.ref_block_prefix,
-        expiration: transaction.expiration.clone(),
-        operations: transaction.operations.clone(),
-        extensions: transaction.extensions.clone(),
-        signatures: Vec::new(),
-    };
-    let tx_json = renderer(&unsigned).map_err(|err| -> Box<dyn Error> { Box::new(err) })?;
-    let op_json = tx_json
-        .get("operations")
-        .and_then(Value::as_array)
-        .and_then(|operations| operations.first())
-        .cloned()
-        .ok_or("transaction JSON missing first operation")?;
-    let result = rpc.call_database(
-        database_api_id,
-        "get_required_fees",
-        json!([[op_json], fee_asset_id]),
-    )?;
-    parse_asset(
-        result
-            .as_array()
-            .and_then(|values| values.first())
-            .ok_or("get_required_fees returned no fee")?,
-    )
-}
-
 fn set_first_operation_fee(
     transaction: &mut Transaction,
     fee: Asset,
@@ -756,92 +716,6 @@ fn head_block(
             .ok_or("dynamic global properties missing time")?
             .to_string(),
     })
-}
-
-fn wait_for_limit_order(
-    rpc: &mut GrapheneRpc,
-    api_id: u64,
-    seller_id: &str,
-    asset_a_id: &str,
-    asset_b_id: &str,
-) -> Result<String, Box<dyn Error>> {
-    for _ in 0..20 {
-        if let Some(order_id) = find_limit_order(rpc, api_id, seller_id, asset_a_id, asset_b_id)? {
-            return Ok(order_id);
-        }
-        if let Some(order_id) = find_limit_order(rpc, api_id, seller_id, asset_b_id, asset_a_id)? {
-            return Ok(order_id);
-        }
-        sleep(Duration::from_millis(500));
-    }
-    Err(format!("limit order for seller {seller_id} was not found").into())
-}
-
-fn find_limit_order(
-    rpc: &mut GrapheneRpc,
-    api_id: u64,
-    seller_id: &str,
-    base_asset_id: &str,
-    quote_asset_id: &str,
-) -> Result<Option<String>, Box<dyn Error>> {
-    let orders = rpc.call_database(
-        api_id,
-        "get_limit_orders",
-        json!([base_asset_id, quote_asset_id, 100]),
-    )?;
-    let Some(orders) = orders.as_array() else {
-        return Err("get_limit_orders result is not an array".into());
-    };
-    for order in orders {
-        if order.get("seller").and_then(Value::as_str) == Some(seller_id) {
-            if let Some(id) = order.get("id").and_then(Value::as_str) {
-                return Ok(Some(id.to_string()));
-            }
-        }
-    }
-    Ok(None)
-}
-
-fn wait_for_order_gone(
-    rpc: &mut GrapheneRpc,
-    api_id: u64,
-    order_id: &str,
-) -> Result<(), Box<dyn Error>> {
-    for _ in 0..20 {
-        let result = rpc.call_database(api_id, "get_objects", json!([[order_id]]))?;
-        if result
-            .as_array()
-            .and_then(|values| values.first())
-            .is_some_and(Value::is_null)
-        {
-            println!("Order canceled: {order_id}");
-            return Ok(());
-        }
-        sleep(Duration::from_millis(500));
-    }
-    Err(format!("order still exists after cancel: {order_id}").into())
-}
-
-fn parse_asset(value: &Value) -> Result<Asset, Box<dyn Error>> {
-    Ok(Asset {
-        amount: value
-            .get("amount")
-            .and_then(json_i64)
-            .ok_or("asset missing integer amount")?,
-        asset_id: AssetId(
-            value
-                .get("asset_id")
-                .and_then(Value::as_str)
-                .ok_or("asset missing asset_id")?
-                .to_string(),
-        ),
-    })
-}
-
-fn json_i64(value: &Value) -> Option<i64> {
-    value
-        .as_i64()
-        .or_else(|| value.as_str().and_then(|value| value.parse().ok()))
 }
 
 fn env_i64(key: &str, default: i64) -> Result<i64, Box<dyn Error>> {
