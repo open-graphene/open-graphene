@@ -4,12 +4,10 @@
 //! renderers. The lower-level `graphene-chain-swaplock-bindings` crate owns only
 //! generated protocol bindings.
 
-pub mod account_create;
-pub mod asset_create;
-pub mod asset_issue;
-pub mod limit_order_cancel;
-pub mod limit_order_create;
-pub mod operation_builder_types;
-pub mod transfer;
+pub mod operations;
+
+pub use operations::{
+    account_create, asset_create, asset_issue, limit_order_cancel, limit_order_create, transfer,
+};
 
 pub use graphene_chain_swaplock_bindings as bindings;

@@ -7,7 +7,7 @@ use open_graphene_sdk_operations::{
 use serde_json::{json, Value};
 use thiserror::Error;
 
-use crate::operation_builder_types::SwaplockOperationBuilderTypes;
+use crate::operations::builder::SwaplockOperationBuilderTypes;
 use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId};
 use graphene_chain_swaplock_bindings::generated::operations::AccountCreateOperation;
 use graphene_chain_swaplock_bindings::generated::static_variants::{FutureExtensions, Operation};
@@ -39,15 +39,15 @@ impl AccountCreateChainTypes for SwaplockOperationBuilderTypes {
     type AccountCreateOperationExtensions = AccountCreateOperationExt;
 
     fn single_key_authority(public_key: String) -> Self::Authority {
-        crate::account_create::single_key_authority(public_key)
+        crate::operations::account_create::single_key_authority(public_key)
     }
 
     fn account_options(memo_key: String, voting_account: Self::AccountId) -> Self::AccountOptions {
-        crate::account_create::account_options(memo_key, voting_account.0)
+        crate::operations::account_create::account_options(memo_key, voting_account.0)
     }
 
     fn empty_account_create_extensions() -> Self::AccountCreateOperationExtensions {
-        crate::account_create::empty_account_create_extensions()
+        crate::operations::account_create::empty_account_create_extensions()
     }
 
     fn account_create_operation(

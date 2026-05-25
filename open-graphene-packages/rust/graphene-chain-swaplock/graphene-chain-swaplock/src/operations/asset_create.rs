@@ -8,7 +8,7 @@ use open_graphene_sdk_operations::{
 use serde_json::{json, Value};
 use thiserror::Error;
 
-use crate::operation_builder_types::SwaplockOperationBuilderTypes;
+use crate::operations::builder::SwaplockOperationBuilderTypes;
 use graphene_chain_swaplock_bindings::generated::ids::AssetId;
 use graphene_chain_swaplock_bindings::generated::operations::AssetCreateOperation;
 use graphene_chain_swaplock_bindings::generated::static_variants::{FutureExtensions, Operation};
@@ -41,7 +41,7 @@ impl AssetCreateChainTypes for SwaplockOperationBuilderTypes {
     }
 
     fn empty_asset_create_additional_options() -> Self::AdditionalAssetOptions {
-        crate::asset_create::empty_additional_asset_options()
+        crate::operations::asset_create::empty_additional_asset_options()
     }
 
     fn asset_options(

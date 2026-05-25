@@ -8,7 +8,7 @@ use open_graphene_sdk_operations::{
 use serde_json::{json, Value};
 use thiserror::Error;
 
-use crate::operation_builder_types::SwaplockOperationBuilderTypes;
+use crate::operations::builder::SwaplockOperationBuilderTypes;
 use graphene_chain_swaplock_bindings::generated::operations::TransferOperation;
 use graphene_chain_swaplock_bindings::generated::static_variants::Operation;
 use graphene_chain_swaplock_bindings::generated::types::{Asset, SignedTransaction, Transaction};
