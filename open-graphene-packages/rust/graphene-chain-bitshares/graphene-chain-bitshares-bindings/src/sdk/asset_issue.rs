@@ -2,9 +2,9 @@ use std::convert::Infallible;
 
 use open_graphene_sdk_core::TransactionHeader;
 use open_graphene_sdk_operations::{
-    build_asset_issue_transaction_for, AssetIssueAdapter, AssetIssueChainTypes, AssetIssueInput,
+    AssetIssueAdapter, AssetIssueChainTypes, AssetIssueInput, build_asset_issue_transaction_for,
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use thiserror::Error;
 
 use crate::generated::operations::AssetIssueOperation;
@@ -49,7 +49,7 @@ impl AssetIssueChainTypes for BitSharesOperationBuilderTypes {
     }
 
     fn operation_asset_issue(operation: Self::AssetIssueOperation) -> Self::Operation {
-        Operation::AssetIssueOperation(Box::new(operation))
+        Operation::asset_issue(operation)
     }
 }
 
@@ -148,11 +148,11 @@ fn hex(bytes: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::generated::FcSerialize;
     use crate::generated::ids::{AccountId, AssetId};
     use crate::generated::operations::TransferOperation;
     use crate::generated::static_variants::FutureExtensions;
     use crate::generated::types::{MemoData, Signature};
-    use crate::generated::FcSerialize;
 
     fn input() -> AssetIssueTransactionInput {
         AssetIssueTransactionInput {

@@ -2,9 +2,9 @@ use std::convert::Infallible;
 
 use open_graphene_sdk_core::TransactionHeader;
 use open_graphene_sdk_operations::{
-    build_transfer_transaction_for, TransferAdapter, TransferChainTypes, TransferInput,
+    TransferAdapter, TransferChainTypes, TransferInput, build_transfer_transaction_for,
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use thiserror::Error;
 
 use crate::generated::operations::TransferOperation;
@@ -49,7 +49,7 @@ impl TransferChainTypes for BitSharesOperationBuilderTypes {
     }
 
     fn operation_transfer(operation: Self::TransferOperation) -> Self::Operation {
-        Operation::TransferOperation(Box::new(operation))
+        Operation::transfer(operation)
     }
 }
 
@@ -140,10 +140,10 @@ fn hex(bytes: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::generated::FcSerialize;
     use crate::generated::ids::{AccountId, AssetId};
     use crate::generated::static_variants::FutureExtensions;
     use crate::generated::types::Signature;
-    use crate::generated::FcSerialize;
 
     #[test]
     fn builds_transfer_transaction_with_generated_bitshares_types() {

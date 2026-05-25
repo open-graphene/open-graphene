@@ -1433,25 +1433,45 @@ fn render_static_variant(
     let mut variants = variant.variants.clone();
     variants.sort_by_key(|arm| arm.tag);
     let mut emitted = BTreeSet::new();
+    let mut method_names = BTreeSet::new();
     let mut rendered_arms = Vec::new();
     for arm in variants {
         let variant_name = rust_variant_name(&arm.name);
         ensure_unique(&mut emitted, &variant_name, "static variant arm")?;
+        let method_name =
+            static_variant_constructor_name(&enum_name, &arm.name, &mut method_names)?;
         let ty = render_type_ref(protocol, &arm.ty)?;
         out.push_str(&format!("    {variant_name}(Box<{ty}>),\n"));
-        rendered_arms.push((arm.tag, variant_name, ty));
+        rendered_arms.push((arm.tag, variant_name, ty, method_name));
     }
 
     out.push_str("}\n\n");
+    if enum_name == "Operation" {
+        render_static_variant_constructor_impl(out, &enum_name, &rendered_arms);
+    }
     render_static_variant_serialize_impl(out, &enum_name, &rendered_arms);
     render_static_variant_deserialize_impl(out, &enum_name, &rendered_arms);
     Ok(())
 }
 
+fn render_static_variant_constructor_impl(
+    out: &mut String,
+    enum_name: &str,
+    arms: &[(u32, String, String, String)],
+) {
+    out.push_str(&format!("impl {enum_name} {{\n"));
+    for (_, variant_name, ty, method_name) in arms {
+        out.push_str(&format!(
+            "    pub fn {method_name}(value: {ty}) -> Self {{\n        Self::{variant_name}(Box::new(value))\n    }}\n\n"
+        ));
+    }
+    out.push_str("}\n\n");
+}
+
 fn render_static_variant_serialize_impl(
     out: &mut String,
     enum_name: &str,
-    arms: &[(u32, String, String)],
+    arms: &[(u32, String, String, String)],
 ) {
     out.push_str(&format!("impl serde::Serialize for {enum_name} {{\n"));
     out.push_str("    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>\n");
@@ -1461,7 +1481,7 @@ fn render_static_variant_serialize_impl(
     out.push_str("        use serde::ser::SerializeSeq;\n");
     out.push_str("        let mut seq = serializer.serialize_seq(Some(2))?;\n");
     out.push_str("        match self {\n");
-    for (tag, variant_name, _) in arms {
+    for (tag, variant_name, _, _) in arms {
         out.push_str(&format!(
             "            Self::{variant_name}(value) => {{\n                seq.serialize_element(&{tag}u32)?;\n                seq.serialize_element(value.as_ref())?;\n            }}\n"
         ));
@@ -1475,7 +1495,7 @@ fn render_static_variant_serialize_impl(
 fn render_static_variant_deserialize_impl(
     out: &mut String,
     enum_name: &str,
-    arms: &[(u32, String, String)],
+    arms: &[(u32, String, String, String)],
 ) {
     out.push_str(&format!(
         "impl<'de> serde::Deserialize<'de> for {enum_name} {{\n"
@@ -1500,7 +1520,7 @@ fn render_static_variant_deserialize_impl(
         "            .ok_or_else(|| serde::de::Error::custom(\"expected numeric tag for static variant {enum_name}\"))? as u32;\n"
     ));
     out.push_str("        match tag {\n");
-    for (tag, variant_name, ty) in arms {
+    for (tag, variant_name, ty, _) in arms {
         out.push_str(&format!(
             "            {tag} => serde_json::from_value::<{ty}>(payload)\n                .map(|value| Self::{variant_name}(Box::new(value)))\n                .map_err(serde::de::Error::custom),\n"
         ));
@@ -1511,6 +1531,24 @@ fn render_static_variant_deserialize_impl(
     out.push_str("        }\n");
     out.push_str("    }\n");
     out.push_str("}\n\n");
+}
+
+fn static_variant_constructor_name(
+    enum_name: &str,
+    arm_name: &str,
+    emitted: &mut BTreeSet<String>,
+) -> Result<String> {
+    let preferred_name = if enum_name == "Operation" {
+        arm_name.strip_suffix("_operation").unwrap_or(arm_name)
+    } else {
+        arm_name
+    };
+    let mut method_name = rust_field_name(preferred_name);
+    if !emitted.insert(method_name.clone()) {
+        method_name = rust_field_name(arm_name);
+        ensure_unique(emitted, &method_name, "static variant constructor")?;
+    }
+    Ok(method_name)
 }
 
 fn render_type_ref(protocol: &Protocol, ty: &TypeRef) -> Result<String> {
@@ -2024,6 +2062,9 @@ mod tests {
         let mut out = String::new();
         render_static_variant(&mut out, &protocol, &variant).expect("render static variant");
 
+        assert!(out.contains("impl Operation"));
+        assert!(out.contains("pub fn transfer(value: String) -> Self"));
+        assert!(out.contains("Self::TransferOperation(Box::new(value))"));
         assert!(out.contains("impl serde::Serialize for Operation"));
         assert!(out.contains("seq.serialize_element(&0u32)?;"));
         assert!(out.contains("impl<'de> serde::Deserialize<'de> for Operation"));

@@ -1,10 +1,10 @@
 use std::convert::Infallible;
 
 use open_graphene_sdk_operations::{
-    build_account_create_transaction_for, AccountCreateAdapter, AccountCreateChainTypes,
-    AccountCreateInput,
+    AccountCreateAdapter, AccountCreateChainTypes, AccountCreateInput,
+    build_account_create_transaction_for,
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use thiserror::Error;
 
 use crate::generated::ids::{AccountId, AssetId};
@@ -75,7 +75,7 @@ impl AccountCreateChainTypes for BitSharesOperationBuilderTypes {
     }
 
     fn operation_account_create(operation: Self::AccountCreateOperation) -> Self::Operation {
-        Operation::AccountCreateOperation(Box::new(operation))
+        Operation::account_create(operation)
     }
 }
 
@@ -259,11 +259,11 @@ fn hex(bytes: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::generated::FcSerialize;
     use crate::generated::ids::VoteId;
     use crate::generated::operations::TransferOperation;
     use crate::generated::static_variants::SpecialAuthority;
     use crate::generated::types::{Signature, TopHoldersSpecialAuthority};
-    use crate::generated::FcSerialize;
 
     const PUBLIC_KEY: &str = "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV";
 

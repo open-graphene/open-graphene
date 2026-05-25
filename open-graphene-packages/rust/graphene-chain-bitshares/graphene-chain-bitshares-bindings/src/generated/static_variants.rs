@@ -1460,6 +1460,408 @@ pub enum Operation {
     LimitOrderUpdateOperation(Box<crate::generated::operations::LimitOrderUpdateOperation>),
 }
 
+impl Operation {
+    pub fn transfer(value: crate::generated::operations::TransferOperation) -> Self {
+        Self::TransferOperation(Box::new(value))
+    }
+
+    pub fn limit_order_create(
+        value: crate::generated::operations::LimitOrderCreateOperation,
+    ) -> Self {
+        Self::LimitOrderCreateOperation(Box::new(value))
+    }
+
+    pub fn limit_order_cancel(
+        value: crate::generated::operations::LimitOrderCancelOperation,
+    ) -> Self {
+        Self::LimitOrderCancelOperation(Box::new(value))
+    }
+
+    pub fn call_order_update(
+        value: crate::generated::operations::CallOrderUpdateOperation,
+    ) -> Self {
+        Self::CallOrderUpdateOperation(Box::new(value))
+    }
+
+    pub fn fill_order(value: crate::generated::operations::FillOrderOperation) -> Self {
+        Self::FillOrderOperation(Box::new(value))
+    }
+
+    pub fn account_create(value: crate::generated::operations::AccountCreateOperation) -> Self {
+        Self::AccountCreateOperation(Box::new(value))
+    }
+
+    pub fn account_update(value: crate::generated::operations::AccountUpdateOperation) -> Self {
+        Self::AccountUpdateOperation(Box::new(value))
+    }
+
+    pub fn account_whitelist(
+        value: crate::generated::operations::AccountWhitelistOperation,
+    ) -> Self {
+        Self::AccountWhitelistOperation(Box::new(value))
+    }
+
+    pub fn account_upgrade(value: crate::generated::operations::AccountUpgradeOperation) -> Self {
+        Self::AccountUpgradeOperation(Box::new(value))
+    }
+
+    pub fn account_transfer(value: crate::generated::operations::AccountTransferOperation) -> Self {
+        Self::AccountTransferOperation(Box::new(value))
+    }
+
+    pub fn asset_create(value: crate::generated::operations::AssetCreateOperation) -> Self {
+        Self::AssetCreateOperation(Box::new(value))
+    }
+
+    pub fn asset_update(value: crate::generated::operations::AssetUpdateOperation) -> Self {
+        Self::AssetUpdateOperation(Box::new(value))
+    }
+
+    pub fn asset_update_bitasset(
+        value: crate::generated::operations::AssetUpdateBitassetOperation,
+    ) -> Self {
+        Self::AssetUpdateBitassetOperation(Box::new(value))
+    }
+
+    pub fn asset_update_feed_producers(
+        value: crate::generated::operations::AssetUpdateFeedProducersOperation,
+    ) -> Self {
+        Self::AssetUpdateFeedProducersOperation(Box::new(value))
+    }
+
+    pub fn asset_issue(value: crate::generated::operations::AssetIssueOperation) -> Self {
+        Self::AssetIssueOperation(Box::new(value))
+    }
+
+    pub fn asset_reserve(value: crate::generated::operations::AssetReserveOperation) -> Self {
+        Self::AssetReserveOperation(Box::new(value))
+    }
+
+    pub fn asset_fund_fee_pool(
+        value: crate::generated::operations::AssetFundFeePoolOperation,
+    ) -> Self {
+        Self::AssetFundFeePoolOperation(Box::new(value))
+    }
+
+    pub fn asset_settle(value: crate::generated::operations::AssetSettleOperation) -> Self {
+        Self::AssetSettleOperation(Box::new(value))
+    }
+
+    pub fn asset_global_settle(
+        value: crate::generated::operations::AssetGlobalSettleOperation,
+    ) -> Self {
+        Self::AssetGlobalSettleOperation(Box::new(value))
+    }
+
+    pub fn asset_publish_feed(
+        value: crate::generated::operations::AssetPublishFeedOperation,
+    ) -> Self {
+        Self::AssetPublishFeedOperation(Box::new(value))
+    }
+
+    pub fn witness_create(value: crate::generated::operations::WitnessCreateOperation) -> Self {
+        Self::WitnessCreateOperation(Box::new(value))
+    }
+
+    pub fn witness_update(value: crate::generated::operations::WitnessUpdateOperation) -> Self {
+        Self::WitnessUpdateOperation(Box::new(value))
+    }
+
+    pub fn proposal_create(value: crate::generated::operations::ProposalCreateOperation) -> Self {
+        Self::ProposalCreateOperation(Box::new(value))
+    }
+
+    pub fn proposal_update(value: crate::generated::operations::ProposalUpdateOperation) -> Self {
+        Self::ProposalUpdateOperation(Box::new(value))
+    }
+
+    pub fn proposal_delete(value: crate::generated::operations::ProposalDeleteOperation) -> Self {
+        Self::ProposalDeleteOperation(Box::new(value))
+    }
+
+    pub fn withdraw_permission_create(
+        value: crate::generated::operations::WithdrawPermissionCreateOperation,
+    ) -> Self {
+        Self::WithdrawPermissionCreateOperation(Box::new(value))
+    }
+
+    pub fn withdraw_permission_update(
+        value: crate::generated::operations::WithdrawPermissionUpdateOperation,
+    ) -> Self {
+        Self::WithdrawPermissionUpdateOperation(Box::new(value))
+    }
+
+    pub fn withdraw_permission_claim(
+        value: crate::generated::operations::WithdrawPermissionClaimOperation,
+    ) -> Self {
+        Self::WithdrawPermissionClaimOperation(Box::new(value))
+    }
+
+    pub fn withdraw_permission_delete(
+        value: crate::generated::operations::WithdrawPermissionDeleteOperation,
+    ) -> Self {
+        Self::WithdrawPermissionDeleteOperation(Box::new(value))
+    }
+
+    pub fn committee_member_create(
+        value: crate::generated::operations::CommitteeMemberCreateOperation,
+    ) -> Self {
+        Self::CommitteeMemberCreateOperation(Box::new(value))
+    }
+
+    pub fn committee_member_update(
+        value: crate::generated::operations::CommitteeMemberUpdateOperation,
+    ) -> Self {
+        Self::CommitteeMemberUpdateOperation(Box::new(value))
+    }
+
+    pub fn committee_member_update_global_parameters(
+        value: crate::generated::operations::CommitteeMemberUpdateGlobalParametersOperation,
+    ) -> Self {
+        Self::CommitteeMemberUpdateGlobalParametersOperation(Box::new(value))
+    }
+
+    pub fn vesting_balance_create(
+        value: crate::generated::operations::VestingBalanceCreateOperation,
+    ) -> Self {
+        Self::VestingBalanceCreateOperation(Box::new(value))
+    }
+
+    pub fn vesting_balance_withdraw(
+        value: crate::generated::operations::VestingBalanceWithdrawOperation,
+    ) -> Self {
+        Self::VestingBalanceWithdrawOperation(Box::new(value))
+    }
+
+    pub fn worker_create(value: crate::generated::operations::WorkerCreateOperation) -> Self {
+        Self::WorkerCreateOperation(Box::new(value))
+    }
+
+    pub fn custom(value: crate::generated::operations::CustomOperation) -> Self {
+        Self::CustomOperation(Box::new(value))
+    }
+
+    pub fn assert(value: crate::generated::operations::AssertOperation) -> Self {
+        Self::AssertOperation(Box::new(value))
+    }
+
+    pub fn balance_claim(value: crate::generated::operations::BalanceClaimOperation) -> Self {
+        Self::BalanceClaimOperation(Box::new(value))
+    }
+
+    pub fn override_transfer(
+        value: crate::generated::operations::OverrideTransferOperation,
+    ) -> Self {
+        Self::OverrideTransferOperation(Box::new(value))
+    }
+
+    pub fn transfer_to_blind(
+        value: crate::generated::operations::TransferToBlindOperation,
+    ) -> Self {
+        Self::TransferToBlindOperation(Box::new(value))
+    }
+
+    pub fn blind_transfer(value: crate::generated::operations::BlindTransferOperation) -> Self {
+        Self::BlindTransferOperation(Box::new(value))
+    }
+
+    pub fn transfer_from_blind(
+        value: crate::generated::operations::TransferFromBlindOperation,
+    ) -> Self {
+        Self::TransferFromBlindOperation(Box::new(value))
+    }
+
+    pub fn asset_settle_cancel(
+        value: crate::generated::operations::AssetSettleCancelOperation,
+    ) -> Self {
+        Self::AssetSettleCancelOperation(Box::new(value))
+    }
+
+    pub fn asset_claim_fees(value: crate::generated::operations::AssetClaimFeesOperation) -> Self {
+        Self::AssetClaimFeesOperation(Box::new(value))
+    }
+
+    pub fn fba_distribute(value: crate::generated::operations::FbaDistributeOperation) -> Self {
+        Self::FbaDistributeOperation(Box::new(value))
+    }
+
+    pub fn bid_collateral(value: crate::generated::operations::BidCollateralOperation) -> Self {
+        Self::BidCollateralOperation(Box::new(value))
+    }
+
+    pub fn execute_bid(value: crate::generated::operations::ExecuteBidOperation) -> Self {
+        Self::ExecuteBidOperation(Box::new(value))
+    }
+
+    pub fn asset_claim_pool(value: crate::generated::operations::AssetClaimPoolOperation) -> Self {
+        Self::AssetClaimPoolOperation(Box::new(value))
+    }
+
+    pub fn asset_update_issuer(
+        value: crate::generated::operations::AssetUpdateIssuerOperation,
+    ) -> Self {
+        Self::AssetUpdateIssuerOperation(Box::new(value))
+    }
+
+    pub fn htlc_create(value: crate::generated::operations::HtlcCreateOperation) -> Self {
+        Self::HtlcCreateOperation(Box::new(value))
+    }
+
+    pub fn htlc_redeem(value: crate::generated::operations::HtlcRedeemOperation) -> Self {
+        Self::HtlcRedeemOperation(Box::new(value))
+    }
+
+    pub fn htlc_redeemed(value: crate::generated::operations::HtlcRedeemedOperation) -> Self {
+        Self::HtlcRedeemedOperation(Box::new(value))
+    }
+
+    pub fn htlc_extend(value: crate::generated::operations::HtlcExtendOperation) -> Self {
+        Self::HtlcExtendOperation(Box::new(value))
+    }
+
+    pub fn htlc_refund(value: crate::generated::operations::HtlcRefundOperation) -> Self {
+        Self::HtlcRefundOperation(Box::new(value))
+    }
+
+    pub fn custom_authority_create(
+        value: crate::generated::operations::CustomAuthorityCreateOperation,
+    ) -> Self {
+        Self::CustomAuthorityCreateOperation(Box::new(value))
+    }
+
+    pub fn custom_authority_update(
+        value: crate::generated::operations::CustomAuthorityUpdateOperation,
+    ) -> Self {
+        Self::CustomAuthorityUpdateOperation(Box::new(value))
+    }
+
+    pub fn custom_authority_delete(
+        value: crate::generated::operations::CustomAuthorityDeleteOperation,
+    ) -> Self {
+        Self::CustomAuthorityDeleteOperation(Box::new(value))
+    }
+
+    pub fn ticket_create(value: crate::generated::operations::TicketCreateOperation) -> Self {
+        Self::TicketCreateOperation(Box::new(value))
+    }
+
+    pub fn ticket_update(value: crate::generated::operations::TicketUpdateOperation) -> Self {
+        Self::TicketUpdateOperation(Box::new(value))
+    }
+
+    pub fn liquidity_pool_create(
+        value: crate::generated::operations::LiquidityPoolCreateOperation,
+    ) -> Self {
+        Self::LiquidityPoolCreateOperation(Box::new(value))
+    }
+
+    pub fn liquidity_pool_delete(
+        value: crate::generated::operations::LiquidityPoolDeleteOperation,
+    ) -> Self {
+        Self::LiquidityPoolDeleteOperation(Box::new(value))
+    }
+
+    pub fn liquidity_pool_deposit(
+        value: crate::generated::operations::LiquidityPoolDepositOperation,
+    ) -> Self {
+        Self::LiquidityPoolDepositOperation(Box::new(value))
+    }
+
+    pub fn liquidity_pool_withdraw(
+        value: crate::generated::operations::LiquidityPoolWithdrawOperation,
+    ) -> Self {
+        Self::LiquidityPoolWithdrawOperation(Box::new(value))
+    }
+
+    pub fn liquidity_pool_exchange(
+        value: crate::generated::operations::LiquidityPoolExchangeOperation,
+    ) -> Self {
+        Self::LiquidityPoolExchangeOperation(Box::new(value))
+    }
+
+    pub fn samet_fund_create(
+        value: crate::generated::operations::SametFundCreateOperation,
+    ) -> Self {
+        Self::SametFundCreateOperation(Box::new(value))
+    }
+
+    pub fn samet_fund_delete(
+        value: crate::generated::operations::SametFundDeleteOperation,
+    ) -> Self {
+        Self::SametFundDeleteOperation(Box::new(value))
+    }
+
+    pub fn samet_fund_update(
+        value: crate::generated::operations::SametFundUpdateOperation,
+    ) -> Self {
+        Self::SametFundUpdateOperation(Box::new(value))
+    }
+
+    pub fn samet_fund_borrow(
+        value: crate::generated::operations::SametFundBorrowOperation,
+    ) -> Self {
+        Self::SametFundBorrowOperation(Box::new(value))
+    }
+
+    pub fn samet_fund_repay(value: crate::generated::operations::SametFundRepayOperation) -> Self {
+        Self::SametFundRepayOperation(Box::new(value))
+    }
+
+    pub fn credit_offer_create(
+        value: crate::generated::operations::CreditOfferCreateOperation,
+    ) -> Self {
+        Self::CreditOfferCreateOperation(Box::new(value))
+    }
+
+    pub fn credit_offer_delete(
+        value: crate::generated::operations::CreditOfferDeleteOperation,
+    ) -> Self {
+        Self::CreditOfferDeleteOperation(Box::new(value))
+    }
+
+    pub fn credit_offer_update(
+        value: crate::generated::operations::CreditOfferUpdateOperation,
+    ) -> Self {
+        Self::CreditOfferUpdateOperation(Box::new(value))
+    }
+
+    pub fn credit_offer_accept(
+        value: crate::generated::operations::CreditOfferAcceptOperation,
+    ) -> Self {
+        Self::CreditOfferAcceptOperation(Box::new(value))
+    }
+
+    pub fn credit_deal_repay(
+        value: crate::generated::operations::CreditDealRepayOperation,
+    ) -> Self {
+        Self::CreditDealRepayOperation(Box::new(value))
+    }
+
+    pub fn credit_deal_expired(
+        value: crate::generated::operations::CreditDealExpiredOperation,
+    ) -> Self {
+        Self::CreditDealExpiredOperation(Box::new(value))
+    }
+
+    pub fn liquidity_pool_update(
+        value: crate::generated::operations::LiquidityPoolUpdateOperation,
+    ) -> Self {
+        Self::LiquidityPoolUpdateOperation(Box::new(value))
+    }
+
+    pub fn credit_deal_update(
+        value: crate::generated::operations::CreditDealUpdateOperation,
+    ) -> Self {
+        Self::CreditDealUpdateOperation(Box::new(value))
+    }
+
+    pub fn limit_order_update(
+        value: crate::generated::operations::LimitOrderUpdateOperation,
+    ) -> Self {
+        Self::LimitOrderUpdateOperation(Box::new(value))
+    }
+}
+
 impl serde::Serialize for Operation {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
