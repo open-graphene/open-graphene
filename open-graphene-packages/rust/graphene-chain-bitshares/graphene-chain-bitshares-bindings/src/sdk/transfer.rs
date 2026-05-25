@@ -1,5 +1,6 @@
 use std::convert::Infallible;
 
+use open_graphene_sdk_core::TransactionHeader;
 use open_graphene_sdk_operations::{
     build_transfer_transaction_for, TransferAdapter, TransferChainTypes, TransferInput,
 };
@@ -26,6 +27,18 @@ pub struct TransferTransactionInput {
 
 pub struct BitSharesTransferTypes;
 
+impl From<String> for AccountId {
+    fn from(id: String) -> Self {
+        Self(id)
+    }
+}
+
+impl From<String> for AssetId {
+    fn from(id: String) -> Self {
+        Self(id)
+    }
+}
+
 impl TransferChainTypes for BitSharesTransferTypes {
     type Transaction = Transaction;
     type Operation = Operation;
@@ -34,14 +47,6 @@ impl TransferChainTypes for BitSharesTransferTypes {
     type AccountId = AccountId;
     type AssetId = AssetId;
     type FutureExtensions = FutureExtensions;
-
-    fn asset_id(id: String) -> Self::AssetId {
-        AssetId(id)
-    }
-
-    fn account_id(id: String) -> Self::AccountId {
-        AccountId(id)
-    }
 
     fn asset(amount: i64, asset_id: Self::AssetId) -> Self::Asset {
         Asset { amount, asset_id }
@@ -73,16 +78,14 @@ impl TransferChainTypes for BitSharesTransferTypes {
     }
 
     fn transaction(
-        ref_block_num: u16,
-        ref_block_prefix: u32,
-        expiration: String,
+        header: TransactionHeader,
         operations: Vec<Self::Operation>,
         extensions: Self::FutureExtensions,
     ) -> Self::Transaction {
         Transaction {
-            ref_block_num,
-            ref_block_prefix,
-            expiration,
+            ref_block_num: header.ref_block_num,
+            ref_block_prefix: header.ref_block_prefix,
+            expiration: header.expiration,
             operations,
             extensions,
         }
@@ -110,7 +113,7 @@ pub enum TransferJsonError {
 
 pub fn build_transfer_transaction(input: TransferTransactionInput) -> Transaction {
     build_transfer_transaction_for::<BitSharesTransferTypes>(TransferInput::new(
-        open_graphene_sdk_core::TransactionHeader {
+        TransactionHeader {
             ref_block_num: input.ref_block_num,
             ref_block_prefix: input.ref_block_prefix,
             expiration: input.expiration,

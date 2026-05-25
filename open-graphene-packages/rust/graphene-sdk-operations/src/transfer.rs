@@ -43,12 +43,10 @@ pub trait TransferChainTypes {
     type Operation;
     type TransferOperation;
     type Asset;
-    type AccountId;
-    type AssetId;
+    type AccountId: From<String>;
+    type AssetId: From<String>;
     type FutureExtensions;
 
-    fn asset_id(id: String) -> Self::AssetId;
-    fn account_id(id: String) -> Self::AccountId;
     fn asset(amount: i64, asset_id: Self::AssetId) -> Self::Asset;
     fn empty_extensions() -> Self::FutureExtensions;
 
@@ -63,9 +61,7 @@ pub trait TransferChainTypes {
     fn operation_transfer(operation: Self::TransferOperation) -> Self::Operation;
 
     fn transaction(
-        ref_block_num: u16,
-        ref_block_prefix: u32,
-        expiration: String,
+        header: TransactionHeader,
         operations: Vec<Self::Operation>,
         extensions: Self::FutureExtensions,
     ) -> Self::Transaction;
@@ -74,20 +70,18 @@ pub trait TransferChainTypes {
 pub fn build_transfer_transaction_for<C: TransferChainTypes>(
     input: TransferInput,
 ) -> C::Transaction {
-    let fee = C::asset(input.fee.amount, C::asset_id(input.fee.asset_id));
-    let amount = C::asset(input.amount.amount, C::asset_id(input.amount.asset_id));
+    let fee = C::asset(input.fee.amount, input.fee.asset_id.into());
+    let amount = C::asset(input.amount.amount, input.amount.asset_id.into());
     let operation = C::transfer_operation_without_memo(
         fee,
-        C::account_id(input.from.id),
-        C::account_id(input.to.id),
+        input.from.id.into(),
+        input.to.id.into(),
         amount,
         C::empty_extensions(),
     );
 
     C::transaction(
-        input.header.ref_block_num,
-        input.header.ref_block_prefix,
-        input.header.expiration,
+        input.header,
         vec![C::operation_transfer(operation)],
         C::empty_extensions(),
     )
