@@ -1449,6 +1449,9 @@ fn render_static_variant(
     if enum_name == "Operation" {
         render_static_variant_constructor_impl(out, &enum_name, &rendered_arms);
     }
+    if enum_name == "FutureExtensions" {
+        render_future_extensions_empty_impl(out, &rendered_arms);
+    }
     render_static_variant_serialize_impl(out, &enum_name, &rendered_arms);
     render_static_variant_deserialize_impl(out, &enum_name, &rendered_arms);
     Ok(())
@@ -1466,6 +1469,19 @@ fn render_static_variant_constructor_impl(
         ));
     }
     out.push_str("}\n\n");
+}
+
+fn render_future_extensions_empty_impl(out: &mut String, arms: &[(u32, String, String, String)]) {
+    if arms
+        .iter()
+        .any(|(_, variant_name, ty, _)| variant_name == "VoidT" && ty == "()")
+    {
+        out.push_str("impl FutureExtensions {\n");
+        out.push_str("    pub fn empty() -> Self {\n");
+        out.push_str("        Self::VoidT(Box::new(()))\n");
+        out.push_str("    }\n");
+        out.push_str("}\n\n");
+    }
 }
 
 fn render_static_variant_serialize_impl(
@@ -2069,6 +2085,32 @@ mod tests {
         assert!(out.contains("seq.serialize_element(&0u32)?;"));
         assert!(out.contains("impl<'de> serde::Deserialize<'de> for Operation"));
         assert!(out.contains("0 => serde_json::from_value::<String>(payload)"));
+    }
+
+    #[test]
+    fn static_variant_renderer_emits_future_extensions_empty_helper() {
+        let protocol = minimal_protocol();
+        let variant = StaticVariantDef {
+            name: "future_extensions".to_string(),
+            kind: "static_variant".to_string(),
+            json: "tagged_tuple".to_string(),
+            fc: "static_variant".to_string(),
+            variants: vec![open_graphene_json_schema::StaticVariantArmDef {
+                tag: 0,
+                name: "void_t".to_string(),
+                ty: TypeRef::Void,
+                support: None,
+            }],
+            source: None,
+            support: None,
+        };
+        let mut out = String::new();
+        render_static_variant(&mut out, &protocol, &variant).expect("render static variant");
+
+        assert!(out.contains("impl FutureExtensions"));
+        assert!(out.contains("pub fn empty() -> Self"));
+        assert!(out.contains("Self::VoidT(Box::new(()))"));
+        assert!(!out.contains("pub fn void_t"));
     }
 
     #[test]

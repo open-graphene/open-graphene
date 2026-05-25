@@ -186,10 +186,10 @@ mod tests {
                     },
                     issue_to_account: AccountId(input.issue_to_account_id),
                     memo: None,
-                    extensions: FutureExtensions::VoidT(Box::new(())),
+                    extensions: FutureExtensions::empty(),
                 },
             ))],
-            extensions: FutureExtensions::VoidT(Box::new(())),
+            extensions: FutureExtensions::empty(),
         }
     }
 
@@ -280,9 +280,9 @@ mod tests {
                     asset_id: AssetId("1.3.0".to_string()),
                 },
                 memo: None,
-                extensions: FutureExtensions::VoidT(Box::new(())),
+                extensions: FutureExtensions::empty(),
             }))],
-            extensions: FutureExtensions::VoidT(Box::new(())),
+            extensions: FutureExtensions::empty(),
             signatures: vec![],
         };
 

@@ -32,7 +32,7 @@ impl GrapheneOperationBuilderTypes for SwaplockOperationBuilderTypes {
     }
 
     fn empty_extensions() -> Self::FutureExtensions {
-        FutureExtensions::VoidT(Box::new(()))
+        FutureExtensions::empty()
     }
 
     fn transaction(

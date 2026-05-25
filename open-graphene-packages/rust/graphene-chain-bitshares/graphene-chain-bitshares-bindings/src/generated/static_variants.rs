@@ -1176,6 +1176,12 @@ pub enum FutureExtensions {
     VoidT(Box<()>),
 }
 
+impl FutureExtensions {
+    pub fn empty() -> Self {
+        Self::VoidT(Box::new(()))
+    }
+}
+
 impl serde::Serialize for FutureExtensions {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where

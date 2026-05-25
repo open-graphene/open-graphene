@@ -125,7 +125,7 @@ pub fn build_account_create_transaction(input: AccountCreateTransactionInput) ->
                     .unwrap_or_else(empty_account_create_extensions),
             },
         ))],
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: FutureExtensions::empty(),
     }
 }
 
@@ -145,7 +145,7 @@ pub fn account_options(memo_key: String, voting_account_id: String) -> AccountOp
         num_witness: 0,
         num_committee: 0,
         votes: Vec::new(),
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: FutureExtensions::empty(),
     }
 }
 
@@ -308,7 +308,7 @@ mod tests {
                         .unwrap_or_else(empty_account_create_extensions),
                 },
             ))],
-            extensions: FutureExtensions::VoidT(Box::new(())),
+            extensions: FutureExtensions::empty(),
         }
     }
 
@@ -442,9 +442,9 @@ mod tests {
                     asset_id: AssetId("1.3.0".to_string()),
                 },
                 memo: None,
-                extensions: FutureExtensions::VoidT(Box::new(())),
+                extensions: FutureExtensions::empty(),
             }))],
-            extensions: FutureExtensions::VoidT(Box::new(())),
+            extensions: FutureExtensions::empty(),
             signatures: vec![],
         };
 

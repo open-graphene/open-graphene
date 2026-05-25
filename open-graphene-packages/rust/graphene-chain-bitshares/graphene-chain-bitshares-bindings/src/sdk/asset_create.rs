@@ -319,10 +319,10 @@ mod tests {
                     common_options: minimal_asset_options(input.max_supply, input.description),
                     bitasset_opts: None,
                     is_prediction_market: false,
-                    extensions: FutureExtensions::VoidT(Box::new(())),
+                    extensions: FutureExtensions::empty(),
                 },
             ))],
-            extensions: FutureExtensions::VoidT(Box::new(())),
+            extensions: FutureExtensions::empty(),
         }
     }
 
@@ -431,9 +431,9 @@ mod tests {
                     asset_id: AssetId("1.3.0".to_string()),
                 },
                 memo: None,
-                extensions: FutureExtensions::VoidT(Box::new(())),
+                extensions: FutureExtensions::empty(),
             }))],
-            extensions: FutureExtensions::VoidT(Box::new(())),
+            extensions: FutureExtensions::empty(),
             signatures: vec![],
         };
 
