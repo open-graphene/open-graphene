@@ -301,6 +301,7 @@ fn render_struct(out: &mut String, protocol: &Protocol, struct_def: &StructDef) 
     render_fields(out, protocol, &struct_def.fields)?;
     out.push_str("}\n\n");
     render_asset_constructor(out, protocol, struct_def)?;
+    render_price_constructor(out, protocol, struct_def)?;
     Ok(())
 }
 
@@ -326,6 +327,35 @@ fn render_asset_constructor(
             "    pub fn new(amount: {amount_ty}, asset_id: {asset_id_ty}) -> Self {{\n"
         ));
         out.push_str("        Self { amount, asset_id }\n");
+        out.push_str("    }\n");
+        out.push_str("}\n\n");
+    }
+
+    Ok(())
+}
+
+fn render_price_constructor(
+    out: &mut String,
+    protocol: &Protocol,
+    struct_def: &StructDef,
+) -> Result<()> {
+    if struct_def.name != "price" {
+        return Ok(());
+    }
+
+    let mut fields = struct_def.fields.clone();
+    fields.sort_by_key(|field| field.index);
+    let base = fields.iter().find(|field| field.name == "base");
+    let quote = fields.iter().find(|field| field.name == "quote");
+
+    if let (Some(base), Some(quote)) = (base, quote) {
+        let base_ty = render_type_ref(protocol, &base.ty)?;
+        let quote_ty = render_type_ref(protocol, &quote.ty)?;
+        out.push_str("impl Price {\n");
+        out.push_str(&format!(
+            "    pub fn new(base: {base_ty}, quote: {quote_ty}) -> Self {{\n"
+        ));
+        out.push_str("        Self { base, quote }\n");
         out.push_str("    }\n");
         out.push_str("}\n\n");
     }
@@ -2216,6 +2246,33 @@ mod tests {
             support: None,
         });
         protocol.structs.push(StructDef {
+            name: "price".to_string(),
+            source_name: None,
+            kind: StructKind::Struct,
+            wire_tag: None,
+            fields: vec![
+                FieldDef {
+                    index: 0,
+                    name: "base".to_string(),
+                    ty: TypeRef::Ref {
+                        name: "asset".to_string(),
+                    },
+                    source: None,
+                    support: None,
+                },
+                FieldDef {
+                    index: 1,
+                    name: "quote".to_string(),
+                    ty: TypeRef::Ref {
+                        name: "asset".to_string(),
+                    },
+                    source: None,
+                    support: None,
+                },
+            ],
+            support: None,
+        });
+        protocol.structs.push(StructDef {
             name: "unsupported_signature_struct".to_string(),
             source_name: None,
             kind: StructKind::Struct,
@@ -2712,6 +2769,11 @@ mod tests {
             )
         );
         assert!(types.contains("Self { amount, asset_id }"));
+        assert!(types.contains("impl Price"));
+        assert!(types.contains(
+            "pub fn new(base: crate::generated::types::Asset, quote: crate::generated::types::Asset) -> Self"
+        ));
+        assert!(types.contains("Self { base, quote }"));
 
         let output = render_fc(&protocol).expect("render fc");
 

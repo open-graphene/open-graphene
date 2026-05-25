@@ -36,7 +36,7 @@ impl AssetCreateChainTypes for SwaplockOperationBuilderTypes {
     type AssetCreateOperation = AssetCreateOperation;
 
     fn price(base: Self::Asset, quote: Self::Asset) -> Self::Price {
-        Price { base, quote }
+        Price::new(base, quote)
     }
 
     fn empty_asset_create_additional_options() -> Self::AdditionalAssetOptions {
@@ -159,10 +159,10 @@ pub fn minimal_asset_options(max_supply: i64, description: String) -> AssetOptio
 }
 
 pub fn asset_create_core_exchange_rate() -> Price {
-    Price {
-        base: Asset::new(1, AssetId::new("1.3.0")),
-        quote: Asset::new(1, AssetId::new("1.3.1")),
-    }
+    Price::new(
+        Asset::new(1, AssetId::new("1.3.0")),
+        Asset::new(1, AssetId::new("1.3.1")),
+    )
 }
 
 pub fn empty_additional_asset_options() -> AdditionalAssetOptions {

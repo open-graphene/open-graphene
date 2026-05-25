@@ -822,6 +822,12 @@ pub struct Price {
     pub quote: crate::generated::types::Asset,
 }
 
+impl Price {
+    pub fn new(base: crate::generated::types::Asset, quote: crate::generated::types::Asset) -> Self {
+        Self { base, quote }
+    }
+}
+
 /// Raw protocol struct `price_feed`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PriceFeed {
