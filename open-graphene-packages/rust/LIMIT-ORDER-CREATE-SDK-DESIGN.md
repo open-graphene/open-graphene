@@ -2,7 +2,7 @@
 
 ## Reader and action
 
-This document designs the common SDK interface for a future `limit_order_create` flow.
+This document records the common SDK interface chosen and implemented for the `limit_order_create` flow.
 
 After reading it, a maintainer should know which input shape to implement, which abstractions to avoid for now, and which policy remains outside the pure adapter layer.
 
@@ -255,7 +255,7 @@ Design A is less ergonomic, but it is honest. Graphene's protocol operation is d
 
 Use Design A for the next implementation.
 
-The first `limit_order_create` adapter should be raw protocol-shaped:
+The first `limit_order_create` adapter is raw protocol-shaped:
 
 ```rust
 pub struct LimitOrderCreateInput {
@@ -271,9 +271,9 @@ pub struct LimitOrderCreateInput {
 
 Do not introduce `PriceInput`, `MarketInput`, `OrderSide`, or a typestate builder in the first implementation. Those can be layered later on top of the raw input once local FC/JSON proofs and possibly a live create/cancel proof exist.
 
-## Implementation boundary for the future flow
+## Implemented flow boundary
 
-A future `limit_order_create` implementation should add:
+The implemented `limit_order_create` flow adds:
 
 - `open-graphene-sdk-operations/src/limit_order_create.rs`,
 - `LimitOrderCreateInput`, `LimitOrderCreateAdapter`, `LimitOrderCreateChainTypes`, and `build_limit_order_create_transaction_for`,
@@ -299,4 +299,4 @@ It should not add:
 
 ## Live proof note
 
-Do not combine the first `limit_order_create` implementation with a live order placement. Local FC/JSON proof should land first. A later live proof can deliberately create a safe tiny order and then cancel it using the already-proven `limit_order_cancel` flow.
+The first `limit_order_create` implementation intentionally does not include a live order placement. Local FC/JSON proof landed first. A later live proof can deliberately create a safe tiny order and then cancel it using the already-proven `limit_order_cancel` flow.

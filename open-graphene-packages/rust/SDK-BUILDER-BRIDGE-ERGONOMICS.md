@@ -23,6 +23,7 @@ AccountCreateChainTypes
 AssetIssueChainTypes
 AssetCreateChainTypes
 LimitOrderCancelChainTypes
+LimitOrderCreateChainTypes
 build_*_transaction_for
 ```
 
@@ -55,6 +56,7 @@ account_create.rs
 asset_issue.rs
 asset_create.rs
 limit_order_cancel.rs
+limit_order_create.rs
 ```
 
 Result:
@@ -66,6 +68,7 @@ account_create.rs: lines 458/458, normalized_equal=true, similarity=1.000, diffe
 asset_issue.rs: lines 327/327, normalized_equal=true, similarity=1.000, differing_lines~=0
 asset_create.rs: lines 498/498, normalized_equal=true, similarity=1.000, differing_lines~=0
 limit_order_cancel.rs: lines 273/273, normalized_equal=true, similarity=1.000, differing_lines~=0
+limit_order_create.rs: lines 310/310, normalized_equal=true, similarity=1.000, differing_lines~=0
 ```
 
 Trait impl sizes in one chain:
@@ -77,6 +80,7 @@ AccountCreateChainTypes: 41 nonblank lines
 AssetIssueChainTypes: 22 nonblank lines
 AssetCreateChainTypes: 59 nonblank lines
 LimitOrderCancelChainTypes: 19 nonblank lines
+LimitOrderCreateChainTypes: 27 nonblank lines
 ```
 
 The repetition is real. It is also currently straightforward and reviewable.
@@ -127,14 +131,14 @@ Pros:
 Cons:
 
 - This crosses into generator-emitted SDK surface earlier than necessary.
-- It risks freezing the bridge API before a third chain or fifth flow proves the seam.
+- It risks freezing the bridge API before a third chain or enough operation-flow pressure proves the seam.
 - It makes SDK policy harder to review separately from protocol binding generation.
 
 ## Recommendation
 
 Do not abstract the builder bridge yet.
 
-The repeated code is perfectly duplicated after chain-name normalization, but there are only two active chains and five flows. The current explicit impls are useful documentation of the generated-type boundary. A macro or generator would reduce LOC, but it would also make the protocol-to-SDK seam less obvious and would likely become a small generator before the project has enough pressure to justify it.
+The repeated code is perfectly duplicated after chain-name normalization, but there are only two active chains and six flows. The current explicit impls are useful documentation of the generated-type boundary. A macro or generator would reduce LOC, but it would also make the protocol-to-SDK seam less obvious and would likely become a small generator before the project has enough pressure to justify it.
 
 Keep the current bridge impls explicit until at least one of these triggers happens:
 
@@ -149,6 +153,6 @@ When one of those triggers happens, prefer a narrow macro or generator profile t
 
 The best next engineering step is still not builder bridge abstraction. Better candidates are:
 
-1. Add `limit_order_create` as a sixth flow if market-order construction should be proven next.
+1. Run a local or live create-then-cancel proof using `limit_order_create` plus `limit_order_cancel` if safe test order parameters are available.
 2. Run a live BitShares proof if chain id, account, and funds are available.
 3. Spike a narrow shared generated protocol primitive only if a concrete adapter friction point appears.
