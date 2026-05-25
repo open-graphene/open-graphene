@@ -102,7 +102,7 @@ Common SDK input models should describe user intent in stable Graphene terms, no
 
 ### Shared primitive-style operation inputs
 
-The first common operation input types live in `open-graphene-sdk-operations` without depending on generated chain bindings. They keep string fields as the storage shape, and expose validation helpers that parse through `open-graphene-sdk-primitives` ID references:
+The first common operation input types live in `open-graphene-sdk-operations` without depending on generated chain bindings. They keep string fields as the storage shape so callers can still build inputs directly from CLI, environment, or RPC JSON data. Each ID-bearing input also offers a checked constructor and validation helper backed by `open-graphene-sdk-primitives` ID references.
 
 ```rust
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -127,6 +127,21 @@ pub struct PublicKeyInput {
     pub value: String,
 }
 ```
+
+The ID-bearing inputs have both infallible and checked constructors:
+
+```rust
+FeeInput::new(amount, asset_id);
+FeeInput::checked(amount, asset_id)?;
+
+AssetAmountInput::new(amount, asset_id);
+AssetAmountInput::checked(amount, asset_id)?;
+
+AccountRefInput::new(id);
+AccountRefInput::checked(id)?;
+```
+
+The checked constructors validate ID kind and preserve the string-backed storage shape.
 
 These inputs may later become stricter, but the current design intentionally separates two kinds of shared values:
 
@@ -538,9 +553,8 @@ The current evidence says common input models plus trait-based builders are the 
 ## Open questions
 
 1. Should operation input fields keep storing strings plus validation helpers, or should a future breaking revision store `AccountIdRef` and `AssetIdRef` directly?
-2. Should common inputs gain checked constructors that return `ObjectIdError`, while preserving current infallible constructors?
-3. Should only the outer signed-transaction broadcast JSON shell be shared, while operation JSON stays chain-specific?
-4. Should adapter structs get ergonomic inherent methods so callers do not need to import the adapter traits explicitly?
+2. Should only the outer signed-transaction broadcast JSON shell be shared, while operation JSON stays chain-specific?
+3. Should adapter structs get ergonomic inherent methods so callers do not need to import the adapter traits explicitly?
 
 ## Recommendation
 

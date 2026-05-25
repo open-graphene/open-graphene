@@ -14,6 +14,12 @@ impl FeeInput {
         }
     }
 
+    pub fn checked(amount: i64, asset_id: impl Into<String>) -> Result<Self, ObjectIdError> {
+        let asset_id = asset_id.into();
+        AssetIdRef::parse(&asset_id)?;
+        Ok(Self { amount, asset_id })
+    }
+
     pub fn core(amount: i64) -> Self {
         Self::new(amount, "1.3.0")
     }
@@ -37,6 +43,12 @@ impl AssetAmountInput {
         }
     }
 
+    pub fn checked(amount: i64, asset_id: impl Into<String>) -> Result<Self, ObjectIdError> {
+        let asset_id = asset_id.into();
+        AssetIdRef::parse(&asset_id)?;
+        Ok(Self { amount, asset_id })
+    }
+
     pub fn asset_id_ref(&self) -> Result<AssetIdRef, ObjectIdError> {
         AssetIdRef::parse(&self.asset_id)
     }
@@ -50,6 +62,12 @@ pub struct AccountRefInput {
 impl AccountRefInput {
     pub fn new(id: impl Into<String>) -> Self {
         Self { id: id.into() }
+    }
+
+    pub fn checked(id: impl Into<String>) -> Result<Self, ObjectIdError> {
+        let id = id.into();
+        AccountIdRef::parse(&id)?;
+        Ok(Self { id })
     }
 
     pub fn account_id_ref(&self) -> Result<AccountIdRef, ObjectIdError> {
@@ -98,6 +116,22 @@ mod tests {
     }
 
     #[test]
+    fn fee_input_checked_accepts_asset_ids() {
+        let fee = FeeInput::checked(42, "1.3.0").unwrap();
+
+        assert_eq!(fee.amount, 42);
+        assert_eq!(fee.asset_id, "1.3.0");
+    }
+
+    #[test]
+    fn fee_input_checked_rejects_non_asset_ids() {
+        assert!(matches!(
+            FeeInput::checked(42, "1.2.100"),
+            Err(ObjectIdError::UnexpectedType { .. })
+        ));
+    }
+
+    #[test]
     fn account_refs_validate_account_ids() {
         assert_eq!(
             AccountRefInput::new("1.2.100")
@@ -113,12 +147,32 @@ mod tests {
     }
 
     #[test]
-    fn asset_amount_refs_validate_asset_ids() {
-        let amount = AssetAmountInput::new(100_000, "1.3.1");
+    fn account_ref_checked_accepts_account_ids() {
+        let account = AccountRefInput::checked("1.2.100").unwrap();
 
-        assert_eq!(amount.asset_id_ref().unwrap().to_string(), "1.3.1");
+        assert_eq!(account.id, "1.2.100");
+    }
+
+    #[test]
+    fn account_ref_checked_rejects_non_account_ids() {
         assert!(matches!(
-            AssetAmountInput::new(1, "1.2.100").asset_id_ref(),
+            AccountRefInput::checked("1.3.0"),
+            Err(ObjectIdError::UnexpectedType { .. })
+        ));
+    }
+
+    #[test]
+    fn asset_amount_checked_accepts_asset_ids() {
+        let amount = AssetAmountInput::checked(100_000, "1.3.1").unwrap();
+
+        assert_eq!(amount.amount, 100_000);
+        assert_eq!(amount.asset_id, "1.3.1");
+    }
+
+    #[test]
+    fn asset_amount_checked_rejects_non_asset_ids() {
+        assert!(matches!(
+            AssetAmountInput::checked(1, "1.2.100"),
             Err(ObjectIdError::UnexpectedType { .. })
         ));
     }
