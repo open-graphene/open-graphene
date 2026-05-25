@@ -424,14 +424,29 @@ Status: complete.
 
 Swaplock and BitShares implement `AssetIssueAdapter` and `AssetCreateAdapter`. The asset-create adapter remains UIA-only and preserves the existing fail-closed behavior for bitassets, prediction markets, non-empty lists, and extension-heavy options.
 
-### Phase 6: decide the next seam
+### Phase 6: add caller-facing input constructors
+
+Status: complete.
+
+`open-graphene-sdk-core` now exposes ergonomic constructors for the supported common input shapes:
+
+```text
+TransferInput::new(...)
+AccountCreateInput::simple(...)
+AssetIssueInput::new(...)
+AssetCreateInput::uia(...)
+```
+
+These constructors only wrap raw caller fields into existing common input structs. They do not add RPC, fee lookup, chain-state validation, generated protocol types, or new wire capabilities.
+
+### Phase 7: decide the next seam
 
 Status: next decision.
 
 The current evidence says common input models are the right SDK seam. The next decision should be one of:
 
-1. **Ergonomics:** add caller-facing constructors/helpers around the existing common inputs and adapter structs.
-2. **Validation:** add optional common input validation before mapping to generated chain types.
+1. **Validation:** add optional common input validation before mapping to generated chain types.
+2. **Adapter ergonomics:** add inherent methods on chain adapter structs so callers do not need to import traits explicitly.
 3. **Broadcast JSON shell reuse:** factor only the outer signed-transaction JSON shell if duplication remains obvious.
 4. **Shared primitives:** extract `AssetId + Asset` only if adapter ergonomics or validation clearly improve.
 5. **Generator support:** keep deferred until a third chain or downstream demand makes manual wrappers too costly.
@@ -457,4 +472,4 @@ Use common SDK input models plus chain-specific adapters as the proven SDK seam.
 
 Do not extract shared protocol primitives yet. Do not implement generated SDK adapters yet.
 
-The next implementation slice should improve ergonomics or validation around the existing common inputs and adapter structs, not change the protocol model. Shared primitives should be revisited only when a concrete adapter friction point needs them.
+The next implementation slice should improve validation or adapter-call ergonomics around the existing common inputs and adapter structs, not change the protocol model. Shared primitives should be revisited only when a concrete adapter friction point needs them.

@@ -20,12 +20,16 @@ pub trait AssetIssueAdapter {
     type Transaction;
     type Error;
 
-    fn build_asset_issue_transaction(input: AssetIssueInput) -> Result<Self::Transaction, Self::Error>;
+    fn build_asset_issue_transaction(
+        input: AssetIssueInput,
+    ) -> Result<Self::Transaction, Self::Error>;
 }
 
 pub trait AssetCreateAdapter {
     type Transaction;
     type Error;
 
-    fn build_asset_create_transaction(input: AssetCreateInput) -> Result<Self::Transaction, Self::Error>;
+    fn build_asset_create_transaction(
+        input: AssetCreateInput,
+    ) -> Result<Self::Transaction, Self::Error>;
 }
