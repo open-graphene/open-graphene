@@ -14,5 +14,23 @@ This directory contains Rust runtime crates, SDK helper crates, and generated ch
 - [Manual SDK Adapter Patterns](TRANSFER-SDK-ADAPTER.md) describes the operation helper boundary used by chain binding crates and the current trait-builder pattern.
 - [Common SDK Input and Chain Adapter Design](SDK-INPUT-ADAPTER-DESIGN.md) describes the shared input-model seam and how chain-specific generated types plug into common operation builders.
 - [SDK Builder Bridge Ergonomics Spike](SDK-BUILDER-BRIDGE-ERGONOMICS.md) measures current Swaplock/BitShares bridge duplication and records why the explicit generated-type bridge remains preferable for now.
-- [Limit Order Create SDK Design Spike](LIMIT-ORDER-CREATE-SDK-DESIGN.md) compares raw protocol-shaped, price-based, and builder-style input designs for a future `limit_order_create` flow.
+- [Limit Order Create SDK Design Spike](LIMIT-ORDER-CREATE-SDK-DESIGN.md) compares raw protocol-shaped, price-based, and builder-style input designs and records the implemented raw `limit_order_create` flow.
 - [Generated SDK Adapter Capability Design](../../open-graphene/crates/open-graphene-gen-bindings-rs/SDK-CAPABILITY-DESIGN.md) records the opt-in generated SDK adapter direction and the boundary for small protocol-level generated helpers.
+
+## Swaplock live trading scenario
+
+The private Swaplock testnet can run an end-to-end SDK scenario that creates two temporary accounts, creates two UIA assets, funds the accounts, issues the assets, opens a deliberately unmatched limit order, and cancels it again:
+
+```bash
+open-graphene-packages/rust/graphene-chain-swaplock/bin/trading-scenario.sh
+```
+
+Required environment keys are loaded from `.env` when present:
+
+```text
+SWAPLOCK_RPC_URL
+SWAPLOCK_ACTIVE_WIF
+SWAPLOCK_ACCOUNT
+```
+
+Optional overrides include `SWAPLOCK_SCENARIO_ACCOUNT_A`, `SWAPLOCK_SCENARIO_ACCOUNT_B`, `SWAPLOCK_SCENARIO_ASSET_A`, `SWAPLOCK_SCENARIO_ASSET_B`, `SWAPLOCK_SCENARIO_CORE_FUNDING`, `SWAPLOCK_SCENARIO_ISSUE_AMOUNT`, `SWAPLOCK_SCENARIO_ORDER_SELL_AMOUNT`, and `SWAPLOCK_SCENARIO_ORDER_RECEIVE_AMOUNT`.
