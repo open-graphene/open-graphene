@@ -81,6 +81,14 @@ impl AccountCreateChainTypes for BitSharesOperationBuilderTypes {
 
 pub struct BitSharesAccountCreateAdapter;
 
+impl BitSharesAccountCreateAdapter {
+    pub fn build_account_create_transaction(
+        input: AccountCreateInput,
+    ) -> Result<Transaction, Infallible> {
+        <Self as AccountCreateAdapter>::build_account_create_transaction(input)
+    }
+}
+
 impl AccountCreateAdapter for BitSharesAccountCreateAdapter {
     type Transaction = Transaction;
     type Error = Infallible;

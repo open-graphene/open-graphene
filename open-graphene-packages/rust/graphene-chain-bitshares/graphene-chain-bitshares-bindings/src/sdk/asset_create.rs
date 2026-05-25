@@ -96,6 +96,14 @@ impl AssetCreateChainTypes for BitSharesOperationBuilderTypes {
 
 pub struct BitSharesAssetCreateAdapter;
 
+impl BitSharesAssetCreateAdapter {
+    pub fn build_asset_create_transaction(
+        input: AssetCreateInput,
+    ) -> Result<Transaction, Infallible> {
+        <Self as AssetCreateAdapter>::build_asset_create_transaction(input)
+    }
+}
+
 impl AssetCreateAdapter for BitSharesAssetCreateAdapter {
     type Transaction = Transaction;
     type Error = Infallible;

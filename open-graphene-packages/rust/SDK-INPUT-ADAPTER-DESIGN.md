@@ -529,18 +529,24 @@ common input -> generic builder -> chain generated-type bridge -> generated Tran
 
 Broadcast JSON rendering remains chain-local and operation-specific.
 
-### Phase 8: decide the next seam
+### Phase 8: add validation and adapter-call ergonomics
+
+Status: complete.
+
+The common input models remain string-backed, but ID-bearing inputs now have checked constructors that validate IDs through `open-graphene-sdk-primitives`. This gives callers an opt-in validation path without making direct CLI, environment, or RPC JSON construction harder.
+
+The chain adapter structs also expose inherent build methods that delegate to their adapter trait implementations. Normal chain-package callers can call `ChainTransferAdapter::build_transfer_transaction(input)` without importing the corresponding common adapter trait, while generic code can still use the traits directly.
+
+### Phase 9: decide the next seam
 
 Status: next decision.
 
 The current evidence says common input models plus trait-based builders are the right SDK seam. The next decision should be one of:
 
-1. **Validation:** add optional common input validation before mapping to generated chain types.
-2. **Adapter ergonomics:** add inherent methods on chain adapter structs so callers do not need to import traits explicitly.
-3. **Broadcast JSON shell reuse:** factor only the outer signed-transaction JSON shell if duplication remains obvious.
-4. **Builder ergonomics:** reduce any remaining boilerplate in chain generated-type bridge implementations if more operations are added.
-5. **Shared primitives:** extract `AssetId + Asset` only if adapter ergonomics or validation clearly improve.
-6. **Generator support:** keep deferred until a third chain or downstream demand makes manual bridges too costly.
+1. **Broadcast JSON shell reuse:** factor only the outer signed-transaction JSON shell if duplication remains obvious.
+2. **Builder ergonomics:** reduce any remaining boilerplate in chain generated-type bridge implementations if more operations are added.
+3. **Shared generated protocol primitives:** extract `AssetId + Asset` only if adapter ergonomics or validation clearly improve.
+4. **Generator support:** keep deferred until a third chain or downstream demand makes manual bridges too costly.
 
 ## Success criteria for this architecture
 
@@ -554,7 +560,6 @@ The current evidence says common input models plus trait-based builders are the 
 
 1. Should operation input fields keep storing strings plus validation helpers, or should a future breaking revision store `AccountIdRef` and `AssetIdRef` directly?
 2. Should only the outer signed-transaction broadcast JSON shell be shared, while operation JSON stays chain-specific?
-3. Should adapter structs get ergonomic inherent methods so callers do not need to import the adapter traits explicitly?
 
 ## Recommendation
 

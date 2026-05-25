@@ -96,6 +96,14 @@ impl AssetCreateChainTypes for SwaplockOperationBuilderTypes {
 
 pub struct SwaplockAssetCreateAdapter;
 
+impl SwaplockAssetCreateAdapter {
+    pub fn build_asset_create_transaction(
+        input: AssetCreateInput,
+    ) -> Result<Transaction, Infallible> {
+        <Self as AssetCreateAdapter>::build_asset_create_transaction(input)
+    }
+}
+
 impl AssetCreateAdapter for SwaplockAssetCreateAdapter {
     type Transaction = Transaction;
     type Error = Infallible;

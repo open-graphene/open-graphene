@@ -55,6 +55,14 @@ impl AssetIssueChainTypes for SwaplockOperationBuilderTypes {
 
 pub struct SwaplockAssetIssueAdapter;
 
+impl SwaplockAssetIssueAdapter {
+    pub fn build_asset_issue_transaction(
+        input: AssetIssueInput,
+    ) -> Result<Transaction, Infallible> {
+        <Self as AssetIssueAdapter>::build_asset_issue_transaction(input)
+    }
+}
+
 impl AssetIssueAdapter for SwaplockAssetIssueAdapter {
     type Transaction = Transaction;
     type Error = Infallible;

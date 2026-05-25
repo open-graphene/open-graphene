@@ -81,6 +81,14 @@ impl AccountCreateChainTypes for SwaplockOperationBuilderTypes {
 
 pub struct SwaplockAccountCreateAdapter;
 
+impl SwaplockAccountCreateAdapter {
+    pub fn build_account_create_transaction(
+        input: AccountCreateInput,
+    ) -> Result<Transaction, Infallible> {
+        <Self as AccountCreateAdapter>::build_account_create_transaction(input)
+    }
+}
+
 impl AccountCreateAdapter for SwaplockAccountCreateAdapter {
     type Transaction = Transaction;
     type Error = Infallible;

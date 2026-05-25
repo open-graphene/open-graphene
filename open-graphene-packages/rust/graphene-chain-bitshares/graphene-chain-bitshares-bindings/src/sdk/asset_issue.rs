@@ -55,6 +55,14 @@ impl AssetIssueChainTypes for BitSharesOperationBuilderTypes {
 
 pub struct BitSharesAssetIssueAdapter;
 
+impl BitSharesAssetIssueAdapter {
+    pub fn build_asset_issue_transaction(
+        input: AssetIssueInput,
+    ) -> Result<Transaction, Infallible> {
+        <Self as AssetIssueAdapter>::build_asset_issue_transaction(input)
+    }
+}
+
 impl AssetIssueAdapter for BitSharesAssetIssueAdapter {
     type Transaction = Transaction;
     type Error = Infallible;

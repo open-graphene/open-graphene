@@ -55,6 +55,12 @@ impl TransferChainTypes for SwaplockOperationBuilderTypes {
 
 pub struct SwaplockTransferAdapter;
 
+impl SwaplockTransferAdapter {
+    pub fn build_transfer_transaction(input: TransferInput) -> Result<Transaction, Infallible> {
+        <Self as TransferAdapter>::build_transfer_transaction(input)
+    }
+}
+
 impl TransferAdapter for SwaplockTransferAdapter {
     type Transaction = Transaction;
     type Error = Infallible;

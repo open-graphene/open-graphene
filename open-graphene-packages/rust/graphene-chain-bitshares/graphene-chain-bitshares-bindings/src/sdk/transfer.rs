@@ -55,6 +55,12 @@ impl TransferChainTypes for BitSharesOperationBuilderTypes {
 
 pub struct BitSharesTransferAdapter;
 
+impl BitSharesTransferAdapter {
+    pub fn build_transfer_transaction(input: TransferInput) -> Result<Transaction, Infallible> {
+        <Self as TransferAdapter>::build_transfer_transaction(input)
+    }
+}
+
 impl TransferAdapter for BitSharesTransferAdapter {
     type Transaction = Transaction;
     type Error = Infallible;

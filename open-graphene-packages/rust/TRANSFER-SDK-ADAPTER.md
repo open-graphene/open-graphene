@@ -71,10 +71,18 @@ Each `signed_transaction_json` function is intentionally operation-specific and 
 
 ## Common-input wrapper API shape
 
-Each operation adapter may also expose a zero-sized wrapper struct implementing the corresponding `open-graphene-sdk-operations` adapter trait:
+Each operation adapter may also expose a zero-sized wrapper struct implementing the corresponding `open-graphene-sdk-operations` adapter trait and an inherent method with the same public call shape:
 
 ```rust
 pub struct ChainSomeOperationAdapter;
+
+impl ChainSomeOperationAdapter {
+    pub fn build_some_operation_transaction(
+        input: open_graphene_sdk_operations::SomeOperationInput,
+    ) -> Result<Transaction, std::convert::Infallible> {
+        <Self as open_graphene_sdk_operations::SomeOperationAdapter>::build_some_operation_transaction(input)
+    }
+}
 
 impl open_graphene_sdk_operations::SomeOperationAdapter for ChainSomeOperationAdapter {
     type Transaction = Transaction;
@@ -89,6 +97,8 @@ impl open_graphene_sdk_operations::SomeOperationAdapter for ChainSomeOperationAd
     }
 }
 ```
+
+The inherent method is for normal chain-package callers: it lets `ChainSomeOperationAdapter::build_some_operation_transaction(input)` work without importing the common adapter trait. The trait implementation remains the generic seam for code that wants to abstract over chains.
 
 These wrappers exist to prove a coherent cross-chain SDK input seam. They should remain boring pass-through adapters unless a real validation or ergonomics need appears.
 
