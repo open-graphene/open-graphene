@@ -8,7 +8,7 @@ This directory contains Rust runtime crates, SDK helper crates, and generated ch
 - `graphene-sdk-primitives` (`open-graphene-sdk-primitives`): stable chain-agnostic SDK value references and validators such as object IDs, account IDs, asset IDs, asset amounts, limit-order IDs, and operation-history IDs.
 - `graphene-sdk-core` (`open-graphene-sdk-core`): pure SDK helpers such as amount conversion, transaction headers, and balance checks; re-exports SDK primitives for compatibility.
 - `graphene-sdk-operations` (`open-graphene-sdk-operations`): common operation input models, adapter traits, and generic trait-based transaction builders, split one operation per module.
-- `graphene-chain-swaplock`: high-level Swaplock SDK/client crate for live RPC orchestration, signing, broadcast, and scenario helpers; depends on `graphene-chain-swaplock-bindings` instead of embedding live behavior in the bindings crate.
+- `graphene-chain-swaplock`: public Swaplock SDK facade exposing high-level operation modules backed by `graphene-chain-swaplock-bindings`; live RPC orchestration is kept in crate examples rather than the bindings crate.
 
 ## Architecture notes
 
@@ -20,7 +20,7 @@ This directory contains Rust runtime crates, SDK helper crates, and generated ch
 
 ## Swaplock live trading scenario
 
-The private Swaplock testnet can run an end-to-end SDK scenario from the high-level `graphene-chain-swaplock` crate. The scenario creates two temporary accounts, creates two UIA assets, funds the accounts, issues the assets, opens a deliberately unmatched limit order, and cancels it again:
+The private Swaplock testnet can run an end-to-end SDK scenario from the `graphene-chain-swaplock` crate examples. The scenario creates two temporary accounts, creates two UIA assets, funds the accounts, issues the assets, opens a deliberately unmatched limit order, and cancels it again:
 
 ```bash
 open-graphene-packages/rust/graphene-chain-swaplock/bin/trading-scenario.sh
