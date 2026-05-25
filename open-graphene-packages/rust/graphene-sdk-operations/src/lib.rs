@@ -10,4 +10,6 @@ pub use asset_issue::{AssetIssueAdapter, AssetIssueInput};
 pub use common::{
     AccountRefInput, AssetAmountInput, FeeInput, PublicKeyInput, SingleKeyAuthorityInput,
 };
-pub use transfer::{TransferAdapter, TransferInput};
+pub use transfer::{
+    TransferAdapter, TransferChainTypes, TransferInput, build_transfer_transaction_for,
+};

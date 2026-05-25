@@ -38,6 +38,61 @@ pub trait TransferAdapter {
     fn build_transfer_transaction(input: TransferInput) -> Result<Self::Transaction, Self::Error>;
 }
 
+pub trait TransferChainTypes {
+    type Transaction;
+    type Operation;
+    type TransferOperation;
+    type Asset;
+    type AccountId;
+    type AssetId;
+    type FutureExtensions;
+
+    fn asset_id(id: String) -> Self::AssetId;
+    fn account_id(id: String) -> Self::AccountId;
+    fn asset(amount: i64, asset_id: Self::AssetId) -> Self::Asset;
+    fn empty_extensions() -> Self::FutureExtensions;
+
+    fn transfer_operation_without_memo(
+        fee: Self::Asset,
+        from: Self::AccountId,
+        to: Self::AccountId,
+        amount: Self::Asset,
+        extensions: Self::FutureExtensions,
+    ) -> Self::TransferOperation;
+
+    fn operation_transfer(operation: Self::TransferOperation) -> Self::Operation;
+
+    fn transaction(
+        ref_block_num: u16,
+        ref_block_prefix: u32,
+        expiration: String,
+        operations: Vec<Self::Operation>,
+        extensions: Self::FutureExtensions,
+    ) -> Self::Transaction;
+}
+
+pub fn build_transfer_transaction_for<C: TransferChainTypes>(
+    input: TransferInput,
+) -> C::Transaction {
+    let fee = C::asset(input.fee.amount, C::asset_id(input.fee.asset_id));
+    let amount = C::asset(input.amount.amount, C::asset_id(input.amount.asset_id));
+    let operation = C::transfer_operation_without_memo(
+        fee,
+        C::account_id(input.from.id),
+        C::account_id(input.to.id),
+        amount,
+        C::empty_extensions(),
+    );
+
+    C::transaction(
+        input.header.ref_block_num,
+        input.header.ref_block_prefix,
+        input.header.expiration,
+        vec![C::operation_transfer(operation)],
+        C::empty_extensions(),
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

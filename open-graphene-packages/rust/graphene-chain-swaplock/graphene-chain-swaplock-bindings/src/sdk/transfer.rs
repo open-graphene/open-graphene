@@ -1,6 +1,8 @@
 use std::convert::Infallible;
 
-use open_graphene_sdk_operations::{TransferAdapter, TransferInput};
+use open_graphene_sdk_operations::{
+    build_transfer_transaction_for, TransferAdapter, TransferChainTypes, TransferInput,
+};
 use serde_json::{json, Value};
 use thiserror::Error;
 
@@ -22,6 +24,71 @@ pub struct TransferTransactionInput {
     pub fee_asset_id: String,
 }
 
+pub struct SwaplockTransferTypes;
+
+impl TransferChainTypes for SwaplockTransferTypes {
+    type Transaction = Transaction;
+    type Operation = Operation;
+    type TransferOperation = TransferOperation;
+    type Asset = Asset;
+    type AccountId = AccountId;
+    type AssetId = AssetId;
+    type FutureExtensions = FutureExtensions;
+
+    fn asset_id(id: String) -> Self::AssetId {
+        AssetId(id)
+    }
+
+    fn account_id(id: String) -> Self::AccountId {
+        AccountId(id)
+    }
+
+    fn asset(amount: i64, asset_id: Self::AssetId) -> Self::Asset {
+        Asset { amount, asset_id }
+    }
+
+    fn empty_extensions() -> Self::FutureExtensions {
+        FutureExtensions::VoidT(Box::new(()))
+    }
+
+    fn transfer_operation_without_memo(
+        fee: Self::Asset,
+        from: Self::AccountId,
+        to: Self::AccountId,
+        amount: Self::Asset,
+        extensions: Self::FutureExtensions,
+    ) -> Self::TransferOperation {
+        TransferOperation {
+            fee,
+            from,
+            to,
+            amount,
+            memo: None,
+            extensions,
+        }
+    }
+
+    fn operation_transfer(operation: Self::TransferOperation) -> Self::Operation {
+        Operation::TransferOperation(Box::new(operation))
+    }
+
+    fn transaction(
+        ref_block_num: u16,
+        ref_block_prefix: u32,
+        expiration: String,
+        operations: Vec<Self::Operation>,
+        extensions: Self::FutureExtensions,
+    ) -> Self::Transaction {
+        Transaction {
+            ref_block_num,
+            ref_block_prefix,
+            expiration,
+            operations,
+            extensions,
+        }
+    }
+}
+
 pub struct SwaplockTransferAdapter;
 
 impl TransferAdapter for SwaplockTransferAdapter {
@@ -29,18 +96,8 @@ impl TransferAdapter for SwaplockTransferAdapter {
     type Error = Infallible;
 
     fn build_transfer_transaction(input: TransferInput) -> Result<Self::Transaction, Self::Error> {
-        Ok(crate::sdk::transfer::build_transfer_transaction(
-            TransferTransactionInput {
-                ref_block_num: input.header.ref_block_num,
-                ref_block_prefix: input.header.ref_block_prefix,
-                expiration: input.header.expiration,
-                from_id: input.from.id,
-                to_id: input.to.id,
-                asset_id: input.amount.asset_id,
-                amount: input.amount.amount,
-                fee_amount: input.fee.amount,
-                fee_asset_id: input.fee.asset_id,
-            },
+        Ok(build_transfer_transaction_for::<SwaplockTransferTypes>(
+            input,
         ))
     }
 }
@@ -52,26 +109,19 @@ pub enum TransferJsonError {
 }
 
 pub fn build_transfer_transaction(input: TransferTransactionInput) -> Transaction {
-    Transaction {
-        ref_block_num: input.ref_block_num,
-        ref_block_prefix: input.ref_block_prefix,
-        expiration: input.expiration,
-        operations: vec![Operation::TransferOperation(Box::new(TransferOperation {
-            fee: Asset {
-                amount: input.fee_amount,
-                asset_id: AssetId(input.fee_asset_id),
-            },
-            from: AccountId(input.from_id),
-            to: AccountId(input.to_id),
-            amount: Asset {
-                amount: input.amount,
-                asset_id: AssetId(input.asset_id),
-            },
-            memo: None,
-            extensions: FutureExtensions::VoidT(Box::new(())),
-        }))],
-        extensions: FutureExtensions::VoidT(Box::new(())),
-    }
+    build_transfer_transaction_for::<SwaplockTransferTypes>(TransferInput::new(
+        open_graphene_sdk_core::TransactionHeader {
+            ref_block_num: input.ref_block_num,
+            ref_block_prefix: input.ref_block_prefix,
+            expiration: input.expiration,
+        },
+        input.from_id,
+        input.to_id,
+        input.amount,
+        input.asset_id,
+        input.fee_amount,
+        input.fee_asset_id,
+    ))
 }
 
 pub fn signed_transaction_json(
