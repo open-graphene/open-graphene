@@ -2064,6 +2064,23 @@
         },
         {
           "index": 5,
+          "name": "core_exchange_rate",
+          "type": {
+            "kind": "ref",
+            "name": "price"
+          },
+          "source": {
+            "name": "core_exchange_rate",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/asset_ops.hpp",
+            "line": 66
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 6,
           "name": "whitelist_authorities",
           "type": {
             "kind": "set",
@@ -2084,7 +2101,7 @@
           }
         },
         {
-          "index": 6,
+          "index": 7,
           "name": "blacklist_authorities",
           "type": {
             "kind": "set",
@@ -2105,7 +2122,7 @@
           }
         },
         {
-          "index": 7,
+          "index": 8,
           "name": "whitelist_markets",
           "type": {
             "kind": "set",
@@ -2126,7 +2143,7 @@
           }
         },
         {
-          "index": 8,
+          "index": 9,
           "name": "blacklist_markets",
           "type": {
             "kind": "set",
@@ -2147,7 +2164,7 @@
           }
         },
         {
-          "index": 9,
+          "index": 10,
           "name": "description",
           "type": {
             "kind": "string"
@@ -2163,7 +2180,7 @@
           }
         },
         {
-          "index": 10,
+          "index": 11,
           "name": "extensions",
           "type": {
             "kind": "ref",
@@ -8543,6 +8560,22 @@
         },
         {
           "index": 4,
+          "name": "expiration",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "expiration",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/market.hpp",
+            "line": 89
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 5,
           "name": "fill_or_kill",
           "type": {
             "kind": "bool"
@@ -8558,7 +8591,7 @@
           }
         },
         {
-          "index": 5,
+          "index": 6,
           "name": "extensions",
           "type": {
             "kind": "static_variant_ref",
@@ -17587,6 +17620,22 @@
         },
         {
           "index": 4,
+          "name": "expiration",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "expiration",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/market.hpp",
+            "line": 89
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 5,
           "name": "fill_or_kill",
           "type": {
             "kind": "bool"
@@ -17602,7 +17651,7 @@
           }
         },
         {
-          "index": 5,
+          "index": 6,
           "name": "extensions",
           "type": {
             "kind": "static_variant_ref",

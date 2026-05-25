@@ -160,7 +160,6 @@ fn parse_field_statement(statement: &str, file: &Path, line: usize) -> Vec<RawFi
     let statement = collapse_whitespace(statement);
     let statement = strip_access_labels(&statement).trim().to_string();
     if statement.is_empty()
-        || statement.contains('(')
         || statement.starts_with("typedef ")
         || statement.starts_with("using ")
         || statement.starts_with("friend ")
@@ -177,6 +176,9 @@ fn parse_field_statement(statement: &str, file: &Path, line: usize) -> Vec<RawFi
     else {
         return vec![];
     };
+    if first_without_default.contains('(') {
+        return vec![];
+    }
     let Some((type_expr, first_name)) = split_type_and_param_name(first_without_default.trim())
     else {
         return vec![];
@@ -569,6 +571,27 @@ mod tests {
         assert_eq!(fields[1].type_expr, "operation_result");
         assert_eq!(fields[2].name, "block_num");
         assert_eq!(fields[2].type_expr, "uint32_t");
+    }
+
+    #[test]
+    fn extracts_field_with_function_call_default_value() {
+        let source = r#"
+            struct asset_options
+            {
+               share_type max_supply = GRAPHENE_MAX_SHARE_SUPPLY;
+               price core_exchange_rate = price(asset(), asset(0, asset_id_type(1)));
+               string description;
+            };
+        "#;
+
+        let classes = extract_classes(source, &PathBuf::from("asset_ops.hpp"));
+        assert_eq!(classes[0].fields.len(), 3);
+        assert_eq!(classes[0].fields[0].name, "max_supply");
+        assert_eq!(classes[0].fields[0].type_expr, "share_type");
+        assert_eq!(classes[0].fields[1].name, "core_exchange_rate");
+        assert_eq!(classes[0].fields[1].type_expr, "price");
+        assert_eq!(classes[0].fields[2].name, "description");
+        assert_eq!(classes[0].fields[2].type_expr, "string");
     }
 
     #[test]

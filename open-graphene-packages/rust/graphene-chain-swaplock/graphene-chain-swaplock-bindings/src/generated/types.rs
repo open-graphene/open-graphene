@@ -322,6 +322,7 @@ pub struct AssetOptions {
     pub max_market_fee: i64,
     pub issuer_permissions: u16,
     pub flags: u16,
+    pub core_exchange_rate: crate::generated::types::Price,
     pub whitelist_authorities: Vec<crate::generated::ids::AccountId>,
     pub blacklist_authorities: Vec<crate::generated::ids::AccountId>,
     pub whitelist_markets: Vec<crate::generated::ids::AssetId>,
@@ -1067,4 +1068,3 @@ pub struct WitnessUpdateOperationFeeParamsT {
 pub struct WorkerCreateOperationFeeParamsT {
     pub fee: u64,
 }
-

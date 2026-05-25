@@ -527,6 +527,10 @@ fn render_fc_struct_impls(out: &mut String, protocol: &Protocol) -> Result<BTree
             render_fc_account_create_operation_ext_impl(out);
             continue;
         }
+        if struct_def.name == "additional_asset_options" {
+            render_fc_additional_asset_options_impl(out);
+            continue;
+        }
 
         let struct_name = rust_type_name(&struct_def.name);
         out.push_str(&format!(
@@ -559,6 +563,21 @@ fn render_fc_account_create_operation_ext_impl(out: &mut String) {
     out.push_str("        Err(FcSerializeError::UnsupportedValue {\n");
     out.push_str("            type_name: \"account_create_operation_ext\",\n");
     out.push_str("            reason: \"non-empty account_create operation extensions are not supported by FC serialization yet\",\n");
+    out.push_str("        })\n");
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
+}
+
+fn render_fc_additional_asset_options_impl(out: &mut String) {
+    out.push_str("impl FcSerialize for crate::generated::types::AdditionalAssetOptions {\n");
+    out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
+    out.push_str("        if self.reward_percent.is_none() && self.whitelist_market_fee_sharing.is_none() && self.taker_fee_percent.is_none() {\n");
+    out.push_str("            write_varint(0u64, out);\n");
+    out.push_str("            return Ok(());\n");
+    out.push_str("        }\n");
+    out.push_str("        Err(FcSerializeError::UnsupportedValue {\n");
+    out.push_str("            type_name: \"additional_asset_options\",\n");
+    out.push_str("            reason: \"non-empty additional asset options are not supported by FC serialization yet\",\n");
     out.push_str("        })\n");
     out.push_str("    }\n");
     out.push_str("}\n\n");

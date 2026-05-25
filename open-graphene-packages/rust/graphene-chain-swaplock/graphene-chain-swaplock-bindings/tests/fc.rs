@@ -179,6 +179,7 @@ fn sample_limit_order_create_operation() -> LimitOrderCreateOperation {
             amount: 2,
             asset_id: AssetId("1.3.0".to_string()),
         },
+        expiration: "2026-05-25T12:01:00".to_string(),
         fill_or_kill: true,
         extensions: FutureExtensions::VoidT(Box::new(())),
     }
@@ -584,9 +585,9 @@ fn expected_limit_order_create_payload() -> Vec<u8> {
         0, 0, 0, 0, 0, 0, 0, 0, 0, // seller account instance 1
         1, // amount_to_sell: amount 1 + asset instance 0
         1, 0, 0, 0, 0, 0, 0, 0, 0, // min_to_receive: amount 2 + asset instance 0
-        2, 0, 0, 0, 0, 0, 0, 0, 0, // fill_or_kill true
-        1, // extensions: future_extensions VoidT static variant tag 0
-        0,
+        2, 0, 0, 0, 0, 0, 0, 0, 0, 252, 57, 20, 106, // expiration 2026-05-25T12:01:00
+        1,   // fill_or_kill true
+        0,   // extensions: future_extensions VoidT static variant tag 0
     ]
 }
 
