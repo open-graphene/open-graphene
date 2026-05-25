@@ -6,10 +6,11 @@ use graphene_chain_swaplock_bindings::generated::FcSerialize;
 use graphene_chain_swaplock_bindings::generated::fc::{
     decode_public_key, is_graphene_canonical_compact_signature, verify_compact_signature_public_key,
 };
-use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId};
-use graphene_chain_swaplock_bindings::generated::operations::TransferOperation;
-use graphene_chain_swaplock_bindings::generated::static_variants::{FutureExtensions, Operation};
-use graphene_chain_swaplock_bindings::generated::types::{Asset, SignedTransaction, Transaction};
+use graphene_chain_swaplock_bindings::generated::ids::AssetId;
+use graphene_chain_swaplock_bindings::generated::types::Asset;
+use graphene_chain_swaplock_bindings::sdk::transfer::{
+    TransferTransactionInput, build_transfer_transaction, signed_transaction_json,
+};
 use serde_json::{Value, json};
 use tungstenite::{Message, WebSocket, connect};
 
@@ -197,23 +198,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         },
     })?;
 
-    let transaction = Transaction {
+    let transaction = build_transfer_transaction(TransferTransactionInput {
         ref_block_num,
         ref_block_prefix,
         expiration,
-        operations: vec![Operation::TransferOperation(Box::new(TransferOperation {
-            fee,
-            from: AccountId(from_id.clone()),
-            to: AccountId(to_id.clone()),
-            amount: Asset {
-                amount,
-                asset_id: AssetId(asset_id.clone()),
-            },
-            memo: None,
-            extensions: FutureExtensions::VoidT(Box::new(())),
-        }))],
-        extensions: FutureExtensions::VoidT(Box::new(())),
-    };
+        from_id: from_id.clone(),
+        to_id: to_id.clone(),
+        asset_id: asset_id.clone(),
+        amount,
+        fee_amount: fee.amount,
+        fee_asset_id: fee.asset_id.0,
+    });
 
     let signed_transaction = transaction.signed_with_wif(&wif)?;
     if !is_graphene_canonical_compact_signature(&signed_transaction.signatures[0].0) {
@@ -260,10 +255,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     if env_flag("SWAPLOCK_DEBUG") {
         println!("debug_read_only: false");
         println!("debug_broadcast: true");
-        println!(
-            "debug_from_id: {}",
-            account_id_string(&transaction.operations[0])
-        );
+        println!("debug_from_id: {from_id}");
         println!("debug_asset_precision: {asset_precision}");
         println!("debug_amount_raw: {amount}");
         println!("debug_fee_raw: {}", expected_fee_amount);
@@ -481,51 +473,6 @@ fn ensure_signature_public_key_match(
     }
 }
 
-fn signed_transaction_json(
-    signed_transaction: &SignedTransaction,
-) -> Result<Value, Box<dyn Error>> {
-    Ok(json!({
-        "ref_block_num": signed_transaction.ref_block_num,
-        "ref_block_prefix": signed_transaction.ref_block_prefix,
-        "expiration": signed_transaction.expiration,
-        "operations": signed_transaction
-            .operations
-            .iter()
-            .map(operation_json)
-            .collect::<Result<Vec<_>, _>>()?,
-        "extensions": [],
-        "signatures": signed_transaction
-            .signatures
-            .iter()
-            .map(|signature| hex(&signature.0))
-            .collect::<Vec<_>>(),
-    }))
-}
-
-fn operation_json(operation: &Operation) -> Result<Value, Box<dyn Error>> {
-    match operation {
-        Operation::TransferOperation(operation) => Ok(json!([
-            0,
-            {
-                "fee": asset_json(&operation.fee),
-                "from": operation.from.0,
-                "to": operation.to.0,
-                "amount": asset_json(&operation.amount),
-                "memo": null,
-                "extensions": []
-            }
-        ])),
-        _ => Err("signed transfer preview can only broadcast transfer operations".into()),
-    }
-}
-
-fn asset_json(asset: &Asset) -> Value {
-    json!({
-        "amount": asset.amount,
-        "asset_id": asset.asset_id.0,
-    })
-}
-
 fn lookup_account_id(
     rpc: &mut GrapheneRpc,
     api_id: u64,
@@ -674,13 +621,6 @@ fn json_i64(value: &Value) -> Option<i64> {
 
 fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|byte| format!("{byte:02x}")).collect()
-}
-
-fn account_id_string(operation: &Operation) -> &str {
-    match operation {
-        Operation::TransferOperation(operation) => &operation.from.0,
-        _ => "",
-    }
 }
 
 #[cfg(test)]
