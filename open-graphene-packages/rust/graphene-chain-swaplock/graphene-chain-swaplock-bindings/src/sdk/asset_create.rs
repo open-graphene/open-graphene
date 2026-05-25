@@ -1,3 +1,6 @@
+use std::convert::Infallible;
+
+use open_graphene_sdk_core::{AssetCreateAdapter, AssetCreateInput};
 use serde_json::{Value, json};
 use thiserror::Error;
 
@@ -20,6 +23,32 @@ pub struct AssetCreateTransactionInput {
     pub precision: u8,
     pub max_supply: i64,
     pub description: String,
+}
+
+pub struct SwaplockAssetCreateAdapter;
+
+impl AssetCreateAdapter for SwaplockAssetCreateAdapter {
+    type Transaction = Transaction;
+    type Error = Infallible;
+
+    fn build_asset_create_transaction(
+        input: AssetCreateInput,
+    ) -> Result<Self::Transaction, Self::Error> {
+        Ok(crate::sdk::asset_create::build_asset_create_transaction(
+            AssetCreateTransactionInput {
+                ref_block_num: input.header.ref_block_num,
+                ref_block_prefix: input.header.ref_block_prefix,
+                expiration: input.header.expiration,
+                fee_amount: input.fee.amount,
+                fee_asset_id: input.fee.asset_id,
+                issuer_id: input.issuer.id,
+                symbol: input.symbol,
+                precision: input.precision,
+                max_supply: input.max_supply,
+                description: input.description,
+            },
+        ))
+    }
 }
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -255,6 +284,32 @@ mod tests {
         assert_eq!(
             transaction.to_fc_bytes().unwrap(),
             expected.to_fc_bytes().unwrap()
+        );
+    }
+
+    #[test]
+    fn common_asset_create_adapter_matches_manual_swaplock_builder() {
+        let adapter_transaction = SwaplockAssetCreateAdapter::build_asset_create_transaction(
+            AssetCreateInput {
+                header: open_graphene_sdk_core::TransactionHeader {
+                    ref_block_num: 2,
+                    ref_block_prefix: 3,
+                    expiration: "2026-05-25T12:01:00".to_string(),
+                },
+                fee: open_graphene_sdk_core::FeeInput::new(500_000, "1.3.0"),
+                issuer: open_graphene_sdk_core::AccountRefInput::new("1.2.100"),
+                symbol: "OGT12345".to_string(),
+                precision: 5,
+                max_supply: 1_000_000_000_000,
+                description: "open-graphene live asset_create proof".to_string(),
+            },
+        )
+        .unwrap();
+        let manual_transaction = build_asset_create_transaction(input());
+
+        assert_eq!(
+            adapter_transaction.to_fc_bytes().unwrap(),
+            manual_transaction.to_fc_bytes().unwrap()
         );
     }
 
