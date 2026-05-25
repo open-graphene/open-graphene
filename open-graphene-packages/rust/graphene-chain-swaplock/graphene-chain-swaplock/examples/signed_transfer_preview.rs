@@ -2,105 +2,18 @@ use std::env;
 use std::error::Error;
 use std::time::Duration;
 
-use graphene_chain_swaplock::bindings::generated::fc::{
-    decode_public_key, is_graphene_canonical_compact_signature, verify_compact_signature_public_key,
-};
-use graphene_chain_swaplock::bindings::generated::ids::AssetId;
-use graphene_chain_swaplock::bindings::generated::types::Asset;
 use graphene_chain_swaplock::bindings::generated::FcSerialize;
+use graphene_chain_swaplock::database_api::{
+    account_balance, active_public_key_for_account, head_block, lookup_account_id, required_fee,
+};
+use graphene_chain_swaplock::network_broadcast_api::broadcast_transaction;
+use graphene_chain_swaplock::rpc::GrapheneRpc;
+use graphene_chain_swaplock::signing::sign_transaction_checked;
+use graphene_chain_swaplock::transaction::set_first_operation_fee;
 use graphene_chain_swaplock::transfer::{
     build_transfer_transaction, signed_transaction_json, TransferTransactionInput,
 };
 use serde_json::{json, Value};
-use tungstenite::{connect, Message, WebSocket};
-
-struct GrapheneRpc {
-    socket: WebSocket<tungstenite::stream::MaybeTlsStream<std::net::TcpStream>>,
-    next_id: u64,
-}
-
-impl GrapheneRpc {
-    fn connect(url: &str) -> Result<Self, Box<dyn Error>> {
-        let (socket, _) = connect(url)?;
-        Ok(Self { socket, next_id: 1 })
-    }
-
-    fn call_raw(&mut self, params: Value) -> Result<Value, Box<dyn Error>> {
-        let id = self.next_id;
-        self.next_id += 1;
-        self.socket.send(Message::Text(
-            json!({
-                "id": id,
-                "method": "call",
-                "params": params,
-            })
-            .to_string(),
-        ))?;
-
-        loop {
-            let response = self.socket.read()?;
-            let Message::Text(text) = response else {
-                continue;
-            };
-            let value: Value = serde_json::from_str(&text)?;
-            if value.get("id").and_then(Value::as_u64) != Some(id) {
-                continue;
-            }
-            if let Some(error) = value.get("error") {
-                return Err(format!("Graphene RPC error: {error}").into());
-            }
-            return value
-                .get("result")
-                .cloned()
-                .ok_or_else(|| "Graphene RPC response missing result".into());
-        }
-    }
-
-    fn database_api_id(&mut self) -> Result<u64, Box<dyn Error>> {
-        self.call_raw(json!([1, "database", []]))?
-            .as_u64()
-            .ok_or_else(|| "database API id is not an integer".into())
-    }
-
-    fn network_broadcast_api_id(&mut self) -> Result<u64, Box<dyn Error>> {
-        self.call_raw(json!([1, "network_broadcast", []]))?
-            .as_u64()
-            .ok_or_else(|| "network_broadcast API id is not an integer".into())
-    }
-
-    fn history_api_id(&mut self) -> Result<u64, Box<dyn Error>> {
-        self.call_raw(json!([1, "history", []]))?
-            .as_u64()
-            .ok_or_else(|| "history API id is not an integer".into())
-    }
-
-    fn call_database(
-        &mut self,
-        api_id: u64,
-        method: &str,
-        params: Value,
-    ) -> Result<Value, Box<dyn Error>> {
-        self.call_raw(json!([api_id, method, params]))
-    }
-
-    fn call_network_broadcast(
-        &mut self,
-        api_id: u64,
-        method: &str,
-        params: Value,
-    ) -> Result<Value, Box<dyn Error>> {
-        self.call_raw(json!([api_id, method, params]))
-    }
-
-    fn call_history(
-        &mut self,
-        api_id: u64,
-        method: &str,
-        params: Value,
-    ) -> Result<Value, Box<dyn Error>> {
-        self.call_raw(json!([api_id, method, params]))
-    }
-}
 
 fn main() -> Result<(), Box<dyn Error>> {
     let rpc_url = env::var("SWAPLOCK_RPC_URL")?;
@@ -126,24 +39,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     let asset_precision = asset_precision(&mut rpc, database_api_id, &asset_id)?;
     let amount = transfer_amount_raw(&human_amount, asset_precision)?;
 
-    let dgp = rpc
-        .call_database(database_api_id, "get_objects", json!([["2.1.0"]]))?
-        .get(0)
-        .cloned()
-        .ok_or("dynamic global properties object was not returned")?;
-    let head_block_number = dgp
-        .get("head_block_number")
-        .and_then(Value::as_u64)
-        .ok_or("dynamic global properties missing head_block_number")?;
-    let head_block_id = dgp
-        .get("head_block_id")
-        .and_then(Value::as_str)
-        .ok_or("dynamic global properties missing head_block_id")?;
-    let head_time = dgp
-        .get("time")
-        .and_then(Value::as_str)
-        .ok_or("dynamic global properties missing time")?;
-
     let from_id = lookup_account_id(&mut rpc, database_api_id, &from_account)?;
     let to_id = lookup_account_id(&mut rpc, database_api_id, &to_account)?;
     let expected_public_key = match env::var("SWAPLOCK_ACTIVE_PUBLIC_KEY") {
@@ -154,25 +49,32 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         Err(err) => return Err(err.into()),
     };
-    let header = open_graphene_sdk_core::transaction_header_from_head(
-        &open_graphene_sdk_core::HeadBlock {
-            number: head_block_number,
-            id: head_block_id.to_string(),
-            time: head_time.to_string(),
-        },
-        Duration::from_secs(60),
-    )?;
+    let head = head_block(&mut rpc, database_api_id)?;
+    let head_block_number = head.number;
+    let header =
+        open_graphene_sdk_core::transaction_header_from_head(&head, Duration::from_secs(60))?;
     let expiration = header.expiration;
     let ref_block_num = header.ref_block_num;
     let ref_block_prefix = header.ref_block_prefix;
 
-    let fee = required_transfer_fee(
+    let mut transaction = build_transfer_transaction(TransferTransactionInput {
+        ref_block_num,
+        ref_block_prefix,
+        expiration,
+        from_id: from_id.clone(),
+        to_id: to_id.clone(),
+        asset_id: asset_id.clone(),
+        amount,
+        fee_amount: 0,
+        fee_asset_id: asset_id.clone(),
+    });
+
+    let fee = required_fee(
         &mut rpc,
         database_api_id,
-        &from_id,
-        &to_id,
-        amount,
+        &transaction,
         &asset_id,
+        signed_transaction_json,
     )?;
     let expected_fee_amount = fee.amount;
     if fee.amount > max_fee {
@@ -197,34 +99,19 @@ fn main() -> Result<(), Box<dyn Error>> {
             asset_id: open_graphene_sdk_core::AssetIdRef::parse(&fee.asset_id.0)?,
         },
     })?;
+    set_first_operation_fee(&mut transaction, fee.clone())?;
 
-    let transaction = build_transfer_transaction(TransferTransactionInput {
-        ref_block_num,
-        ref_block_prefix,
-        expiration,
-        from_id: from_id.clone(),
-        to_id: to_id.clone(),
-        asset_id: asset_id.clone(),
-        amount,
-        fee_amount: fee.amount,
-        fee_asset_id: fee.asset_id.0,
-    });
-
-    let signed_transaction = transaction.signed_with_wif(&wif)?;
-    if !is_graphene_canonical_compact_signature(&signed_transaction.signatures[0].0) {
-        return Err("signature is not Graphene canonical; refusing to broadcast".into());
-    }
+    let signed_transaction = sign_transaction_checked(
+        &transaction,
+        &wif,
+        expected_public_key
+            .as_ref()
+            .map(|(_, public_key)| public_key.as_str())
+            .ok_or("signature public key verification is required before broadcast")?,
+    )?;
     let signature_public_key_match = expected_public_key
         .as_ref()
-        .map(|(source, public_key)| {
-            verify_compact_signature_public_key(
-                transaction.signature_digest_bytes()?,
-                &signed_transaction.signatures[0].0,
-                decode_public_key(public_key, Some("BTS"))?,
-            )
-            .map(|matches| (*source, matches))
-        })
-        .transpose()?;
+        .map(|(source, _)| (*source, true));
 
     let digest_hex = hex(&transaction.signature_digest_bytes()?);
     ensure_signature_public_key_match(signature_public_key_match.map(|(_, matches)| matches))?;
@@ -289,10 +176,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let network_broadcast_api_id = rpc.network_broadcast_api_id()?;
     let history_api_id = rpc.history_api_id()?;
-    rpc.call_network_broadcast(
+    broadcast_transaction(
+        &mut rpc,
         network_broadcast_api_id,
-        "broadcast_transaction",
-        json!([signed_transaction_json(&signed_transaction)?]),
+        signed_transaction_json(&signed_transaction)?,
     )?;
     println!("Broadcast: submitted");
 
@@ -473,54 +360,6 @@ fn ensure_signature_public_key_match(
     }
 }
 
-fn lookup_account_id(
-    rpc: &mut GrapheneRpc,
-    api_id: u64,
-    account_name: &str,
-) -> Result<String, Box<dyn Error>> {
-    let result = rpc.call_database(api_id, "lookup_accounts", json!([account_name, 1]))?;
-    let Some(pair) = result.as_array().and_then(|values| values.first()) else {
-        return Err(format!("account not found: {account_name}").into());
-    };
-    let returned_name = pair
-        .get(0)
-        .and_then(Value::as_str)
-        .ok_or("lookup_accounts result missing account name")?;
-    if returned_name != account_name {
-        return Err(format!("account not found: {account_name}").into());
-    }
-    pair.get(1)
-        .and_then(Value::as_str)
-        .map(str::to_string)
-        .ok_or_else(|| "lookup_accounts result missing account id".into())
-}
-
-fn active_public_key_for_account(
-    rpc: &mut GrapheneRpc,
-    api_id: u64,
-    account_id: &str,
-) -> Result<Option<String>, Box<dyn Error>> {
-    let account = rpc
-        .call_database(api_id, "get_objects", json!([[account_id]]))?
-        .get(0)
-        .cloned()
-        .ok_or("account object was not returned")?;
-    let Some(key_auths) = account
-        .get("active")
-        .and_then(|active| active.get("key_auths"))
-        .and_then(Value::as_array)
-    else {
-        return Ok(None);
-    };
-    if key_auths.len() != 1 {
-        return Ok(None);
-    }
-    Ok(key_auths[0]
-        .get(0)
-        .and_then(Value::as_str)
-        .map(str::to_string))
-}
-
 fn asset_precision(
     rpc: &mut GrapheneRpc,
     api_id: u64,
@@ -543,74 +382,6 @@ fn transfer_amount_raw(human_amount: &str, precision: u8) -> Result<i64, Box<dyn
         return Ok(raw_amount.parse()?);
     }
     open_graphene_sdk_core::decimal_to_raw_amount(human_amount, precision).map_err(Into::into)
-}
-
-fn account_balance(
-    rpc: &mut GrapheneRpc,
-    api_id: u64,
-    account_id: &str,
-    asset_id: &str,
-) -> Result<i64, Box<dyn Error>> {
-    let balances = rpc.call_database(
-        api_id,
-        "get_account_balances",
-        json!([account_id, [asset_id]]),
-    )?;
-    let balance = balances
-        .as_array()
-        .and_then(|values| values.first())
-        .ok_or("get_account_balances returned no balance")?;
-    if balance.get("asset_id").and_then(Value::as_str) != Some(asset_id) {
-        return Err("get_account_balances returned unexpected asset_id".into());
-    }
-    balance
-        .get("amount")
-        .and_then(json_i64)
-        .ok_or_else(|| "balance missing integer amount".into())
-}
-
-fn required_transfer_fee(
-    rpc: &mut GrapheneRpc,
-    api_id: u64,
-    from_id: &str,
-    to_id: &str,
-    amount: i64,
-    asset_id: &str,
-) -> Result<Asset, Box<dyn Error>> {
-    let transfer_json = json!([
-        0,
-        {
-            "fee": { "amount": 0, "asset_id": asset_id },
-            "from": from_id,
-            "to": to_id,
-            "amount": { "amount": amount, "asset_id": asset_id },
-            "memo": null,
-            "extensions": []
-        }
-    ]);
-    let result = rpc.call_database(
-        api_id,
-        "get_required_fees",
-        json!([[transfer_json], asset_id]),
-    )?;
-    let fee = result
-        .as_array()
-        .and_then(|values| values.first())
-        .ok_or("get_required_fees returned no fee")?;
-    let amount = fee
-        .get("amount")
-        .and_then(json_i64)
-        .ok_or("fee missing integer amount")?;
-    let asset_id = fee
-        .get("asset_id")
-        .and_then(Value::as_str)
-        .ok_or("fee missing asset_id")?
-        .to_string();
-
-    Ok(Asset {
-        amount,
-        asset_id: AssetId(asset_id),
-    })
 }
 
 fn json_i64(value: &Value) -> Option<i64> {
