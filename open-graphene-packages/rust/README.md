@@ -4,4 +4,4 @@ This directory contains Rust runtime crates and generated chain binding crates f
 
 ## Architecture notes
 
-- [Transfer SDK Adapter Pattern](TRANSFER-SDK-ADAPTER.md) describes the manual transfer helper boundary used by chain binding crates.
+- [Manual SDK Adapter Patterns](TRANSFER-SDK-ADAPTER.md) describes the operation helper boundary used by chain binding crates.

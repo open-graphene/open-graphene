@@ -1,55 +1,55 @@
-# Transfer SDK Adapter Pattern
+# Manual SDK Adapter Patterns
 
 ## Reader and action
 
-This document is for maintainers adding or reviewing a transfer helper for another Graphene chain binding crate.
-After reading it, a maintainer should be able to add a manual transfer adapter without moving RPC, signing, fee lookup, or broadcast orchestration into the wrong layer.
+This document is for maintainers adding or reviewing operation helpers for Graphene chain binding crates.
+After reading it, a maintainer should be able to add a manual SDK adapter without moving RPC, signing, fee lookup, or broadcast orchestration into the wrong layer.
 
 ## Current status
 
-The transfer adapter pattern has been proven in two generated chain binding crates: Swaplock and BitShares.
-Both adapters expose the same public shape and are backed by each chain's generated protocol types.
+Manual SDK adapters have been proven in two generated chain binding crates: Swaplock and BitShares.
+Two flows now repeat across both chains:
 
-The pattern is intentionally manual for now. It is a candidate for future generator support, but it should not be generated until the seam remains stable across more chain pressure or more SDK flows.
+- transfer
+- account create
+
+The pattern is intentionally manual for now. It is a candidate for future generator support, but it should not be generated until the seam remains stable across more chain pressure, more SDK flows, or downstream demand.
 
 ## Adapter responsibility
 
-A transfer adapter does two narrow things:
+An operation adapter does two narrow things:
 
-1. Build a raw generated `Transaction` containing one `transfer_operation`.
-2. Render a generated `SignedTransaction` into the JSON object shape expected by Graphene `broadcast_transaction`.
+1. Build a raw generated `Transaction` containing one generated operation.
+2. Render a generated `SignedTransaction` into the JSON object shape expected by Graphene `broadcast_transaction` for that operation.
 
 The adapter preserves protocol-level types. It does not introduce a parallel SDK transaction model.
 
-## Public API shape
+## Common transaction API shape
 
-Each chain adapter exposes this shape:
+Each operation adapter follows this shape:
 
 ```rust
-pub struct TransferTransactionInput {
+pub struct SomeOperationTransactionInput {
     pub ref_block_num: u16,
     pub ref_block_prefix: u32,
     pub expiration: String,
-    pub from_id: String,
-    pub to_id: String,
-    pub asset_id: String,
-    pub amount: i64,
-    pub fee_amount: i64,
-    pub fee_asset_id: String,
+    // operation-specific fields follow
 }
 
-pub fn build_transfer_transaction(input: TransferTransactionInput) -> Transaction;
+pub fn build_some_operation_transaction(input: SomeOperationTransactionInput) -> Transaction;
 
 pub fn signed_transaction_json(
     signed_transaction: &SignedTransaction,
-) -> Result<serde_json::Value, TransferJsonError>;
+) -> Result<serde_json::Value, SomeOperationJsonError>;
 ```
 
-`amount` and `fee_amount` are raw chain amounts, not human decimal amounts. Decimal conversion belongs outside the chain adapter.
+Amounts are raw chain amounts, not human decimal amounts. Decimal conversion belongs outside chain adapters.
 
-## Required generated contract
+Each `signed_transaction_json` function is intentionally operation-specific and fail-closed. A transfer renderer must not render account-create operations, and an account-create renderer must not render transfer operations.
 
-A chain can implement this adapter when its generated bindings provide:
+## Transfer adapter
+
+The transfer adapter requires generated bindings for:
 
 ```rust
 generated::types::Asset
@@ -65,32 +65,20 @@ generated::ids::AssetId
 
 The operation static variant must contain `TransferOperation` at Graphene wire tag `0`.
 
-## Transaction construction
-
-The adapter constructs:
+The adapter constructs a one-operation transaction with:
 
 ```rust
-Transaction {
-    ref_block_num,
-    ref_block_prefix,
-    expiration,
-    operations: vec![Operation::TransferOperation(Box::new(TransferOperation {
-        fee,
-        from,
-        to,
-        amount,
-        memo: None,
-        extensions: FutureExtensions::VoidT(Box::new(())),
-    }))],
+Operation::TransferOperation(Box::new(TransferOperation {
+    fee,
+    from,
+    to,
+    amount,
+    memo: None,
     extensions: FutureExtensions::VoidT(Box::new(())),
-}
+}))
 ```
 
-Memo support is intentionally absent in the current adapter. A non-empty memo changes protocol requirements and should be added as its own explicit slice.
-
-## Broadcast JSON rendering
-
-The adapter renders only transfer operations. If the signed transaction contains another operation, rendering fails closed with `TransferJsonError::UnsupportedOperation`.
+Memo support is intentionally absent in the current transfer adapter. A non-empty memo changes protocol requirements and should be added as its own explicit slice.
 
 The JSON operation shape is:
 
@@ -108,20 +96,71 @@ The JSON operation shape is:
 ]
 ```
 
-Signatures render as lowercase hex strings from the generated `Signature` raw byte payload.
+## Account-create adapter
 
-## What stays outside the adapter
+The account-create adapter requires generated bindings for:
 
-The adapter must not do:
+```rust
+generated::types::AccountCreateOperationExt
+generated::types::AccountOptions
+generated::types::Asset
+generated::types::Authority
+generated::types::Transaction
+generated::types::SignedTransaction
+generated::types::Signature
+generated::operations::AccountCreateOperation
+generated::static_variants::Operation
+generated::static_variants::FutureExtensions
+generated::ids::AccountId
+generated::ids::AssetId
+```
+
+The operation static variant must contain `AccountCreateOperation` at Graphene wire tag `5`.
+
+The adapter input accepts generated `Authority`, `AccountOptions`, and optional generated `AccountCreateOperationExt` values. This avoids inventing a parallel account model and preserves protocol fields such as special authorities.
+
+The adapter provides small convenience constructors for the common simple case:
+
+```rust
+single_key_authority(public_key)
+account_options(memo_key, voting_account_id)
+empty_account_create_extensions()
+```
+
+These helpers are not policy engines. They only build simple generated values.
+
+The adapter constructs a one-operation transaction with:
+
+```rust
+Operation::AccountCreateOperation(Box::new(AccountCreateOperation {
+    fee,
+    registrar,
+    referrer,
+    referrer_percent,
+    name,
+    owner,
+    active,
+    options,
+    extensions,
+}))
+```
+
+The JSON renderer uses generated serde for nested `Authority`, `AccountOptions`, and `AccountCreateOperationExt` values instead of hand-rendering those structures. That keeps nested protocol JSON aligned with generated binding serde.
+
+## What stays outside adapters
+
+Adapters must not do:
 
 - RPC connection management.
 - Dynamic global property lookup.
 - Transaction header derivation from head block data.
 - Account name lookup.
+- Account name policy validation.
 - Asset precision lookup.
 - Human decimal amount parsing or formatting.
 - Fee lookup.
 - Balance checks.
+- Public key derivation or validation beyond generated FC serialization.
 - WIF handling or signing orchestration.
 - Public key recovery or signature verification.
 - Broadcast submission.
@@ -134,25 +173,28 @@ Those responsibilities belong in examples, CLIs, or higher-level SDK orchestrati
 
 Each adapter should have local tests proving:
 
-1. `build_transfer_transaction` produces the same FC bytes as an equivalent hand-built generated transaction.
-2. `signed_transaction_json` renders the expected Graphene broadcast JSON shape.
+1. The build function produces the same FC bytes as an equivalent hand-built generated transaction.
+2. The JSON renderer emits the expected Graphene broadcast JSON shape.
+3. The JSON renderer fails closed when given a signed transaction containing a different operation.
 
-These tests are enough for the adapter layer. Live transfer tests belong to chain-specific examples or integration tooling, not to the adapter itself.
+For account-create, tests should also cover pass-through of generated extension values when practical.
+
+These tests are enough for the adapter layer. Live chain tests belong to chain-specific examples or integration tooling, not to the adapter itself.
 
 ## Why this is not generated yet
 
-The repeated Swaplock and BitShares implementations show that generator support is plausible.
-It is still deferred because only one SDK flow has been proven. Generating SDK capabilities too early risks freezing an accidental API before memo handling, other operation families, or a third chain tests the seam.
+The repeated Swaplock and BitShares implementations show that generator support is plausible for both transfer and account-create.
+It is still deferred because manual adapters are small, the ergonomics are not fully proven, and generated SDK capabilities would freeze a public API.
 
-Until that pressure exists, keep adapters manual, small, and boring.
+Until more pressure exists, keep adapters manual, explicit, and boring.
 
 ## When to revisit generation
 
-Revisit generator-emitted transfer adapters when at least one of these is true:
+Revisit generator-emitted operation adapters when at least one of these is true:
 
-- A third chain repeats the same generated contract.
-- A second SDK flow repeats the same adapter boundary.
+- A third chain repeats the same generated contracts.
+- More SDK flows repeat the same adapter boundary.
 - Manual adapters start drifting in ways tests cannot easily catch.
 - A downstream user needs generated capabilities across many chains.
 
-At that point, compare a generated adapter against the manual Swaplock and BitShares adapters before replacing them.
+At that point, compare generated adapters against the manual Swaplock and BitShares adapters before replacing them.
