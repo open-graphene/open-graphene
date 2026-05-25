@@ -15,9 +15,6 @@ use graphene_chain_swaplock::asset_issue::{
     build_asset_issue_transaction, signed_transaction_json as asset_issue_json,
     AssetIssueTransactionInput,
 };
-use graphene_chain_swaplock::bindings::generated::fc::{
-    decode_public_key, is_graphene_canonical_compact_signature, verify_compact_signature_public_key,
-};
 use graphene_chain_swaplock::bindings::generated::static_variants::Operation;
 use graphene_chain_swaplock::bindings::generated::types::{Asset, SignedTransaction, Transaction};
 use graphene_chain_swaplock::database_api::{
@@ -35,6 +32,7 @@ use graphene_chain_swaplock::limit_order_create::{
 };
 use graphene_chain_swaplock::network_broadcast_api::broadcast_transaction;
 use graphene_chain_swaplock::rpc::GrapheneRpc;
+use graphene_chain_swaplock::signing::sign_transaction_checked;
 use graphene_chain_swaplock::transfer::{
     build_transfer_transaction, signed_transaction_json as transfer_json, TransferTransactionInput,
 };
@@ -650,22 +648,7 @@ where
     F: Fn(&SignedTransaction) -> Result<Value, E>,
     E: Error + 'static,
 {
-    let signed_transaction = transaction.signed_with_wif(wif)?;
-    let signature = signed_transaction
-        .signatures
-        .first()
-        .ok_or("signed transaction has no signature")?;
-    if !is_graphene_canonical_compact_signature(&signature.0) {
-        return Err("signature is not Graphene canonical; refusing to broadcast".into());
-    }
-    let matches_public_key = verify_compact_signature_public_key(
-        transaction.signature_digest_bytes()?,
-        &signature.0,
-        decode_public_key(expected_public_key, Some("BTS"))?,
-    )?;
-    if !matches_public_key {
-        return Err("signature public key verification failed; refusing to broadcast".into());
-    }
+    let signed_transaction = sign_transaction_checked(&transaction, wif, expected_public_key)?;
 
     println!("Broadcasting {label}");
     println!("Digest: {}", hex(&transaction.signature_digest_bytes()?));

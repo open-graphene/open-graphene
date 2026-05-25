@@ -8,6 +8,7 @@ pub mod database_api;
 pub mod network_broadcast_api;
 pub mod operations;
 pub mod rpc;
+pub mod signing;
 
 pub use operations::{
     account_create, asset_create, asset_issue, limit_order_cancel, limit_order_create, transfer,
