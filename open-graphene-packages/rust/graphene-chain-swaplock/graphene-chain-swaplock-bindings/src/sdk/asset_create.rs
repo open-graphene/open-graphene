@@ -201,33 +201,33 @@ pub fn signed_transaction_json(
 }
 
 fn operation_json(operation: &Operation) -> Result<Value, AssetCreateJsonError> {
-    match operation {
-        Operation::AssetCreateOperation(operation) => {
-            if operation.bitasset_opts.is_some() {
-                return Err(AssetCreateJsonError::UnsupportedBitasset);
-            }
-            if operation.is_prediction_market {
-                return Err(AssetCreateJsonError::UnsupportedPredictionMarket);
-            }
-            if !matches!(operation.extensions, FutureExtensions::VoidT(_)) {
-                return Err(AssetCreateJsonError::UnsupportedExtensions);
-            }
-            Ok(json!([
-                10,
-                {
-                    "fee": asset_json(&operation.fee),
-                    "issuer": operation.issuer.0,
-                    "symbol": operation.symbol,
-                    "precision": operation.precision,
-                    "common_options": asset_options_json(&operation.common_options)?,
-                    "bitasset_opts": null,
-                    "is_prediction_market": false,
-                    "extensions": []
-                }
-            ]))
-        }
-        _ => Err(AssetCreateJsonError::UnsupportedOperation),
+    let operation = operation
+        .as_asset_create()
+        .ok_or(AssetCreateJsonError::UnsupportedOperation)?;
+
+    if operation.bitasset_opts.is_some() {
+        return Err(AssetCreateJsonError::UnsupportedBitasset);
     }
+    if operation.is_prediction_market {
+        return Err(AssetCreateJsonError::UnsupportedPredictionMarket);
+    }
+    if !matches!(operation.extensions, FutureExtensions::VoidT(_)) {
+        return Err(AssetCreateJsonError::UnsupportedExtensions);
+    }
+
+    Ok(json!([
+        10,
+        {
+            "fee": asset_json(&operation.fee),
+            "issuer": operation.issuer.0,
+            "symbol": operation.symbol,
+            "precision": operation.precision,
+            "common_options": asset_options_json(&operation.common_options)?,
+            "bitasset_opts": null,
+            "is_prediction_market": false,
+            "extensions": []
+        }
+    ]))
 }
 
 fn asset_options_json(options: &AssetOptions) -> Result<Value, AssetCreateJsonError> {

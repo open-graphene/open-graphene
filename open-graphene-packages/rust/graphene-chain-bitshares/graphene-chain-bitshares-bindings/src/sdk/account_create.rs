@@ -179,23 +179,24 @@ pub fn signed_transaction_json(
 }
 
 fn operation_json(operation: &Operation) -> Result<Value, AccountCreateJsonError> {
-    match operation {
-        Operation::AccountCreateOperation(operation) => Ok(json!([
-            5,
-            {
-                "fee": asset_json(&operation.fee),
-                "registrar": operation.registrar.0,
-                "referrer": operation.referrer.0,
-                "referrer_percent": operation.referrer_percent,
-                "name": operation.name,
-                "owner": authority_json(&operation.owner),
-                "active": authority_json(&operation.active),
-                "options": account_options_json(&operation.options)?,
-                "extensions": account_create_extensions_json(&operation.extensions)?,
-            }
-        ])),
-        _ => Err(AccountCreateJsonError::UnsupportedOperation),
-    }
+    let operation = operation
+        .as_account_create()
+        .ok_or(AccountCreateJsonError::UnsupportedOperation)?;
+
+    Ok(json!([
+        5,
+        {
+            "fee": asset_json(&operation.fee),
+            "registrar": operation.registrar.0,
+            "referrer": operation.referrer.0,
+            "referrer_percent": operation.referrer_percent,
+            "name": operation.name,
+            "owner": authority_json(&operation.owner),
+            "active": authority_json(&operation.active),
+            "options": account_options_json(&operation.options)?,
+            "extensions": account_create_extensions_json(&operation.extensions)?,
+        }
+    ]))
 }
 
 fn authority_json(authority: &Authority) -> Value {

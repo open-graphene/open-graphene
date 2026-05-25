@@ -1448,6 +1448,7 @@ fn render_static_variant(
     out.push_str("}\n\n");
     if enum_name == "Operation" {
         render_static_variant_constructor_impl(out, &enum_name, &rendered_arms);
+        render_static_variant_accessor_impl(out, &enum_name, &rendered_arms);
     }
     if enum_name == "FutureExtensions" {
         render_future_extensions_empty_impl(out, &rendered_arms);
@@ -1466,6 +1467,20 @@ fn render_static_variant_constructor_impl(
     for (_, variant_name, ty, method_name) in arms {
         out.push_str(&format!(
             "    pub fn {method_name}(value: {ty}) -> Self {{\n        Self::{variant_name}(Box::new(value))\n    }}\n\n"
+        ));
+    }
+    out.push_str("}\n\n");
+}
+
+fn render_static_variant_accessor_impl(
+    out: &mut String,
+    enum_name: &str,
+    arms: &[(u32, String, String, String)],
+) {
+    out.push_str(&format!("impl {enum_name} {{\n"));
+    for (_, variant_name, ty, method_name) in arms {
+        out.push_str(&format!(
+            "    pub fn as_{method_name}(&self) -> Option<&{ty}> {{\n        match self {{\n            Self::{variant_name}(value) => Some(value.as_ref()),\n            _ => None,\n        }}\n    }}\n\n"
         ));
     }
     out.push_str("}\n\n");
@@ -2081,6 +2096,8 @@ mod tests {
         assert!(out.contains("impl Operation"));
         assert!(out.contains("pub fn transfer(value: String) -> Self"));
         assert!(out.contains("Self::TransferOperation(Box::new(value))"));
+        assert!(out.contains("pub fn as_transfer(&self) -> Option<&String>"));
+        assert!(out.contains("Self::TransferOperation(value) => Some(value.as_ref())"));
         assert!(out.contains("impl serde::Serialize for Operation"));
         assert!(out.contains("seq.serialize_element(&0u32)?;"));
         assert!(out.contains("impl<'de> serde::Deserialize<'de> for Operation"));

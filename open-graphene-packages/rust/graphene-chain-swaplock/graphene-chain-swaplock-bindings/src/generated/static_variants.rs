@@ -1693,6 +1693,555 @@ impl Operation {
     }
 }
 
+impl Operation {
+    pub fn as_transfer(&self) -> Option<&crate::generated::operations::TransferOperation> {
+        match self {
+            Self::TransferOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_limit_order_create(&self) -> Option<&crate::generated::operations::LimitOrderCreateOperation> {
+        match self {
+            Self::LimitOrderCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_limit_order_cancel(&self) -> Option<&crate::generated::operations::LimitOrderCancelOperation> {
+        match self {
+            Self::LimitOrderCancelOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_call_order_update(&self) -> Option<&crate::generated::operations::CallOrderUpdateOperation> {
+        match self {
+            Self::CallOrderUpdateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_fill_order(&self) -> Option<&crate::generated::operations::FillOrderOperation> {
+        match self {
+            Self::FillOrderOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_account_create(&self) -> Option<&crate::generated::operations::AccountCreateOperation> {
+        match self {
+            Self::AccountCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_account_update(&self) -> Option<&crate::generated::operations::AccountUpdateOperation> {
+        match self {
+            Self::AccountUpdateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_account_whitelist(&self) -> Option<&crate::generated::operations::AccountWhitelistOperation> {
+        match self {
+            Self::AccountWhitelistOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_account_upgrade(&self) -> Option<&crate::generated::operations::AccountUpgradeOperation> {
+        match self {
+            Self::AccountUpgradeOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_account_transfer(&self) -> Option<&crate::generated::operations::AccountTransferOperation> {
+        match self {
+            Self::AccountTransferOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_asset_create(&self) -> Option<&crate::generated::operations::AssetCreateOperation> {
+        match self {
+            Self::AssetCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_asset_update(&self) -> Option<&crate::generated::operations::AssetUpdateOperation> {
+        match self {
+            Self::AssetUpdateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_asset_update_bitasset(&self) -> Option<&crate::generated::operations::AssetUpdateBitassetOperation> {
+        match self {
+            Self::AssetUpdateBitassetOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_asset_update_feed_producers(&self) -> Option<&crate::generated::operations::AssetUpdateFeedProducersOperation> {
+        match self {
+            Self::AssetUpdateFeedProducersOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_asset_issue(&self) -> Option<&crate::generated::operations::AssetIssueOperation> {
+        match self {
+            Self::AssetIssueOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_asset_reserve(&self) -> Option<&crate::generated::operations::AssetReserveOperation> {
+        match self {
+            Self::AssetReserveOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_asset_fund_fee_pool(&self) -> Option<&crate::generated::operations::AssetFundFeePoolOperation> {
+        match self {
+            Self::AssetFundFeePoolOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_asset_settle(&self) -> Option<&crate::generated::operations::AssetSettleOperation> {
+        match self {
+            Self::AssetSettleOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_asset_global_settle(&self) -> Option<&crate::generated::operations::AssetGlobalSettleOperation> {
+        match self {
+            Self::AssetGlobalSettleOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_asset_publish_feed(&self) -> Option<&crate::generated::operations::AssetPublishFeedOperation> {
+        match self {
+            Self::AssetPublishFeedOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_witness_create(&self) -> Option<&crate::generated::operations::WitnessCreateOperation> {
+        match self {
+            Self::WitnessCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_witness_update(&self) -> Option<&crate::generated::operations::WitnessUpdateOperation> {
+        match self {
+            Self::WitnessUpdateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_proposal_create(&self) -> Option<&crate::generated::operations::ProposalCreateOperation> {
+        match self {
+            Self::ProposalCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_proposal_update(&self) -> Option<&crate::generated::operations::ProposalUpdateOperation> {
+        match self {
+            Self::ProposalUpdateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_proposal_delete(&self) -> Option<&crate::generated::operations::ProposalDeleteOperation> {
+        match self {
+            Self::ProposalDeleteOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_withdraw_permission_create(&self) -> Option<&crate::generated::operations::WithdrawPermissionCreateOperation> {
+        match self {
+            Self::WithdrawPermissionCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_withdraw_permission_update(&self) -> Option<&crate::generated::operations::WithdrawPermissionUpdateOperation> {
+        match self {
+            Self::WithdrawPermissionUpdateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_withdraw_permission_claim(&self) -> Option<&crate::generated::operations::WithdrawPermissionClaimOperation> {
+        match self {
+            Self::WithdrawPermissionClaimOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_withdraw_permission_delete(&self) -> Option<&crate::generated::operations::WithdrawPermissionDeleteOperation> {
+        match self {
+            Self::WithdrawPermissionDeleteOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_committee_member_create(&self) -> Option<&crate::generated::operations::CommitteeMemberCreateOperation> {
+        match self {
+            Self::CommitteeMemberCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_committee_member_update(&self) -> Option<&crate::generated::operations::CommitteeMemberUpdateOperation> {
+        match self {
+            Self::CommitteeMemberUpdateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_committee_member_update_global_parameters(&self) -> Option<&crate::generated::operations::CommitteeMemberUpdateGlobalParametersOperation> {
+        match self {
+            Self::CommitteeMemberUpdateGlobalParametersOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_vesting_balance_create(&self) -> Option<&crate::generated::operations::VestingBalanceCreateOperation> {
+        match self {
+            Self::VestingBalanceCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_vesting_balance_withdraw(&self) -> Option<&crate::generated::operations::VestingBalanceWithdrawOperation> {
+        match self {
+            Self::VestingBalanceWithdrawOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_worker_create(&self) -> Option<&crate::generated::operations::WorkerCreateOperation> {
+        match self {
+            Self::WorkerCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_custom(&self) -> Option<&crate::generated::operations::CustomOperation> {
+        match self {
+            Self::CustomOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_assert(&self) -> Option<&crate::generated::operations::AssertOperation> {
+        match self {
+            Self::AssertOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_balance_claim(&self) -> Option<&crate::generated::operations::BalanceClaimOperation> {
+        match self {
+            Self::BalanceClaimOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_override_transfer(&self) -> Option<&crate::generated::operations::OverrideTransferOperation> {
+        match self {
+            Self::OverrideTransferOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_transfer_to_blind(&self) -> Option<&crate::generated::operations::TransferToBlindOperation> {
+        match self {
+            Self::TransferToBlindOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_blind_transfer(&self) -> Option<&crate::generated::operations::BlindTransferOperation> {
+        match self {
+            Self::BlindTransferOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_transfer_from_blind(&self) -> Option<&crate::generated::operations::TransferFromBlindOperation> {
+        match self {
+            Self::TransferFromBlindOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_asset_settle_cancel(&self) -> Option<&crate::generated::operations::AssetSettleCancelOperation> {
+        match self {
+            Self::AssetSettleCancelOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_asset_claim_fees(&self) -> Option<&crate::generated::operations::AssetClaimFeesOperation> {
+        match self {
+            Self::AssetClaimFeesOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_fba_distribute(&self) -> Option<&crate::generated::operations::FbaDistributeOperation> {
+        match self {
+            Self::FbaDistributeOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_bid_collateral(&self) -> Option<&crate::generated::operations::BidCollateralOperation> {
+        match self {
+            Self::BidCollateralOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_execute_bid(&self) -> Option<&crate::generated::operations::ExecuteBidOperation> {
+        match self {
+            Self::ExecuteBidOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_asset_claim_pool(&self) -> Option<&crate::generated::operations::AssetClaimPoolOperation> {
+        match self {
+            Self::AssetClaimPoolOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_asset_update_issuer(&self) -> Option<&crate::generated::operations::AssetUpdateIssuerOperation> {
+        match self {
+            Self::AssetUpdateIssuerOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_htlc_create(&self) -> Option<&crate::generated::operations::HtlcCreateOperation> {
+        match self {
+            Self::HtlcCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_htlc_redeem(&self) -> Option<&crate::generated::operations::HtlcRedeemOperation> {
+        match self {
+            Self::HtlcRedeemOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_htlc_redeemed(&self) -> Option<&crate::generated::operations::HtlcRedeemedOperation> {
+        match self {
+            Self::HtlcRedeemedOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_htlc_extend(&self) -> Option<&crate::generated::operations::HtlcExtendOperation> {
+        match self {
+            Self::HtlcExtendOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_htlc_refund(&self) -> Option<&crate::generated::operations::HtlcRefundOperation> {
+        match self {
+            Self::HtlcRefundOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_custom_authority_create(&self) -> Option<&crate::generated::operations::CustomAuthorityCreateOperation> {
+        match self {
+            Self::CustomAuthorityCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_custom_authority_update(&self) -> Option<&crate::generated::operations::CustomAuthorityUpdateOperation> {
+        match self {
+            Self::CustomAuthorityUpdateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_custom_authority_delete(&self) -> Option<&crate::generated::operations::CustomAuthorityDeleteOperation> {
+        match self {
+            Self::CustomAuthorityDeleteOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_ticket_create(&self) -> Option<&crate::generated::operations::TicketCreateOperation> {
+        match self {
+            Self::TicketCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_ticket_update(&self) -> Option<&crate::generated::operations::TicketUpdateOperation> {
+        match self {
+            Self::TicketUpdateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_liquidity_pool_create(&self) -> Option<&crate::generated::operations::LiquidityPoolCreateOperation> {
+        match self {
+            Self::LiquidityPoolCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_liquidity_pool_delete(&self) -> Option<&crate::generated::operations::LiquidityPoolDeleteOperation> {
+        match self {
+            Self::LiquidityPoolDeleteOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_liquidity_pool_deposit(&self) -> Option<&crate::generated::operations::LiquidityPoolDepositOperation> {
+        match self {
+            Self::LiquidityPoolDepositOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_liquidity_pool_withdraw(&self) -> Option<&crate::generated::operations::LiquidityPoolWithdrawOperation> {
+        match self {
+            Self::LiquidityPoolWithdrawOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_liquidity_pool_exchange(&self) -> Option<&crate::generated::operations::LiquidityPoolExchangeOperation> {
+        match self {
+            Self::LiquidityPoolExchangeOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_samet_fund_create(&self) -> Option<&crate::generated::operations::SametFundCreateOperation> {
+        match self {
+            Self::SametFundCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_samet_fund_delete(&self) -> Option<&crate::generated::operations::SametFundDeleteOperation> {
+        match self {
+            Self::SametFundDeleteOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_samet_fund_update(&self) -> Option<&crate::generated::operations::SametFundUpdateOperation> {
+        match self {
+            Self::SametFundUpdateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_samet_fund_borrow(&self) -> Option<&crate::generated::operations::SametFundBorrowOperation> {
+        match self {
+            Self::SametFundBorrowOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_samet_fund_repay(&self) -> Option<&crate::generated::operations::SametFundRepayOperation> {
+        match self {
+            Self::SametFundRepayOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_credit_offer_create(&self) -> Option<&crate::generated::operations::CreditOfferCreateOperation> {
+        match self {
+            Self::CreditOfferCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_credit_offer_delete(&self) -> Option<&crate::generated::operations::CreditOfferDeleteOperation> {
+        match self {
+            Self::CreditOfferDeleteOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_credit_offer_update(&self) -> Option<&crate::generated::operations::CreditOfferUpdateOperation> {
+        match self {
+            Self::CreditOfferUpdateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_credit_offer_accept(&self) -> Option<&crate::generated::operations::CreditOfferAcceptOperation> {
+        match self {
+            Self::CreditOfferAcceptOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_credit_deal_repay(&self) -> Option<&crate::generated::operations::CreditDealRepayOperation> {
+        match self {
+            Self::CreditDealRepayOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_credit_deal_expired(&self) -> Option<&crate::generated::operations::CreditDealExpiredOperation> {
+        match self {
+            Self::CreditDealExpiredOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_liquidity_pool_update(&self) -> Option<&crate::generated::operations::LiquidityPoolUpdateOperation> {
+        match self {
+            Self::LiquidityPoolUpdateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_credit_deal_update(&self) -> Option<&crate::generated::operations::CreditDealUpdateOperation> {
+        match self {
+            Self::CreditDealUpdateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_limit_order_update(&self) -> Option<&crate::generated::operations::LimitOrderUpdateOperation> {
+        match self {
+            Self::LimitOrderUpdateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+}
+
 impl serde::Serialize for Operation {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where

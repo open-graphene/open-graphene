@@ -110,20 +110,21 @@ pub fn signed_transaction_json(
 }
 
 fn operation_json(operation: &Operation) -> Result<Value, TransferJsonError> {
-    match operation {
-        Operation::TransferOperation(operation) => Ok(json!([
-            0,
-            {
-                "fee": asset_json(&operation.fee),
-                "from": operation.from.0,
-                "to": operation.to.0,
-                "amount": asset_json(&operation.amount),
-                "memo": null,
-                "extensions": []
-            }
-        ])),
-        _ => Err(TransferJsonError::UnsupportedOperation),
-    }
+    let operation = operation
+        .as_transfer()
+        .ok_or(TransferJsonError::UnsupportedOperation)?;
+
+    Ok(json!([
+        0,
+        {
+            "fee": asset_json(&operation.fee),
+            "from": operation.from.0,
+            "to": operation.to.0,
+            "amount": asset_json(&operation.amount),
+            "memo": null,
+            "extensions": []
+        }
+    ]))
 }
 
 fn asset_json(asset: &Asset) -> Value {

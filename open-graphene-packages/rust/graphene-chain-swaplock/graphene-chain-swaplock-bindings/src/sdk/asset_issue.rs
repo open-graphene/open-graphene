@@ -113,25 +113,25 @@ pub fn signed_transaction_json(
 }
 
 fn operation_json(operation: &Operation) -> Result<Value, AssetIssueJsonError> {
-    match operation {
-        Operation::AssetIssueOperation(operation) => {
-            if operation.memo.is_some() {
-                return Err(AssetIssueJsonError::UnsupportedMemo);
-            }
-            Ok(json!([
-                14,
-                {
-                    "fee": asset_json(&operation.fee),
-                    "issuer": operation.issuer.0,
-                    "asset_to_issue": asset_json(&operation.asset_to_issue),
-                    "issue_to_account": operation.issue_to_account.0,
-                    "memo": null,
-                    "extensions": []
-                }
-            ]))
-        }
-        _ => Err(AssetIssueJsonError::UnsupportedOperation),
+    let operation = operation
+        .as_asset_issue()
+        .ok_or(AssetIssueJsonError::UnsupportedOperation)?;
+
+    if operation.memo.is_some() {
+        return Err(AssetIssueJsonError::UnsupportedMemo);
     }
+
+    Ok(json!([
+        14,
+        {
+            "fee": asset_json(&operation.fee),
+            "issuer": operation.issuer.0,
+            "asset_to_issue": asset_json(&operation.asset_to_issue),
+            "issue_to_account": operation.issue_to_account.0,
+            "memo": null,
+            "extensions": []
+        }
+    ]))
 }
 
 fn asset_json(asset: &Asset) -> Value {
