@@ -4,6 +4,6 @@ pub mod object;
 pub mod operation_history;
 
 pub use account::AccountIdRef;
-pub use asset::AssetIdRef;
+pub use asset::{AssetAmount, AssetIdRef};
 pub use object::{ObjectId, ObjectIdError};
 pub use operation_history::OperationHistoryIdRef;

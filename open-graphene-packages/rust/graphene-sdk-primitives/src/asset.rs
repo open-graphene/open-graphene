@@ -19,6 +19,18 @@ impl std::fmt::Display for AssetIdRef {
     }
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct AssetAmount {
+    pub amount: i64,
+    pub asset_id: AssetIdRef,
+}
+
+impl AssetAmount {
+    pub fn new(amount: i64, asset_id: AssetIdRef) -> Self {
+        Self { amount, asset_id }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -35,5 +47,14 @@ mod tests {
                 actual_type: 2,
             })
         );
+    }
+
+    #[test]
+    fn asset_amount_wraps_raw_amount_and_asset_ref() {
+        let asset_id = AssetIdRef::parse("1.3.0").unwrap();
+        let amount = AssetAmount::new(42, asset_id.clone());
+
+        assert_eq!(amount.amount, 42);
+        assert_eq!(amount.asset_id, asset_id);
     }
 }

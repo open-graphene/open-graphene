@@ -1,11 +1,6 @@
-use crate::AssetIdRef;
+use crate::AssetAmount;
+use open_graphene_sdk_primitives::AssetIdRef;
 use thiserror::Error;
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct AssetAmount {
-    pub amount: i64,
-    pub asset_id: AssetIdRef,
-}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BalanceCheck {

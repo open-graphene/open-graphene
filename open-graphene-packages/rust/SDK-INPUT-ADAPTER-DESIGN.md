@@ -70,7 +70,7 @@ open-graphene-fc
 
 open-graphene-sdk-primitives
   stable SDK value references and validators:
-  ObjectId, AccountIdRef, AssetIdRef, OperationHistoryIdRef
+  ObjectId, AccountIdRef, AssetIdRef, AssetAmount, OperationHistoryIdRef
 
 open-graphene-sdk-core
   pure SDK helpers:
@@ -130,7 +130,7 @@ pub struct PublicKeyInput {
 
 These inputs may later become stricter, but the current design intentionally separates two kinds of shared values:
 
-- SDK primitives such as `AccountIdRef` and `AssetIdRef` validate stable Graphene reference syntax and live in `open-graphene-sdk-primitives`.
+- SDK primitives such as `AccountIdRef`, `AssetIdRef`, and `AssetAmount` validate or carry stable Graphene reference values and live in `open-graphene-sdk-primitives`.
 - Generated protocol wrappers such as chain-local `AccountId`, `AssetId`, `Asset`, and `Price` remain generated per chain for now.
 
 `TransactionHeader` already exists in `open-graphene-sdk-core` and should be reused:
@@ -326,10 +326,11 @@ SDK primitives live in `open-graphene-sdk-primitives` and cover stable, chain-ag
 ObjectId
 AccountIdRef
 AssetIdRef
+AssetAmount
 OperationHistoryIdRef
 ```
 
-These are input and validation helpers. They do not replace generated wire types.
+These are input value and validation helpers. They do not replace generated wire types.
 
 Generated protocol primitives may become useful later, after the input boundary is clear. First candidates would be:
 
