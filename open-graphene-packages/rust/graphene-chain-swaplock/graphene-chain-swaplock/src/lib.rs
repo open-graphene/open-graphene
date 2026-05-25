@@ -4,7 +4,9 @@
 //! renderers. The lower-level `graphene-chain-swaplock-bindings` crate owns only
 //! generated protocol bindings.
 
+pub mod database_api;
 pub mod operations;
+pub mod rpc;
 
 pub use operations::{
     account_create, asset_create, asset_issue, limit_order_cancel, limit_order_create, transfer,

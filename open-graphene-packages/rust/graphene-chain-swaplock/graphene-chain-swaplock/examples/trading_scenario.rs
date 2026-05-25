@@ -22,6 +22,10 @@ use graphene_chain_swaplock::bindings::generated::fc::{
 use graphene_chain_swaplock::bindings::generated::ids::AssetId;
 use graphene_chain_swaplock::bindings::generated::static_variants::Operation;
 use graphene_chain_swaplock::bindings::generated::types::{Asset, SignedTransaction, Transaction};
+use graphene_chain_swaplock::database_api::{
+    account_balance, active_public_key_for_account, lookup_account_id, lookup_account_id_optional,
+    lookup_asset_id_optional, wait_for_account, wait_for_asset, wait_for_balance_at_least,
+};
 use graphene_chain_swaplock::limit_order_cancel::{
     build_limit_order_cancel_transaction, signed_transaction_json as limit_order_cancel_json,
     LimitOrderCancelTransactionInput,
@@ -30,11 +34,11 @@ use graphene_chain_swaplock::limit_order_create::{
     build_limit_order_create_transaction, signed_transaction_json as limit_order_create_json,
     LimitOrderCreateTransactionInput,
 };
+use graphene_chain_swaplock::rpc::GrapheneRpc;
 use graphene_chain_swaplock::transfer::{
     build_transfer_transaction, signed_transaction_json as transfer_json, TransferTransactionInput,
 };
 use serde_json::{json, Value};
-use tungstenite::{connect, Message, WebSocket};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct TradingScenarioResult {
@@ -65,73 +69,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         result.opened_order_id
     );
     Ok(())
-}
-
-struct GrapheneRpc {
-    socket: WebSocket<tungstenite::stream::MaybeTlsStream<std::net::TcpStream>>,
-    next_id: u64,
-}
-
-impl GrapheneRpc {
-    fn connect(url: &str) -> Result<Self, Box<dyn Error>> {
-        let (socket, _) = connect(url)?;
-        Ok(Self { socket, next_id: 1 })
-    }
-
-    fn call_raw(&mut self, params: Value) -> Result<Value, Box<dyn Error>> {
-        let id = self.next_id;
-        self.next_id += 1;
-        self.socket.send(Message::Text(
-            json!({"id": id, "method": "call", "params": params}).to_string(),
-        ))?;
-        loop {
-            let response = self.socket.read()?;
-            let Message::Text(text) = response else {
-                continue;
-            };
-            let value: Value = serde_json::from_str(&text)?;
-            if value.get("id").and_then(Value::as_u64) != Some(id) {
-                continue;
-            }
-            if let Some(error) = value.get("error") {
-                return Err(format!("Graphene RPC error: {error}").into());
-            }
-            return value
-                .get("result")
-                .cloned()
-                .ok_or_else(|| "Graphene RPC response missing result".into());
-        }
-    }
-
-    fn database_api_id(&mut self) -> Result<u64, Box<dyn Error>> {
-        self.call_raw(json!([1, "database", []]))?
-            .as_u64()
-            .ok_or_else(|| "database API id is not an integer".into())
-    }
-
-    fn network_broadcast_api_id(&mut self) -> Result<u64, Box<dyn Error>> {
-        self.call_raw(json!([1, "network_broadcast", []]))?
-            .as_u64()
-            .ok_or_else(|| "network_broadcast API id is not an integer".into())
-    }
-
-    fn call_database(
-        &mut self,
-        api_id: u64,
-        method: &str,
-        params: Value,
-    ) -> Result<Value, Box<dyn Error>> {
-        self.call_raw(json!([api_id, method, params]))
-    }
-
-    fn call_network_broadcast(
-        &mut self,
-        api_id: u64,
-        method: &str,
-        params: Value,
-    ) -> Result<Value, Box<dyn Error>> {
-        self.call_raw(json!([api_id, method, params]))
-    }
 }
 
 fn run_trading_scenario_from_env() -> Result<TradingScenarioResult, Box<dyn Error>> {
@@ -819,160 +756,6 @@ fn head_block(
             .ok_or("dynamic global properties missing time")?
             .to_string(),
     })
-}
-
-fn lookup_account_id(
-    rpc: &mut GrapheneRpc,
-    api_id: u64,
-    account_name: &str,
-) -> Result<String, Box<dyn Error>> {
-    lookup_account_id_optional(rpc, api_id, account_name)?
-        .ok_or_else(|| format!("account not found: {account_name}").into())
-}
-
-fn lookup_account_id_optional(
-    rpc: &mut GrapheneRpc,
-    api_id: u64,
-    account_name: &str,
-) -> Result<Option<String>, Box<dyn Error>> {
-    let result = rpc.call_database(api_id, "lookup_accounts", json!([account_name, 1]))?;
-    let Some(pair) = result.as_array().and_then(|values| values.first()) else {
-        return Ok(None);
-    };
-    let returned_name = pair
-        .get(0)
-        .and_then(Value::as_str)
-        .ok_or("lookup_accounts result missing account name")?;
-    if returned_name != account_name {
-        return Ok(None);
-    }
-    pair.get(1)
-        .and_then(Value::as_str)
-        .map(|id| Some(id.to_string()))
-        .ok_or_else(|| "lookup_accounts result missing account id".into())
-}
-
-fn wait_for_account(
-    rpc: &mut GrapheneRpc,
-    api_id: u64,
-    account_name: &str,
-) -> Result<Option<String>, Box<dyn Error>> {
-    for _ in 0..20 {
-        if let Some(account_id) = lookup_account_id_optional(rpc, api_id, account_name)? {
-            return Ok(Some(account_id));
-        }
-        sleep(Duration::from_millis(500));
-    }
-    Ok(None)
-}
-
-fn lookup_asset_id_optional(
-    rpc: &mut GrapheneRpc,
-    api_id: u64,
-    symbol: &str,
-) -> Result<Option<String>, Box<dyn Error>> {
-    let result = rpc.call_database(api_id, "lookup_asset_symbols", json!([[symbol]]))?;
-    let Some(asset) = result.as_array().and_then(|values| values.first()) else {
-        return Ok(None);
-    };
-    if asset.is_null() {
-        return Ok(None);
-    }
-    let returned_symbol = asset
-        .get("symbol")
-        .and_then(Value::as_str)
-        .ok_or("lookup_asset_symbols result missing symbol")?;
-    if returned_symbol != symbol {
-        return Ok(None);
-    }
-    asset
-        .get("id")
-        .and_then(Value::as_str)
-        .map(|id| Some(id.to_string()))
-        .ok_or_else(|| "lookup_asset_symbols result missing id".into())
-}
-
-fn wait_for_asset(
-    rpc: &mut GrapheneRpc,
-    api_id: u64,
-    symbol: &str,
-) -> Result<Option<String>, Box<dyn Error>> {
-    for _ in 0..20 {
-        if let Some(asset_id) = lookup_asset_id_optional(rpc, api_id, symbol)? {
-            return Ok(Some(asset_id));
-        }
-        sleep(Duration::from_millis(500));
-    }
-    Ok(None)
-}
-
-fn active_public_key_for_account(
-    rpc: &mut GrapheneRpc,
-    api_id: u64,
-    account_id: &str,
-) -> Result<Option<String>, Box<dyn Error>> {
-    let account = rpc
-        .call_database(api_id, "get_objects", json!([[account_id]]))?
-        .get(0)
-        .cloned()
-        .ok_or("account object was not returned")?;
-    let Some(key_auths) = account
-        .get("active")
-        .and_then(|active| active.get("key_auths"))
-        .and_then(Value::as_array)
-    else {
-        return Ok(None);
-    };
-    if key_auths.len() != 1 {
-        return Ok(None);
-    }
-    Ok(key_auths[0]
-        .as_array()
-        .and_then(|pair| pair.first())
-        .and_then(Value::as_str)
-        .map(ToOwned::to_owned))
-}
-
-fn account_balance(
-    rpc: &mut GrapheneRpc,
-    api_id: u64,
-    account_id: &str,
-    asset_id: &str,
-) -> Result<i64, Box<dyn Error>> {
-    let balances = rpc.call_database(
-        api_id,
-        "get_account_balances",
-        json!([account_id, [asset_id]]),
-    )?;
-    let balance = balances
-        .as_array()
-        .and_then(|values| values.first())
-        .ok_or("get_account_balances returned no balance")?;
-    if balance.get("asset_id").and_then(Value::as_str) != Some(asset_id) {
-        return Err("get_account_balances returned unexpected asset_id".into());
-    }
-    balance
-        .get("amount")
-        .and_then(json_i64)
-        .ok_or_else(|| "balance missing integer amount".into())
-}
-
-fn wait_for_balance_at_least(
-    rpc: &mut GrapheneRpc,
-    api_id: u64,
-    account_id: &str,
-    asset_id: &str,
-    minimum: i64,
-) -> Result<(), Box<dyn Error>> {
-    for _ in 0..20 {
-        let balance = account_balance(rpc, api_id, account_id, asset_id)?;
-        if balance >= minimum {
-            println!("Balance ok: {account_id} has {balance} {asset_id}");
-            return Ok(());
-        }
-        sleep(Duration::from_millis(500));
-    }
-    Err(format!("balance for {account_id} {asset_id} did not reach {minimum}").into())
 }
 
 fn wait_for_limit_order(
