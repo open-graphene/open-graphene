@@ -6,7 +6,9 @@ pub mod transfer;
 
 pub use account_create::{AccountCreateAdapter, AccountCreateInput};
 pub use asset_create::{AssetCreateAdapter, AssetCreateInput};
-pub use asset_issue::{AssetIssueAdapter, AssetIssueInput};
+pub use asset_issue::{
+    AssetIssueAdapter, AssetIssueChainTypes, AssetIssueInput, build_asset_issue_transaction_for,
+};
 pub use common::{
     AccountRefInput, AssetAmountInput, FeeInput, PublicKeyInput, SingleKeyAuthorityInput,
 };

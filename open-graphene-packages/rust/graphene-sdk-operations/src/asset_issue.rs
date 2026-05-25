@@ -39,6 +39,58 @@ pub trait AssetIssueAdapter {
     ) -> Result<Self::Transaction, Self::Error>;
 }
 
+pub trait AssetIssueChainTypes {
+    type Transaction;
+    type Operation;
+    type AssetIssueOperation;
+    type Asset;
+    type AccountId: From<String>;
+    type AssetId: From<String>;
+    type FutureExtensions;
+
+    fn asset(amount: i64, asset_id: Self::AssetId) -> Self::Asset;
+    fn empty_extensions() -> Self::FutureExtensions;
+
+    fn asset_issue_operation_without_memo(
+        fee: Self::Asset,
+        issuer: Self::AccountId,
+        asset_to_issue: Self::Asset,
+        issue_to_account: Self::AccountId,
+        extensions: Self::FutureExtensions,
+    ) -> Self::AssetIssueOperation;
+
+    fn operation_asset_issue(operation: Self::AssetIssueOperation) -> Self::Operation;
+
+    fn transaction(
+        header: TransactionHeader,
+        operations: Vec<Self::Operation>,
+        extensions: Self::FutureExtensions,
+    ) -> Self::Transaction;
+}
+
+pub fn build_asset_issue_transaction_for<C: AssetIssueChainTypes>(
+    input: AssetIssueInput,
+) -> C::Transaction {
+    let fee = C::asset(input.fee.amount, input.fee.asset_id.into());
+    let asset_to_issue = C::asset(
+        input.asset_to_issue.amount,
+        input.asset_to_issue.asset_id.into(),
+    );
+    let operation = C::asset_issue_operation_without_memo(
+        fee,
+        input.issuer.id.into(),
+        asset_to_issue,
+        input.issue_to_account.id.into(),
+        C::empty_extensions(),
+    );
+
+    C::transaction(
+        input.header,
+        vec![C::operation_asset_issue(operation)],
+        C::empty_extensions(),
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

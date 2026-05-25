@@ -1,6 +1,9 @@
 use std::convert::Infallible;
 
-use open_graphene_sdk_operations::{AssetIssueAdapter, AssetIssueInput};
+use open_graphene_sdk_core::TransactionHeader;
+use open_graphene_sdk_operations::{
+    build_asset_issue_transaction_for, AssetIssueAdapter, AssetIssueChainTypes, AssetIssueInput,
+};
 use serde_json::{json, Value};
 use thiserror::Error;
 
@@ -22,6 +25,61 @@ pub struct AssetIssueTransactionInput {
     pub fee_asset_id: String,
 }
 
+pub struct BitSharesAssetIssueTypes;
+
+impl AssetIssueChainTypes for BitSharesAssetIssueTypes {
+    type Transaction = Transaction;
+    type Operation = Operation;
+    type AssetIssueOperation = AssetIssueOperation;
+    type Asset = Asset;
+    type AccountId = AccountId;
+    type AssetId = AssetId;
+    type FutureExtensions = FutureExtensions;
+
+    fn asset(amount: i64, asset_id: Self::AssetId) -> Self::Asset {
+        Asset { amount, asset_id }
+    }
+
+    fn empty_extensions() -> Self::FutureExtensions {
+        FutureExtensions::VoidT(Box::new(()))
+    }
+
+    fn asset_issue_operation_without_memo(
+        fee: Self::Asset,
+        issuer: Self::AccountId,
+        asset_to_issue: Self::Asset,
+        issue_to_account: Self::AccountId,
+        extensions: Self::FutureExtensions,
+    ) -> Self::AssetIssueOperation {
+        AssetIssueOperation {
+            fee,
+            issuer,
+            asset_to_issue,
+            issue_to_account,
+            memo: None,
+            extensions,
+        }
+    }
+
+    fn operation_asset_issue(operation: Self::AssetIssueOperation) -> Self::Operation {
+        Operation::AssetIssueOperation(Box::new(operation))
+    }
+
+    fn transaction(
+        header: TransactionHeader,
+        operations: Vec<Self::Operation>,
+        extensions: Self::FutureExtensions,
+    ) -> Self::Transaction {
+        Transaction {
+            ref_block_num: header.ref_block_num,
+            ref_block_prefix: header.ref_block_prefix,
+            expiration: header.expiration,
+            operations,
+            extensions,
+        }
+    }
+}
+
 pub struct BitSharesAssetIssueAdapter;
 
 impl AssetIssueAdapter for BitSharesAssetIssueAdapter {
@@ -31,19 +89,7 @@ impl AssetIssueAdapter for BitSharesAssetIssueAdapter {
     fn build_asset_issue_transaction(
         input: AssetIssueInput,
     ) -> Result<Self::Transaction, Self::Error> {
-        Ok(crate::sdk::asset_issue::build_asset_issue_transaction(
-            AssetIssueTransactionInput {
-                ref_block_num: input.header.ref_block_num,
-                ref_block_prefix: input.header.ref_block_prefix,
-                expiration: input.header.expiration,
-                issuer_id: input.issuer.id,
-                issue_to_account_id: input.issue_to_account.id,
-                asset_id: input.asset_to_issue.asset_id,
-                amount: input.asset_to_issue.amount,
-                fee_amount: input.fee.amount,
-                fee_asset_id: input.fee.asset_id,
-            },
-        ))
+        Ok(build_asset_issue_transaction_for::<BitSharesAssetIssueTypes>(input))
     }
 }
 
@@ -56,28 +102,18 @@ pub enum AssetIssueJsonError {
 }
 
 pub fn build_asset_issue_transaction(input: AssetIssueTransactionInput) -> Transaction {
-    Transaction {
-        ref_block_num: input.ref_block_num,
-        ref_block_prefix: input.ref_block_prefix,
-        expiration: input.expiration,
-        operations: vec![Operation::AssetIssueOperation(Box::new(
-            AssetIssueOperation {
-                fee: Asset {
-                    amount: input.fee_amount,
-                    asset_id: AssetId(input.fee_asset_id),
-                },
-                issuer: AccountId(input.issuer_id),
-                asset_to_issue: Asset {
-                    amount: input.amount,
-                    asset_id: AssetId(input.asset_id),
-                },
-                issue_to_account: AccountId(input.issue_to_account_id),
-                memo: None,
-                extensions: FutureExtensions::VoidT(Box::new(())),
-            },
-        ))],
-        extensions: FutureExtensions::VoidT(Box::new(())),
-    }
+    build_asset_issue_transaction_for::<BitSharesAssetIssueTypes>(AssetIssueInput::new(
+        TransactionHeader {
+            ref_block_num: input.ref_block_num,
+            ref_block_prefix: input.ref_block_prefix,
+            expiration: input.expiration,
+        },
+        open_graphene_sdk_operations::FeeInput::new(input.fee_amount, input.fee_asset_id),
+        input.issuer_id,
+        input.issue_to_account_id,
+        input.amount,
+        input.asset_id,
+    ))
 }
 
 pub fn signed_transaction_json(
