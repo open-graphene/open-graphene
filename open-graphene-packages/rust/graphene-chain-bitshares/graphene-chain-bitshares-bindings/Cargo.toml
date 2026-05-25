@@ -6,3 +6,7 @@ license = "MIT OR Apache-2.0"
 description = "Generated Rust bindings for the BitShares Open Graphene protocol."
 
 [dependencies]
+open-graphene-fc = { path = "../../graphene-fc" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
