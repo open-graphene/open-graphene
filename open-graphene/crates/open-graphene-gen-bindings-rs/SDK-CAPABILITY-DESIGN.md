@@ -33,6 +33,32 @@ generated/fc.rs
 
 SDK adapters may be generated later, but only as an explicit opt-in output.
 
+## Protocol helper boundary
+
+The protocol binding generator may emit small helper methods on raw generated types when the helper is a mechanical spelling of an existing protocol shape. These helpers reduce repetitive Rust construction or matching without adding SDK intent, chain-state policy, RPC behavior, signing, or broadcast semantics.
+
+Current accepted helpers are:
+
+- `Operation::{operation_name}(value)` constructors for operation static-variant arms.
+- `Operation::as_{operation_name}()` accessors for operation static-variant arms.
+- `FutureExtensions::empty()` for a static variant with a `void_t` arm.
+- Object ID wrapper constructors and conversions such as `AccountId::new(...)`, `AssetId::new(...)`, `From<String>`, and `From<&str>`.
+- `Asset::new(amount, asset_id)` for the raw `asset` protocol struct.
+- `Price::new(base, quote)` for the raw `price` protocol struct.
+
+A new generated protocol helper is acceptable only when all of these are true:
+
+1. It maps directly to fields or variants already present in the protocol schema.
+2. It does not choose defaults except for an existing protocol empty marker such as `void_t`.
+3. It does not perform validation that depends on chain state, account state, precision, fees, balances, or live RPC data.
+4. It does not render broadcast JSON or encode operation-specific JSON policy.
+5. It does not introduce a common SDK input model or user-intent abstraction.
+6. It has generator tests and checked-in generated output for the current chain bindings.
+
+These helpers must stay narrow. Do not generate constructors for every struct just because the generator can see fields. Extension-heavy structs, operation structs, and transaction structs often carry unsupported branches or SDK-policy choices; their construction belongs in manual adapters, shared operation builders, or an explicit generated SDK adapter profile.
+
+The generator should continue to reject or omit unsupported protocol branches through existing fail-closed FC and JSON surfaces. Protocol helpers are not a back door for memo support, non-empty extension sets, bitasset creation, prediction markets, fee lookup, signing, broadcast, or transaction-header derivation.
+
 ## Current manual adapter boundary
 
 Each manual adapter does exactly two things:
