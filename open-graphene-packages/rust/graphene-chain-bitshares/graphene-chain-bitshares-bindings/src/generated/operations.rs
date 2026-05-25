@@ -26,6 +26,7 @@ pub struct LimitOrderCreateOperation {
     pub seller: crate::generated::ids::AccountId,
     pub amount_to_sell: crate::generated::types::Asset,
     pub min_to_receive: crate::generated::types::Asset,
+    pub expiration: String,
     pub fill_or_kill: bool,
     pub extensions: crate::generated::static_variants::FutureExtensions,
 }

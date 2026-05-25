@@ -369,10 +369,17 @@ impl FcSerialize for crate::generated::types::AccountWhitelistOperationFeeParams
 
 impl FcSerialize for crate::generated::types::AdditionalAssetOptions {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        self.reward_percent.fc_serialize(out)?;
-        self.whitelist_market_fee_sharing.fc_serialize(out)?;
-        self.taker_fee_percent.fc_serialize(out)?;
-        Ok(())
+        if self.reward_percent.is_none()
+            && self.whitelist_market_fee_sharing.is_none()
+            && self.taker_fee_percent.is_none()
+        {
+            write_varint(0u64, out);
+            return Ok(());
+        }
+        Err(FcSerializeError::UnsupportedValue {
+            type_name: "additional_asset_options",
+            reason: "non-empty additional asset options are not supported by FC serialization yet",
+        })
     }
 }
 
@@ -447,6 +454,7 @@ impl FcSerialize for crate::generated::types::AssetOptions {
         self.max_market_fee.fc_serialize(out)?;
         self.issuer_permissions.fc_serialize(out)?;
         self.flags.fc_serialize(out)?;
+        self.core_exchange_rate.fc_serialize(out)?;
         write_varint(self.whitelist_authorities.len() as u64, out);
         let mut previous_key: Option<u64> = None;
         for value in &self.whitelist_authorities {
@@ -2387,6 +2395,7 @@ impl FcSerialize for crate::generated::operations::LimitOrderCreateOperation {
         self.seller.fc_serialize(out)?;
         self.amount_to_sell.fc_serialize(out)?;
         self.min_to_receive.fc_serialize(out)?;
+        write_time_point_sec(&self.expiration, out)?;
         self.fill_or_kill.fc_serialize(out)?;
         self.extensions.fc_serialize(out)?;
         Ok(())

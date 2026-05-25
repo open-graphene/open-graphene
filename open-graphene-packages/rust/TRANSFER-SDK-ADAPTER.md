@@ -8,11 +8,12 @@ After reading it, a maintainer should be able to add a manual SDK adapter withou
 ## Current status
 
 Manual SDK adapters have been proven in two generated chain binding crates: Swaplock and BitShares.
-Three flows now repeat across both chains:
+Four flows now repeat across both chains:
 
 - transfer
 - account create
 - asset issue
+- asset create
 
 The pattern is intentionally manual for now. It is a candidate for future generator support, but it should not be generated until the seam remains stable across more chain pressure, more SDK flows, or downstream demand.
 
@@ -197,6 +198,82 @@ The JSON operation shape is:
 ]
 ```
 
+## Asset-create adapter
+
+The asset-create adapter requires generated bindings for:
+
+```rust
+generated::types::AdditionalAssetOptions
+generated::types::Asset
+generated::types::AssetOptions
+generated::types::Price
+generated::types::Transaction
+generated::types::SignedTransaction
+generated::types::Signature
+generated::operations::AssetCreateOperation
+generated::static_variants::Operation
+generated::static_variants::FutureExtensions
+generated::ids::AccountId
+generated::ids::AssetId
+```
+
+The operation static variant must contain `AssetCreateOperation` at Graphene wire tag `10`.
+
+The first adapter shape is UIA-only. It constructs a one-operation transaction with:
+
+```rust
+Operation::AssetCreateOperation(Box::new(AssetCreateOperation {
+    fee,
+    issuer,
+    symbol,
+    precision,
+    common_options,
+    bitasset_opts: None,
+    is_prediction_market: false,
+    extensions: FutureExtensions::VoidT(Box::new(())),
+}))
+```
+
+`common_options.core_exchange_rate` is required protocol data. For asset creation, Graphene expects a placeholder price using the future asset instance placeholder in the quote side; the minimal adapter uses `1 CORE / 1 asset(1.3.1)` and the chain overwrites the new asset id when applying the operation.
+
+`common_options.extensions` is an `additional_asset_options` extension set. Empty additional asset options serialize as `varint(0)` in FC and render as `[]` in broadcast JSON. Non-empty additional asset options are rejected until their FC and RPC JSON shape is explicitly implemented and verified.
+
+The adapter rejects bitasset options, prediction markets, non-empty authority or market lists, non-empty operation extensions, and non-empty additional asset options. Issuer permissions, fee lookup, supply policy, and symbol policy remain chain-state concerns outside the adapter.
+
+The JSON operation shape is:
+
+```json
+[
+  10,
+  {
+    "fee": { "amount": 500000, "asset_id": "1.3.0" },
+    "issuer": "1.2.100",
+    "symbol": "OGT12345",
+    "precision": 5,
+    "common_options": {
+      "max_supply": 1000000000000,
+      "market_fee_percent": 0,
+      "max_market_fee": 0,
+      "issuer_permissions": 0,
+      "flags": 0,
+      "core_exchange_rate": {
+        "base": { "amount": 1, "asset_id": "1.3.0" },
+        "quote": { "amount": 1, "asset_id": "1.3.1" }
+      },
+      "whitelist_authorities": [],
+      "blacklist_authorities": [],
+      "whitelist_markets": [],
+      "blacklist_markets": [],
+      "description": "open-graphene live asset_create proof",
+      "extensions": []
+    },
+    "bitasset_opts": null,
+    "is_prediction_market": false,
+    "extensions": []
+  }
+]
+```
+
 ## What stays outside adapters
 
 Adapters must not do:
@@ -227,13 +304,13 @@ Each adapter should have local tests proving:
 2. The JSON renderer emits the expected Graphene broadcast JSON shape.
 3. The JSON renderer fails closed when given a signed transaction containing a different operation.
 
-For account-create, tests should also prove non-empty generated extension values fail closed until their wire and RPC JSON shapes are explicitly supported. For asset-issue, tests should prove memo JSON fails closed until memo broadcast semantics are explicitly supported.
+For account-create, tests should also prove non-empty generated extension values fail closed until their wire and RPC JSON shapes are explicitly supported. For asset-issue, tests should prove memo JSON fails closed until memo broadcast semantics are explicitly supported. For asset-create, tests should prove bitasset options and non-empty additional asset options fail closed until those asset variants are explicitly supported.
 
 These tests are enough for the adapter layer. Live chain tests belong to chain-specific examples or integration tooling, not to the adapter itself.
 
 ## Why this is not generated yet
 
-The repeated Swaplock and BitShares implementations show that generator support is plausible for transfer, account-create, and asset-issue.
+The repeated Swaplock and BitShares implementations show that generator support is plausible for transfer, account-create, asset-issue, and asset-create.
 It is still deferred because manual adapters are small, the ergonomics are not fully proven, and generated SDK capabilities would freeze a public API.
 
 Until more pressure exists, keep adapters manual, explicit, and boring.
