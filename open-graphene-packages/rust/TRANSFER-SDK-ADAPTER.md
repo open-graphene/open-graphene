@@ -8,12 +8,13 @@ After reading it, a maintainer should be able to add a manual SDK adapter withou
 ## Current status
 
 Manual SDK adapters have been proven in two generated chain binding crates: Swaplock and BitShares.
-Four flows now repeat across both chains:
+Five flows now repeat across both chains:
 
 - transfer
 - account create
 - asset issue
 - asset create
+- limit order cancel
 
 Each flow also has a common-input adapter wrapper using `open-graphene-sdk-operations` input models and adapter traits:
 
@@ -23,6 +24,7 @@ Each flow also has a common-input adapter wrapper using `open-graphene-sdk-opera
 | account create | `AccountCreateInput` | `SwaplockAccountCreateAdapter` | `BitSharesAccountCreateAdapter` |
 | asset issue | `AssetIssueInput` | `SwaplockAssetIssueAdapter` | `BitSharesAssetIssueAdapter` |
 | asset create | `AssetCreateInput` | `SwaplockAssetCreateAdapter` | `BitSharesAssetCreateAdapter` |
+| limit order cancel | `LimitOrderCancelInput` | `SwaplockLimitOrderCancelAdapter` | `BitSharesLimitOrderCancelAdapter` |
 
 The wrappers are deliberately thin: they pass common SDK input values into generic operation builders from `open-graphene-sdk-operations`. Each chain supplies a generated-type bridge that tells the generic builder how to construct that chain's raw generated operation and transaction types.
 
@@ -42,7 +44,7 @@ The transaction-building side now has two entry points:
 - A chain-local builder function that accepts operation-specific raw fields or generated helper values.
 - A common-input adapter wrapper that accepts the corresponding `open-graphene-sdk-operations` input model.
 
-For the current four proven flows, both entry points converge on the same generic trait-based builder from `open-graphene-sdk-operations` and a chain-local generated-type bridge. The adapter still preserves protocol-level types. It does not introduce a parallel SDK transaction model.
+For the current five proven flows, both entry points converge on the same generic trait-based builder from `open-graphene-sdk-operations` and a chain-local generated-type bridge. The adapter still preserves protocol-level types. It does not introduce a parallel SDK transaction model.
 
 ## Common transaction API shape
 
@@ -332,6 +334,52 @@ The JSON operation shape is:
     },
     "bitasset_opts": null,
     "is_prediction_market": false,
+    "extensions": []
+  }
+]
+```
+
+## Limit-order-cancel adapter
+
+The limit-order-cancel adapter requires generated bindings for:
+
+```rust
+generated::types::Asset
+generated::types::Transaction
+generated::types::SignedTransaction
+generated::types::Signature
+generated::operations::LimitOrderCancelOperation
+generated::static_variants::Operation
+generated::static_variants::FutureExtensions
+generated::ids::AccountId
+generated::ids::AssetId
+generated::ids::LimitOrderId
+```
+
+The operation static variant must contain `LimitOrderCancelOperation` at Graphene wire tag `2`.
+
+The adapter constructs a one-operation transaction with:
+
+```rust
+Operation::LimitOrderCancelOperation(Box::new(LimitOrderCancelOperation {
+    fee,
+    fee_paying_account,
+    order,
+    extensions: FutureExtensions::VoidT(Box::new(())),
+}))
+```
+
+The common input uses `LimitOrderRefInput` for the `1.7.x` order id. The adapter does not look up whether the order exists, whether the fee-paying account owns it, or whether the order is still open. Those checks require chain state and belong in RPC orchestration above this pure adapter layer.
+
+The JSON operation shape is:
+
+```json
+[
+  2,
+  {
+    "fee": { "amount": 200000, "asset_id": "1.3.0" },
+    "fee_paying_account": "1.2.100",
+    "order": "1.7.123",
     "extensions": []
   }
 ]

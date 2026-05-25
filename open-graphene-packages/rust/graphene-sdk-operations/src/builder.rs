@@ -6,6 +6,7 @@ pub trait GrapheneOperationBuilderTypes {
     type Asset;
     type AccountId: From<String>;
     type AssetId: From<String>;
+    type LimitOrderId: From<String>;
     type FutureExtensions;
 
     fn asset(amount: i64, asset_id: Self::AssetId) -> Self::Asset;

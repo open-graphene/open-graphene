@@ -5,7 +5,7 @@
 This document is for maintainers deciding how to build a coherent SDK across multiple Graphene chains without turning the generator into an SDK framework.
 After reading it, a maintainer should understand why shared primitive types are useful but insufficient, what common SDK input models should look like, and where chain-specific adapter code remains necessary.
 
-This document started as a design spike. It now also records the implementation proof that common SDK inputs and chain-specific adapter traits work across the current two-chain, four-flow matrix.
+This document started as a design spike. It now also records the implementation proof that common SDK inputs and chain-specific adapter traits work across the current two-chain, five-flow matrix.
 
 ## Problem
 
@@ -17,6 +17,7 @@ The project now has repeated manual SDK flows across Swaplock and BitShares:
 | `account_create` | live proven | local proven |
 | `asset_issue` | local proven | local proven |
 | `asset_create` | live proven | local proven |
+| `limit_order_cancel` | local proven | local proven |
 
 The repeated code has two sources:
 
@@ -39,7 +40,7 @@ Shared protocol primitives should be introduced only where they make this input 
 
 ## Implementation proof status
 
-The common input and chain adapter seam is now implemented for the current two-chain, four-flow SDK matrix.
+The common input and chain adapter seam is now implemented for the current two-chain, five-flow SDK matrix.
 
 | Flow | Common input | Adapter trait | Swaplock adapter | BitShares adapter | Proof |
 | --- | --- | --- | --- | --- | --- |
@@ -47,6 +48,7 @@ The common input and chain adapter seam is now implemented for the current two-c
 | `account_create` | `AccountCreateInput` | `AccountCreateAdapter` | `SwaplockAccountCreateAdapter` | `BitSharesAccountCreateAdapter` | adapter FC bytes match chain-local builder |
 | `asset_issue` | `AssetIssueInput` | `AssetIssueAdapter` | `SwaplockAssetIssueAdapter` | `BitSharesAssetIssueAdapter` | adapter FC bytes match chain-local builder |
 | `asset_create` | `AssetCreateInput` | `AssetCreateAdapter` | `SwaplockAssetCreateAdapter` | `BitSharesAssetCreateAdapter` | adapter FC bytes match chain-local builder |
+| `limit_order_cancel` | `LimitOrderCancelInput` | `LimitOrderCancelAdapter` | `SwaplockLimitOrderCancelAdapter` | `BitSharesLimitOrderCancelAdapter` | adapter FC bytes match chain-local builder |
 
 The proof is deliberately narrow:
 
@@ -70,7 +72,7 @@ open-graphene-fc
 
 open-graphene-sdk-primitives
   stable SDK value references and validators:
-  ObjectId, AccountIdRef, AssetIdRef, AssetAmount, OperationHistoryIdRef
+  ObjectId, AccountIdRef, AssetIdRef, AssetAmount, LimitOrderIdRef, OperationHistoryIdRef
 
 open-graphene-sdk-core
   pure SDK helpers:
@@ -79,16 +81,18 @@ open-graphene-sdk-core
 open-graphene-sdk-operations
   common operation input models, adapter traits, and generic trait-based builders:
   TransferInput, AccountCreateInput, AssetIssueInput, AssetCreateInput,
+  LimitOrderCancelInput,
   FeeInput, TransferAdapter, AccountCreateAdapter, AssetIssueAdapter, AssetCreateAdapter,
+  LimitOrderCancelAdapter,
   GrapheneOperationBuilderTypes, TransferChainTypes, AccountCreateChainTypes,
-  AssetIssueChainTypes, AssetCreateChainTypes
+  AssetIssueChainTypes, AssetCreateChainTypes, LimitOrderCancelChainTypes
 
 graphene-chain-*-bindings
   generated protocol types, chain-specific generated-type bridges, adapter structs,
   local builder wrappers, and broadcast JSON renderers:
   Operation, Transaction, operations, static variants, extension-heavy structs,
   ChainOperationBuilderTypes, ChainTransferAdapter, ChainAccountCreateAdapter,
-  ChainAssetIssueAdapter, ChainAssetCreateAdapter
+  ChainAssetIssueAdapter, ChainAssetCreateAdapter, ChainLimitOrderCancelAdapter
 
 higher SDK or examples
   RPC, fee lookup, signing, broadcast, confirmation, CLI/env handling
@@ -123,6 +127,11 @@ pub struct AccountRefInput {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct LimitOrderRefInput {
+    pub id: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PublicKeyInput {
     pub value: String,
 }
@@ -139,13 +148,16 @@ AssetAmountInput::checked(amount, asset_id)?;
 
 AccountRefInput::new(id);
 AccountRefInput::checked(id)?;
+
+LimitOrderRefInput::new(id);
+LimitOrderRefInput::checked(id)?;
 ```
 
 The checked constructors validate ID kind and preserve the string-backed storage shape.
 
 These inputs may later become stricter, but the current design intentionally separates two kinds of shared values:
 
-- SDK primitives such as `AccountIdRef`, `AssetIdRef`, and `AssetAmount` validate or carry stable Graphene reference values and live in `open-graphene-sdk-primitives`.
+- SDK primitives such as `AccountIdRef`, `AssetIdRef`, `LimitOrderIdRef`, and `AssetAmount` validate or carry stable Graphene reference values and live in `open-graphene-sdk-primitives`.
 - Generated protocol wrappers such as chain-local `AccountId`, `AssetId`, `Asset`, and `Price` remain generated per chain for now.
 
 `TransactionHeader` already exists in `open-graphene-sdk-core` and should be reused:
@@ -234,14 +246,28 @@ pub struct AssetCreateInput {
 
 This is UIA-only. BitAssets, prediction markets, market fees, whitelists, blacklists, and additional asset options stay out of the common input until they are separately designed and verified.
 
+### Limit-order-cancel input
+
+```rust
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct LimitOrderCancelInput {
+    pub header: TransactionHeader,
+    pub fee: FeeInput,
+    pub fee_paying_account: AccountRefInput,
+    pub order: LimitOrderRefInput,
+}
+```
+
+This is intentionally a local transaction-construction helper only. It does not look up whether the order exists, whether the fee-paying account owns it, or whether the order is still open. Those checks require chain state and belong in RPC orchestration above the pure adapter layer.
+
 ## Chain-specific adapter traits and generic builders
 
 The common SDK layer defines small adapter traits over common inputs. It also provides generic transaction builders parameterized by chain-specific generated-type bridges.
 
 There are two trait layers:
 
-1. `GrapheneOperationBuilderTypes` captures the generated types and constructors shared by the current operation builders: transaction, operation static variant, asset, account id, asset id, future extensions, and one-operation transaction construction.
-2. Per-operation chain traits add only operation-specific generated types and constructors: transfer operation, account-create operation and nested authority/options, asset-issue operation, or UIA asset-create operation and nested asset options.
+1. `GrapheneOperationBuilderTypes` captures the generated types and constructors shared by the current operation builders: transaction, operation static variant, asset, account id, asset id, limit-order id, future extensions, and one-operation transaction construction.
+2. Per-operation chain traits add only operation-specific generated types and constructors: transfer operation, account-create operation and nested authority/options, asset-issue operation, UIA asset-create operation and nested asset options, or limit-order-cancel operation.
 
 A chain binding crate implements the shared bridge once for its generated types, then implements only the operation-specific traits it supports. The current chains each use one marker type for this bridge.
 
@@ -305,6 +331,21 @@ The generic asset-issue builder maps `AssetIssueInput` through `AssetIssueChainT
 
 The generic asset-create builder maps `AssetCreateInput::uia` through `AssetCreateChainTypes`. It is UIA-only by design: no bitasset options, no prediction market flag, no authority or market lists, and empty additional asset options only. The operation-specific trait names this explicitly as user-issued asset construction so the common API does not imply unsupported asset variants.
 
+### Limit order cancel
+
+```rust
+pub trait LimitOrderCancelAdapter {
+    type Transaction;
+    type Error;
+
+    fn build_limit_order_cancel_transaction(
+        input: LimitOrderCancelInput,
+    ) -> Result<Self::Transaction, Self::Error>;
+}
+```
+
+The generic limit-order-cancel builder maps `LimitOrderCancelInput` through `LimitOrderCancelChainTypes`. It only builds a generated cancel operation for a known `1.7.x` order ID. Chain-state checks such as order existence and ownership remain outside the adapter.
+
 ## Broadcast JSON boundary
 
 Common SDK inputs solve transaction construction intent. Broadcast JSON still needs chain-specific operation rendering because `Operation` is chain-specific.
@@ -341,6 +382,7 @@ SDK primitives live in `open-graphene-sdk-primitives` and cover stable, chain-ag
 ObjectId
 AccountIdRef
 AssetIdRef
+LimitOrderIdRef
 AssetAmount
 OperationHistoryIdRef
 ```
@@ -449,9 +491,10 @@ src/transfer.rs
 src/account_create.rs
 src/asset_issue.rs
 src/asset_create.rs
+src/limit_order_cancel.rs
 ```
 
-Each operation has its own file. Shared value wrappers such as `FeeInput`, `AssetAmountInput`, `AccountRefInput`, `PublicKeyInput`, and `SingleKeyAuthorityInput` live in `common.rs`.
+Each operation has its own file. Shared value wrappers such as `FeeInput`, `AssetAmountInput`, `AccountRefInput`, `LimitOrderRefInput`, `PublicKeyInput`, and `SingleKeyAuthorityInput` live in `common.rs`.
 
 The crate exports:
 
@@ -459,25 +502,30 @@ The crate exports:
 FeeInput
 AssetAmountInput
 AccountRefInput
+LimitOrderRefInput
 PublicKeyInput
 SingleKeyAuthorityInput
 TransferInput
 AccountCreateInput
 AssetIssueInput
 AssetCreateInput
+LimitOrderCancelInput
 TransferAdapter
 AccountCreateAdapter
 AssetIssueAdapter
 AssetCreateAdapter
+LimitOrderCancelAdapter
 GrapheneOperationBuilderTypes
 TransferChainTypes
 AccountCreateChainTypes
 AssetIssueChainTypes
 AssetCreateChainTypes
+LimitOrderCancelChainTypes
 build_transfer_transaction_for(...)
 build_account_create_transaction_for(...)
 build_asset_issue_transaction_for(...)
 build_asset_create_transaction_for(...)
+build_limit_order_cancel_transaction_for(...)
 ```
 
 ### Phase 3: implement transfer adapter pair
@@ -509,6 +557,7 @@ TransferInput::new(...)
 AccountCreateInput::simple(...)
 AssetIssueInput::new(...)
 AssetCreateInput::uia(...)
+LimitOrderCancelInput::new(...)
 ```
 
 These constructors only wrap raw caller fields into existing common input structs. They do not add RPC, fee lookup, chain-state validation, generated protocol types, or new wire capabilities.
@@ -517,7 +566,7 @@ These constructors only wrap raw caller fields into existing common input struct
 
 Status: complete.
 
-`open-graphene-sdk-operations` now owns generic transaction builders for all four proven flows. These builders are parameterized by chain-specific generated-type bridge traits rather than by generated concrete types.
+`open-graphene-sdk-operations` now owns generic transaction builders for all five proven flows. These builders are parameterized by chain-specific generated-type bridge traits rather than by generated concrete types.
 
 The shared base trait captures common Graphene operation-building primitives. Per-operation traits add only the generated types and constructors needed for that operation. Swaplock and BitShares each provide one operation-builder marker type that implements the base trait once and the operation-specific traits for the supported flows.
 
@@ -543,7 +592,13 @@ Status: complete.
 
 `open-graphene-sdk-operations` now exposes `signed_transaction_broadcast_json` and `SignedTransactionJsonParts` for the common Graphene signed-transaction broadcast envelope. Chain-local renderers still produce operation JSON first, so unsupported operations, non-empty extension sets, memo payloads, and unsupported asset variants remain fail-closed in the chain binding crates.
 
-### Phase 10: decide the next seam
+### Phase 10: add limit_order_cancel as the fifth SDK flow
+
+Status: complete.
+
+Swaplock and BitShares implement `LimitOrderCancelAdapter`. The adapter path maps `LimitOrderCancelInput` through the generic limit-order-cancel builder and each chain's generated-type bridge. This adds `LimitOrderIdRef` and `LimitOrderRefInput` to the SDK primitive/input seam while keeping order lookup, ownership validation, and live cancel orchestration outside the pure adapter layer.
+
+### Phase 11: decide the next seam
 
 Status: next decision.
 
@@ -555,7 +610,7 @@ The current evidence says common input models plus trait-based builders are the 
 
 ## Success criteria for this architecture
 
-- Common input models and trait-based builders are stable across Swaplock and BitShares for all four current flows.
+- Common input models and trait-based builders are stable across Swaplock and BitShares for all five current flows.
 - Chain-specific adapter implementations remain thin and obvious.
 - No RPC/signing/broadcast behavior enters `open-graphene-sdk-operations` adapter traits.
 - No generator SDK surface is required to remove most duplicated intent modeling.

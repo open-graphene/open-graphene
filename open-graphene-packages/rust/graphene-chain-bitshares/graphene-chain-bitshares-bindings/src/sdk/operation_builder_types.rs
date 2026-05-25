@@ -1,7 +1,7 @@
 use open_graphene_sdk_core::TransactionHeader;
 use open_graphene_sdk_operations::GrapheneOperationBuilderTypes;
 
-use crate::generated::ids::{AccountId, AssetId};
+use crate::generated::ids::{AccountId, AssetId, LimitOrderId};
 use crate::generated::static_variants::{FutureExtensions, Operation};
 use crate::generated::types::{Asset, Transaction};
 
@@ -13,6 +13,7 @@ impl GrapheneOperationBuilderTypes for BitSharesOperationBuilderTypes {
     type Asset = Asset;
     type AccountId = AccountId;
     type AssetId = AssetId;
+    type LimitOrderId = LimitOrderId;
     type FutureExtensions = FutureExtensions;
 
     fn asset(amount: i64, asset_id: Self::AssetId) -> Self::Asset {

@@ -4,6 +4,7 @@ pub mod asset_issue;
 pub mod broadcast_json;
 pub mod builder;
 pub mod common;
+pub mod limit_order_cancel;
 pub mod transfer;
 
 pub use account_create::{
@@ -19,7 +20,12 @@ pub use asset_issue::{
 pub use broadcast_json::{signed_transaction_broadcast_json, SignedTransactionJsonParts};
 pub use builder::GrapheneOperationBuilderTypes;
 pub use common::{
-    AccountRefInput, AssetAmountInput, FeeInput, PublicKeyInput, SingleKeyAuthorityInput,
+    AccountRefInput, AssetAmountInput, FeeInput, LimitOrderRefInput, PublicKeyInput,
+    SingleKeyAuthorityInput,
+};
+pub use limit_order_cancel::{
+    build_limit_order_cancel_transaction_for, LimitOrderCancelAdapter, LimitOrderCancelChainTypes,
+    LimitOrderCancelInput,
 };
 pub use transfer::{
     build_transfer_transaction_for, TransferAdapter, TransferChainTypes, TransferInput,

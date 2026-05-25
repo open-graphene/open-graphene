@@ -1,4 +1,4 @@
-use open_graphene_sdk_primitives::{AccountIdRef, AssetIdRef, ObjectIdError};
+use open_graphene_sdk_primitives::{AccountIdRef, AssetIdRef, LimitOrderIdRef, ObjectIdError};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FeeInput {
@@ -72,6 +72,27 @@ impl AccountRefInput {
 
     pub fn account_id_ref(&self) -> Result<AccountIdRef, ObjectIdError> {
         AccountIdRef::parse(&self.id)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct LimitOrderRefInput {
+    pub id: String,
+}
+
+impl LimitOrderRefInput {
+    pub fn new(id: impl Into<String>) -> Self {
+        Self { id: id.into() }
+    }
+
+    pub fn checked(id: impl Into<String>) -> Result<Self, ObjectIdError> {
+        let id = id.into();
+        LimitOrderIdRef::parse(&id)?;
+        Ok(Self { id })
+    }
+
+    pub fn limit_order_id_ref(&self) -> Result<LimitOrderIdRef, ObjectIdError> {
+        LimitOrderIdRef::parse(&self.id)
     }
 }
 
@@ -157,6 +178,36 @@ mod tests {
     fn account_ref_checked_rejects_non_account_ids() {
         assert!(matches!(
             AccountRefInput::checked("1.3.0"),
+            Err(ObjectIdError::UnexpectedType { .. })
+        ));
+    }
+
+    #[test]
+    fn limit_order_refs_validate_limit_order_ids() {
+        assert_eq!(
+            LimitOrderRefInput::new("1.7.123")
+                .limit_order_id_ref()
+                .unwrap()
+                .to_string(),
+            "1.7.123"
+        );
+        assert!(matches!(
+            LimitOrderRefInput::new("1.2.100").limit_order_id_ref(),
+            Err(ObjectIdError::UnexpectedType { .. })
+        ));
+    }
+
+    #[test]
+    fn limit_order_ref_checked_accepts_limit_order_ids() {
+        let order = LimitOrderRefInput::checked("1.7.123").unwrap();
+
+        assert_eq!(order.id, "1.7.123");
+    }
+
+    #[test]
+    fn limit_order_ref_checked_rejects_non_limit_order_ids() {
+        assert!(matches!(
+            LimitOrderRefInput::checked("1.2.100"),
             Err(ObjectIdError::UnexpectedType { .. })
         ));
     }

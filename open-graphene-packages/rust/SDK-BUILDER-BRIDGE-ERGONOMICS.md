@@ -22,6 +22,7 @@ TransferChainTypes
 AccountCreateChainTypes
 AssetIssueChainTypes
 AssetCreateChainTypes
+LimitOrderCancelChainTypes
 build_*_transaction_for
 ```
 
@@ -53,26 +54,29 @@ transfer.rs
 account_create.rs
 asset_issue.rs
 asset_create.rs
+limit_order_cancel.rs
 ```
 
 Result:
 
 ```text
-operation_builder_types.rs: lines 39/39, normalized_equal=true, similarity=1.000, differing_lines~=0
+operation_builder_types.rs: lines 40/40, normalized_equal=true, similarity=1.000, differing_lines~=0
 transfer.rs: lines 270/270, normalized_equal=true, similarity=1.000, differing_lines~=0
 account_create.rs: lines 458/458, normalized_equal=true, similarity=1.000, differing_lines~=0
 asset_issue.rs: lines 327/327, normalized_equal=true, similarity=1.000, differing_lines~=0
 asset_create.rs: lines 498/498, normalized_equal=true, similarity=1.000, differing_lines~=0
+limit_order_cancel.rs: lines 273/273, normalized_equal=true, similarity=1.000, differing_lines~=0
 ```
 
 Trait impl sizes in one chain:
 
 ```text
-GrapheneOperationBuilderTypes: 27 nonblank lines
+GrapheneOperationBuilderTypes: 28 nonblank lines
 TransferChainTypes: 22 nonblank lines
 AccountCreateChainTypes: 41 nonblank lines
 AssetIssueChainTypes: 22 nonblank lines
 AssetCreateChainTypes: 59 nonblank lines
+LimitOrderCancelChainTypes: 19 nonblank lines
 ```
 
 The repetition is real. It is also currently straightforward and reviewable.
@@ -93,7 +97,7 @@ Pros:
 Cons:
 
 - A third chain would repeat roughly the same base and operation-specific bridge code.
-- Adding a fifth operation requires two similar chain impls.
+- Adding another operation requires two similar chain impls.
 
 ### Option 2: add a macro for chain bridge impls
 
@@ -130,12 +134,12 @@ Cons:
 
 Do not abstract the builder bridge yet.
 
-The repeated code is perfectly duplicated after chain-name normalization, but there are only two active chains and four flows. The current explicit impls are useful documentation of the generated-type boundary. A macro or generator would reduce LOC, but it would also make the protocol-to-SDK seam less obvious and would likely become a small generator before the project has enough pressure to justify it.
+The repeated code is perfectly duplicated after chain-name normalization, but there are only two active chains and five flows. The current explicit impls are useful documentation of the generated-type boundary. A macro or generator would reduce LOC, but it would also make the protocol-to-SDK seam less obvious and would likely become a small generator before the project has enough pressure to justify it.
 
 Keep the current bridge impls explicit until at least one of these triggers happens:
 
 1. A third Graphene chain needs the same SDK flows.
-2. A fifth operation flow repeats the same bridge pattern across both chains.
+2. Several more operation flows repeat the same bridge pattern across both chains.
 3. A real chain-specific divergence appears and clarifies what should remain configurable.
 4. Compile-time or review friction from the explicit impls becomes measurable.
 
@@ -143,8 +147,8 @@ When one of those triggers happens, prefer a narrow macro or generator profile t
 
 ## Next practical step
 
-The best next engineering step is not builder bridge abstraction. Better candidates are:
+The best next engineering step is still not builder bridge abstraction. Better candidates are:
 
-1. Add a fifth SDK flow to create more operation-shape pressure.
+1. Add `limit_order_create` as a sixth flow if market-order construction should be proven next.
 2. Run a live BitShares proof if chain id, account, and funds are available.
 3. Spike a narrow shared generated protocol primitive only if a concrete adapter friction point appears.
