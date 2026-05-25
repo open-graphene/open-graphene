@@ -7,6 +7,7 @@ description = "Generated Rust bindings for the swaplock Open Graphene protocol."
 
 [dependencies]
 open-graphene-fc = { path = "../../graphene-fc" }
+open-graphene-sdk-core = { path = "../../graphene-sdk-core" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
