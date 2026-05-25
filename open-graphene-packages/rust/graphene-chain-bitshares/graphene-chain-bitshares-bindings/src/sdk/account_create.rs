@@ -1,3 +1,6 @@
+use std::convert::Infallible;
+
+use open_graphene_sdk_core::{AccountCreateAdapter, AccountCreateInput};
 use serde_json::{Value, json};
 use thiserror::Error;
 
@@ -23,6 +26,35 @@ pub struct AccountCreateTransactionInput {
     pub active: Authority,
     pub options: AccountOptions,
     pub extensions: Option<AccountCreateOperationExt>,
+}
+
+pub struct BitSharesAccountCreateAdapter;
+
+impl AccountCreateAdapter for BitSharesAccountCreateAdapter {
+    type Transaction = Transaction;
+    type Error = Infallible;
+
+    fn build_account_create_transaction(
+        input: AccountCreateInput,
+    ) -> Result<Self::Transaction, Self::Error> {
+        Ok(crate::sdk::account_create::build_account_create_transaction(
+            AccountCreateTransactionInput {
+                ref_block_num: input.header.ref_block_num,
+                ref_block_prefix: input.header.ref_block_prefix,
+                expiration: input.header.expiration,
+                fee_amount: input.fee.amount,
+                fee_asset_id: input.fee.asset_id,
+                registrar_id: input.registrar.id,
+                referrer_id: input.referrer.id,
+                referrer_percent: input.referrer_percent,
+                name: input.name,
+                owner: single_key_authority(input.owner.public_key.value),
+                active: single_key_authority(input.active.public_key.value),
+                options: account_options(input.memo_key.value, input.voting_account.id),
+                extensions: None,
+            },
+        ))
+    }
 }
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -252,6 +284,35 @@ mod tests {
         assert_eq!(
             transaction.to_fc_bytes().unwrap(),
             expected.to_fc_bytes().unwrap()
+        );
+    }
+
+    #[test]
+    fn common_account_create_adapter_matches_manual_bitshares_builder() {
+        let adapter_transaction = BitSharesAccountCreateAdapter::build_account_create_transaction(
+            AccountCreateInput {
+                header: open_graphene_sdk_core::TransactionHeader {
+                    ref_block_num: 2,
+                    ref_block_prefix: 3,
+                    expiration: "2026-05-25T12:01:00".to_string(),
+                },
+                fee: open_graphene_sdk_core::FeeInput::new(500_000, "1.3.0"),
+                registrar: open_graphene_sdk_core::AccountRefInput::new("1.2.100"),
+                referrer: open_graphene_sdk_core::AccountRefInput::new("1.2.101"),
+                referrer_percent: 5_000,
+                name: "new-account".to_string(),
+                owner: open_graphene_sdk_core::SingleKeyAuthorityInput::new(PUBLIC_KEY),
+                active: open_graphene_sdk_core::SingleKeyAuthorityInput::new(PUBLIC_KEY),
+                memo_key: open_graphene_sdk_core::PublicKeyInput::new(PUBLIC_KEY),
+                voting_account: open_graphene_sdk_core::AccountRefInput::new("1.2.5"),
+            },
+        )
+        .unwrap();
+        let manual_transaction = build_account_create_transaction(input());
+
+        assert_eq!(
+            adapter_transaction.to_fc_bytes().unwrap(),
+            manual_transaction.to_fc_bytes().unwrap()
         );
     }
 
