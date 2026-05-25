@@ -109,10 +109,7 @@ pub fn build_account_create_transaction(input: AccountCreateTransactionInput) ->
         expiration: input.expiration,
         operations: vec![Operation::AccountCreateOperation(Box::new(
             AccountCreateOperation {
-                fee: Asset {
-                    amount: input.fee_amount,
-                    asset_id: AssetId(input.fee_asset_id),
-                },
+                fee: Asset::new(input.fee_amount, AssetId::new(input.fee_asset_id)),
                 registrar: AccountId(input.registrar_id),
                 referrer: AccountId(input.referrer_id),
                 referrer_percent: input.referrer_percent,
@@ -293,10 +290,7 @@ mod tests {
             expiration: input.expiration,
             operations: vec![Operation::AccountCreateOperation(Box::new(
                 AccountCreateOperation {
-                    fee: Asset {
-                        amount: input.fee_amount,
-                        asset_id: AssetId(input.fee_asset_id),
-                    },
+                    fee: Asset::new(input.fee_amount, AssetId::new(input.fee_asset_id)),
                     registrar: AccountId(input.registrar_id),
                     referrer: AccountId(input.referrer_id),
                     referrer_percent: input.referrer_percent,

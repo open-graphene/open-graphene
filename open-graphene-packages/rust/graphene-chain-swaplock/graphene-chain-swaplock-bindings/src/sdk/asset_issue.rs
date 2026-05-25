@@ -175,15 +175,9 @@ mod tests {
             expiration: input.expiration,
             operations: vec![Operation::AssetIssueOperation(Box::new(
                 AssetIssueOperation {
-                    fee: Asset {
-                        amount: input.fee_amount,
-                        asset_id: AssetId(input.fee_asset_id),
-                    },
+                    fee: Asset::new(input.fee_amount, AssetId::new(input.fee_asset_id)),
                     issuer: AccountId(input.issuer_id),
-                    asset_to_issue: Asset {
-                        amount: input.amount,
-                        asset_id: AssetId(input.asset_id),
-                    },
+                    asset_to_issue: Asset::new(input.amount, AssetId::new(input.asset_id)),
                     issue_to_account: AccountId(input.issue_to_account_id),
                     memo: None,
                     extensions: FutureExtensions::empty(),

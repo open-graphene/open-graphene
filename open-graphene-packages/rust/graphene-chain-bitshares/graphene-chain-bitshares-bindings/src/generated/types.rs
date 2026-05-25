@@ -271,6 +271,12 @@ pub struct Asset {
     pub asset_id: crate::generated::ids::AssetId,
 }
 
+impl Asset {
+    pub fn new(amount: i64, asset_id: crate::generated::ids::AssetId) -> Self {
+        Self { amount, asset_id }
+    }
+}
+
 /// Raw protocol struct `asset_claim_fees_operation_additional_options_type`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AssetClaimFeesOperationAdditionalOptionsType {

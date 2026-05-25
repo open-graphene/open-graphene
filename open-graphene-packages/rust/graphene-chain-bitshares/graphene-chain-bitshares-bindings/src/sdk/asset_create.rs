@@ -160,14 +160,8 @@ pub fn minimal_asset_options(max_supply: i64, description: String) -> AssetOptio
 
 pub fn asset_create_core_exchange_rate() -> Price {
     Price {
-        base: Asset {
-            amount: 1,
-            asset_id: AssetId("1.3.0".to_string()),
-        },
-        quote: Asset {
-            amount: 1,
-            asset_id: AssetId("1.3.1".to_string()),
-        },
+        base: Asset::new(1, AssetId::new("1.3.0")),
+        quote: Asset::new(1, AssetId::new("1.3.1")),
     }
 }
 
@@ -309,10 +303,7 @@ mod tests {
             expiration: input.expiration,
             operations: vec![Operation::AssetCreateOperation(Box::new(
                 AssetCreateOperation {
-                    fee: Asset {
-                        amount: input.fee_amount,
-                        asset_id: AssetId(input.fee_asset_id),
-                    },
+                    fee: Asset::new(input.fee_amount, AssetId::new(input.fee_asset_id)),
                     issuer: AccountId(input.issuer_id),
                     symbol: input.symbol,
                     precision: input.precision,

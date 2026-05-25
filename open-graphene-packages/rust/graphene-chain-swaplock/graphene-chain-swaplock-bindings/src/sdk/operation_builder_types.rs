@@ -16,7 +16,7 @@ impl GrapheneOperationBuilderTypes for SwaplockOperationBuilderTypes {
     type FutureExtensions = FutureExtensions;
 
     fn asset(amount: i64, asset_id: Self::AssetId) -> Self::Asset {
-        Asset { amount, asset_id }
+        Asset::new(amount, asset_id)
     }
 
     fn empty_extensions() -> Self::FutureExtensions {

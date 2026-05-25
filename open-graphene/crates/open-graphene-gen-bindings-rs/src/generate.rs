@@ -300,6 +300,36 @@ fn render_struct(out: &mut String, protocol: &Protocol, struct_def: &StructDef) 
     out.push_str(&format!("pub struct {struct_name} {{\n"));
     render_fields(out, protocol, &struct_def.fields)?;
     out.push_str("}\n\n");
+    render_asset_constructor(out, protocol, struct_def)?;
+    Ok(())
+}
+
+fn render_asset_constructor(
+    out: &mut String,
+    protocol: &Protocol,
+    struct_def: &StructDef,
+) -> Result<()> {
+    if struct_def.name != "asset" {
+        return Ok(());
+    }
+
+    let mut fields = struct_def.fields.clone();
+    fields.sort_by_key(|field| field.index);
+    let amount = fields.iter().find(|field| field.name == "amount");
+    let asset_id = fields.iter().find(|field| field.name == "asset_id");
+
+    if let (Some(amount), Some(asset_id)) = (amount, asset_id) {
+        let amount_ty = render_type_ref(protocol, &amount.ty)?;
+        let asset_id_ty = render_type_ref(protocol, &asset_id.ty)?;
+        out.push_str("impl Asset {\n");
+        out.push_str(&format!(
+            "    pub fn new(amount: {amount_ty}, asset_id: {asset_id_ty}) -> Self {{\n"
+        ));
+        out.push_str("        Self { amount, asset_id }\n");
+        out.push_str("    }\n");
+        out.push_str("}\n\n");
+    }
+
     Ok(())
 }
 
@@ -2673,6 +2703,15 @@ mod tests {
             source: None,
             support: None,
         });
+
+        let types = render_types(&protocol).expect("render types");
+        assert!(types.contains("impl Asset"));
+        assert!(
+            types.contains(
+                "pub fn new(amount: i64, asset_id: crate::generated::ids::AssetId) -> Self"
+            )
+        );
+        assert!(types.contains("Self { amount, asset_id }"));
 
         let output = render_fc(&protocol).expect("render fc");
 
