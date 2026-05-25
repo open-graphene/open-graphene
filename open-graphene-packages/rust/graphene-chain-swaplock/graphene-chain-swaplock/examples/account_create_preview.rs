@@ -12,9 +12,12 @@ use graphene_chain_swaplock::database_api::{
     account_balance, active_public_key_for_account, head_block, lookup_account_id,
     lookup_account_id_optional, required_fee,
 };
+use graphene_chain_swaplock::history_api::{
+    find_account_history_confirmation, get_account_history, history_entry_matches_account_create,
+    AccountCreateConfirmationCriteria, AccountHistoryQuery,
+};
 use graphene_chain_swaplock::rpc::GrapheneRpc;
 use graphene_chain_swaplock::transaction::set_first_operation_fee;
-use serde_json::{json, Value};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let rpc_url = env::var("SWAPLOCK_RPC_URL")?;
@@ -127,13 +130,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     let created_id = wait_for_account(&mut rpc, database_api_id, &new_account)?
         .ok_or("broadcast submitted but new account was not found")?;
     println!("Created: {new_account} ({created_id})");
-    if let Some(confirmation) = wait_for_account_create_confirmation(
+    let criteria = AccountCreateConfirmationCriteria {
+        account_name: &new_account,
+        min_block_num: head_block_number,
+    };
+    let history = get_account_history(
         &mut rpc,
         history_api_id,
-        &registrar_id,
-        &new_account,
-        head_block_number,
-    )? {
+        &AccountHistoryQuery::recent(&registrar_id),
+    )?;
+    if let Some(confirmation) = find_account_history_confirmation(&history, |entry| {
+        history_entry_matches_account_create(entry, &criteria)
+    })? {
         println!(
             "Confirmed: block {}, history {}",
             confirmation.block_num, confirmation.id
@@ -141,12 +149,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
-}
-
-#[derive(Clone)]
-struct Confirmation {
-    id: String,
-    block_num: u64,
 }
 
 fn wait_for_account(
@@ -162,51 +164,6 @@ fn wait_for_account(
         }
         if attempt + 1 < attempts {
             std::thread::sleep(delay);
-        }
-    }
-    Ok(None)
-}
-
-fn wait_for_account_create_confirmation(
-    rpc: &mut GrapheneRpc,
-    history_api_id: u64,
-    registrar_id: &str,
-    account_name: &str,
-    min_block_num: u64,
-) -> Result<Option<Confirmation>, Box<dyn Error>> {
-    let history = rpc.call_history(
-        history_api_id,
-        "get_account_history",
-        json!([registrar_id, "1.11.0", 20, "1.11.0"]),
-    )?;
-    let Some(entries) = history.as_array() else {
-        return Err("get_account_history result is not an array".into());
-    };
-    for entry in entries {
-        if entry.get("block_num").and_then(Value::as_u64) < Some(min_block_num) {
-            continue;
-        }
-        let Some(operation) = entry.get("op").and_then(Value::as_array) else {
-            continue;
-        };
-        if operation.first().and_then(Value::as_u64) != Some(5) {
-            continue;
-        }
-        let Some(payload) = operation.get(1) else {
-            continue;
-        };
-        if payload.get("name").and_then(Value::as_str) == Some(account_name) {
-            return Ok(Some(Confirmation {
-                id: entry
-                    .get("id")
-                    .and_then(Value::as_str)
-                    .ok_or("history entry missing id")?
-                    .to_string(),
-                block_num: entry
-                    .get("block_num")
-                    .and_then(Value::as_u64)
-                    .ok_or("history entry missing block_num")?,
-            }));
         }
     }
     Ok(None)

@@ -6,6 +6,10 @@ use graphene_chain_swaplock::bindings::generated::FcSerialize;
 use graphene_chain_swaplock::database_api::{
     account_balance, active_public_key_for_account, head_block, lookup_account_id, required_fee,
 };
+use graphene_chain_swaplock::history_api::{
+    history_entry_matches_transfer, wait_for_account_history_confirmation, AccountHistoryQuery,
+    HistoryPollConfig, TransferConfirmationCriteria,
+};
 use graphene_chain_swaplock::network_broadcast_api::broadcast_transaction;
 use graphene_chain_swaplock::rpc::GrapheneRpc;
 use graphene_chain_swaplock::signing::sign_transaction_checked;
@@ -183,18 +187,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     )?;
     println!("Broadcast: submitted");
 
-    let confirmation = wait_for_transfer_confirmation(
+    let criteria = TransferConfirmationCriteria {
+        from_id: &from_id,
+        to_id: &to_id,
+        amount,
+        asset_id: &asset_id,
+        fee_amount: expected_fee_amount,
+        min_block_num: head_block_number,
+    };
+    let confirmation = wait_for_account_history_confirmation(
         &mut rpc,
         history_api_id,
-        &from_id,
-        &TransferConfirmationCriteria {
-            from_id: &from_id,
-            to_id: &to_id,
-            amount,
-            asset_id: &asset_id,
-            fee_amount: expected_fee_amount,
-            min_block_num: head_block_number,
-        },
+        &AccountHistoryQuery::recent(&from_id),
+        &confirm_poll_config()?,
+        |entry| history_entry_matches_transfer(entry, &criteria),
     )?
     .ok_or("broadcast submitted but transfer was not found in account history")?;
     println!(
@@ -204,38 +210,28 @@ fn main() -> Result<(), Box<dyn Error>> {
     if env_flag("SWAPLOCK_DEBUG") {
         println!(
             "debug_confirmation_trx_in_block: {}",
-            confirmation.trx_in_block
+            confirmation
+                .trx_in_block
+                .ok_or("history entry missing trx_in_block")?
         );
-        println!("debug_confirmation_op_in_trx: {}", confirmation.op_in_trx);
-        println!("debug_confirmation_virtual_op: {}", confirmation.virtual_op);
+        println!(
+            "debug_confirmation_op_in_trx: {}",
+            confirmation
+                .op_in_trx
+                .ok_or("history entry missing op_in_trx")?
+        );
+        println!(
+            "debug_confirmation_virtual_op: {}",
+            confirmation
+                .virtual_op
+                .ok_or("history entry missing virtual_op")?
+        );
     }
 
     Ok(())
 }
 
-struct TransferConfirmationCriteria<'a> {
-    from_id: &'a str,
-    to_id: &'a str,
-    amount: i64,
-    asset_id: &'a str,
-    fee_amount: i64,
-    min_block_num: u64,
-}
-
-struct TransferConfirmation {
-    id: String,
-    block_num: u64,
-    trx_in_block: u64,
-    op_in_trx: u64,
-    virtual_op: u64,
-}
-
-fn wait_for_transfer_confirmation(
-    rpc: &mut GrapheneRpc,
-    history_api_id: u64,
-    account_id: &str,
-    criteria: &TransferConfirmationCriteria<'_>,
-) -> Result<Option<TransferConfirmation>, Box<dyn Error>> {
+fn confirm_poll_config() -> Result<HistoryPollConfig, Box<dyn Error>> {
     let attempts = env::var("SWAPLOCK_CONFIRM_ATTEMPTS")
         .ok()
         .map(|value| value.parse::<u64>())
@@ -249,88 +245,7 @@ fn wait_for_transfer_confirmation(
             .unwrap_or(2_000),
     );
 
-    for attempt in 0..attempts {
-        let history = rpc.call_history(
-            history_api_id,
-            "get_account_history",
-            json!([account_id, "1.11.0", 20, "1.11.0"]),
-        )?;
-        if let Some(confirmation) = find_transfer_confirmation(&history, criteria)? {
-            return Ok(Some(confirmation));
-        }
-        if attempt + 1 < attempts {
-            std::thread::sleep(delay);
-        }
-    }
-
-    Ok(None)
-}
-
-fn find_transfer_confirmation(
-    history: &Value,
-    criteria: &TransferConfirmationCriteria<'_>,
-) -> Result<Option<TransferConfirmation>, Box<dyn Error>> {
-    let Some(entries) = history.as_array() else {
-        return Err("get_account_history result is not an array".into());
-    };
-    for entry in entries {
-        if history_entry_matches_transfer(entry, criteria) {
-            return Ok(Some(TransferConfirmation {
-                id: entry
-                    .get("id")
-                    .and_then(Value::as_str)
-                    .ok_or("history entry missing id")?
-                    .to_string(),
-                block_num: entry
-                    .get("block_num")
-                    .and_then(Value::as_u64)
-                    .ok_or("history entry missing block_num")?,
-                trx_in_block: entry
-                    .get("trx_in_block")
-                    .and_then(Value::as_u64)
-                    .ok_or("history entry missing trx_in_block")?,
-                op_in_trx: entry
-                    .get("op_in_trx")
-                    .and_then(Value::as_u64)
-                    .ok_or("history entry missing op_in_trx")?,
-                virtual_op: entry
-                    .get("virtual_op")
-                    .and_then(Value::as_u64)
-                    .ok_or("history entry missing virtual_op")?,
-            }));
-        }
-    }
-    Ok(None)
-}
-
-fn history_entry_matches_transfer(
-    entry: &Value,
-    criteria: &TransferConfirmationCriteria<'_>,
-) -> bool {
-    if entry.get("block_num").and_then(Value::as_u64) < Some(criteria.min_block_num) {
-        return false;
-    }
-    let Some(operation) = entry.get("op").and_then(Value::as_array) else {
-        return false;
-    };
-    if operation.first().and_then(Value::as_u64) != Some(0) {
-        return false;
-    }
-    let Some(payload) = operation.get(1) else {
-        return false;
-    };
-    payload.get("from").and_then(Value::as_str) == Some(criteria.from_id)
-        && payload.get("to").and_then(Value::as_str) == Some(criteria.to_id)
-        && asset_value_matches(payload.get("amount"), criteria.amount, criteria.asset_id)
-        && asset_value_matches(payload.get("fee"), criteria.fee_amount, criteria.asset_id)
-}
-
-fn asset_value_matches(value: Option<&Value>, amount: i64, asset_id: &str) -> bool {
-    let Some(value) = value else {
-        return false;
-    };
-    value.get("amount").and_then(json_i64) == Some(amount)
-        && value.get("asset_id").and_then(Value::as_str) == Some(asset_id)
+    Ok(HistoryPollConfig { attempts, delay })
 }
 
 fn env_flag(name: &str) -> bool {
@@ -382,12 +297,6 @@ fn transfer_amount_raw(human_amount: &str, precision: u8) -> Result<i64, Box<dyn
         return Ok(raw_amount.parse()?);
     }
     open_graphene_sdk_core::decimal_to_raw_amount(human_amount, precision).map_err(Into::into)
-}
-
-fn json_i64(value: &Value) -> Option<i64> {
-    value
-        .as_i64()
-        .or_else(|| value.as_str().and_then(|value| value.parse().ok()))
 }
 
 fn hex(bytes: &[u8]) -> String {
@@ -445,15 +354,20 @@ mod tests {
                 }]
             }
         ]);
-        let confirmation = find_transfer_confirmation(
+        let confirmation = graphene_chain_swaplock::history_api::find_account_history_confirmation(
             &history,
-            &TransferConfirmationCriteria {
-                from_id: "1.2.100",
-                to_id: "1.2.0",
-                amount: 100000,
-                asset_id: "1.3.0",
-                fee_amount: 10,
-                min_block_num: 123,
+            |entry| {
+                history_entry_matches_transfer(
+                    entry,
+                    &TransferConfirmationCriteria {
+                        from_id: "1.2.100",
+                        to_id: "1.2.0",
+                        amount: 100000,
+                        asset_id: "1.3.0",
+                        fee_amount: 10,
+                        min_block_num: 123,
+                    },
+                )
             },
         )
         .unwrap()
@@ -461,9 +375,9 @@ mod tests {
 
         assert_eq!(confirmation.id, "1.11.22");
         assert_eq!(confirmation.block_num, 123);
-        assert_eq!(confirmation.trx_in_block, 1);
-        assert_eq!(confirmation.op_in_trx, 0);
-        assert_eq!(confirmation.virtual_op, 0);
+        assert_eq!(confirmation.trx_in_block.unwrap(), 1);
+        assert_eq!(confirmation.op_in_trx.unwrap(), 0);
+        assert_eq!(confirmation.virtual_op.unwrap(), 0);
     }
 
     #[test]
@@ -486,18 +400,23 @@ mod tests {
             }
         ]);
 
-        assert!(find_transfer_confirmation(
-            &history,
-            &TransferConfirmationCriteria {
-                from_id: "1.2.100",
-                to_id: "1.2.0",
-                amount: 100000,
-                asset_id: "1.3.0",
-                fee_amount: 10,
-                min_block_num: 123,
-            },
-        )
-        .unwrap()
-        .is_none());
+        assert!(
+            graphene_chain_swaplock::history_api::find_account_history_confirmation(
+                &history,
+                |entry| history_entry_matches_transfer(
+                    entry,
+                    &TransferConfirmationCriteria {
+                        from_id: "1.2.100",
+                        to_id: "1.2.0",
+                        amount: 100000,
+                        asset_id: "1.3.0",
+                        fee_amount: 10,
+                        min_block_num: 123,
+                    }
+                )
+            )
+            .unwrap()
+            .is_none()
+        );
     }
 }

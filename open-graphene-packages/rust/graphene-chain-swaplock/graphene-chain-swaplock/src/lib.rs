@@ -6,6 +6,7 @@
 
 pub mod broadcast;
 pub mod database_api;
+pub mod history_api;
 pub mod network_broadcast_api;
 pub mod operations;
 pub mod rpc;
