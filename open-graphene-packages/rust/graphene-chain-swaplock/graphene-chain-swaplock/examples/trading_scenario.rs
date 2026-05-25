@@ -22,8 +22,8 @@ use graphene_chain_swaplock::bindings::generated::static_variants::Operation;
 use graphene_chain_swaplock::bindings::generated::types::{Asset, SignedTransaction, Transaction};
 use graphene_chain_swaplock::database_api::{
     account_balance, active_public_key_for_account, lookup_account_id, lookup_account_id_optional,
-    lookup_asset_id_optional, required_fee, wait_for_account, wait_for_asset,
-    wait_for_balance_at_least, wait_for_limit_order, wait_for_order_gone,
+    lookup_asset_id_optional, next_transaction_header, required_fee, wait_for_account,
+    wait_for_asset, wait_for_balance_at_least, wait_for_limit_order, wait_for_order_gone,
 };
 use graphene_chain_swaplock::limit_order_cancel::{
     build_limit_order_cancel_transaction, signed_transaction_json as limit_order_cancel_json,
@@ -38,7 +38,7 @@ use graphene_chain_swaplock::rpc::GrapheneRpc;
 use graphene_chain_swaplock::transfer::{
     build_transfer_transaction, signed_transaction_json as transfer_json, TransferTransactionInput,
 };
-use serde_json::{json, Value};
+use serde_json::Value;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct TradingScenarioResult {
@@ -300,7 +300,7 @@ fn create_account_if_missing(
         return Ok(());
     }
 
-    let header = next_header(rpc, database_api_id)?;
+    let header = next_transaction_header(rpc, database_api_id, Duration::from_secs(60))?;
     let mut transaction = build_account_create_transaction(AccountCreateTransactionInput {
         ref_block_num: header.ref_block_num,
         ref_block_prefix: header.ref_block_prefix,
@@ -353,7 +353,7 @@ fn create_asset_if_missing(
         return Ok(());
     }
 
-    let header = next_header(rpc, database_api_id)?;
+    let header = next_transaction_header(rpc, database_api_id, Duration::from_secs(60))?;
     let mut transaction = build_asset_create_transaction(AssetCreateTransactionInput {
         ref_block_num: header.ref_block_num,
         ref_block_prefix: header.ref_block_prefix,
@@ -405,7 +405,7 @@ fn fund_core(
         return Ok(());
     }
 
-    let header = next_header(rpc, database_api_id)?;
+    let header = next_transaction_header(rpc, database_api_id, Duration::from_secs(60))?;
     let mut transaction = build_transfer_transaction(TransferTransactionInput {
         ref_block_num: header.ref_block_num,
         ref_block_prefix: header.ref_block_prefix,
@@ -457,7 +457,7 @@ fn issue_asset(
         return Ok(());
     }
 
-    let header = next_header(rpc, database_api_id)?;
+    let header = next_transaction_header(rpc, database_api_id, Duration::from_secs(60))?;
     let mut transaction = build_asset_issue_transaction(AssetIssueTransactionInput {
         ref_block_num: header.ref_block_num,
         ref_block_prefix: header.ref_block_prefix,
@@ -510,12 +510,9 @@ fn create_unmatched_order(
     receive_asset_id: &str,
     receive_amount: i64,
 ) -> Result<String, Box<dyn Error>> {
-    let header = next_header(rpc, database_api_id)?;
-    let order_expiration = open_graphene_sdk_core::transaction_header_from_head(
-        &head_block(rpc, database_api_id)?,
-        Duration::from_secs(3600),
-    )?
-    .expiration;
+    let header = next_transaction_header(rpc, database_api_id, Duration::from_secs(60))?;
+    let order_expiration =
+        next_transaction_header(rpc, database_api_id, Duration::from_secs(3600))?.expiration;
     let mut transaction = build_limit_order_create_transaction(LimitOrderCreateTransactionInput {
         ref_block_num: header.ref_block_num,
         ref_block_prefix: header.ref_block_prefix,
@@ -567,7 +564,7 @@ fn cancel_order(
     seller_id: &str,
     order_id: &str,
 ) -> Result<(), Box<dyn Error>> {
-    let header = next_header(rpc, database_api_id)?;
+    let header = next_transaction_header(rpc, database_api_id, Duration::from_secs(60))?;
     let mut transaction = build_limit_order_cancel_transaction(LimitOrderCancelTransactionInput {
         ref_block_num: header.ref_block_num,
         ref_block_prefix: header.ref_block_prefix,
@@ -679,44 +676,6 @@ where
     )?;
     println!("Broadcast submitted: {label}");
     Ok(signed_transaction)
-}
-
-fn next_header(
-    rpc: &mut GrapheneRpc,
-    database_api_id: u64,
-) -> Result<open_graphene_sdk_core::TransactionHeader, Box<dyn Error>> {
-    open_graphene_sdk_core::transaction_header_from_head(
-        &head_block(rpc, database_api_id)?,
-        Duration::from_secs(60),
-    )
-    .map_err(Into::into)
-}
-
-fn head_block(
-    rpc: &mut GrapheneRpc,
-    database_api_id: u64,
-) -> Result<open_graphene_sdk_core::HeadBlock, Box<dyn Error>> {
-    let dgp = rpc
-        .call_database(database_api_id, "get_objects", json!([["2.1.0"]]))?
-        .get(0)
-        .cloned()
-        .ok_or("dynamic global properties object was not returned")?;
-    Ok(open_graphene_sdk_core::HeadBlock {
-        number: dgp
-            .get("head_block_number")
-            .and_then(Value::as_u64)
-            .ok_or("dynamic global properties missing head_block_number")?,
-        id: dgp
-            .get("head_block_id")
-            .and_then(Value::as_str)
-            .ok_or("dynamic global properties missing head_block_id")?
-            .to_string(),
-        time: dgp
-            .get("time")
-            .and_then(Value::as_str)
-            .ok_or("dynamic global properties missing time")?
-            .to_string(),
-    })
 }
 
 fn env_i64(key: &str, default: i64) -> Result<i64, Box<dyn Error>> {
