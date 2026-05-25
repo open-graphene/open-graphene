@@ -51,7 +51,7 @@ pub trait AssetIssueChainTypes {
     fn asset(amount: i64, asset_id: Self::AssetId) -> Self::Asset;
     fn empty_extensions() -> Self::FutureExtensions;
 
-    fn asset_issue_operation_without_memo(
+    fn asset_issue_operation(
         fee: Self::Asset,
         issuer: Self::AccountId,
         asset_to_issue: Self::Asset,
@@ -76,7 +76,7 @@ pub fn build_asset_issue_transaction_for<C: AssetIssueChainTypes>(
         input.asset_to_issue.amount,
         input.asset_to_issue.asset_id.into(),
     );
-    let operation = C::asset_issue_operation_without_memo(
+    let operation = C::asset_issue_operation(
         fee,
         input.issuer.id.into(),
         asset_to_issue,

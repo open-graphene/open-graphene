@@ -44,7 +44,7 @@ impl AssetIssueChainTypes for SwaplockAssetIssueTypes {
         FutureExtensions::VoidT(Box::new(()))
     }
 
-    fn asset_issue_operation_without_memo(
+    fn asset_issue_operation(
         fee: Self::Asset,
         issuer: Self::AccountId,
         asset_to_issue: Self::Asset,
