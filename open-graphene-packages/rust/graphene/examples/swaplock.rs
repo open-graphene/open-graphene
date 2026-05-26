@@ -2,7 +2,7 @@ use graphene::Graphene;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let swaplock = Graphene::builder()
+    let mut swaplock = Graphene::builder()
         .servers([
             "wss://node01.swaplock.chainpool.online:8090",
             "wss://node02.swaplock.chainpool.online:8090",

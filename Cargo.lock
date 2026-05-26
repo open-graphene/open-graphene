@@ -351,6 +351,8 @@ dependencies = [
 name = "graphene-chain-swaplock-api"
 version = "0.1.0"
 dependencies = [
+ "open-graphene-transport",
+ "serde_json",
  "thiserror 2.0.18",
 ]
 

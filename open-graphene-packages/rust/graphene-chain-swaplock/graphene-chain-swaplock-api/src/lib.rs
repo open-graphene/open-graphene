@@ -1,31 +1,60 @@
+use open_graphene_transport::{GrapheneSession, TransportError, parse_chain_id};
+use serde_json::json;
 use thiserror::Error;
 
 pub const SWAPLOCK_CHAIN_ID: &str =
     "2267f694d96b7ffdcba1a98c63c09e720a18a85ad34954e299c66d5a42234098";
 
-#[derive(Debug, Error)]
-pub enum SwaplockApiError {}
-
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ServerConnectFailure {
+    pub server: String,
+    pub error: String,
+}
+
+#[derive(Debug, Error)]
+pub enum SwaplockApiError {
+    #[error("at least one Swaplock RPC server is required")]
+    MissingServers,
+
+    #[error("all Swaplock RPC servers failed: {attempts:?}")]
+    AllServersFailed { attempts: Vec<ServerConnectFailure> },
+
+    #[error(transparent)]
+    Transport(#[from] TransportError),
+}
+
 pub struct SwaplockApi {
-    chain_id: String,
+    session: GrapheneSession,
 }
 
 impl SwaplockApi {
-    pub fn mocked(chain_id: impl Into<String>) -> Self {
-        Self {
-            chain_id: chain_id.into(),
+    pub async fn connect<I, S>(servers: I) -> Result<Self, SwaplockApiError>
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        let servers = servers.into_iter().map(Into::into).collect::<Vec<_>>();
+        if servers.is_empty() {
+            return Err(SwaplockApiError::MissingServers);
         }
+
+        let mut attempts = Vec::new();
+        for server in servers {
+            match GrapheneSession::connect(&server) {
+                Ok(session) => return Ok(Self { session }),
+                Err(error) => attempts.push(ServerConnectFailure {
+                    server,
+                    error: error.to_string(),
+                }),
+            }
+        }
+
+        Err(SwaplockApiError::AllServersFailed { attempts })
     }
 
-    pub async fn get_chain_id(&self) -> Result<String, SwaplockApiError> {
-        Ok(self.chain_id.clone())
-    }
-}
-
-impl Default for SwaplockApi {
-    fn default() -> Self {
-        Self::mocked(SWAPLOCK_CHAIN_ID)
+    pub async fn get_chain_id(&mut self) -> Result<String, SwaplockApiError> {
+        let value = self.session.database_call("get_chain_id", json!([]))?;
+        Ok(parse_chain_id(value)?)
     }
 }
 
@@ -34,7 +63,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn default_api_uses_swaplock_chain_id() {
-        assert_eq!(SwaplockApi::default().chain_id, SWAPLOCK_CHAIN_ID);
+    fn missing_servers_error_is_actionable() {
+        assert_eq!(
+            SwaplockApiError::MissingServers.to_string(),
+            "at least one Swaplock RPC server is required"
+        );
     }
 }
