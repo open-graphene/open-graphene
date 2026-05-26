@@ -13,6 +13,34 @@ const ASSET_CALLBACK_ID: u64 = 3;
 const DYNAMIC_GLOBAL_PROPERTIES_ID: &str = "2.1.0";
 const DYNAMIC_GLOBAL_PROPERTIES_CALLBACK_ID: u64 = 1;
 
+pub trait IntoStringList {
+    fn into_string_list(self) -> Vec<String>;
+}
+
+impl<const N: usize> IntoStringList for [&str; N] {
+    fn into_string_list(self) -> Vec<String> {
+        self.into_iter().map(str::to_string).collect()
+    }
+}
+
+impl IntoStringList for Vec<String> {
+    fn into_string_list(self) -> Vec<String> {
+        self
+    }
+}
+
+impl IntoStringList for Vec<&str> {
+    fn into_string_list(self) -> Vec<String> {
+        self.into_iter().map(str::to_string).collect()
+    }
+}
+
+impl IntoStringList for Vec<&String> {
+    fn into_string_list(self) -> Vec<String> {
+        self.into_iter().map(ToString::to_string).collect()
+    }
+}
+
 pub struct DatabaseApi<'session> {
     pub(crate) session: &'session mut GrapheneSession,
 }
@@ -352,37 +380,35 @@ impl GlobalPropertiesRequest<'_> {
 }
 
 impl<'session> DatabaseApi<'session> {
-    pub fn account_balances<I, S, A>(
+    pub fn account_balances<A, L>(
         self,
         account_name: A,
-        asset_symbols: I,
+        asset_symbols: L,
     ) -> AccountBalancesRequest<'session>
     where
         A: Into<String>,
-        I: IntoIterator<Item = S>,
-        S: Into<String>,
+        L: IntoStringList,
     {
         AccountBalancesRequest {
             session: self.session,
             account_name: account_name.into(),
-            asset_symbols: asset_symbols.into_iter().map(Into::into).collect(),
+            asset_symbols: asset_symbols.into_string_list(),
         }
     }
 
-    pub fn account_balances_by_id<I, S, A>(
+    pub fn account_balances_by_id<A, L>(
         self,
         account_id: A,
-        asset_ids: I,
+        asset_ids: L,
     ) -> AccountBalancesByIdRequest<'session>
     where
         A: Into<String>,
-        I: IntoIterator<Item = S>,
-        S: Into<String>,
+        L: IntoStringList,
     {
         AccountBalancesByIdRequest {
             session: self.session,
             account_id: account_id.into(),
-            asset_ids: asset_ids.into_iter().map(Into::into).collect(),
+            asset_ids: asset_ids.into_string_list(),
         }
     }
 
@@ -461,39 +487,32 @@ impl<'session> DatabaseApi<'session> {
         }
     }
 
-    pub async fn get_account_balances<I, S>(
+    pub async fn get_account_balances<L>(
         &mut self,
         account_name: &str,
-        asset_symbols: I,
+        asset_symbols: L,
     ) -> Result<Vec<Asset>, SwaplockApiError>
     where
-        I: IntoIterator<Item = S>,
-        S: Into<String>,
+        L: IntoStringList,
     {
         let account = get_account_by_name(self.session, account_name).await?;
         let mut asset_ids = Vec::new();
-        for symbol in asset_symbols {
-            let asset = get_asset_by_symbol(self.session, &symbol.into()).await?;
+        for symbol in asset_symbols.into_string_list() {
+            let asset = get_asset_by_symbol(self.session, &symbol).await?;
             asset_ids.push(asset.id.0);
         }
         get_account_balances_by_id(self.session, &account.id.0, asset_ids).await
     }
 
-    pub async fn get_account_balances_by_id<I, S>(
+    pub async fn get_account_balances_by_id<L>(
         &mut self,
         account_id: &str,
-        asset_ids: I,
+        asset_ids: L,
     ) -> Result<Vec<Asset>, SwaplockApiError>
     where
-        I: IntoIterator<Item = S>,
-        S: Into<String>,
+        L: IntoStringList,
     {
-        get_account_balances_by_id(
-            self.session,
-            account_id,
-            asset_ids.into_iter().map(Into::into).collect(),
-        )
-        .await
+        get_account_balances_by_id(self.session, account_id, asset_ids.into_string_list()).await
     }
 
     pub async fn get_account_by_name(
@@ -729,7 +748,7 @@ fn account_balances_from_full_accounts_value(
         let Some(asset_type) = balance.get("asset_type").and_then(Value::as_str) else {
             return Err(unexpected_response(method, "balance missing asset_type"));
         };
-        if !asset_ids.iter().any(|asset_id| asset_id == asset_type) {
+        if !asset_ids.is_empty() && !asset_ids.iter().any(|asset_id| asset_id == asset_type) {
             continue;
         }
         let balance: AccountBalanceObject =
@@ -767,7 +786,8 @@ fn collect_account_balance_objects_inner(
         let owner = object.get("owner").and_then(Value::as_str);
         let asset_type = object.get("asset_type").and_then(Value::as_str);
         if owner == Some(account_id)
-            && asset_type.is_some_and(|asset_type| asset_ids.iter().any(|id| id == asset_type))
+            && (asset_ids.is_empty()
+                || asset_type.is_some_and(|asset_type| asset_ids.iter().any(|id| id == asset_type)))
         {
             let balance: AccountBalanceObject =
                 serde_json::from_value(value.clone()).map_err(|error| {
@@ -933,6 +953,39 @@ mod tests {
     }
 
     #[test]
+    fn empty_asset_filter_parses_all_account_balance_objects_from_full_accounts_response() {
+        let asset_ids = Vec::new();
+        let balances = account_balances_from_full_accounts_value(
+            "get_full_accounts",
+            json!([["1.2.100", {
+                "balances": [
+                    {
+                        "id": "2.5.1",
+                        "owner": "1.2.100",
+                        "asset_type": "1.3.0",
+                        "balance": "42",
+                        "maintenance_flag": false
+                    },
+                    {
+                        "id": "2.5.2",
+                        "owner": "1.2.100",
+                        "asset_type": "1.3.1",
+                        "balance": 7,
+                        "maintenance_flag": false
+                    }
+                ]
+            }]]),
+            "1.2.100",
+            &asset_ids,
+        )
+        .unwrap();
+
+        assert_eq!(balances.len(), 2);
+        assert_eq!(balances[0].id.0, "2.5.1");
+        assert_eq!(balances[1].id.0, "2.5.2");
+    }
+
+    #[test]
     fn collects_only_matching_account_balance_notice_objects() {
         let asset_ids = vec!["1.3.0".to_string()];
         let balances = collect_account_balance_objects(
@@ -965,5 +1018,43 @@ mod tests {
         assert_eq!(balances.len(), 1);
         assert_eq!(balances[0].id.0, "2.5.1");
         assert_eq!(balances[0].balance, 42);
+    }
+
+    #[test]
+    fn empty_asset_filter_collects_all_account_balance_notice_objects_for_owner() {
+        let asset_ids = Vec::new();
+        let balances = collect_account_balance_objects(
+            "notice",
+            &json!([[
+                {
+                    "id": "2.5.1",
+                    "owner": "1.2.100",
+                    "asset_type": "1.3.0",
+                    "balance": "42",
+                    "maintenance_flag": false
+                },
+                {
+                    "id": "2.5.2",
+                    "owner": "1.2.100",
+                    "asset_type": "1.3.1",
+                    "balance": 7,
+                    "maintenance_flag": false
+                },
+                {
+                    "id": "2.5.3",
+                    "owner": "1.2.101",
+                    "asset_type": "1.3.0",
+                    "balance": 9,
+                    "maintenance_flag": false
+                }
+            ]]),
+            "1.2.100",
+            &asset_ids,
+        )
+        .unwrap();
+
+        assert_eq!(balances.len(), 2);
+        assert_eq!(balances[0].id.0, "2.5.1");
+        assert_eq!(balances[1].id.0, "2.5.2");
     }
 }

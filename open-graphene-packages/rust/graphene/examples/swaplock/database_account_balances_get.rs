@@ -31,7 +31,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let asset = swaplock.database().asset_by_symbol("BTS").get().await?;
     let balances = swaplock
         .database()
-        .account_balances_by_id(&account.id.0, [&asset.id.0])
+        .account_balances_by_id(&account.id.0, [asset.id.0.as_str()])
         .get()
         .await?;
     for balance in balances {

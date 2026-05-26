@@ -8,7 +8,7 @@ pub use database_api::{
     AccountByIdRequest, AccountByNameRequest, AccountSubscription, AccountsRequest,
     AssetByIdRequest, AssetBySymbolRequest, AssetSubscription, ChainIdRequest,
     ChainPropertiesRequest, DatabaseApi, DynamicGlobalPropertiesRequest,
-    DynamicGlobalPropertiesSubscription, GlobalPropertiesRequest,
+    DynamicGlobalPropertiesSubscription, GlobalPropertiesRequest, IntoStringList,
 };
 
 pub const SWAPLOCK_CHAIN_ID: &str =

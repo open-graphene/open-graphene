@@ -16,7 +16,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut subscription = swaplock
         .database()
-        .account_balances("swaplock", ["BTS"])
+        .account_balances("swaplock", [])
         .subscribe()
         .await?;
 
