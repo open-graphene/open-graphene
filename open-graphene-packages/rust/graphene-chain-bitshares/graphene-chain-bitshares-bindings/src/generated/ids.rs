@@ -8,13 +8,13 @@ pub const SCHEMA_VERSION: u32 = 1;
 pub const CHAIN_ID: &str = "bitshares";
 pub const PUBLIC_KEY_PREFIX: &str = "BTS";
 
-pub const STRUCT_COUNT: usize = 206;
+pub const STRUCT_COUNT: usize = 207;
 pub const ENUM_COUNT: usize = 11;
 pub const STATIC_VARIANT_COUNT: usize = 11;
 pub const OPERATION_COUNT: usize = 78;
 pub const OBJECT_TYPE_COUNT: usize = 42;
 pub const RPC_API_COUNT: usize = 2;
-pub const RPC_METHOD_COUNT: usize = 5;
+pub const RPC_METHOD_COUNT: usize = 6;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]

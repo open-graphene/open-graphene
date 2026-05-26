@@ -721,6 +721,32 @@ pub struct CustomOperationFeeParamsT {
     pub price_per_kbyte: u32,
 }
 
+/// Raw protocol struct `dynamic_global_property_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct DynamicGlobalPropertyObject {
+    pub id: crate::generated::ids::DynamicGlobalPropertyId,
+    pub head_block_number: u32,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    pub head_block_id: Vec<u8>,
+    pub time: String,
+    pub current_witness: crate::generated::ids::WitnessId,
+    pub next_maintenance_time: String,
+    pub last_vote_tally_time: String,
+    pub last_budget_time: String,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub witness_budget: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub total_pob: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub total_inactive: i64,
+    pub accounts_registered_this_interval: u32,
+    pub recently_missed_count: u32,
+    pub current_aslot: u64,
+    pub recent_slots_filled: String,
+    pub dynamic_flags: u32,
+    pub last_irreversible_block_num: u32,
+}
+
 /// Raw protocol struct `execute_bid_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ExecuteBidOperationFeeParamsT {

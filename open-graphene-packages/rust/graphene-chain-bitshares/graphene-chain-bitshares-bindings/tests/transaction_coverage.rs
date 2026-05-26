@@ -1,9 +1,11 @@
 use graphene_chain_bitshares_bindings::generated::FcSerialize;
-use graphene_chain_bitshares_bindings::generated::ids::{AccountId, AssetId, LimitOrderId};
+use graphene_chain_bitshares_bindings::generated::ids::{
+    AccountId, AssetId, DynamicGlobalPropertyId, LimitOrderId, WitnessId,
+};
 use graphene_chain_bitshares_bindings::generated::operations::TransferOperation;
 use graphene_chain_bitshares_bindings::generated::static_variants::{FutureExtensions, Operation};
 use graphene_chain_bitshares_bindings::generated::types::{
-    Asset, LimitOrderObject, Signature, SignedTransaction, Transaction,
+    Asset, DynamicGlobalPropertyObject, LimitOrderObject, Signature, SignedTransaction, Transaction,
 };
 
 fn transfer_operation() -> Operation {
@@ -51,6 +53,51 @@ fn bitshares_limit_order_object_deserializes_from_graphene_json() {
     assert_eq!(order.sell_price.base.asset_id, AssetId("1.3.0".to_string()));
     assert_eq!(order.on_fill.len(), 0);
     assert_eq!(order.take_profit_order_id, None);
+}
+
+#[test]
+fn bitshares_dynamic_global_property_object_deserializes_from_graphene_json() {
+    let json = serde_json::json!({
+        "id": "2.1.0",
+        "head_block_number": 609782,
+        "head_block_id": "00094df644fe617490ae116a0100400d03000000",
+        "time": "2026-05-25T12:00:00",
+        "current_witness": "1.6.1",
+        "next_maintenance_time": "2026-05-25T13:00:00",
+        "last_vote_tally_time": "2026-05-25T11:00:00",
+        "last_budget_time": "2026-05-25T11:00:00",
+        "witness_budget": "0",
+        "total_pob": "1",
+        "total_inactive": "2",
+        "accounts_registered_this_interval": 3,
+        "recently_missed_count": 4,
+        "current_aslot": 123456,
+        "recent_slots_filled": "340282366920938463463374607431768211455",
+        "dynamic_flags": 0,
+        "last_irreversible_block_num": 609700
+    });
+
+    let properties: DynamicGlobalPropertyObject =
+        serde_json::from_value(json).expect("deserialize dynamic global properties");
+
+    assert_eq!(properties.id, DynamicGlobalPropertyId("2.1.0".to_string()));
+    assert_eq!(properties.head_block_number, 609_782);
+    assert_eq!(
+        properties.head_block_id,
+        vec![
+            0x00, 0x09, 0x4d, 0xf6, 0x44, 0xfe, 0x61, 0x74, 0x90, 0xae, 0x11, 0x6a,
+            0x01, 0x00, 0x40, 0x0d, 0x03, 0x00, 0x00, 0x00,
+        ]
+    );
+    assert_eq!(properties.time, "2026-05-25T12:00:00");
+    assert_eq!(properties.current_witness, WitnessId("1.6.1".to_string()));
+    assert_eq!(properties.witness_budget, 0);
+    assert_eq!(properties.total_pob, 1);
+    assert_eq!(properties.total_inactive, 2);
+    assert_eq!(
+        properties.recent_slots_filled,
+        "340282366920938463463374607431768211455"
+    );
 }
 
 #[test]
