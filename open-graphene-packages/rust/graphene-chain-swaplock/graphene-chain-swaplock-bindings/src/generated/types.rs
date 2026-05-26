@@ -4,6 +4,18 @@
 
 use serde::{Deserialize, Serialize};
 
+pub(crate) fn deserialize_i64_from_number_or_decimal_string<'de, D>(deserializer: D) -> Result<i64, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let value = serde_json::Value::deserialize(deserializer)?;
+    match value {
+        serde_json::Value::Number(number) => number.as_i64().ok_or_else(|| serde::de::Error::custom(format!("expected signed 64-bit integer, got {number}"))),
+        serde_json::Value::String(value) => value.parse::<i64>().map_err(serde::de::Error::custom),
+        other => Err(serde::de::Error::custom(format!("expected signed 64-bit integer number or decimal string, got {other}"))),
+    }
+}
+
 /// Graphene compact recoverable ECDSA signature bytes.
 /// Wire layout: one compact header byte followed by 32-byte r and 32-byte s.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -269,6 +281,7 @@ pub struct AssertOperationFeeParamsT {
 /// Raw protocol struct `asset`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Asset {
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub amount: i64,
     pub asset_id: crate::generated::ids::AssetId,
 }
@@ -323,8 +336,10 @@ pub struct AssetIssueOperationFeeParamsT {
 /// Raw protocol struct `asset_options`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AssetOptions {
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub max_supply: i64,
     pub market_fee_percent: u16,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub max_market_fee: i64,
     pub issuer_permissions: u16,
     pub flags: u16,
@@ -506,12 +521,16 @@ pub struct ChainParameters {
     pub network_percent_of_fee: u16,
     pub lifetime_referrer_percent_of_fee: u16,
     pub cashback_vesting_period_seconds: u32,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub cashback_vesting_threshold: i64,
     pub count_non_member_votes: bool,
     pub allow_non_member_whitelists: bool,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub witness_pay_per_block: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub worker_budget_per_day: i64,
     pub max_predicate_opcode: u16,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub fee_liquidation_threshold: i64,
     pub accounts_per_fee_scale: u16,
     pub account_fee_scale_bitshifts: u8,
@@ -745,9 +764,11 @@ pub struct LimitOrderObject {
     pub id: crate::generated::ids::LimitOrderId,
     pub expiration: String,
     pub seller: crate::generated::ids::AccountId,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub for_sale: i64,
     pub sell_price: crate::generated::types::Price,
     pub filled_amount: String,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub deferred_fee: i64,
     pub deferred_paid_fee: crate::generated::types::Asset,
     pub is_settled_debt: bool,
@@ -1083,12 +1104,14 @@ pub struct WithdrawPermissionUpdateOperationFeeParamsT {
 /// Raw protocol struct `witness_create_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct WitnessCreateOperationFeeParamsT {
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub fee: i64,
 }
 
 /// Raw protocol struct `witness_update_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct WitnessUpdateOperationFeeParamsT {
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub fee: i64,
 }
 

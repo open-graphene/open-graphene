@@ -60,7 +60,7 @@ fn limit_order_object_deserializes_from_graphene_json() {
         "id": "1.7.14",
         "expiration": "2026-05-26T12:00:00",
         "seller": "1.2.100",
-        "for_sale": 100000,
+        "for_sale": "100000",
         "sell_price": {
             "base": { "amount": 100000, "asset_id": "1.3.0" },
             "quote": { "amount": 50000, "asset_id": "1.3.1" }
@@ -78,6 +78,7 @@ fn limit_order_object_deserializes_from_graphene_json() {
     assert_eq!(order.id, LimitOrderId("1.7.14".to_string()));
     assert_eq!(order.seller, AccountId("1.2.100".to_string()));
     assert_eq!(order.filled_amount, "0");
+    assert_eq!(order.for_sale, 100_000);
     assert_eq!(order.sell_price.base.asset_id, AssetId("1.3.0".to_string()));
     assert_eq!(order.on_fill.len(), 0);
     assert_eq!(order.take_profit_order_id, None);

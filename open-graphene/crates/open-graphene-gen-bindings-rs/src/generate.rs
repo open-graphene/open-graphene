@@ -209,6 +209,17 @@ fn render_string_id_conversions(out: &mut String, id_name: &str) {
 fn render_types(protocol: &Protocol) -> Result<String> {
     let mut out = generated_header(protocol, "raw structs and enums");
     out.push_str("use serde::{Deserialize, Serialize};\n\n");
+    out.push_str("pub(crate) fn deserialize_i64_from_number_or_decimal_string<'de, D>(deserializer: D) -> Result<i64, D::Error>\n");
+    out.push_str("where\n");
+    out.push_str("    D: serde::Deserializer<'de>,\n");
+    out.push_str("{\n");
+    out.push_str("    let value = serde_json::Value::deserialize(deserializer)?;\n");
+    out.push_str("    match value {\n");
+    out.push_str("        serde_json::Value::Number(number) => number.as_i64().ok_or_else(|| serde::de::Error::custom(format!(\"expected signed 64-bit integer, got {number}\"))),\n");
+    out.push_str("        serde_json::Value::String(value) => value.parse::<i64>().map_err(serde::de::Error::custom),\n");
+    out.push_str("        other => Err(serde::de::Error::custom(format!(\"expected signed 64-bit integer number or decimal string, got {other}\"))),\n");
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
 
     let mut emitted = BTreeSet::new();
     if protocol_uses_signature(protocol) {
@@ -394,6 +405,11 @@ fn render_fields(out: &mut String, protocol: &Protocol, fields: &[FieldDef]) -> 
         ensure_unique(&mut emitted, &field_name, "field")?;
         let ty = render_type_ref(protocol, &field.ty)?;
         out.push_str(&serde_rename_attr("    ", &field.name, &field_name));
+        if matches!(field.ty, TypeRef::Int64 { .. }) {
+            out.push_str(
+                "    #[serde(deserialize_with = \"crate::generated::types::deserialize_i64_from_number_or_decimal_string\")]\n",
+            );
+        }
         out.push_str(&format!("    pub {field_name}: {ty},\n"));
     }
 
