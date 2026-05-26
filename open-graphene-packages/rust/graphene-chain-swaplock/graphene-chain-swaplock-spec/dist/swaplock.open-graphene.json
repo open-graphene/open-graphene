@@ -8789,6 +8789,127 @@
       }
     },
     {
+      "name": "global_property_object",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "global_property"
+          },
+          "source": {
+            "name": "id",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/global_property_object.hpp",
+            "line": 40
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "inherited object id from graphene::db::object for reflected Graphene object"
+          }
+        },
+        {
+          "index": 1,
+          "name": "parameters",
+          "type": {
+            "kind": "ref",
+            "name": "chain_parameters"
+          },
+          "source": {
+            "name": "parameters",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/global_property_object.hpp",
+            "line": 40
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 2,
+          "name": "pending_parameters",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "ref",
+              "name": "chain_parameters"
+            }
+          },
+          "source": {
+            "name": "pending_parameters",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/global_property_object.hpp",
+            "line": 42
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 3,
+          "name": "next_available_vote_id",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "next_available_vote_id",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/global_property_object.hpp",
+            "line": 43
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 4,
+          "name": "active_committee_members",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "committee_member"
+            }
+          },
+          "source": {
+            "name": "active_committee_members",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/global_property_object.hpp",
+            "line": 45
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 5,
+          "name": "active_witnesses",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "witness"
+            },
+            "ordering": "unresolved"
+          },
+          "source": {
+            "name": "active_witnesses",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/global_property_object.hpp",
+            "line": 46
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+      }
+    },
+    {
       "name": "htlc_create_operation",
       "kind": "struct",
       "fields": [
@@ -28082,6 +28203,7 @@
       "cppAlias": "global_property_id_type",
       "objectSpace": 2,
       "typeId": 0,
+      "structRef": "global_property_object",
       "source": {
         "name": "global_property",
         "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/types.hpp",

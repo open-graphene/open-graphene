@@ -25,5 +25,9 @@ name = "swaplock_get_dynamic_global_properties"
 path = "examples/swaplock/get_dynamic_global_properties.rs"
 
 [[example]]
+name = "swaplock_get_global_properties"
+path = "examples/swaplock/get_global_properties.rs"
+
+[[example]]
 name = "swaplock_subscribe_dynamic_global_properties"
 path = "examples/swaplock/subscribe_dynamic_global_properties.rs"

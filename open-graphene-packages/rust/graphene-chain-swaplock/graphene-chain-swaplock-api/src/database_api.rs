@@ -1,4 +1,6 @@
-use graphene_chain_swaplock_bindings::generated::{AccountObject, DynamicGlobalPropertyObject};
+use graphene_chain_swaplock_bindings::generated::{
+    AccountObject, DynamicGlobalPropertyObject, GlobalPropertyObject,
+};
 use open_graphene_transport::{GrapheneSession, JsonRpcInbound, parse_chain_id};
 use serde_json::{Value, json};
 
@@ -55,6 +57,19 @@ impl<'session> DatabaseApi<'session> {
 
         serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
             method: "get_dynamic_global_properties",
+            message: error.to_string(),
+        })
+    }
+
+    pub async fn get_global_properties(
+        &mut self,
+    ) -> Result<GlobalPropertyObject, SwaplockApiError> {
+        let value = self
+            .session
+            .database_call("get_global_properties", json!([]))?;
+
+        serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
+            method: "get_global_properties",
             message: error.to_string(),
         })
     }
