@@ -4,7 +4,8 @@ use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
 
 pub use database_api::{
-    AccountByIdRequest, AccountByNameRequest, AccountSubscription, AccountsRequest, ChainIdRequest,
+    AccountByIdRequest, AccountByNameRequest, AccountSubscription, AccountsRequest,
+    AssetByIdRequest, AssetBySymbolRequest, AssetSubscription, ChainIdRequest,
     ChainPropertiesRequest, DatabaseApi, DynamicGlobalPropertiesRequest,
     DynamicGlobalPropertiesSubscription, GlobalPropertiesRequest,
 };
@@ -35,6 +36,9 @@ pub enum SwaplockApiError {
 
     #[error("account `{account}` was not found")]
     AccountNotFound { account: String },
+
+    #[error("asset `{asset}` was not found")]
+    AssetNotFound { asset: String },
 
     #[error("all Swaplock RPC servers failed: {attempts:?}")]
     AllServersFailed { attempts: Vec<ServerConnectFailure> },
@@ -128,5 +132,14 @@ mod tests {
         let message = error.to_string();
         assert!(message.contains("expected"));
         assert!(message.contains("actual"));
+    }
+
+    #[test]
+    fn asset_not_found_error_names_asset() {
+        let error = SwaplockApiError::AssetNotFound {
+            asset: "BTS".to_string(),
+        };
+
+        assert_eq!(error.to_string(), "asset `BTS` was not found");
     }
 }

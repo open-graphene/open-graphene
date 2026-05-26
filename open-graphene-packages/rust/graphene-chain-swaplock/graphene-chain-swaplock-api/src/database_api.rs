@@ -1,5 +1,6 @@
 use graphene_chain_swaplock_bindings::generated::{
-    AccountObject, ChainPropertyObject, DynamicGlobalPropertyObject, GlobalPropertyObject,
+    AccountObject, AssetObject, ChainPropertyObject, DynamicGlobalPropertyObject,
+    GlobalPropertyObject,
 };
 use open_graphene_transport::{GrapheneSession, JsonRpcInbound, parse_chain_id};
 use serde_json::{Value, json};
@@ -7,6 +8,7 @@ use serde_json::{Value, json};
 use crate::SwaplockApiError;
 
 const ACCOUNT_CALLBACK_ID: u64 = 2;
+const ASSET_CALLBACK_ID: u64 = 3;
 const DYNAMIC_GLOBAL_PROPERTIES_ID: &str = "2.1.0";
 const DYNAMIC_GLOBAL_PROPERTIES_CALLBACK_ID: u64 = 1;
 
@@ -33,6 +35,22 @@ pub struct AccountSubscription<'session> {
 pub struct AccountsRequest<'session> {
     session: &'session mut GrapheneSession,
     names_or_ids: Vec<String>,
+}
+
+pub struct AssetByIdRequest<'session> {
+    session: &'session mut GrapheneSession,
+    asset_id: String,
+}
+
+pub struct AssetBySymbolRequest<'session> {
+    session: &'session mut GrapheneSession,
+    asset_symbol: String,
+}
+
+pub struct AssetSubscription<'session> {
+    session: &'session mut GrapheneSession,
+    asset_id: String,
+    initial: AssetObject,
 }
 
 pub struct ChainIdRequest<'session> {
@@ -97,6 +115,51 @@ impl AccountSubscription<'_> {
             }
 
             return account_from_value("notice", payload, &self.account_id);
+        }
+    }
+}
+
+impl<'session> AssetByIdRequest<'session> {
+    pub async fn get(self) -> Result<AssetObject, SwaplockApiError> {
+        get_asset_by_id(self.session, &self.asset_id).await
+    }
+
+    pub async fn subscribe(self) -> Result<AssetSubscription<'session>, SwaplockApiError> {
+        subscribe_asset_by_id(self.session, self.asset_id).await
+    }
+}
+
+impl<'session> AssetBySymbolRequest<'session> {
+    pub async fn get(self) -> Result<AssetObject, SwaplockApiError> {
+        get_asset_by_symbol(self.session, &self.asset_symbol).await
+    }
+
+    pub async fn subscribe(self) -> Result<AssetSubscription<'session>, SwaplockApiError> {
+        let asset = get_asset_by_symbol(self.session, &self.asset_symbol).await?;
+        subscribe_asset_by_id(self.session, asset.id.0).await
+    }
+}
+
+impl AssetSubscription<'_> {
+    pub fn initial(&self) -> &AssetObject {
+        &self.initial
+    }
+
+    pub async fn next_update(&mut self) -> Result<AssetObject, SwaplockApiError> {
+        loop {
+            let notice = self.session.next_notice()?;
+            let JsonRpcInbound::Notice {
+                callback_id,
+                payload,
+            } = notice
+            else {
+                continue;
+            };
+            if callback_id != ASSET_CALLBACK_ID {
+                continue;
+            }
+
+            return asset_from_value("notice", payload, &self.asset_id);
         }
     }
 }
@@ -230,6 +293,26 @@ impl<'session> DatabaseApi<'session> {
         }
     }
 
+    pub fn asset_by_id<S>(self, asset_id: S) -> AssetByIdRequest<'session>
+    where
+        S: Into<String>,
+    {
+        AssetByIdRequest {
+            session: self.session,
+            asset_id: asset_id.into(),
+        }
+    }
+
+    pub fn asset_by_symbol<S>(self, asset_symbol: S) -> AssetBySymbolRequest<'session>
+    where
+        S: Into<String>,
+    {
+        AssetBySymbolRequest {
+            session: self.session,
+            asset_symbol: asset_symbol.into(),
+        }
+    }
+
     pub fn chain_id(self) -> ChainIdRequest<'session> {
         ChainIdRequest {
             session: self.session,
@@ -266,6 +349,20 @@ impl<'session> DatabaseApi<'session> {
         account_id: &str,
     ) -> Result<AccountObject, SwaplockApiError> {
         get_account_by_id(self.session, account_id).await
+    }
+
+    pub async fn get_asset_by_symbol(
+        &mut self,
+        asset_symbol: &str,
+    ) -> Result<AssetObject, SwaplockApiError> {
+        get_asset_by_symbol(self.session, asset_symbol).await
+    }
+
+    pub async fn get_asset_by_id(
+        &mut self,
+        asset_id: &str,
+    ) -> Result<AssetObject, SwaplockApiError> {
+        get_asset_by_id(self.session, asset_id).await
     }
 
     pub async fn get_chain_id(&mut self) -> Result<String, SwaplockApiError> {
@@ -325,6 +422,43 @@ async fn get_account_by_id(
     account_from_value("get_objects", objects, account_id)
 }
 
+async fn get_asset_by_symbol(
+    session: &mut GrapheneSession,
+    asset_symbol: &str,
+) -> Result<AssetObject, SwaplockApiError> {
+    let value = session.database_call("lookup_asset_symbols", json!([[asset_symbol]]))?;
+    let asset = value
+        .as_array()
+        .and_then(|assets| assets.first())
+        .filter(|asset| !asset.is_null())
+        .cloned()
+        .ok_or_else(|| SwaplockApiError::AssetNotFound {
+            asset: asset_symbol.to_string(),
+        })?;
+
+    let asset: AssetObject =
+        serde_json::from_value(asset).map_err(|error| SwaplockApiError::UnexpectedResponse {
+            method: "lookup_asset_symbols",
+            message: error.to_string(),
+        })?;
+
+    if asset.symbol != asset_symbol {
+        return Err(SwaplockApiError::AssetNotFound {
+            asset: asset_symbol.to_string(),
+        });
+    }
+
+    Ok(asset)
+}
+
+async fn get_asset_by_id(
+    session: &mut GrapheneSession,
+    asset_id: &str,
+) -> Result<AssetObject, SwaplockApiError> {
+    let objects = session.database_call("get_objects", json!([[asset_id]]))?;
+    asset_from_value("get_objects", objects, asset_id)
+}
+
 async fn get_chain_id(session: &mut GrapheneSession) -> Result<String, SwaplockApiError> {
     let value = session.database_call("get_chain_id", json!([]))?;
     Ok(parse_chain_id(value)?)
@@ -378,6 +512,39 @@ async fn subscribe_account_by_id(
         session,
         account_id,
         initial,
+    })
+}
+
+async fn subscribe_asset_by_id(
+    session: &mut GrapheneSession,
+    asset_id: String,
+) -> Result<AssetSubscription<'_>, SwaplockApiError> {
+    session.database_call("set_subscribe_callback", json!([ASSET_CALLBACK_ID, false]))?;
+    let value = session.database_call("get_objects", json!([[asset_id], true]))?;
+    let initial = asset_from_value("get_objects", value, &asset_id)?;
+
+    Ok(AssetSubscription {
+        session,
+        asset_id,
+        initial,
+    })
+}
+
+fn asset_from_value(
+    method: &'static str,
+    value: Value,
+    asset_id: &str,
+) -> Result<AssetObject, SwaplockApiError> {
+    let value = find_object_by_id(&value, asset_id).ok_or_else(|| {
+        SwaplockApiError::UnexpectedResponse {
+            method,
+            message: format!("missing `{asset_id}` asset object"),
+        }
+    })?;
+
+    serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
+        method,
+        message: error.to_string(),
     })
 }
 
