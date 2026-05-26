@@ -1,0 +1,16 @@
+[workspace]
+resolver = "3"
+members = [
+    "graphene",
+    "graphene-fc",
+    "graphene-sdk-primitives",
+    "graphene-sdk-core",
+    "graphene-sdk-operations",
+    "graphene-transport",
+    "graphene-sdk-live",
+    "graphene-chain-swaplock/graphene-chain-swaplock-bindings",
+    "graphene-chain-swaplock/graphene-chain-swaplock",
+    "graphene-chain-bitshares/graphene-chain-bitshares-bindings",
+    "graphene-chain-acta/graphene-chain-acta-bindings",
+    "graphene-chain-rsquared/graphene-chain-rsquared-bindings",
+]
