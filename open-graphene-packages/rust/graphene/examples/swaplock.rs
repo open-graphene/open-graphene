@@ -14,7 +14,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .connect()
         .await?;
 
-    let chain_id = swaplock.get_chain_id().await?;
+    let chain_id = swaplock.database().get_chain_id().await?;
 
     println!("chain id: {chain_id}");
     Ok(())

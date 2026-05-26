@@ -80,6 +80,18 @@ impl SwaplockApi {
         Err(SwaplockApiError::AllServersFailed { attempts })
     }
 
+    pub fn database(&mut self) -> DatabaseApi<'_> {
+        DatabaseApi {
+            session: &mut self.session,
+        }
+    }
+}
+
+pub struct DatabaseApi<'session> {
+    session: &'session mut GrapheneSession,
+}
+
+impl DatabaseApi<'_> {
     pub async fn get_chain_id(&mut self) -> Result<String, SwaplockApiError> {
         let value = self.session.database_call("get_chain_id", json!([]))?;
         Ok(parse_chain_id(value)?)
