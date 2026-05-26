@@ -13,29 +13,29 @@ graphene-chain-swaplock-api = { path = "../graphene-chain-swaplock/graphene-chai
 tokio = { version = "1", features = ["macros", "rt"] }
 
 [[example]]
-name = "swaplock_get_chain_id"
-path = "examples/swaplock/get_chain_id.rs"
+name = "swaplock_database_account_get"
+path = "examples/swaplock/database_account_get.rs"
 
 [[example]]
-name = "swaplock_get_account"
-path = "examples/swaplock/get_account.rs"
+name = "swaplock_database_accounts_get"
+path = "examples/swaplock/database_accounts_get.rs"
 
 [[example]]
-name = "swaplock_get_accounts"
-path = "examples/swaplock/get_accounts.rs"
+name = "swaplock_database_chain_id_get"
+path = "examples/swaplock/database_chain_id_get.rs"
 
 [[example]]
-name = "swaplock_get_chain_properties"
-path = "examples/swaplock/get_chain_properties.rs"
+name = "swaplock_database_chain_properties_get"
+path = "examples/swaplock/database_chain_properties_get.rs"
 
 [[example]]
-name = "swaplock_get_dynamic_global_properties"
-path = "examples/swaplock/get_dynamic_global_properties.rs"
+name = "swaplock_database_dynamic_global_properties_get"
+path = "examples/swaplock/database_dynamic_global_properties_get.rs"
 
 [[example]]
-name = "swaplock_get_global_properties"
-path = "examples/swaplock/get_global_properties.rs"
+name = "swaplock_database_dynamic_global_properties_subscribe"
+path = "examples/swaplock/database_dynamic_global_properties_subscribe.rs"
 
 [[example]]
-name = "swaplock_subscribe_dynamic_global_properties"
-path = "examples/swaplock/subscribe_dynamic_global_properties.rs"
+name = "swaplock_database_global_properties_get"
+path = "examples/swaplock/database_global_properties_get.rs"
