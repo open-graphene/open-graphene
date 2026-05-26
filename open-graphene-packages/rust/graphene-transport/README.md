@@ -25,8 +25,7 @@ This crate intentionally does not:
 - decide confirmation policy;
 - maintain an object cache;
 - reconnect automatically;
-- preserve subscription continuity across reconnect;
-- implement subscriptions yet.
+- preserve subscription continuity across reconnect.
 
 Those belong in generated binding crates, chain-specific SDK crates, or a future higher-level live SDK/connection manager.
 
@@ -82,6 +81,14 @@ let result = transport.call(0, "get_objects", json!([["2.1.0"]]))?;
 transport.buffered_notice_count();
 transport.next_buffered_notice();
 ```
+
+A caller that has registered a Graphene callback can block until the next notice with:
+
+```rust
+let notice = transport.next_notice()?;
+```
+
+This is only message plumbing: the transport does not know which RPC method registered the callback, which object was subscribed, or how to parse the notice payload. Chain-specific API crates own that behavior.
 
 The raw transport does not reconnect by itself.
 

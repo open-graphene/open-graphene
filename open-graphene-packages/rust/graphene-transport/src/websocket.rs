@@ -3,9 +3,9 @@ use std::net::TcpStream;
 
 use serde_json::Value;
 use tungstenite::stream::MaybeTlsStream;
-use tungstenite::{connect, Message, WebSocket};
+use tungstenite::{Message, WebSocket, connect};
 
-use crate::{parse_inbound, JsonRpcInbound, JsonRpcRequest, TransportError};
+use crate::{JsonRpcInbound, JsonRpcRequest, TransportError, parse_inbound};
 
 pub struct WebSocketTransport {
     socket: WebSocket<MaybeTlsStream<TcpStream>>,
@@ -59,6 +59,21 @@ impl WebSocketTransport {
 
     pub fn next_buffered_notice(&mut self) -> Option<JsonRpcInbound> {
         self.buffered_notices.pop_front()
+    }
+
+    pub fn next_notice(&mut self) -> Result<JsonRpcInbound, TransportError> {
+        if let Some(notice) = self.next_buffered_notice() {
+            return Ok(notice);
+        }
+
+        loop {
+            match self.read_inbound()? {
+                notice @ JsonRpcInbound::Notice { .. } => return Ok(notice),
+                JsonRpcInbound::Response { .. } | JsonRpcInbound::Error { .. } => {
+                    return Err(TransportError::UnsupportedInboundMessage);
+                }
+            }
+        }
     }
 
     pub fn buffered_notice_count(&self) -> usize {

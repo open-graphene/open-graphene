@@ -1,6 +1,6 @@
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
-use crate::{TransportError, WebSocketTransport};
+use crate::{JsonRpcInbound, TransportError, WebSocketTransport};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ApiIds {
@@ -54,6 +54,10 @@ impl GrapheneSession {
 
     pub fn database_call(&mut self, method: &str, params: Value) -> Result<Value, TransportError> {
         self.transport.call(self.api_ids.database, method, params)
+    }
+
+    pub fn next_notice(&mut self) -> Result<JsonRpcInbound, TransportError> {
+        self.transport.next_notice()
     }
 
     pub fn history_call(&mut self, method: &str, params: Value) -> Result<Value, TransportError> {
