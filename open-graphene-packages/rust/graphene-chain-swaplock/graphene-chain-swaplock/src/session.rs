@@ -1,12 +1,15 @@
 use std::env;
 use std::error::Error;
+use std::time::Duration;
 
 use graphene_chain_swaplock_bindings::generated::{
-    AccountObject, AssetDynamicDataObject, AssetObject, OperationHistoryObject,
+    AccountObject, Asset, AssetDynamicDataObject, AssetObject, OperationHistoryObject,
+    SignedTransaction, Transaction,
 };
-use open_graphene_sdk_core::HeadBlock;
+use open_graphene_sdk_core::{HeadBlock, TransactionHeader};
+use serde_json::Value;
 
-use crate::{database_api, history_api, rpc::GrapheneRpc};
+use crate::{database_api, history_api, rpc::GrapheneRpc, transaction};
 
 pub const DEFAULT_RPC_URL: &str = "wss://node02.swaplock.chainpool.online:8090";
 pub const GRAPHENE_RPC_URL_ENV: &str = "GRAPHENE_RPC_URL";
@@ -131,5 +134,59 @@ impl SwaplockSession {
     ) -> Result<Vec<OperationHistoryObject>, Box<dyn Error>> {
         let history_api_id = self.history_api_id()?;
         history_api::get_account_history_objects(&mut self.rpc, history_api_id, query)
+    }
+
+    pub fn next_transaction_header(
+        &mut self,
+        expiration: Duration,
+    ) -> Result<TransactionHeader, Box<dyn Error>> {
+        database_api::next_transaction_header(&mut self.rpc, self.database_api_id, expiration)
+    }
+
+    pub fn active_public_key_for_account(
+        &mut self,
+        account_id: &str,
+    ) -> Result<Option<String>, Box<dyn Error>> {
+        database_api::active_public_key_for_account(&mut self.rpc, self.database_api_id, account_id)
+    }
+
+    pub fn required_fee<F, E>(
+        &mut self,
+        transaction: &Transaction,
+        fee_asset_id: &str,
+        renderer: F,
+    ) -> Result<Asset, Box<dyn Error>>
+    where
+        F: Fn(&SignedTransaction) -> Result<Value, E>,
+        E: Error + 'static,
+    {
+        database_api::required_fee(
+            &mut self.rpc,
+            self.database_api_id,
+            transaction,
+            fee_asset_id,
+            renderer,
+        )
+    }
+
+    pub fn apply_required_fee<F, E>(
+        &mut self,
+        transaction: &mut Transaction,
+        fee_asset_id: &str,
+        max_fee: i64,
+        renderer: F,
+    ) -> Result<(), Box<dyn Error>>
+    where
+        F: Fn(&SignedTransaction) -> Result<Value, E>,
+        E: Error + 'static,
+    {
+        transaction::apply_required_fee(
+            &mut self.rpc,
+            self.database_api_id,
+            transaction,
+            fee_asset_id,
+            max_fee,
+            renderer,
+        )
     }
 }

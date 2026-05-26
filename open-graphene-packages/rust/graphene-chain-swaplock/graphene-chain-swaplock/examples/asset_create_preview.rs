@@ -7,10 +7,7 @@ use graphene_chain_swaplock::asset_create::{
 };
 use graphene_chain_swaplock::bindings::generated::FcSerialize;
 use graphene_chain_swaplock::broadcast::sign_and_broadcast_transaction;
-use graphene_chain_swaplock::database_api::{
-    account_balance, active_public_key_for_account, head_block, lookup_account_id,
-    lookup_asset_id_optional, required_fee,
-};
+use graphene_chain_swaplock::database_api::lookup_asset_id_optional;
 use graphene_chain_swaplock::rpc::GrapheneRpc;
 use graphene_chain_swaplock::transaction::set_first_operation_fee;
 use graphene_chain_swaplock::SwaplockSession;
@@ -45,14 +42,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut session = SwaplockSession::connect(&rpc_url)?;
     let database_api_id = session.database_api_id();
-    if lookup_asset_id_optional(session.rpc_mut(), database_api_id, &symbol)?.is_some() {
+    if session.lookup_asset_id_optional(&symbol)?.is_some() {
         return Err(format!("asset symbol already exists: {symbol}").into());
     }
 
-    let issuer_id = lookup_account_id(session.rpc_mut(), database_api_id, &issuer_account)?;
-    let issuer_signing_public_key =
-        active_public_key_for_account(session.rpc_mut(), database_api_id, &issuer_id)?
-            .ok_or("could not determine a single issuer active public key from chain")?;
+    let issuer_id = session.lookup_account_id(&issuer_account)?;
+    let issuer_signing_public_key = session
+        .active_public_key_for_account(&issuer_id)?
+        .ok_or("could not determine a single issuer active public key from chain")?;
     if let Ok(env_public_key) = env::var("SWAPLOCK_ACTIVE_PUBLIC_KEY") {
         if env_public_key != issuer_signing_public_key {
             return Err(
@@ -62,7 +59,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    let head = head_block(session.rpc_mut(), database_api_id)?;
+    let head = session.head_block()?;
     let head_block_number = head.number;
     let header =
         open_graphene_sdk_core::transaction_header_from_head(&head, Duration::from_secs(60))?;
@@ -80,13 +77,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         description,
     });
 
-    let fee = required_fee(
-        session.rpc_mut(),
-        database_api_id,
-        &transaction,
-        &fee_asset_id,
-        signed_transaction_json,
-    )?;
+    let fee = session.required_fee(&transaction, &fee_asset_id, signed_transaction_json)?;
     if fee.amount > max_fee {
         return Err(format!(
             "required fee {} exceeds SWAPLOCK_MAX_FEE {}; refusing to sign",
@@ -95,12 +86,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .into());
     }
     set_first_operation_fee(&mut transaction, fee.clone())?;
-    let balance_before = account_balance(
-        session.rpc_mut(),
-        database_api_id,
-        &issuer_id,
-        &fee.asset_id.0,
-    )?;
+    let balance_before = session.account_balance(&issuer_id, &fee.asset_id.0)?;
     if balance_before < fee.amount {
         return Err(format!(
             "insufficient balance for fee asset {}: balance {}, required {}",

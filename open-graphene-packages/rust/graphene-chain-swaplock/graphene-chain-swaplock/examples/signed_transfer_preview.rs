@@ -3,22 +3,17 @@ use std::error::Error;
 use std::time::Duration;
 
 use graphene_chain_swaplock::bindings::generated::FcSerialize;
-use graphene_chain_swaplock::database_api::{
-    account_balance, active_public_key_for_account, head_block, lookup_account_id, required_fee,
-};
 use graphene_chain_swaplock::history_api::{
     history_entry_matches_transfer, wait_for_account_history_confirmation, AccountHistoryQuery,
     HistoryPollConfig, TransferConfirmationCriteria,
 };
 use graphene_chain_swaplock::network_broadcast_api::broadcast_transaction;
-use graphene_chain_swaplock::rpc::GrapheneRpc;
 use graphene_chain_swaplock::signing::sign_transaction_checked;
 use graphene_chain_swaplock::transaction::set_first_operation_fee;
 use graphene_chain_swaplock::transfer::{
     build_transfer_transaction, signed_transaction_json, TransferTransactionInput,
 };
 use graphene_chain_swaplock::SwaplockSession;
-use serde_json::{json, Value};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let rpc_url = env::var("SWAPLOCK_RPC_URL")?;
@@ -40,21 +35,19 @@ fn main() -> Result<(), Box<dyn Error>> {
     let human_amount = env::var("SWAPLOCK_TRANSFER_AMOUNT").unwrap_or_else(|_| "1".to_string());
 
     let mut session = SwaplockSession::connect(&rpc_url)?;
-    let database_api_id = session.database_api_id();
-    let asset_precision = asset_precision(session.rpc_mut(), database_api_id, &asset_id)?;
+    let asset_precision = asset_precision(&mut session, &asset_id)?;
     let amount = transfer_amount_raw(&human_amount, asset_precision)?;
 
-    let from_id = lookup_account_id(session.rpc_mut(), database_api_id, &from_account)?;
-    let to_id = lookup_account_id(session.rpc_mut(), database_api_id, &to_account)?;
+    let from_id = session.lookup_account_id(&from_account)?;
+    let to_id = session.lookup_account_id(&to_account)?;
     let expected_public_key = match env::var("SWAPLOCK_ACTIVE_PUBLIC_KEY") {
         Ok(public_key) => Some(("env", public_key)),
-        Err(env::VarError::NotPresent) => {
-            active_public_key_for_account(session.rpc_mut(), database_api_id, &from_id)?
-                .map(|public_key| ("chain_active_authority", public_key))
-        }
+        Err(env::VarError::NotPresent) => session
+            .active_public_key_for_account(&from_id)?
+            .map(|public_key| ("chain_active_authority", public_key)),
         Err(err) => return Err(err.into()),
     };
-    let head = head_block(session.rpc_mut(), database_api_id)?;
+    let head = session.head_block()?;
     let head_block_number = head.number;
     let header =
         open_graphene_sdk_core::transaction_header_from_head(&head, Duration::from_secs(60))?;
@@ -74,13 +67,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         fee_asset_id: asset_id.clone(),
     });
 
-    let fee = required_fee(
-        session.rpc_mut(),
-        database_api_id,
-        &transaction,
-        &asset_id,
-        signed_transaction_json,
-    )?;
+    let fee = session.required_fee(&transaction, &asset_id, signed_transaction_json)?;
     let expected_fee_amount = fee.amount;
     if fee.amount > max_fee {
         return Err(format!(
@@ -89,7 +76,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         )
         .into());
     }
-    let balance_before = account_balance(session.rpc_mut(), database_api_id, &from_id, &asset_id)?;
+    let balance_before = session.account_balance(&from_id, &asset_id)?;
     open_graphene_sdk_core::ensure_sufficient_balance(&open_graphene_sdk_core::BalanceCheck {
         balance: open_graphene_sdk_core::AssetAmount {
             amount: balance_before,
@@ -276,21 +263,11 @@ fn ensure_signature_public_key_match(
     }
 }
 
-fn asset_precision(
-    rpc: &mut GrapheneRpc,
-    api_id: u64,
-    asset_id: &str,
-) -> Result<u8, Box<dyn Error>> {
-    let asset = rpc
-        .call_database(api_id, "get_objects", json!([[asset_id]]))?
-        .get(0)
-        .cloned()
+fn asset_precision(session: &mut SwaplockSession, asset_id: &str) -> Result<u8, Box<dyn Error>> {
+    let asset = session
+        .asset_object(asset_id)?
         .ok_or("asset object was not returned")?;
-    let precision = asset
-        .get("precision")
-        .and_then(Value::as_u64)
-        .ok_or("asset object missing precision")?;
-    u8::try_from(precision).map_err(|_| "asset precision out of u8 range".into())
+    Ok(asset.precision)
 }
 
 fn transfer_amount_raw(human_amount: &str, precision: u8) -> Result<i64, Box<dyn Error>> {
@@ -306,6 +283,8 @@ fn hex(bytes: &[u8]) -> String {
 
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
     use super::*;
 
     #[test]
