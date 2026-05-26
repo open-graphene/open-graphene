@@ -290,3 +290,37 @@ A later slice can migrate Swaplock's `head_block`, then account/asset/balance/fe
 `open-graphene-sdk-live` should not import generated chain bindings. It should return SDK primitive/core types or raw JSON where generated protocol object types are unavailable.
 
 Chain crates should deserialize to generated binding types where those types exist and match the RPC wire response. For example, `OperationHistoryObject` is a good candidate for a later Swaplock `history_api` typed-response refactor. Database object responses such as account objects, asset objects, dynamic global properties, balances, and limit orders require generated object types before they can be fully typed with generated bindings.
+
+## Required fee boundary checkpoint
+
+Required-fee reads are allowed in `open-graphene-sdk-live` only at the Graphene-generic RPC and fee-amount boundary.
+
+A future helper should take already-rendered operation JSON and a requested fee asset id:
+
+```rust
+pub fn required_fee_for_operation_json(
+    session: &mut GrapheneSession,
+    operation_json: serde_json::Value,
+    fee_asset_id: &AssetIdRef,
+) -> Result<AssetAmount, LiveSdkError>;
+```
+
+The helper may:
+
+- call Graphene `database.get_required_fees([operation_json], fee_asset_id)`;
+- parse the first returned fee object as `AssetAmount`;
+- accept fee `amount` as either a JSON integer or decimal string;
+- validate the returned `asset_id` as `AssetIdRef` and require it to match the requested fee asset;
+- fail closed on missing fee entries, missing fields, malformed amounts, or asset mismatches.
+
+The helper must not:
+
+- build transactions;
+- inspect generated operation variants;
+- render operation JSON;
+- choose the operation to fee from a transaction;
+- choose fee asset policy;
+- apply the fee to a generated transaction;
+- return generated binding types such as a chain-specific `Asset`.
+
+For Swaplock, the existing `database_api::required_fee` wrapper should keep building the unsigned transaction mirror, calling the chain-local renderer, extracting the first operation JSON, and converting the returned `AssetAmount` back into the generated Swaplock `Asset` expected by current callers. This preserves the chain crate API while moving only the generic RPC/fee parsing into `sdk-live`.

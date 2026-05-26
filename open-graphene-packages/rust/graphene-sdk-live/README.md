@@ -185,3 +185,19 @@ Implemented today:
 - Swaplock integration for head-block, account lookup, asset lookup, and account balance reads while preserving existing Swaplock helper signatures.
 
 Likely next candidates are fee reads and order reads, but those have more response-shape nuance and should be moved in small slices.
+
+## Planned fee helper boundary
+
+The next intended `sdk-live` fee helper should stop at the Graphene-generic fee read boundary:
+
+```rust
+pub fn required_fee_for_operation_json(
+    session: &mut GrapheneSession,
+    operation_json: serde_json::Value,
+    fee_asset_id: &AssetIdRef,
+) -> Result<AssetAmount, LiveSdkError>;
+```
+
+It should call `database.get_required_fees([operation_json], fee_asset_id)` and parse the first returned fee object into `AssetAmount` with the same amount and asset-id validation used by balance parsing.
+
+It should not render operations, inspect generated transaction types, choose fee policy, apply fees, sign, broadcast, or return generated chain binding types. Chain crates such as `graphene-chain-swaplock` should keep their current transaction/renderer wrapper and convert the returned `AssetAmount` into the generated chain `Asset` type needed by existing callers.
