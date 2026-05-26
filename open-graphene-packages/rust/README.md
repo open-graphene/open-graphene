@@ -8,7 +8,7 @@ This directory contains Rust runtime crates, SDK helper crates, and generated ch
 - `graphene-sdk-primitives` (`open-graphene-sdk-primitives`): stable chain-agnostic SDK value references and validators such as object IDs, account IDs, asset IDs, asset amounts, limit-order IDs, and operation-history IDs.
 - `graphene-sdk-core` (`open-graphene-sdk-core`): pure SDK helpers such as amount conversion, transaction headers, and balance checks; re-exports SDK primitives for compatibility.
 - `graphene-sdk-operations` (`open-graphene-sdk-operations`): common operation input models, adapter traits, and generic trait-based transaction builders, split one operation per module.
-- `graphene-transport` (`open-graphene-transport`): chain-agnostic Graphene JSON-RPC request, response, error, and notice primitives; planned as the shared WebSocket/HTTP transport foundation.
+- `graphene-transport` (`open-graphene-transport`): chain-agnostic Graphene JSON-RPC request, response, error, notice, blocking WebSocket, session bootstrap, and reusable live RPC envelope helpers. See [`graphene-transport`](graphene-transport/README.md) for the live crate API.
 - `graphene-chain-swaplock`: Swaplock-specific SDK operation modules and examples; depends on `graphene-chain-swaplock-bindings` for generated protocol types, while the bindings crate itself contains no high-level SDK operation code. See [`graphene-chain-swaplock`](graphene-chain-swaplock/graphene-chain-swaplock/README.md) for the public helper API boundary and live-operation flow.
 
 ## Architecture notes
@@ -19,6 +19,7 @@ This directory contains Rust runtime crates, SDK helper crates, and generated ch
 - [Limit Order Create SDK Design Spike](LIMIT-ORDER-CREATE-SDK-DESIGN.md) compares raw protocol-shaped, price-based, and builder-style input designs and records the implemented raw `limit_order_create` flow.
 - [Generated SDK Adapter Capability Design](../../open-graphene/crates/open-graphene-gen-bindings-rs/SDK-CAPABILITY-DESIGN.md) records the opt-in generated SDK adapter direction and the boundary for small protocol-level generated helpers.
 - [Graphene Transport Design](GRAPHENE-TRANSPORT-DESIGN.md) describes the chain-agnostic JSON-RPC transport layer, WebSocket notice semantics, HTTP call-only direction, and reconnect boundaries.
+- [Open Graphene Transport API](graphene-transport/README.md) documents the current live `open-graphene-transport` crate API, including `GrapheneSession`, blocking WebSocket calls, database/history/broadcast helpers, and non-goals.
 
 ## Swaplock live trading scenario
 
