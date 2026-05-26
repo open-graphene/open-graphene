@@ -1,3 +1,4 @@
+use serde_json::Value;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -25,4 +26,25 @@ pub enum TransportError {
 
     #[error("unsupported JSON-RPC inbound message")]
     UnsupportedInboundMessage,
+
+    #[error("websocket error: {0}")]
+    WebSocket(String),
+
+    #[error("JSON parse error: {0}")]
+    Json(#[from] serde_json::Error),
+
+    #[error("Graphene RPC error for request {id}: {error}")]
+    RpcError { id: u64, error: Value },
+
+    #[error("unexpected JSON-RPC response id {actual}; expected {expected}")]
+    UnexpectedResponseId { expected: u64, actual: u64 },
+
+    #[error("websocket connection closed")]
+    ConnectionClosed,
+}
+
+impl TransportError {
+    pub(crate) fn websocket(error: tungstenite::Error) -> Self {
+        Self::WebSocket(error.to_string())
+    }
 }

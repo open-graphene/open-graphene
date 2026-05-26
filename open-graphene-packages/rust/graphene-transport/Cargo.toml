@@ -9,3 +9,4 @@ description = "Chain-agnostic Graphene JSON-RPC transport primitives for Open Gr
 [dependencies]
 serde_json = "1"
 thiserror = "2"
+tungstenite = { version = "0.24", features = ["native-tls"] }
