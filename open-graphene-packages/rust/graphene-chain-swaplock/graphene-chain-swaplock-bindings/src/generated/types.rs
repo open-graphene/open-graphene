@@ -432,6 +432,32 @@ pub struct AssetClaimPoolOperationFeeParamsT {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AssetCreateOperationFeeParamsT {}
 
+/// Raw protocol struct `asset_dynamic_data_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AssetDynamicDataObject {
+    pub id: crate::generated::ids::AssetDynamicDataId,
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
+    pub current_supply: i64,
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
+    pub confidential_supply: i64,
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
+    pub accumulated_fees: i64,
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
+    pub accumulated_collateral_fees: i64,
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
+    pub fee_pool: i64,
+}
+
 /// Raw protocol struct `asset_fund_fee_pool_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AssetFundFeePoolOperationFeeParamsT {

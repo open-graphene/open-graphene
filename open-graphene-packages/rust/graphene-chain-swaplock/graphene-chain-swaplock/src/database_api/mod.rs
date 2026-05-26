@@ -10,7 +10,10 @@ pub use accounts::{
     account_object, active_public_key_for_account, lookup_account_id, lookup_account_id_optional,
     wait_for_account,
 };
-pub use assets::{asset_object, lookup_asset_id, lookup_asset_id_optional, wait_for_asset};
+pub use assets::{
+    asset_dynamic_data_object, asset_object, lookup_asset_id, lookup_asset_id_optional,
+    wait_for_asset,
+};
 pub use balances::{account_balance, wait_for_balance_at_least};
 pub use fees::required_fee;
 pub use header::{head_block, next_transaction_header};

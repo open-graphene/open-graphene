@@ -438,6 +438,18 @@ impl FcSerialize for crate::generated::types::AssetCreateOperationFeeParamsT {
     }
 }
 
+impl FcSerialize for crate::generated::types::AssetDynamicDataObject {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.id.fc_serialize(out)?;
+        self.current_supply.fc_serialize(out)?;
+        self.confidential_supply.fc_serialize(out)?;
+        self.accumulated_fees.fc_serialize(out)?;
+        self.accumulated_collateral_fees.fc_serialize(out)?;
+        self.fee_pool.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::AssetFundFeePoolOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;

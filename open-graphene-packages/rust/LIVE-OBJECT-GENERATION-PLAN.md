@@ -32,18 +32,20 @@ Completed `get_account_balances -> asset` proof:
 - BitShares bindings include an integration fixture proving balance JSON deserializes through generated `Asset`.
 - `sdk-live::account_balance` remains a minimal Graphene-generic projection; do not add a rich account-balance model there.
 
-Completed `asset_object` and `account_object` typed `get_objects` proofs for Swaplock, plus local BitShares parity for `asset_object`:
+Completed `asset_object`, `account_object`, and `asset_dynamic_data_object` typed `get_objects` proofs for Swaplock, plus local BitShares parity for `asset_object`:
 
-- Swaplock spec generation can now explicitly seed narrow reflected object structs via `object_structs = ["asset_object", "account_object"]`, without seeding every object type.
+- Swaplock spec generation can now explicitly seed narrow reflected object structs via `object_structs = ["asset_object", "account_object", "asset_dynamic_data_object"]`, without seeding every object type.
 - BitShares currently keeps local generated-type parity for `asset_object`; further parity is intentionally deferred while Swaplock is prioritized.
 - Generated object metadata links `objectTypes.asset.structRef` to `asset_object` and `objectTypes.account.structRef` to `account_object` when those structs are selected.
 - Generated bindings emit `AssetObject` with inherited `id`, symbol, precision, issuer, options, dynamic data id, optional bitasset/buyback/liquidity-pool ids, and creation fields.
+- Generated bindings emit `AssetDynamicDataObject` with inherited `id`, current/confidential supply, accumulated fees, accumulated collateral fees, and fee pool fields.
 - Generated bindings emit `AccountObject` with inherited `id`, authority/options fields, account statistics refs, special-authority fields, and creation metadata.
-- `graphene-chain-swaplock::asset_object` and `graphene-chain-swaplock::account_object` call `get_objects([id])`, preserve `null` as `None`, deserialize non-null slots into generated object structs, and fail-close when the payload id differs from the requested id.
+- `graphene-chain-swaplock::asset_object`, `graphene-chain-swaplock::account_object`, and `graphene-chain-swaplock::asset_dynamic_data_object` call `get_objects([id])`, preserve `null` as `None`, deserialize non-null slots into generated object structs, and fail-close when the payload id differs from the requested id.
 - `active_public_key_for_account` now consumes generated `AccountObject` instead of manually traversing `serde_json::Value`.
 - `extensions_type` is generated as an ordered static-variant set (`Vec<FutureExtensions>`) so live account objects with JSON `[]` deserialize correctly and FC empty-set encoding remains `0`.
 - BitShares bindings include an integration fixture proving asset-object JSON deserializes through generated `AssetObject`.
 - The public Swaplock node `asset_object_smoke` proof passed for `BTS -> 1.3.0`.
+- The public Swaplock node `asset_dynamic_data_smoke` proof passed for `BTS -> 1.3.0 -> 2.3.0`.
 - The public Swaplock node `account_object_smoke` proof passed for `committee-account -> 1.2.0`.
 
 ## Reader and expected action
@@ -415,9 +417,9 @@ This milestone should not:
 
 ## Follow-up milestones
 
-After `limit_order_object`, `dynamic_global_property_object`, `asset_object`, and `account_object` are proven on Swaplock, likely next generated live objects are:
+After `limit_order_object`, `dynamic_global_property_object`, `asset_object`, `account_object`, and `asset_dynamic_data_object` are proven on Swaplock, likely next generated live objects are:
 
-1. `asset_dynamic_data_object` and `asset_bitasset_data_object`, because `AssetObject` points at those ids and richer asset reads should remain generated and chain-local;
+1. `asset_bitasset_data_object`, because `AssetObject.bitasset_data_id` points at it for bitassets and richer asset reads should remain generated and chain-local;
 2. `operation_history_object`, because confirmation matching is still JSON-heavy and operation-specific;
 3. additional object structs only when a real Swaplock RPC/helper needs them.
 

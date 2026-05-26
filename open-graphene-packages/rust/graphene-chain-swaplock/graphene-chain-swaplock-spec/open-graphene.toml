@@ -1,6 +1,7 @@
 object_structs = [
   "asset_object",
   "account_object",
+  "asset_dynamic_data_object",
 ]
 
 [chain]
