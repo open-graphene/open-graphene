@@ -2,7 +2,8 @@ use std::error::Error;
 
 use graphene_chain_swaplock_bindings::generated::ids::AssetId;
 use graphene_chain_swaplock_bindings::generated::types::{Asset, SignedTransaction, Transaction};
-use serde_json::{json, Value};
+use open_graphene_sdk_core::{AssetAmount, AssetIdRef};
+use serde_json::Value;
 
 use crate::rpc::GrapheneRpc;
 
@@ -32,35 +33,29 @@ where
         .and_then(|operations| operations.first())
         .cloned()
         .ok_or("transaction JSON missing first operation")?;
-    let result = rpc.get_required_fees(database_api_id, json!([op_json]), fee_asset_id)?;
-    parse_asset(
-        result
-            .as_array()
-            .and_then(|values| values.first())
-            .ok_or("get_required_fees returned no fee")?,
-    )
+    ensure_database_api_id(rpc, database_api_id)?;
+    let fee_asset_id = AssetIdRef::parse(fee_asset_id)?;
+    let fee = open_graphene_sdk_live::required_fee_for_operation_json(
+        rpc.session_mut(),
+        op_json,
+        &fee_asset_id,
+    )?;
+    Ok(asset_from_sdk_amount(fee))
 }
 
-fn parse_asset(value: &Value) -> Result<Asset, Box<dyn Error>> {
-    Ok(Asset {
-        amount: value
-            .get("amount")
-            .and_then(json_i64)
-            .ok_or("asset missing integer amount")?,
-        asset_id: AssetId(
-            value
-                .get("asset_id")
-                .and_then(Value::as_str)
-                .ok_or("asset missing asset_id")?
-                .to_string(),
-        ),
-    })
+fn asset_from_sdk_amount(value: AssetAmount) -> Asset {
+    Asset {
+        amount: value.amount,
+        asset_id: AssetId(value.asset_id.to_string()),
+    }
 }
 
-fn json_i64(value: &Value) -> Option<i64> {
-    value
-        .as_i64()
-        .or_else(|| value.as_str().and_then(|value| value.parse().ok()))
+fn ensure_database_api_id(rpc: &mut GrapheneRpc, api_id: u64) -> Result<(), Box<dyn Error>> {
+    let expected = rpc.database_api_id()?;
+    if expected != api_id {
+        return Err(format!("database API id mismatch: expected {expected}, got {api_id}").into());
+    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -68,23 +63,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_asset_accepts_integer_or_string_amount() {
-        assert_eq!(
-            parse_asset(&json!({"amount": 7, "asset_id": "1.3.0"}))
-                .unwrap()
-                .amount,
-            7
-        );
-        assert_eq!(
-            parse_asset(&json!({"amount": "8", "asset_id": "1.3.0"}))
-                .unwrap()
-                .amount,
-            8
-        );
-    }
+    fn asset_from_sdk_amount_preserves_amount_and_asset_id() {
+        let asset = asset_from_sdk_amount(AssetAmount::new(8, AssetIdRef::parse("1.3.0").unwrap()));
 
-    #[test]
-    fn parse_asset_rejects_missing_asset_id() {
-        assert!(parse_asset(&json!({"amount": 7})).is_err());
+        assert_eq!(asset.amount, 8);
+        assert_eq!(asset.asset_id.0, "1.3.0");
     }
 }
