@@ -4,10 +4,10 @@ use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
 
 pub use database_api::{
-    AccountByIdRequest, AccountByNameRequest, AccountSubscription, AccountsRequest,
-    AssetByIdRequest, AssetBySymbolRequest, AssetSubscription, ChainIdRequest,
-    ChainPropertiesRequest, DatabaseApi, DynamicGlobalPropertiesRequest,
-    DynamicGlobalPropertiesSubscription, GlobalPropertiesRequest,
+    AccountBalancesByIdRequest, AccountBalancesRequest, AccountByIdRequest, AccountByNameRequest,
+    AccountSubscription, AccountsRequest, AssetByIdRequest, AssetBySymbolRequest,
+    AssetSubscription, ChainIdRequest, ChainPropertiesRequest, DatabaseApi,
+    DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription, GlobalPropertiesRequest,
 };
 
 pub const SWAPLOCK_CHAIN_ID: &str =

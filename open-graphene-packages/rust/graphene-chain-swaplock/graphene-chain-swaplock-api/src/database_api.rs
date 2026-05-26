@@ -1,5 +1,5 @@
 use graphene_chain_swaplock_bindings::generated::{
-    AccountObject, AssetObject, ChainPropertyObject, DynamicGlobalPropertyObject,
+    AccountObject, Asset, AssetObject, ChainPropertyObject, DynamicGlobalPropertyObject,
     GlobalPropertyObject,
 };
 use open_graphene_transport::{GrapheneSession, JsonRpcInbound, parse_chain_id};
@@ -30,6 +30,18 @@ pub struct AccountSubscription<'session> {
     session: &'session mut GrapheneSession,
     account_id: String,
     initial: AccountObject,
+}
+
+pub struct AccountBalancesRequest<'session> {
+    session: &'session mut GrapheneSession,
+    account_name: String,
+    asset_symbols: Vec<String>,
+}
+
+pub struct AccountBalancesByIdRequest<'session> {
+    session: &'session mut GrapheneSession,
+    account_id: String,
+    asset_ids: Vec<String>,
 }
 
 pub struct AccountsRequest<'session> {
@@ -72,6 +84,25 @@ pub struct DynamicGlobalPropertiesSubscription<'session> {
 
 pub struct GlobalPropertiesRequest<'session> {
     session: &'session mut GrapheneSession,
+}
+
+impl AccountBalancesRequest<'_> {
+    pub async fn get(self) -> Result<Vec<Asset>, SwaplockApiError> {
+        let account = get_account_by_name(self.session, &self.account_name).await?;
+        let mut asset_ids = Vec::with_capacity(self.asset_symbols.len());
+        for symbol in self.asset_symbols {
+            let asset = get_asset_by_symbol(self.session, &symbol).await?;
+            asset_ids.push(asset.id.0);
+        }
+
+        get_account_balances_by_id(self.session, &account.id.0, asset_ids).await
+    }
+}
+
+impl AccountBalancesByIdRequest<'_> {
+    pub async fn get(self) -> Result<Vec<Asset>, SwaplockApiError> {
+        get_account_balances_by_id(self.session, &self.account_id, self.asset_ids).await
+    }
 }
 
 impl<'session> AccountByIdRequest<'session> {
@@ -262,6 +293,40 @@ impl GlobalPropertiesRequest<'_> {
 }
 
 impl<'session> DatabaseApi<'session> {
+    pub fn account_balances<I, S, A>(
+        self,
+        account_name: A,
+        asset_symbols: I,
+    ) -> AccountBalancesRequest<'session>
+    where
+        A: Into<String>,
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        AccountBalancesRequest {
+            session: self.session,
+            account_name: account_name.into(),
+            asset_symbols: asset_symbols.into_iter().map(Into::into).collect(),
+        }
+    }
+
+    pub fn account_balances_by_id<I, S, A>(
+        self,
+        account_id: A,
+        asset_ids: I,
+    ) -> AccountBalancesByIdRequest<'session>
+    where
+        A: Into<String>,
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        AccountBalancesByIdRequest {
+            session: self.session,
+            account_id: account_id.into(),
+            asset_ids: asset_ids.into_iter().map(Into::into).collect(),
+        }
+    }
+
     pub fn account_by_id<S>(self, account_id: S) -> AccountByIdRequest<'session>
     where
         S: Into<String>,
@@ -337,6 +402,41 @@ impl<'session> DatabaseApi<'session> {
         }
     }
 
+    pub async fn get_account_balances<I, S>(
+        &mut self,
+        account_name: &str,
+        asset_symbols: I,
+    ) -> Result<Vec<Asset>, SwaplockApiError>
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        let account = get_account_by_name(self.session, account_name).await?;
+        let mut asset_ids = Vec::new();
+        for symbol in asset_symbols {
+            let asset = get_asset_by_symbol(self.session, &symbol.into()).await?;
+            asset_ids.push(asset.id.0);
+        }
+        get_account_balances_by_id(self.session, &account.id.0, asset_ids).await
+    }
+
+    pub async fn get_account_balances_by_id<I, S>(
+        &mut self,
+        account_id: &str,
+        asset_ids: I,
+    ) -> Result<Vec<Asset>, SwaplockApiError>
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        get_account_balances_by_id(
+            self.session,
+            account_id,
+            asset_ids.into_iter().map(Into::into).collect(),
+        )
+        .await
+    }
+
     pub async fn get_account_by_name(
         &mut self,
         account_name: &str,
@@ -390,6 +490,19 @@ impl<'session> DatabaseApi<'session> {
     ) -> Result<DynamicGlobalPropertiesSubscription<'session>, SwaplockApiError> {
         self.dynamic_global_properties().subscribe().await
     }
+}
+
+async fn get_account_balances_by_id(
+    session: &mut GrapheneSession,
+    account_id: &str,
+    asset_ids: Vec<String>,
+) -> Result<Vec<Asset>, SwaplockApiError> {
+    let value = session.database_call("get_account_balances", json!([account_id, asset_ids]))?;
+
+    serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
+        method: "get_account_balances",
+        message: error.to_string(),
+    })
 }
 
 async fn get_account_by_name(
