@@ -13,9 +13,37 @@ pub struct DatabaseApi<'session> {
     pub(crate) session: &'session mut GrapheneSession,
 }
 
+pub struct DynamicGlobalPropertiesRequest<'session> {
+    session: &'session mut GrapheneSession,
+}
+
 pub struct DynamicGlobalPropertiesSubscription<'session> {
     session: &'session mut GrapheneSession,
     initial: DynamicGlobalPropertyObject,
+}
+
+impl<'session> DynamicGlobalPropertiesRequest<'session> {
+    pub async fn get(self) -> Result<DynamicGlobalPropertyObject, SwaplockApiError> {
+        get_dynamic_global_properties(self.session).await
+    }
+
+    pub async fn subscribe(
+        self,
+    ) -> Result<DynamicGlobalPropertiesSubscription<'session>, SwaplockApiError> {
+        self.session.database_call(
+            "set_subscribe_callback",
+            json!([DYNAMIC_GLOBAL_PROPERTIES_CALLBACK_ID, false]),
+        )?;
+        let value = self
+            .session
+            .database_call("get_objects", json!([[DYNAMIC_GLOBAL_PROPERTIES_ID], true]))?;
+        let initial = dynamic_global_properties_from_value("get_objects", value)?;
+
+        Ok(DynamicGlobalPropertiesSubscription {
+            session: self.session,
+            initial,
+        })
+    }
 }
 
 impl DynamicGlobalPropertiesSubscription<'_> {
@@ -59,17 +87,16 @@ impl<'session> DatabaseApi<'session> {
         })
     }
 
+    pub fn dynamic_global_properties(self) -> DynamicGlobalPropertiesRequest<'session> {
+        DynamicGlobalPropertiesRequest {
+            session: self.session,
+        }
+    }
+
     pub async fn get_dynamic_global_properties(
         &mut self,
     ) -> Result<DynamicGlobalPropertyObject, SwaplockApiError> {
-        let value = self
-            .session
-            .database_call("get_dynamic_global_properties", json!([]))?;
-
-        serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
-            method: "get_dynamic_global_properties",
-            message: error.to_string(),
-        })
+        get_dynamic_global_properties(self.session).await
     }
 
     pub async fn get_global_properties(
@@ -88,19 +115,7 @@ impl<'session> DatabaseApi<'session> {
     pub async fn subscribe_dynamic_global_properties(
         self,
     ) -> Result<DynamicGlobalPropertiesSubscription<'session>, SwaplockApiError> {
-        self.session.database_call(
-            "set_subscribe_callback",
-            json!([DYNAMIC_GLOBAL_PROPERTIES_CALLBACK_ID, false]),
-        )?;
-        let value = self
-            .session
-            .database_call("get_objects", json!([[DYNAMIC_GLOBAL_PROPERTIES_ID], true]))?;
-        let initial = dynamic_global_properties_from_value("get_objects", value)?;
-
-        Ok(DynamicGlobalPropertiesSubscription {
-            session: self.session,
-            initial,
-        })
+        self.dynamic_global_properties().subscribe().await
     }
 
     pub async fn get_account_by_name(
@@ -148,6 +163,17 @@ impl<'session> DatabaseApi<'session> {
             message: error.to_string(),
         })
     }
+}
+
+async fn get_dynamic_global_properties(
+    session: &mut GrapheneSession,
+) -> Result<DynamicGlobalPropertyObject, SwaplockApiError> {
+    let value = session.database_call("get_dynamic_global_properties", json!([]))?;
+
+    serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
+        method: "get_dynamic_global_properties",
+        message: error.to_string(),
+    })
 }
 
 fn dynamic_global_properties_from_value(

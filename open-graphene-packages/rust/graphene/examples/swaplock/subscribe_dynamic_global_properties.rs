@@ -16,7 +16,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut subscription = swaplock
         .database()
-        .subscribe_dynamic_global_properties()
+        .dynamic_global_properties()
+        .subscribe()
         .await?;
     println!(
         "subscribed at head block: {} {}",
