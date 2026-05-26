@@ -265,6 +265,17 @@ pub enum VoteType {
     VoteTypeCount,
 }
 
+/// Raw protocol struct `account_balance_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AccountBalanceObject {
+    pub id: crate::generated::ids::AccountBalanceId,
+    pub owner: crate::generated::ids::AccountId,
+    pub asset_type: crate::generated::ids::AssetId,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub balance: i64,
+    pub maintenance_flag: bool,
+}
+
 /// Raw protocol struct `account_create_operation_ext`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AccountCreateOperationExt {

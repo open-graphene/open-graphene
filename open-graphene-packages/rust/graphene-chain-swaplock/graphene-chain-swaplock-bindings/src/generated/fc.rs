@@ -280,6 +280,17 @@ impl FcSerialize for crate::generated::types::Signature {
     }
 }
 
+impl FcSerialize for crate::generated::types::AccountBalanceObject {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.id.fc_serialize(out)?;
+        self.owner.fc_serialize(out)?;
+        self.asset_type.fc_serialize(out)?;
+        self.balance.fc_serialize(out)?;
+        self.maintenance_flag.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::AccountCreateOperationExt {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         if self.null_ext.is_none() && self.owner_special_authority.is_none() && self.active_special_authority.is_none() {

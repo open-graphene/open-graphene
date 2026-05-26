@@ -25,6 +25,10 @@ name = "swaplock_database_account_balances_get"
 path = "examples/swaplock/database_account_balances_get.rs"
 
 [[example]]
+name = "swaplock_database_account_balances_subscribe"
+path = "examples/swaplock/database_account_balances_subscribe.rs"
+
+[[example]]
 name = "swaplock_database_asset_get"
 path = "examples/swaplock/database_asset_get.rs"
 

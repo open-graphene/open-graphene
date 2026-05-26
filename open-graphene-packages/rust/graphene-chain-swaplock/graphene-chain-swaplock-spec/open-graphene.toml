@@ -1,6 +1,7 @@
 object_structs = [
   "asset_object",
   "account_object",
+  "account_balance_object",
   "asset_dynamic_data_object",
   "global_property_object",
   "chain_property_object",
@@ -27,6 +28,7 @@ methods = [
   "get_block",
   "get_account_balances",
   "get_accounts",
+  "get_full_accounts",
   "get_chain_properties",
   "get_dynamic_global_properties",
   "get_limit_orders",
