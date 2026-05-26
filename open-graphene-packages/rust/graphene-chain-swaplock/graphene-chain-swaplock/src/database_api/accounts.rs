@@ -57,7 +57,7 @@ pub fn active_public_key_for_account(
     account_id: &str,
 ) -> Result<Option<String>, Box<dyn Error>> {
     let account = rpc
-        .call_database(api_id, "get_objects", json!([[account_id]]))?
+        .get_objects(api_id, [account_id])?
         .get(0)
         .cloned()
         .ok_or("account object was not returned")?;

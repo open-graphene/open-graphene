@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::time::Duration;
 
-use serde_json::{json, Value};
+use serde_json::Value;
 
 use crate::rpc::GrapheneRpc;
 
@@ -10,7 +10,7 @@ pub fn head_block(
     database_api_id: u64,
 ) -> Result<open_graphene_sdk_core::HeadBlock, Box<dyn Error>> {
     let dgp = rpc
-        .call_database(database_api_id, "get_objects", json!([["2.1.0"]]))?
+        .get_objects(database_api_id, ["2.1.0"])?
         .get(0)
         .cloned()
         .ok_or("dynamic global properties object was not returned")?;

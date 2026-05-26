@@ -2,7 +2,7 @@ use std::error::Error;
 
 use open_graphene_transport::{
     broadcast_transaction as transport_broadcast_transaction,
-    get_account_history as transport_get_account_history,
+    get_account_history as transport_get_account_history, get_objects as transport_get_objects,
     AccountHistoryQuery as TransportAccountHistoryQuery, GrapheneSession,
 };
 use serde_json::Value;
@@ -44,6 +44,15 @@ impl GrapheneRpc {
     ) -> Result<Value, Box<dyn Error>> {
         ensure_api_id("database", self.session.api_ids().database, api_id)?;
         Ok(self.session.database_call(method, params)?)
+    }
+
+    pub fn get_objects<I, S>(&mut self, api_id: u64, ids: I) -> Result<Value, Box<dyn Error>>
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        ensure_api_id("database", self.session.api_ids().database, api_id)?;
+        Ok(transport_get_objects(&mut self.session, ids)?)
     }
 
     pub fn call_network_broadcast(

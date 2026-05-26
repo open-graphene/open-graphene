@@ -56,7 +56,7 @@ pub fn wait_for_order_gone(
     order_id: &str,
 ) -> Result<(), Box<dyn Error>> {
     for _ in 0..20 {
-        let result = rpc.call_database(api_id, "get_objects", json!([[order_id]]))?;
+        let result = rpc.get_objects(api_id, [order_id])?;
         if result
             .as_array()
             .and_then(|values| values.first())
