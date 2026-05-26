@@ -215,6 +215,7 @@ pub struct AssetFundFeePoolOperation {
     pub fee: crate::generated::types::Asset,
     pub from_account: crate::generated::ids::AccountId,
     pub asset_id: crate::generated::ids::AssetId,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub amount: i64,
     pub extensions: crate::generated::static_variants::FutureExtensions,
 }
@@ -434,6 +435,7 @@ pub struct WorkerCreateOperation {
     pub owner: crate::generated::ids::AccountId,
     pub work_begin_date: String,
     pub work_end_date: String,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub daily_pay: i64,
     pub name: String,
     pub url: String,
@@ -554,6 +556,7 @@ pub struct FbaDistributeOperation {
     pub fee: crate::generated::types::Asset,
     pub account_id: crate::generated::ids::AccountId,
     pub fba_id: crate::generated::ids::ObjectId,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub amount: i64,
 }
 
@@ -814,6 +817,7 @@ pub struct SametFundCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub owner_account: crate::generated::ids::AccountId,
     pub asset_type: crate::generated::ids::AssetId,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub balance: i64,
     pub fee_rate: u32,
     pub extensions: crate::generated::static_variants::FutureExtensions,
@@ -876,16 +880,15 @@ pub struct CreditOfferCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub owner_account: crate::generated::ids::AccountId,
     pub asset_type: crate::generated::ids::AssetId,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub balance: i64,
     pub fee_rate: u32,
     pub max_duration_seconds: u32,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub min_deal_amount: i64,
     pub enabled: bool,
     pub auto_disable_time: String,
-    pub acceptable_collateral: Vec<(
-        crate::generated::ids::AssetId,
-        crate::generated::types::Price,
-    )>,
+    pub acceptable_collateral: Vec<(crate::generated::ids::AssetId, crate::generated::types::Price)>,
     pub acceptable_borrowers: Vec<(crate::generated::ids::AccountId, i64)>,
     pub extensions: crate::generated::static_variants::FutureExtensions,
 }
@@ -915,12 +918,7 @@ pub struct CreditOfferUpdateOperation {
     pub min_deal_amount: Option<i64>,
     pub enabled: Option<bool>,
     pub auto_disable_time: Option<String>,
-    pub acceptable_collateral: Option<
-        Vec<(
-            crate::generated::ids::AssetId,
-            crate::generated::types::Price,
-        )>,
-    >,
+    pub acceptable_collateral: Option<Vec<(crate::generated::ids::AssetId, crate::generated::types::Price)>>,
     pub acceptable_borrowers: Option<Vec<(crate::generated::ids::AccountId, i64)>>,
     pub extensions: crate::generated::static_variants::FutureExtensions,
 }

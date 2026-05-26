@@ -8623,6 +8623,205 @@
       }
     },
     {
+      "name": "limit_order_object",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "limit_order"
+          },
+          "source": {
+            "name": "id",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 45
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "inherited object id from graphene::db::object for reflected Graphene object"
+          }
+        },
+        {
+          "index": 1,
+          "name": "expiration",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "expiration",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 45
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 2,
+          "name": "seller",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "seller",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 47
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 3,
+          "name": "for_sale",
+          "type": {
+            "kind": "int64"
+          },
+          "source": {
+            "name": "for_sale",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 48
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 4,
+          "name": "sell_price",
+          "type": {
+            "kind": "ref",
+            "name": "price"
+          },
+          "source": {
+            "name": "sell_price",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 49
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 5,
+          "name": "filled_amount",
+          "type": {
+            "kind": "uint128",
+            "json": "decimal_string"
+          },
+          "source": {
+            "name": "filled_amount",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 50
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 6,
+          "name": "deferred_fee",
+          "type": {
+            "kind": "int64"
+          },
+          "source": {
+            "name": "deferred_fee",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 51
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 7,
+          "name": "deferred_paid_fee",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "deferred_paid_fee",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 52
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 8,
+          "name": "is_settled_debt",
+          "type": {
+            "kind": "bool"
+          },
+          "source": {
+            "name": "is_settled_debt",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 53
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 9,
+          "name": "on_fill",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "static_variant_ref",
+              "name": "limit_order_auto_action"
+            }
+          },
+          "source": {
+            "name": "on_fill",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 54
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 10,
+          "name": "take_profit_order_id",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "limit_order"
+            }
+          },
+          "source": {
+            "name": "take_profit_order_id",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 57
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+      }
+    },
+    {
       "name": "limit_order_update_operation",
       "kind": "struct",
       "fields": [
@@ -9921,6 +10120,23 @@
       "fields": [
         {
           "index": 0,
+          "name": "id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "operation_history"
+          },
+          "source": {
+            "name": "id",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/chain/include/graphene/chain/operation_history_object.hpp",
+            "line": 48
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "inherited object id from graphene::db::object for reflected Graphene object"
+          }
+        },
+        {
+          "index": 1,
           "name": "op",
           "type": {
             "kind": "static_variant_ref",
@@ -9937,7 +10153,7 @@
           }
         },
         {
-          "index": 1,
+          "index": 2,
           "name": "result",
           "type": {
             "kind": "static_variant_ref",
@@ -9954,7 +10170,7 @@
           }
         },
         {
-          "index": 2,
+          "index": 3,
           "name": "block_num",
           "type": {
             "kind": "uint32"
@@ -9970,7 +10186,7 @@
           }
         },
         {
-          "index": 3,
+          "index": 4,
           "name": "trx_in_block",
           "type": {
             "kind": "uint16"
@@ -9986,7 +10202,7 @@
           }
         },
         {
-          "index": 4,
+          "index": 5,
           "name": "op_in_trx",
           "type": {
             "kind": "uint16"
@@ -10002,7 +10218,7 @@
           }
         },
         {
-          "index": 5,
+          "index": 6,
           "name": "virtual_op",
           "type": {
             "kind": "uint32"
@@ -10018,7 +10234,7 @@
           }
         },
         {
-          "index": 6,
+          "index": 7,
           "name": "is_virtual",
           "type": {
             "kind": "bool"
@@ -10034,7 +10250,7 @@
           }
         },
         {
-          "index": 7,
+          "index": 8,
           "name": "block_time",
           "type": {
             "kind": "time_point_sec"
@@ -26174,6 +26390,7 @@
       "cppAlias": "limit_order_id_type",
       "objectSpace": 1,
       "typeId": 7,
+      "structRef": "limit_order_object",
       "source": {
         "name": "limit_order",
         "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/protocol/include/graphene/protocol/types.hpp",
@@ -26916,6 +27133,78 @@
         "name": "get_block",
         "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/database_api.hpp",
         "line": 174
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "selected in config, present in FC_API, and signature found"
+      }
+    },
+    {
+      "name": "get_limit_orders",
+      "apiClass": "database_api",
+      "apiName": "database",
+      "params": [
+        {
+          "index": 0,
+          "name": "a",
+          "type": {
+            "kind": "string"
+          },
+          "source": {
+            "name": "a",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/database_api.hpp",
+            "line": 460
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        },
+        {
+          "index": 1,
+          "name": "b",
+          "type": {
+            "kind": "string"
+          },
+          "source": {
+            "name": "b",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/database_api.hpp",
+            "line": 460
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        },
+        {
+          "index": 2,
+          "name": "limit",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "limit",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/database_api.hpp",
+            "line": 460
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "vector",
+        "inner": {
+          "kind": "ref",
+          "name": "limit_order_object"
+        }
+      },
+      "isSubscription": false,
+      "source": {
+        "name": "get_limit_orders",
+        "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/database_api.hpp",
+        "line": 460
       },
       "support": {
         "status": "provisional",

@@ -16,6 +16,7 @@ methods = [
   "get_objects",
   "get_block_header",
   "get_block",
+  "get_limit_orders",
 ]
 
 [[rpc_apis]]

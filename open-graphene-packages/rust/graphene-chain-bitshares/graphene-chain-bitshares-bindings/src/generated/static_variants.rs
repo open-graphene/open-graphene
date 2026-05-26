@@ -239,16 +239,13 @@ impl<'de> serde::Deserialize<'de> for ArgumentType {
     {
         let mut values = <Vec<serde_json::Value> as serde::Deserialize>::deserialize(deserializer)?;
         if values.len() != 2 {
-            return Err(serde::de::Error::custom(format!(
-                "expected static variant ArgumentType as [tag, value], got {} elements",
-                values.len()
-            )));
+            return Err(serde::de::Error::custom(format!("expected static variant ArgumentType as [tag, value], got {} elements", values.len())));
         }
         let payload = values.pop().expect("length checked");
         let tag_value = values.pop().expect("length checked");
-        let tag = tag_value.as_u64().ok_or_else(|| {
-            serde::de::Error::custom("expected numeric tag for static variant ArgumentType")
-        })? as u32;
+        let tag = tag_value
+            .as_u64()
+            .ok_or_else(|| serde::de::Error::custom("expected numeric tag for static variant ArgumentType"))? as u32;
         match tag {
             0 => serde_json::from_value::<()>(payload)
                 .map(|value| Self::VoidT(Box::new(value)))
@@ -355,11 +352,9 @@ impl<'de> serde::Deserialize<'de> for ArgumentType {
             34 => serde_json::from_value::<Vec<crate::generated::ids::ProposalId>>(payload)
                 .map(|value| Self::FlatSetProposalIdType(Box::new(value)))
                 .map_err(serde::de::Error::custom),
-            35 => {
-                serde_json::from_value::<Vec<crate::generated::ids::WithdrawPermissionId>>(payload)
-                    .map(|value| Self::FlatSetWithdrawPermissionIdType(Box::new(value)))
-                    .map_err(serde::de::Error::custom)
-            }
+            35 => serde_json::from_value::<Vec<crate::generated::ids::WithdrawPermissionId>>(payload)
+                .map(|value| Self::FlatSetWithdrawPermissionIdType(Box::new(value)))
+                .map_err(serde::de::Error::custom),
             36 => serde_json::from_value::<Vec<crate::generated::ids::VestingBalanceId>>(payload)
                 .map(|value| Self::FlatSetVestingBalanceIdType(Box::new(value)))
                 .map_err(serde::de::Error::custom),
@@ -375,14 +370,10 @@ impl<'de> serde::Deserialize<'de> for ArgumentType {
             40 => serde_json::from_value::<Vec<Vec<crate::generated::types::Restriction>>>(payload)
                 .map(|value| Self::VectorVectorRestriction(Box::new(value)))
                 .map_err(serde::de::Error::custom),
-            41 => {
-                serde_json::from_value::<(i64, Vec<crate::generated::types::Restriction>)>(payload)
-                    .map(|value| Self::VariantAssertArgumentType(Box::new(value)))
-                    .map_err(serde::de::Error::custom)
-            }
-            other => Err(serde::de::Error::custom(format!(
-                "unknown static variant ArgumentType tag {other}"
-            ))),
+            41 => serde_json::from_value::<(i64, Vec<crate::generated::types::Restriction>)>(payload)
+                .map(|value| Self::VariantAssertArgumentType(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            other => Err(serde::de::Error::custom(format!("unknown static variant ArgumentType tag {other}"))),
         }
     }
 }
@@ -391,201 +382,83 @@ impl<'de> serde::Deserialize<'de> for ArgumentType {
 #[derive(Debug, Clone, PartialEq)]
 pub enum FeeParameters {
     TransferOperationFeeParamsT(Box<crate::generated::types::TransferOperationFeeParamsT>),
-    LimitOrderCreateOperationFeeParamsT(
-        Box<crate::generated::types::LimitOrderCreateOperationFeeParamsT>,
-    ),
-    LimitOrderCancelOperationFeeParamsT(
-        Box<crate::generated::types::LimitOrderCancelOperationFeeParamsT>,
-    ),
-    CallOrderUpdateOperationFeeParamsT(
-        Box<crate::generated::types::CallOrderUpdateOperationFeeParamsT>,
-    ),
+    LimitOrderCreateOperationFeeParamsT(Box<crate::generated::types::LimitOrderCreateOperationFeeParamsT>),
+    LimitOrderCancelOperationFeeParamsT(Box<crate::generated::types::LimitOrderCancelOperationFeeParamsT>),
+    CallOrderUpdateOperationFeeParamsT(Box<crate::generated::types::CallOrderUpdateOperationFeeParamsT>),
     FillOrderOperationFeeParamsT(Box<crate::generated::types::FillOrderOperationFeeParamsT>),
-    AccountCreateOperationFeeParamsT(
-        Box<crate::generated::types::AccountCreateOperationFeeParamsT>,
-    ),
-    AccountUpdateOperationFeeParamsT(
-        Box<crate::generated::types::AccountUpdateOperationFeeParamsT>,
-    ),
-    AccountWhitelistOperationFeeParamsT(
-        Box<crate::generated::types::AccountWhitelistOperationFeeParamsT>,
-    ),
-    AccountUpgradeOperationFeeParamsT(
-        Box<crate::generated::types::AccountUpgradeOperationFeeParamsT>,
-    ),
-    AccountTransferOperationFeeParamsT(
-        Box<crate::generated::types::AccountTransferOperationFeeParamsT>,
-    ),
+    AccountCreateOperationFeeParamsT(Box<crate::generated::types::AccountCreateOperationFeeParamsT>),
+    AccountUpdateOperationFeeParamsT(Box<crate::generated::types::AccountUpdateOperationFeeParamsT>),
+    AccountWhitelistOperationFeeParamsT(Box<crate::generated::types::AccountWhitelistOperationFeeParamsT>),
+    AccountUpgradeOperationFeeParamsT(Box<crate::generated::types::AccountUpgradeOperationFeeParamsT>),
+    AccountTransferOperationFeeParamsT(Box<crate::generated::types::AccountTransferOperationFeeParamsT>),
     AssetCreateOperationFeeParamsT(Box<crate::generated::types::AssetCreateOperationFeeParamsT>),
     AssetUpdateOperationFeeParamsT(Box<crate::generated::types::AssetUpdateOperationFeeParamsT>),
-    AssetUpdateBitassetOperationFeeParamsT(
-        Box<crate::generated::types::AssetUpdateBitassetOperationFeeParamsT>,
-    ),
-    AssetUpdateFeedProducersOperationFeeParamsT(
-        Box<crate::generated::types::AssetUpdateFeedProducersOperationFeeParamsT>,
-    ),
+    AssetUpdateBitassetOperationFeeParamsT(Box<crate::generated::types::AssetUpdateBitassetOperationFeeParamsT>),
+    AssetUpdateFeedProducersOperationFeeParamsT(Box<crate::generated::types::AssetUpdateFeedProducersOperationFeeParamsT>),
     AssetIssueOperationFeeParamsT(Box<crate::generated::types::AssetIssueOperationFeeParamsT>),
     AssetReserveOperationFeeParamsT(Box<crate::generated::types::AssetReserveOperationFeeParamsT>),
-    AssetFundFeePoolOperationFeeParamsT(
-        Box<crate::generated::types::AssetFundFeePoolOperationFeeParamsT>,
-    ),
+    AssetFundFeePoolOperationFeeParamsT(Box<crate::generated::types::AssetFundFeePoolOperationFeeParamsT>),
     AssetSettleOperationFeeParamsT(Box<crate::generated::types::AssetSettleOperationFeeParamsT>),
-    AssetGlobalSettleOperationFeeParamsT(
-        Box<crate::generated::types::AssetGlobalSettleOperationFeeParamsT>,
-    ),
-    AssetPublishFeedOperationFeeParamsT(
-        Box<crate::generated::types::AssetPublishFeedOperationFeeParamsT>,
-    ),
-    WitnessCreateOperationFeeParamsT(
-        Box<crate::generated::types::WitnessCreateOperationFeeParamsT>,
-    ),
-    WitnessUpdateOperationFeeParamsT(
-        Box<crate::generated::types::WitnessUpdateOperationFeeParamsT>,
-    ),
-    ProposalCreateOperationFeeParamsT(
-        Box<crate::generated::types::ProposalCreateOperationFeeParamsT>,
-    ),
-    ProposalUpdateOperationFeeParamsT(
-        Box<crate::generated::types::ProposalUpdateOperationFeeParamsT>,
-    ),
-    ProposalDeleteOperationFeeParamsT(
-        Box<crate::generated::types::ProposalDeleteOperationFeeParamsT>,
-    ),
-    WithdrawPermissionCreateOperationFeeParamsT(
-        Box<crate::generated::types::WithdrawPermissionCreateOperationFeeParamsT>,
-    ),
-    WithdrawPermissionUpdateOperationFeeParamsT(
-        Box<crate::generated::types::WithdrawPermissionUpdateOperationFeeParamsT>,
-    ),
-    WithdrawPermissionClaimOperationFeeParamsT(
-        Box<crate::generated::types::WithdrawPermissionClaimOperationFeeParamsT>,
-    ),
-    WithdrawPermissionDeleteOperationFeeParamsT(
-        Box<crate::generated::types::WithdrawPermissionDeleteOperationFeeParamsT>,
-    ),
-    CommitteeMemberCreateOperationFeeParamsT(
-        Box<crate::generated::types::CommitteeMemberCreateOperationFeeParamsT>,
-    ),
-    CommitteeMemberUpdateOperationFeeParamsT(
-        Box<crate::generated::types::CommitteeMemberUpdateOperationFeeParamsT>,
-    ),
-    CommitteeMemberUpdateGlobalParametersOperationFeeParamsT(
-        Box<crate::generated::types::CommitteeMemberUpdateGlobalParametersOperationFeeParamsT>,
-    ),
-    VestingBalanceCreateOperationFeeParamsT(
-        Box<crate::generated::types::VestingBalanceCreateOperationFeeParamsT>,
-    ),
-    VestingBalanceWithdrawOperationFeeParamsT(
-        Box<crate::generated::types::VestingBalanceWithdrawOperationFeeParamsT>,
-    ),
+    AssetGlobalSettleOperationFeeParamsT(Box<crate::generated::types::AssetGlobalSettleOperationFeeParamsT>),
+    AssetPublishFeedOperationFeeParamsT(Box<crate::generated::types::AssetPublishFeedOperationFeeParamsT>),
+    WitnessCreateOperationFeeParamsT(Box<crate::generated::types::WitnessCreateOperationFeeParamsT>),
+    WitnessUpdateOperationFeeParamsT(Box<crate::generated::types::WitnessUpdateOperationFeeParamsT>),
+    ProposalCreateOperationFeeParamsT(Box<crate::generated::types::ProposalCreateOperationFeeParamsT>),
+    ProposalUpdateOperationFeeParamsT(Box<crate::generated::types::ProposalUpdateOperationFeeParamsT>),
+    ProposalDeleteOperationFeeParamsT(Box<crate::generated::types::ProposalDeleteOperationFeeParamsT>),
+    WithdrawPermissionCreateOperationFeeParamsT(Box<crate::generated::types::WithdrawPermissionCreateOperationFeeParamsT>),
+    WithdrawPermissionUpdateOperationFeeParamsT(Box<crate::generated::types::WithdrawPermissionUpdateOperationFeeParamsT>),
+    WithdrawPermissionClaimOperationFeeParamsT(Box<crate::generated::types::WithdrawPermissionClaimOperationFeeParamsT>),
+    WithdrawPermissionDeleteOperationFeeParamsT(Box<crate::generated::types::WithdrawPermissionDeleteOperationFeeParamsT>),
+    CommitteeMemberCreateOperationFeeParamsT(Box<crate::generated::types::CommitteeMemberCreateOperationFeeParamsT>),
+    CommitteeMemberUpdateOperationFeeParamsT(Box<crate::generated::types::CommitteeMemberUpdateOperationFeeParamsT>),
+    CommitteeMemberUpdateGlobalParametersOperationFeeParamsT(Box<crate::generated::types::CommitteeMemberUpdateGlobalParametersOperationFeeParamsT>),
+    VestingBalanceCreateOperationFeeParamsT(Box<crate::generated::types::VestingBalanceCreateOperationFeeParamsT>),
+    VestingBalanceWithdrawOperationFeeParamsT(Box<crate::generated::types::VestingBalanceWithdrawOperationFeeParamsT>),
     WorkerCreateOperationFeeParamsT(Box<crate::generated::types::WorkerCreateOperationFeeParamsT>),
     CustomOperationFeeParamsT(Box<crate::generated::types::CustomOperationFeeParamsT>),
     AssertOperationFeeParamsT(Box<crate::generated::types::AssertOperationFeeParamsT>),
     BalanceClaimOperationFeeParamsT(Box<crate::generated::types::BalanceClaimOperationFeeParamsT>),
-    OverrideTransferOperationFeeParamsT(
-        Box<crate::generated::types::OverrideTransferOperationFeeParamsT>,
-    ),
-    TransferToBlindOperationFeeParamsT(
-        Box<crate::generated::types::TransferToBlindOperationFeeParamsT>,
-    ),
-    BlindTransferOperationFeeParamsT(
-        Box<crate::generated::types::BlindTransferOperationFeeParamsT>,
-    ),
-    TransferFromBlindOperationFeeParamsT(
-        Box<crate::generated::types::TransferFromBlindOperationFeeParamsT>,
-    ),
-    AssetSettleCancelOperationFeeParamsT(
-        Box<crate::generated::types::AssetSettleCancelOperationFeeParamsT>,
-    ),
-    AssetClaimFeesOperationFeeParamsT(
-        Box<crate::generated::types::AssetClaimFeesOperationFeeParamsT>,
-    ),
-    FbaDistributeOperationFeeParamsT(
-        Box<crate::generated::types::FbaDistributeOperationFeeParamsT>,
-    ),
-    BidCollateralOperationFeeParamsT(
-        Box<crate::generated::types::BidCollateralOperationFeeParamsT>,
-    ),
+    OverrideTransferOperationFeeParamsT(Box<crate::generated::types::OverrideTransferOperationFeeParamsT>),
+    TransferToBlindOperationFeeParamsT(Box<crate::generated::types::TransferToBlindOperationFeeParamsT>),
+    BlindTransferOperationFeeParamsT(Box<crate::generated::types::BlindTransferOperationFeeParamsT>),
+    TransferFromBlindOperationFeeParamsT(Box<crate::generated::types::TransferFromBlindOperationFeeParamsT>),
+    AssetSettleCancelOperationFeeParamsT(Box<crate::generated::types::AssetSettleCancelOperationFeeParamsT>),
+    AssetClaimFeesOperationFeeParamsT(Box<crate::generated::types::AssetClaimFeesOperationFeeParamsT>),
+    FbaDistributeOperationFeeParamsT(Box<crate::generated::types::FbaDistributeOperationFeeParamsT>),
+    BidCollateralOperationFeeParamsT(Box<crate::generated::types::BidCollateralOperationFeeParamsT>),
     ExecuteBidOperationFeeParamsT(Box<crate::generated::types::ExecuteBidOperationFeeParamsT>),
-    AssetClaimPoolOperationFeeParamsT(
-        Box<crate::generated::types::AssetClaimPoolOperationFeeParamsT>,
-    ),
-    AssetUpdateIssuerOperationFeeParamsT(
-        Box<crate::generated::types::AssetUpdateIssuerOperationFeeParamsT>,
-    ),
+    AssetClaimPoolOperationFeeParamsT(Box<crate::generated::types::AssetClaimPoolOperationFeeParamsT>),
+    AssetUpdateIssuerOperationFeeParamsT(Box<crate::generated::types::AssetUpdateIssuerOperationFeeParamsT>),
     HtlcCreateOperationFeeParamsT(Box<crate::generated::types::HtlcCreateOperationFeeParamsT>),
     HtlcRedeemOperationFeeParamsT(Box<crate::generated::types::HtlcRedeemOperationFeeParamsT>),
     HtlcRedeemedOperationFeeParamsT(Box<crate::generated::types::HtlcRedeemedOperationFeeParamsT>),
     HtlcExtendOperationFeeParamsT(Box<crate::generated::types::HtlcExtendOperationFeeParamsT>),
     HtlcRefundOperationFeeParamsT(Box<crate::generated::types::HtlcRefundOperationFeeParamsT>),
-    CustomAuthorityCreateOperationFeeParamsT(
-        Box<crate::generated::types::CustomAuthorityCreateOperationFeeParamsT>,
-    ),
-    CustomAuthorityUpdateOperationFeeParamsT(
-        Box<crate::generated::types::CustomAuthorityUpdateOperationFeeParamsT>,
-    ),
-    CustomAuthorityDeleteOperationFeeParamsT(
-        Box<crate::generated::types::CustomAuthorityDeleteOperationFeeParamsT>,
-    ),
+    CustomAuthorityCreateOperationFeeParamsT(Box<crate::generated::types::CustomAuthorityCreateOperationFeeParamsT>),
+    CustomAuthorityUpdateOperationFeeParamsT(Box<crate::generated::types::CustomAuthorityUpdateOperationFeeParamsT>),
+    CustomAuthorityDeleteOperationFeeParamsT(Box<crate::generated::types::CustomAuthorityDeleteOperationFeeParamsT>),
     TicketCreateOperationFeeParamsT(Box<crate::generated::types::TicketCreateOperationFeeParamsT>),
     TicketUpdateOperationFeeParamsT(Box<crate::generated::types::TicketUpdateOperationFeeParamsT>),
-    LiquidityPoolCreateOperationFeeParamsT(
-        Box<crate::generated::types::LiquidityPoolCreateOperationFeeParamsT>,
-    ),
-    LiquidityPoolDeleteOperationFeeParamsT(
-        Box<crate::generated::types::LiquidityPoolDeleteOperationFeeParamsT>,
-    ),
-    LiquidityPoolDepositOperationFeeParamsT(
-        Box<crate::generated::types::LiquidityPoolDepositOperationFeeParamsT>,
-    ),
-    LiquidityPoolWithdrawOperationFeeParamsT(
-        Box<crate::generated::types::LiquidityPoolWithdrawOperationFeeParamsT>,
-    ),
-    LiquidityPoolExchangeOperationFeeParamsT(
-        Box<crate::generated::types::LiquidityPoolExchangeOperationFeeParamsT>,
-    ),
-    SametFundCreateOperationFeeParamsT(
-        Box<crate::generated::types::SametFundCreateOperationFeeParamsT>,
-    ),
-    SametFundDeleteOperationFeeParamsT(
-        Box<crate::generated::types::SametFundDeleteOperationFeeParamsT>,
-    ),
-    SametFundUpdateOperationFeeParamsT(
-        Box<crate::generated::types::SametFundUpdateOperationFeeParamsT>,
-    ),
-    SametFundBorrowOperationFeeParamsT(
-        Box<crate::generated::types::SametFundBorrowOperationFeeParamsT>,
-    ),
-    SametFundRepayOperationFeeParamsT(
-        Box<crate::generated::types::SametFundRepayOperationFeeParamsT>,
-    ),
-    CreditOfferCreateOperationFeeParamsT(
-        Box<crate::generated::types::CreditOfferCreateOperationFeeParamsT>,
-    ),
-    CreditOfferDeleteOperationFeeParamsT(
-        Box<crate::generated::types::CreditOfferDeleteOperationFeeParamsT>,
-    ),
-    CreditOfferUpdateOperationFeeParamsT(
-        Box<crate::generated::types::CreditOfferUpdateOperationFeeParamsT>,
-    ),
-    CreditOfferAcceptOperationFeeParamsT(
-        Box<crate::generated::types::CreditOfferAcceptOperationFeeParamsT>,
-    ),
-    CreditDealRepayOperationFeeParamsT(
-        Box<crate::generated::types::CreditDealRepayOperationFeeParamsT>,
-    ),
-    CreditDealExpiredOperationFeeParamsT(
-        Box<crate::generated::types::CreditDealExpiredOperationFeeParamsT>,
-    ),
-    LiquidityPoolUpdateOperationFeeParamsT(
-        Box<crate::generated::types::LiquidityPoolUpdateOperationFeeParamsT>,
-    ),
-    CreditDealUpdateOperationFeeParamsT(
-        Box<crate::generated::types::CreditDealUpdateOperationFeeParamsT>,
-    ),
-    LimitOrderUpdateOperationFeeParamsT(
-        Box<crate::generated::types::LimitOrderUpdateOperationFeeParamsT>,
-    ),
+    LiquidityPoolCreateOperationFeeParamsT(Box<crate::generated::types::LiquidityPoolCreateOperationFeeParamsT>),
+    LiquidityPoolDeleteOperationFeeParamsT(Box<crate::generated::types::LiquidityPoolDeleteOperationFeeParamsT>),
+    LiquidityPoolDepositOperationFeeParamsT(Box<crate::generated::types::LiquidityPoolDepositOperationFeeParamsT>),
+    LiquidityPoolWithdrawOperationFeeParamsT(Box<crate::generated::types::LiquidityPoolWithdrawOperationFeeParamsT>),
+    LiquidityPoolExchangeOperationFeeParamsT(Box<crate::generated::types::LiquidityPoolExchangeOperationFeeParamsT>),
+    SametFundCreateOperationFeeParamsT(Box<crate::generated::types::SametFundCreateOperationFeeParamsT>),
+    SametFundDeleteOperationFeeParamsT(Box<crate::generated::types::SametFundDeleteOperationFeeParamsT>),
+    SametFundUpdateOperationFeeParamsT(Box<crate::generated::types::SametFundUpdateOperationFeeParamsT>),
+    SametFundBorrowOperationFeeParamsT(Box<crate::generated::types::SametFundBorrowOperationFeeParamsT>),
+    SametFundRepayOperationFeeParamsT(Box<crate::generated::types::SametFundRepayOperationFeeParamsT>),
+    CreditOfferCreateOperationFeeParamsT(Box<crate::generated::types::CreditOfferCreateOperationFeeParamsT>),
+    CreditOfferDeleteOperationFeeParamsT(Box<crate::generated::types::CreditOfferDeleteOperationFeeParamsT>),
+    CreditOfferUpdateOperationFeeParamsT(Box<crate::generated::types::CreditOfferUpdateOperationFeeParamsT>),
+    CreditOfferAcceptOperationFeeParamsT(Box<crate::generated::types::CreditOfferAcceptOperationFeeParamsT>),
+    CreditDealRepayOperationFeeParamsT(Box<crate::generated::types::CreditDealRepayOperationFeeParamsT>),
+    CreditDealExpiredOperationFeeParamsT(Box<crate::generated::types::CreditDealExpiredOperationFeeParamsT>),
+    LiquidityPoolUpdateOperationFeeParamsT(Box<crate::generated::types::LiquidityPoolUpdateOperationFeeParamsT>),
+    CreditDealUpdateOperationFeeParamsT(Box<crate::generated::types::CreditDealUpdateOperationFeeParamsT>),
+    LimitOrderUpdateOperationFeeParamsT(Box<crate::generated::types::LimitOrderUpdateOperationFeeParamsT>),
 }
 
 impl serde::Serialize for FeeParameters {
@@ -920,16 +793,13 @@ impl<'de> serde::Deserialize<'de> for FeeParameters {
     {
         let mut values = <Vec<serde_json::Value> as serde::Deserialize>::deserialize(deserializer)?;
         if values.len() != 2 {
-            return Err(serde::de::Error::custom(format!(
-                "expected static variant FeeParameters as [tag, value], got {} elements",
-                values.len()
-            )));
+            return Err(serde::de::Error::custom(format!("expected static variant FeeParameters as [tag, value], got {} elements", values.len())));
         }
         let payload = values.pop().expect("length checked");
         let tag_value = values.pop().expect("length checked");
-        let tag = tag_value.as_u64().ok_or_else(|| {
-            serde::de::Error::custom("expected numeric tag for static variant FeeParameters")
-        })? as u32;
+        let tag = tag_value
+            .as_u64()
+            .ok_or_else(|| serde::de::Error::custom("expected numeric tag for static variant FeeParameters"))? as u32;
         match tag {
             0 => serde_json::from_value::<crate::generated::types::TransferOperationFeeParamsT>(payload)
                 .map(|value| Self::TransferOperationFeeParamsT(Box::new(value)))
@@ -1206,23 +1076,18 @@ impl<'de> serde::Deserialize<'de> for FutureExtensions {
     {
         let mut values = <Vec<serde_json::Value> as serde::Deserialize>::deserialize(deserializer)?;
         if values.len() != 2 {
-            return Err(serde::de::Error::custom(format!(
-                "expected static variant FutureExtensions as [tag, value], got {} elements",
-                values.len()
-            )));
+            return Err(serde::de::Error::custom(format!("expected static variant FutureExtensions as [tag, value], got {} elements", values.len())));
         }
         let payload = values.pop().expect("length checked");
         let tag_value = values.pop().expect("length checked");
-        let tag = tag_value.as_u64().ok_or_else(|| {
-            serde::de::Error::custom("expected numeric tag for static variant FutureExtensions")
-        })? as u32;
+        let tag = tag_value
+            .as_u64()
+            .ok_or_else(|| serde::de::Error::custom("expected numeric tag for static variant FutureExtensions"))? as u32;
         match tag {
             0 => serde_json::from_value::<()>(payload)
                 .map(|value| Self::VoidT(Box::new(value)))
                 .map_err(serde::de::Error::custom),
-            other => Err(serde::de::Error::custom(format!(
-                "unknown static variant FutureExtensions tag {other}"
-            ))),
+            other => Err(serde::de::Error::custom(format!("unknown static variant FutureExtensions tag {other}"))),
         }
     }
 }
@@ -1272,16 +1137,13 @@ impl<'de> serde::Deserialize<'de> for HtlcHash {
     {
         let mut values = <Vec<serde_json::Value> as serde::Deserialize>::deserialize(deserializer)?;
         if values.len() != 2 {
-            return Err(serde::de::Error::custom(format!(
-                "expected static variant HtlcHash as [tag, value], got {} elements",
-                values.len()
-            )));
+            return Err(serde::de::Error::custom(format!("expected static variant HtlcHash as [tag, value], got {} elements", values.len())));
         }
         let payload = values.pop().expect("length checked");
         let tag_value = values.pop().expect("length checked");
-        let tag = tag_value.as_u64().ok_or_else(|| {
-            serde::de::Error::custom("expected numeric tag for static variant HtlcHash")
-        })? as u32;
+        let tag = tag_value
+            .as_u64()
+            .ok_or_else(|| serde::de::Error::custom("expected numeric tag for static variant HtlcHash"))? as u32;
         match tag {
             0 => serde_json::from_value::<Vec<u8>>(payload)
                 .map(|value| Self::HtlcAlgoRipemd160(Box::new(value)))
@@ -1295,9 +1157,7 @@ impl<'de> serde::Deserialize<'de> for HtlcHash {
             3 => serde_json::from_value::<Vec<u8>>(payload)
                 .map(|value| Self::HtlcAlgoHash160(Box::new(value)))
                 .map_err(serde::de::Error::custom),
-            other => Err(serde::de::Error::custom(format!(
-                "unknown static variant HtlcHash tag {other}"
-            ))),
+            other => Err(serde::de::Error::custom(format!("unknown static variant HtlcHash tag {other}"))),
         }
     }
 }
@@ -1332,25 +1192,18 @@ impl<'de> serde::Deserialize<'de> for LimitOrderAutoAction {
     {
         let mut values = <Vec<serde_json::Value> as serde::Deserialize>::deserialize(deserializer)?;
         if values.len() != 2 {
-            return Err(serde::de::Error::custom(format!(
-                "expected static variant LimitOrderAutoAction as [tag, value], got {} elements",
-                values.len()
-            )));
+            return Err(serde::de::Error::custom(format!("expected static variant LimitOrderAutoAction as [tag, value], got {} elements", values.len())));
         }
         let payload = values.pop().expect("length checked");
         let tag_value = values.pop().expect("length checked");
-        let tag = tag_value.as_u64().ok_or_else(|| {
-            serde::de::Error::custom("expected numeric tag for static variant LimitOrderAutoAction")
-        })? as u32;
+        let tag = tag_value
+            .as_u64()
+            .ok_or_else(|| serde::de::Error::custom("expected numeric tag for static variant LimitOrderAutoAction"))? as u32;
         match tag {
-            0 => serde_json::from_value::<crate::generated::types::CreateTakeProfitOrderAction>(
-                payload,
-            )
-            .map(|value| Self::CreateTakeProfitOrderAction(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            other => Err(serde::de::Error::custom(format!(
-                "unknown static variant LimitOrderAutoAction tag {other}"
-            ))),
+            0 => serde_json::from_value::<crate::generated::types::CreateTakeProfitOrderAction>(payload)
+                .map(|value| Self::CreateTakeProfitOrderAction(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            other => Err(serde::de::Error::custom(format!("unknown static variant LimitOrderAutoAction tag {other}"))),
         }
     }
 }
@@ -1371,9 +1224,7 @@ pub enum Operation {
     AssetCreateOperation(Box<crate::generated::operations::AssetCreateOperation>),
     AssetUpdateOperation(Box<crate::generated::operations::AssetUpdateOperation>),
     AssetUpdateBitassetOperation(Box<crate::generated::operations::AssetUpdateBitassetOperation>),
-    AssetUpdateFeedProducersOperation(
-        Box<crate::generated::operations::AssetUpdateFeedProducersOperation>,
-    ),
+    AssetUpdateFeedProducersOperation(Box<crate::generated::operations::AssetUpdateFeedProducersOperation>),
     AssetIssueOperation(Box<crate::generated::operations::AssetIssueOperation>),
     AssetReserveOperation(Box<crate::generated::operations::AssetReserveOperation>),
     AssetFundFeePoolOperation(Box<crate::generated::operations::AssetFundFeePoolOperation>),
@@ -1385,31 +1236,15 @@ pub enum Operation {
     ProposalCreateOperation(Box<crate::generated::operations::ProposalCreateOperation>),
     ProposalUpdateOperation(Box<crate::generated::operations::ProposalUpdateOperation>),
     ProposalDeleteOperation(Box<crate::generated::operations::ProposalDeleteOperation>),
-    WithdrawPermissionCreateOperation(
-        Box<crate::generated::operations::WithdrawPermissionCreateOperation>,
-    ),
-    WithdrawPermissionUpdateOperation(
-        Box<crate::generated::operations::WithdrawPermissionUpdateOperation>,
-    ),
-    WithdrawPermissionClaimOperation(
-        Box<crate::generated::operations::WithdrawPermissionClaimOperation>,
-    ),
-    WithdrawPermissionDeleteOperation(
-        Box<crate::generated::operations::WithdrawPermissionDeleteOperation>,
-    ),
-    CommitteeMemberCreateOperation(
-        Box<crate::generated::operations::CommitteeMemberCreateOperation>,
-    ),
-    CommitteeMemberUpdateOperation(
-        Box<crate::generated::operations::CommitteeMemberUpdateOperation>,
-    ),
-    CommitteeMemberUpdateGlobalParametersOperation(
-        Box<crate::generated::operations::CommitteeMemberUpdateGlobalParametersOperation>,
-    ),
+    WithdrawPermissionCreateOperation(Box<crate::generated::operations::WithdrawPermissionCreateOperation>),
+    WithdrawPermissionUpdateOperation(Box<crate::generated::operations::WithdrawPermissionUpdateOperation>),
+    WithdrawPermissionClaimOperation(Box<crate::generated::operations::WithdrawPermissionClaimOperation>),
+    WithdrawPermissionDeleteOperation(Box<crate::generated::operations::WithdrawPermissionDeleteOperation>),
+    CommitteeMemberCreateOperation(Box<crate::generated::operations::CommitteeMemberCreateOperation>),
+    CommitteeMemberUpdateOperation(Box<crate::generated::operations::CommitteeMemberUpdateOperation>),
+    CommitteeMemberUpdateGlobalParametersOperation(Box<crate::generated::operations::CommitteeMemberUpdateGlobalParametersOperation>),
     VestingBalanceCreateOperation(Box<crate::generated::operations::VestingBalanceCreateOperation>),
-    VestingBalanceWithdrawOperation(
-        Box<crate::generated::operations::VestingBalanceWithdrawOperation>,
-    ),
+    VestingBalanceWithdrawOperation(Box<crate::generated::operations::VestingBalanceWithdrawOperation>),
     WorkerCreateOperation(Box<crate::generated::operations::WorkerCreateOperation>),
     CustomOperation(Box<crate::generated::operations::CustomOperation>),
     AssertOperation(Box<crate::generated::operations::AssertOperation>),
@@ -1430,26 +1265,16 @@ pub enum Operation {
     HtlcRedeemedOperation(Box<crate::generated::operations::HtlcRedeemedOperation>),
     HtlcExtendOperation(Box<crate::generated::operations::HtlcExtendOperation>),
     HtlcRefundOperation(Box<crate::generated::operations::HtlcRefundOperation>),
-    CustomAuthorityCreateOperation(
-        Box<crate::generated::operations::CustomAuthorityCreateOperation>,
-    ),
-    CustomAuthorityUpdateOperation(
-        Box<crate::generated::operations::CustomAuthorityUpdateOperation>,
-    ),
-    CustomAuthorityDeleteOperation(
-        Box<crate::generated::operations::CustomAuthorityDeleteOperation>,
-    ),
+    CustomAuthorityCreateOperation(Box<crate::generated::operations::CustomAuthorityCreateOperation>),
+    CustomAuthorityUpdateOperation(Box<crate::generated::operations::CustomAuthorityUpdateOperation>),
+    CustomAuthorityDeleteOperation(Box<crate::generated::operations::CustomAuthorityDeleteOperation>),
     TicketCreateOperation(Box<crate::generated::operations::TicketCreateOperation>),
     TicketUpdateOperation(Box<crate::generated::operations::TicketUpdateOperation>),
     LiquidityPoolCreateOperation(Box<crate::generated::operations::LiquidityPoolCreateOperation>),
     LiquidityPoolDeleteOperation(Box<crate::generated::operations::LiquidityPoolDeleteOperation>),
     LiquidityPoolDepositOperation(Box<crate::generated::operations::LiquidityPoolDepositOperation>),
-    LiquidityPoolWithdrawOperation(
-        Box<crate::generated::operations::LiquidityPoolWithdrawOperation>,
-    ),
-    LiquidityPoolExchangeOperation(
-        Box<crate::generated::operations::LiquidityPoolExchangeOperation>,
-    ),
+    LiquidityPoolWithdrawOperation(Box<crate::generated::operations::LiquidityPoolWithdrawOperation>),
+    LiquidityPoolExchangeOperation(Box<crate::generated::operations::LiquidityPoolExchangeOperation>),
     SametFundCreateOperation(Box<crate::generated::operations::SametFundCreateOperation>),
     SametFundDeleteOperation(Box<crate::generated::operations::SametFundDeleteOperation>),
     SametFundUpdateOperation(Box<crate::generated::operations::SametFundUpdateOperation>),
@@ -2749,432 +2574,249 @@ impl<'de> serde::Deserialize<'de> for Operation {
     {
         let mut values = <Vec<serde_json::Value> as serde::Deserialize>::deserialize(deserializer)?;
         if values.len() != 2 {
-            return Err(serde::de::Error::custom(format!(
-                "expected static variant Operation as [tag, value], got {} elements",
-                values.len()
-            )));
+            return Err(serde::de::Error::custom(format!("expected static variant Operation as [tag, value], got {} elements", values.len())));
         }
         let payload = values.pop().expect("length checked");
         let tag_value = values.pop().expect("length checked");
-        let tag = tag_value.as_u64().ok_or_else(|| {
-            serde::de::Error::custom("expected numeric tag for static variant Operation")
-        })? as u32;
+        let tag = tag_value
+            .as_u64()
+            .ok_or_else(|| serde::de::Error::custom("expected numeric tag for static variant Operation"))? as u32;
         match tag {
             0 => serde_json::from_value::<crate::generated::operations::TransferOperation>(payload)
                 .map(|value| Self::TransferOperation(Box::new(value)))
                 .map_err(serde::de::Error::custom),
-            1 => serde_json::from_value::<crate::generated::operations::LimitOrderCreateOperation>(
-                payload,
-            )
-            .map(|value| Self::LimitOrderCreateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            2 => serde_json::from_value::<crate::generated::operations::LimitOrderCancelOperation>(
-                payload,
-            )
-            .map(|value| Self::LimitOrderCancelOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            3 => serde_json::from_value::<crate::generated::operations::CallOrderUpdateOperation>(
-                payload,
-            )
-            .map(|value| Self::CallOrderUpdateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            4 => {
-                serde_json::from_value::<crate::generated::operations::FillOrderOperation>(payload)
-                    .map(|value| Self::FillOrderOperation(Box::new(value)))
-                    .map_err(serde::de::Error::custom)
-            }
-            5 => serde_json::from_value::<crate::generated::operations::AccountCreateOperation>(
-                payload,
-            )
-            .map(|value| Self::AccountCreateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            6 => serde_json::from_value::<crate::generated::operations::AccountUpdateOperation>(
-                payload,
-            )
-            .map(|value| Self::AccountUpdateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            7 => serde_json::from_value::<crate::generated::operations::AccountWhitelistOperation>(
-                payload,
-            )
-            .map(|value| Self::AccountWhitelistOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            8 => serde_json::from_value::<crate::generated::operations::AccountUpgradeOperation>(
-                payload,
-            )
-            .map(|value| Self::AccountUpgradeOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            9 => serde_json::from_value::<crate::generated::operations::AccountTransferOperation>(
-                payload,
-            )
-            .map(|value| Self::AccountTransferOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            10 => serde_json::from_value::<crate::generated::operations::AssetCreateOperation>(
-                payload,
-            )
-            .map(|value| Self::AssetCreateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            11 => serde_json::from_value::<crate::generated::operations::AssetUpdateOperation>(
-                payload,
-            )
-            .map(|value| Self::AssetUpdateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            12 => serde_json::from_value::<
-                crate::generated::operations::AssetUpdateBitassetOperation,
-            >(payload)
-            .map(|value| Self::AssetUpdateBitassetOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            13 => serde_json::from_value::<
-                crate::generated::operations::AssetUpdateFeedProducersOperation,
-            >(payload)
-            .map(|value| Self::AssetUpdateFeedProducersOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            14 => {
-                serde_json::from_value::<crate::generated::operations::AssetIssueOperation>(payload)
-                    .map(|value| Self::AssetIssueOperation(Box::new(value)))
-                    .map_err(serde::de::Error::custom)
-            }
-            15 => serde_json::from_value::<crate::generated::operations::AssetReserveOperation>(
-                payload,
-            )
-            .map(|value| Self::AssetReserveOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            16 => {
-                serde_json::from_value::<crate::generated::operations::AssetFundFeePoolOperation>(
-                    payload,
-                )
+            1 => serde_json::from_value::<crate::generated::operations::LimitOrderCreateOperation>(payload)
+                .map(|value| Self::LimitOrderCreateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            2 => serde_json::from_value::<crate::generated::operations::LimitOrderCancelOperation>(payload)
+                .map(|value| Self::LimitOrderCancelOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            3 => serde_json::from_value::<crate::generated::operations::CallOrderUpdateOperation>(payload)
+                .map(|value| Self::CallOrderUpdateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            4 => serde_json::from_value::<crate::generated::operations::FillOrderOperation>(payload)
+                .map(|value| Self::FillOrderOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            5 => serde_json::from_value::<crate::generated::operations::AccountCreateOperation>(payload)
+                .map(|value| Self::AccountCreateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            6 => serde_json::from_value::<crate::generated::operations::AccountUpdateOperation>(payload)
+                .map(|value| Self::AccountUpdateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            7 => serde_json::from_value::<crate::generated::operations::AccountWhitelistOperation>(payload)
+                .map(|value| Self::AccountWhitelistOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            8 => serde_json::from_value::<crate::generated::operations::AccountUpgradeOperation>(payload)
+                .map(|value| Self::AccountUpgradeOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            9 => serde_json::from_value::<crate::generated::operations::AccountTransferOperation>(payload)
+                .map(|value| Self::AccountTransferOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            10 => serde_json::from_value::<crate::generated::operations::AssetCreateOperation>(payload)
+                .map(|value| Self::AssetCreateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            11 => serde_json::from_value::<crate::generated::operations::AssetUpdateOperation>(payload)
+                .map(|value| Self::AssetUpdateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            12 => serde_json::from_value::<crate::generated::operations::AssetUpdateBitassetOperation>(payload)
+                .map(|value| Self::AssetUpdateBitassetOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            13 => serde_json::from_value::<crate::generated::operations::AssetUpdateFeedProducersOperation>(payload)
+                .map(|value| Self::AssetUpdateFeedProducersOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            14 => serde_json::from_value::<crate::generated::operations::AssetIssueOperation>(payload)
+                .map(|value| Self::AssetIssueOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            15 => serde_json::from_value::<crate::generated::operations::AssetReserveOperation>(payload)
+                .map(|value| Self::AssetReserveOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            16 => serde_json::from_value::<crate::generated::operations::AssetFundFeePoolOperation>(payload)
                 .map(|value| Self::AssetFundFeePoolOperation(Box::new(value)))
-                .map_err(serde::de::Error::custom)
-            }
-            17 => serde_json::from_value::<crate::generated::operations::AssetSettleOperation>(
-                payload,
-            )
-            .map(|value| Self::AssetSettleOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            18 => {
-                serde_json::from_value::<crate::generated::operations::AssetGlobalSettleOperation>(
-                    payload,
-                )
+                .map_err(serde::de::Error::custom),
+            17 => serde_json::from_value::<crate::generated::operations::AssetSettleOperation>(payload)
+                .map(|value| Self::AssetSettleOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            18 => serde_json::from_value::<crate::generated::operations::AssetGlobalSettleOperation>(payload)
                 .map(|value| Self::AssetGlobalSettleOperation(Box::new(value)))
-                .map_err(serde::de::Error::custom)
-            }
-            19 => {
-                serde_json::from_value::<crate::generated::operations::AssetPublishFeedOperation>(
-                    payload,
-                )
+                .map_err(serde::de::Error::custom),
+            19 => serde_json::from_value::<crate::generated::operations::AssetPublishFeedOperation>(payload)
                 .map(|value| Self::AssetPublishFeedOperation(Box::new(value)))
-                .map_err(serde::de::Error::custom)
-            }
-            20 => serde_json::from_value::<crate::generated::operations::WitnessCreateOperation>(
-                payload,
-            )
-            .map(|value| Self::WitnessCreateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            21 => serde_json::from_value::<crate::generated::operations::WitnessUpdateOperation>(
-                payload,
-            )
-            .map(|value| Self::WitnessUpdateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            22 => serde_json::from_value::<crate::generated::operations::ProposalCreateOperation>(
-                payload,
-            )
-            .map(|value| Self::ProposalCreateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            23 => serde_json::from_value::<crate::generated::operations::ProposalUpdateOperation>(
-                payload,
-            )
-            .map(|value| Self::ProposalUpdateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            24 => serde_json::from_value::<crate::generated::operations::ProposalDeleteOperation>(
-                payload,
-            )
-            .map(|value| Self::ProposalDeleteOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            25 => serde_json::from_value::<
-                crate::generated::operations::WithdrawPermissionCreateOperation,
-            >(payload)
-            .map(|value| Self::WithdrawPermissionCreateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            26 => serde_json::from_value::<
-                crate::generated::operations::WithdrawPermissionUpdateOperation,
-            >(payload)
-            .map(|value| Self::WithdrawPermissionUpdateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            27 => serde_json::from_value::<
-                crate::generated::operations::WithdrawPermissionClaimOperation,
-            >(payload)
-            .map(|value| Self::WithdrawPermissionClaimOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            28 => serde_json::from_value::<
-                crate::generated::operations::WithdrawPermissionDeleteOperation,
-            >(payload)
-            .map(|value| Self::WithdrawPermissionDeleteOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            29 => serde_json::from_value::<
-                crate::generated::operations::CommitteeMemberCreateOperation,
-            >(payload)
-            .map(|value| Self::CommitteeMemberCreateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            30 => serde_json::from_value::<
-                crate::generated::operations::CommitteeMemberUpdateOperation,
-            >(payload)
-            .map(|value| Self::CommitteeMemberUpdateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            31 => serde_json::from_value::<
-                crate::generated::operations::CommitteeMemberUpdateGlobalParametersOperation,
-            >(payload)
-            .map(|value| Self::CommitteeMemberUpdateGlobalParametersOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            32 => serde_json::from_value::<
-                crate::generated::operations::VestingBalanceCreateOperation,
-            >(payload)
-            .map(|value| Self::VestingBalanceCreateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            33 => serde_json::from_value::<
-                crate::generated::operations::VestingBalanceWithdrawOperation,
-            >(payload)
-            .map(|value| Self::VestingBalanceWithdrawOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            34 => serde_json::from_value::<crate::generated::operations::WorkerCreateOperation>(
-                payload,
-            )
-            .map(|value| Self::WorkerCreateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
+                .map_err(serde::de::Error::custom),
+            20 => serde_json::from_value::<crate::generated::operations::WitnessCreateOperation>(payload)
+                .map(|value| Self::WitnessCreateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            21 => serde_json::from_value::<crate::generated::operations::WitnessUpdateOperation>(payload)
+                .map(|value| Self::WitnessUpdateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            22 => serde_json::from_value::<crate::generated::operations::ProposalCreateOperation>(payload)
+                .map(|value| Self::ProposalCreateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            23 => serde_json::from_value::<crate::generated::operations::ProposalUpdateOperation>(payload)
+                .map(|value| Self::ProposalUpdateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            24 => serde_json::from_value::<crate::generated::operations::ProposalDeleteOperation>(payload)
+                .map(|value| Self::ProposalDeleteOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            25 => serde_json::from_value::<crate::generated::operations::WithdrawPermissionCreateOperation>(payload)
+                .map(|value| Self::WithdrawPermissionCreateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            26 => serde_json::from_value::<crate::generated::operations::WithdrawPermissionUpdateOperation>(payload)
+                .map(|value| Self::WithdrawPermissionUpdateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            27 => serde_json::from_value::<crate::generated::operations::WithdrawPermissionClaimOperation>(payload)
+                .map(|value| Self::WithdrawPermissionClaimOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            28 => serde_json::from_value::<crate::generated::operations::WithdrawPermissionDeleteOperation>(payload)
+                .map(|value| Self::WithdrawPermissionDeleteOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            29 => serde_json::from_value::<crate::generated::operations::CommitteeMemberCreateOperation>(payload)
+                .map(|value| Self::CommitteeMemberCreateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            30 => serde_json::from_value::<crate::generated::operations::CommitteeMemberUpdateOperation>(payload)
+                .map(|value| Self::CommitteeMemberUpdateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            31 => serde_json::from_value::<crate::generated::operations::CommitteeMemberUpdateGlobalParametersOperation>(payload)
+                .map(|value| Self::CommitteeMemberUpdateGlobalParametersOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            32 => serde_json::from_value::<crate::generated::operations::VestingBalanceCreateOperation>(payload)
+                .map(|value| Self::VestingBalanceCreateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            33 => serde_json::from_value::<crate::generated::operations::VestingBalanceWithdrawOperation>(payload)
+                .map(|value| Self::VestingBalanceWithdrawOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            34 => serde_json::from_value::<crate::generated::operations::WorkerCreateOperation>(payload)
+                .map(|value| Self::WorkerCreateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
             35 => serde_json::from_value::<crate::generated::operations::CustomOperation>(payload)
                 .map(|value| Self::CustomOperation(Box::new(value)))
                 .map_err(serde::de::Error::custom),
             36 => serde_json::from_value::<crate::generated::operations::AssertOperation>(payload)
                 .map(|value| Self::AssertOperation(Box::new(value)))
                 .map_err(serde::de::Error::custom),
-            37 => serde_json::from_value::<crate::generated::operations::BalanceClaimOperation>(
-                payload,
-            )
-            .map(|value| Self::BalanceClaimOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            38 => {
-                serde_json::from_value::<crate::generated::operations::OverrideTransferOperation>(
-                    payload,
-                )
+            37 => serde_json::from_value::<crate::generated::operations::BalanceClaimOperation>(payload)
+                .map(|value| Self::BalanceClaimOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            38 => serde_json::from_value::<crate::generated::operations::OverrideTransferOperation>(payload)
                 .map(|value| Self::OverrideTransferOperation(Box::new(value)))
-                .map_err(serde::de::Error::custom)
-            }
-            39 => serde_json::from_value::<crate::generated::operations::TransferToBlindOperation>(
-                payload,
-            )
-            .map(|value| Self::TransferToBlindOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            40 => serde_json::from_value::<crate::generated::operations::BlindTransferOperation>(
-                payload,
-            )
-            .map(|value| Self::BlindTransferOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            41 => {
-                serde_json::from_value::<crate::generated::operations::TransferFromBlindOperation>(
-                    payload,
-                )
+                .map_err(serde::de::Error::custom),
+            39 => serde_json::from_value::<crate::generated::operations::TransferToBlindOperation>(payload)
+                .map(|value| Self::TransferToBlindOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            40 => serde_json::from_value::<crate::generated::operations::BlindTransferOperation>(payload)
+                .map(|value| Self::BlindTransferOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            41 => serde_json::from_value::<crate::generated::operations::TransferFromBlindOperation>(payload)
                 .map(|value| Self::TransferFromBlindOperation(Box::new(value)))
-                .map_err(serde::de::Error::custom)
-            }
-            42 => {
-                serde_json::from_value::<crate::generated::operations::AssetSettleCancelOperation>(
-                    payload,
-                )
+                .map_err(serde::de::Error::custom),
+            42 => serde_json::from_value::<crate::generated::operations::AssetSettleCancelOperation>(payload)
                 .map(|value| Self::AssetSettleCancelOperation(Box::new(value)))
-                .map_err(serde::de::Error::custom)
-            }
-            43 => serde_json::from_value::<crate::generated::operations::AssetClaimFeesOperation>(
-                payload,
-            )
-            .map(|value| Self::AssetClaimFeesOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            44 => serde_json::from_value::<crate::generated::operations::FbaDistributeOperation>(
-                payload,
-            )
-            .map(|value| Self::FbaDistributeOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            45 => serde_json::from_value::<crate::generated::operations::BidCollateralOperation>(
-                payload,
-            )
-            .map(|value| Self::BidCollateralOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            46 => {
-                serde_json::from_value::<crate::generated::operations::ExecuteBidOperation>(payload)
-                    .map(|value| Self::ExecuteBidOperation(Box::new(value)))
-                    .map_err(serde::de::Error::custom)
-            }
-            47 => serde_json::from_value::<crate::generated::operations::AssetClaimPoolOperation>(
-                payload,
-            )
-            .map(|value| Self::AssetClaimPoolOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            48 => {
-                serde_json::from_value::<crate::generated::operations::AssetUpdateIssuerOperation>(
-                    payload,
-                )
+                .map_err(serde::de::Error::custom),
+            43 => serde_json::from_value::<crate::generated::operations::AssetClaimFeesOperation>(payload)
+                .map(|value| Self::AssetClaimFeesOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            44 => serde_json::from_value::<crate::generated::operations::FbaDistributeOperation>(payload)
+                .map(|value| Self::FbaDistributeOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            45 => serde_json::from_value::<crate::generated::operations::BidCollateralOperation>(payload)
+                .map(|value| Self::BidCollateralOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            46 => serde_json::from_value::<crate::generated::operations::ExecuteBidOperation>(payload)
+                .map(|value| Self::ExecuteBidOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            47 => serde_json::from_value::<crate::generated::operations::AssetClaimPoolOperation>(payload)
+                .map(|value| Self::AssetClaimPoolOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            48 => serde_json::from_value::<crate::generated::operations::AssetUpdateIssuerOperation>(payload)
                 .map(|value| Self::AssetUpdateIssuerOperation(Box::new(value)))
-                .map_err(serde::de::Error::custom)
-            }
-            49 => {
-                serde_json::from_value::<crate::generated::operations::HtlcCreateOperation>(payload)
-                    .map(|value| Self::HtlcCreateOperation(Box::new(value)))
-                    .map_err(serde::de::Error::custom)
-            }
-            50 => {
-                serde_json::from_value::<crate::generated::operations::HtlcRedeemOperation>(payload)
-                    .map(|value| Self::HtlcRedeemOperation(Box::new(value)))
-                    .map_err(serde::de::Error::custom)
-            }
-            51 => serde_json::from_value::<crate::generated::operations::HtlcRedeemedOperation>(
-                payload,
-            )
-            .map(|value| Self::HtlcRedeemedOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            52 => {
-                serde_json::from_value::<crate::generated::operations::HtlcExtendOperation>(payload)
-                    .map(|value| Self::HtlcExtendOperation(Box::new(value)))
-                    .map_err(serde::de::Error::custom)
-            }
-            53 => {
-                serde_json::from_value::<crate::generated::operations::HtlcRefundOperation>(payload)
-                    .map(|value| Self::HtlcRefundOperation(Box::new(value)))
-                    .map_err(serde::de::Error::custom)
-            }
-            54 => serde_json::from_value::<
-                crate::generated::operations::CustomAuthorityCreateOperation,
-            >(payload)
-            .map(|value| Self::CustomAuthorityCreateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            55 => serde_json::from_value::<
-                crate::generated::operations::CustomAuthorityUpdateOperation,
-            >(payload)
-            .map(|value| Self::CustomAuthorityUpdateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            56 => serde_json::from_value::<
-                crate::generated::operations::CustomAuthorityDeleteOperation,
-            >(payload)
-            .map(|value| Self::CustomAuthorityDeleteOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            57 => serde_json::from_value::<crate::generated::operations::TicketCreateOperation>(
-                payload,
-            )
-            .map(|value| Self::TicketCreateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            58 => serde_json::from_value::<crate::generated::operations::TicketUpdateOperation>(
-                payload,
-            )
-            .map(|value| Self::TicketUpdateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            59 => serde_json::from_value::<
-                crate::generated::operations::LiquidityPoolCreateOperation,
-            >(payload)
-            .map(|value| Self::LiquidityPoolCreateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            60 => serde_json::from_value::<
-                crate::generated::operations::LiquidityPoolDeleteOperation,
-            >(payload)
-            .map(|value| Self::LiquidityPoolDeleteOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            61 => serde_json::from_value::<
-                crate::generated::operations::LiquidityPoolDepositOperation,
-            >(payload)
-            .map(|value| Self::LiquidityPoolDepositOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            62 => serde_json::from_value::<
-                crate::generated::operations::LiquidityPoolWithdrawOperation,
-            >(payload)
-            .map(|value| Self::LiquidityPoolWithdrawOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            63 => serde_json::from_value::<
-                crate::generated::operations::LiquidityPoolExchangeOperation,
-            >(payload)
-            .map(|value| Self::LiquidityPoolExchangeOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            64 => serde_json::from_value::<crate::generated::operations::SametFundCreateOperation>(
-                payload,
-            )
-            .map(|value| Self::SametFundCreateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            65 => serde_json::from_value::<crate::generated::operations::SametFundDeleteOperation>(
-                payload,
-            )
-            .map(|value| Self::SametFundDeleteOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            66 => serde_json::from_value::<crate::generated::operations::SametFundUpdateOperation>(
-                payload,
-            )
-            .map(|value| Self::SametFundUpdateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            67 => serde_json::from_value::<crate::generated::operations::SametFundBorrowOperation>(
-                payload,
-            )
-            .map(|value| Self::SametFundBorrowOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            68 => serde_json::from_value::<crate::generated::operations::SametFundRepayOperation>(
-                payload,
-            )
-            .map(|value| Self::SametFundRepayOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            69 => {
-                serde_json::from_value::<crate::generated::operations::CreditOfferCreateOperation>(
-                    payload,
-                )
+                .map_err(serde::de::Error::custom),
+            49 => serde_json::from_value::<crate::generated::operations::HtlcCreateOperation>(payload)
+                .map(|value| Self::HtlcCreateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            50 => serde_json::from_value::<crate::generated::operations::HtlcRedeemOperation>(payload)
+                .map(|value| Self::HtlcRedeemOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            51 => serde_json::from_value::<crate::generated::operations::HtlcRedeemedOperation>(payload)
+                .map(|value| Self::HtlcRedeemedOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            52 => serde_json::from_value::<crate::generated::operations::HtlcExtendOperation>(payload)
+                .map(|value| Self::HtlcExtendOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            53 => serde_json::from_value::<crate::generated::operations::HtlcRefundOperation>(payload)
+                .map(|value| Self::HtlcRefundOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            54 => serde_json::from_value::<crate::generated::operations::CustomAuthorityCreateOperation>(payload)
+                .map(|value| Self::CustomAuthorityCreateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            55 => serde_json::from_value::<crate::generated::operations::CustomAuthorityUpdateOperation>(payload)
+                .map(|value| Self::CustomAuthorityUpdateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            56 => serde_json::from_value::<crate::generated::operations::CustomAuthorityDeleteOperation>(payload)
+                .map(|value| Self::CustomAuthorityDeleteOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            57 => serde_json::from_value::<crate::generated::operations::TicketCreateOperation>(payload)
+                .map(|value| Self::TicketCreateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            58 => serde_json::from_value::<crate::generated::operations::TicketUpdateOperation>(payload)
+                .map(|value| Self::TicketUpdateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            59 => serde_json::from_value::<crate::generated::operations::LiquidityPoolCreateOperation>(payload)
+                .map(|value| Self::LiquidityPoolCreateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            60 => serde_json::from_value::<crate::generated::operations::LiquidityPoolDeleteOperation>(payload)
+                .map(|value| Self::LiquidityPoolDeleteOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            61 => serde_json::from_value::<crate::generated::operations::LiquidityPoolDepositOperation>(payload)
+                .map(|value| Self::LiquidityPoolDepositOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            62 => serde_json::from_value::<crate::generated::operations::LiquidityPoolWithdrawOperation>(payload)
+                .map(|value| Self::LiquidityPoolWithdrawOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            63 => serde_json::from_value::<crate::generated::operations::LiquidityPoolExchangeOperation>(payload)
+                .map(|value| Self::LiquidityPoolExchangeOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            64 => serde_json::from_value::<crate::generated::operations::SametFundCreateOperation>(payload)
+                .map(|value| Self::SametFundCreateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            65 => serde_json::from_value::<crate::generated::operations::SametFundDeleteOperation>(payload)
+                .map(|value| Self::SametFundDeleteOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            66 => serde_json::from_value::<crate::generated::operations::SametFundUpdateOperation>(payload)
+                .map(|value| Self::SametFundUpdateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            67 => serde_json::from_value::<crate::generated::operations::SametFundBorrowOperation>(payload)
+                .map(|value| Self::SametFundBorrowOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            68 => serde_json::from_value::<crate::generated::operations::SametFundRepayOperation>(payload)
+                .map(|value| Self::SametFundRepayOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            69 => serde_json::from_value::<crate::generated::operations::CreditOfferCreateOperation>(payload)
                 .map(|value| Self::CreditOfferCreateOperation(Box::new(value)))
-                .map_err(serde::de::Error::custom)
-            }
-            70 => {
-                serde_json::from_value::<crate::generated::operations::CreditOfferDeleteOperation>(
-                    payload,
-                )
+                .map_err(serde::de::Error::custom),
+            70 => serde_json::from_value::<crate::generated::operations::CreditOfferDeleteOperation>(payload)
                 .map(|value| Self::CreditOfferDeleteOperation(Box::new(value)))
-                .map_err(serde::de::Error::custom)
-            }
-            71 => {
-                serde_json::from_value::<crate::generated::operations::CreditOfferUpdateOperation>(
-                    payload,
-                )
+                .map_err(serde::de::Error::custom),
+            71 => serde_json::from_value::<crate::generated::operations::CreditOfferUpdateOperation>(payload)
                 .map(|value| Self::CreditOfferUpdateOperation(Box::new(value)))
-                .map_err(serde::de::Error::custom)
-            }
-            72 => {
-                serde_json::from_value::<crate::generated::operations::CreditOfferAcceptOperation>(
-                    payload,
-                )
+                .map_err(serde::de::Error::custom),
+            72 => serde_json::from_value::<crate::generated::operations::CreditOfferAcceptOperation>(payload)
                 .map(|value| Self::CreditOfferAcceptOperation(Box::new(value)))
-                .map_err(serde::de::Error::custom)
-            }
-            73 => serde_json::from_value::<crate::generated::operations::CreditDealRepayOperation>(
-                payload,
-            )
-            .map(|value| Self::CreditDealRepayOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            74 => {
-                serde_json::from_value::<crate::generated::operations::CreditDealExpiredOperation>(
-                    payload,
-                )
+                .map_err(serde::de::Error::custom),
+            73 => serde_json::from_value::<crate::generated::operations::CreditDealRepayOperation>(payload)
+                .map(|value| Self::CreditDealRepayOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            74 => serde_json::from_value::<crate::generated::operations::CreditDealExpiredOperation>(payload)
                 .map(|value| Self::CreditDealExpiredOperation(Box::new(value)))
-                .map_err(serde::de::Error::custom)
-            }
-            75 => serde_json::from_value::<
-                crate::generated::operations::LiquidityPoolUpdateOperation,
-            >(payload)
-            .map(|value| Self::LiquidityPoolUpdateOperation(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            76 => {
-                serde_json::from_value::<crate::generated::operations::CreditDealUpdateOperation>(
-                    payload,
-                )
+                .map_err(serde::de::Error::custom),
+            75 => serde_json::from_value::<crate::generated::operations::LiquidityPoolUpdateOperation>(payload)
+                .map(|value| Self::LiquidityPoolUpdateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            76 => serde_json::from_value::<crate::generated::operations::CreditDealUpdateOperation>(payload)
                 .map(|value| Self::CreditDealUpdateOperation(Box::new(value)))
-                .map_err(serde::de::Error::custom)
-            }
-            77 => {
-                serde_json::from_value::<crate::generated::operations::LimitOrderUpdateOperation>(
-                    payload,
-                )
+                .map_err(serde::de::Error::custom),
+            77 => serde_json::from_value::<crate::generated::operations::LimitOrderUpdateOperation>(payload)
                 .map(|value| Self::LimitOrderUpdateOperation(Box::new(value)))
-                .map_err(serde::de::Error::custom)
-            }
-            other => Err(serde::de::Error::custom(format!(
-                "unknown static variant Operation tag {other}"
-            ))),
+                .map_err(serde::de::Error::custom),
+            other => Err(serde::de::Error::custom(format!("unknown static variant Operation tag {other}"))),
         }
     }
 }
@@ -3234,16 +2876,13 @@ impl<'de> serde::Deserialize<'de> for OperationResult {
     {
         let mut values = <Vec<serde_json::Value> as serde::Deserialize>::deserialize(deserializer)?;
         if values.len() != 2 {
-            return Err(serde::de::Error::custom(format!(
-                "expected static variant OperationResult as [tag, value], got {} elements",
-                values.len()
-            )));
+            return Err(serde::de::Error::custom(format!("expected static variant OperationResult as [tag, value], got {} elements", values.len())));
         }
         let payload = values.pop().expect("length checked");
         let tag_value = values.pop().expect("length checked");
-        let tag = tag_value.as_u64().ok_or_else(|| {
-            serde::de::Error::custom("expected numeric tag for static variant OperationResult")
-        })? as u32;
+        let tag = tag_value
+            .as_u64()
+            .ok_or_else(|| serde::de::Error::custom("expected numeric tag for static variant OperationResult"))? as u32;
         match tag {
             0 => serde_json::from_value::<crate::generated::types::VoidResult>(payload)
                 .map(|value| Self::VoidResult(Box::new(value)))
@@ -3257,19 +2896,13 @@ impl<'de> serde::Deserialize<'de> for OperationResult {
             3 => serde_json::from_value::<crate::generated::types::GenericOperationResult>(payload)
                 .map(|value| Self::GenericOperationResult(Box::new(value)))
                 .map_err(serde::de::Error::custom),
-            4 => serde_json::from_value::<crate::generated::types::GenericExchangeOperationResult>(
-                payload,
-            )
-            .map(|value| Self::GenericExchangeOperationResult(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            5 => serde_json::from_value::<crate::generated::types::ExtendableOperationResultDtl>(
-                payload,
-            )
-            .map(|value| Self::ExtendableOperationResult(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            other => Err(serde::de::Error::custom(format!(
-                "unknown static variant OperationResult tag {other}"
-            ))),
+            4 => serde_json::from_value::<crate::generated::types::GenericExchangeOperationResult>(payload)
+                .map(|value| Self::GenericExchangeOperationResult(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            5 => serde_json::from_value::<crate::generated::types::ExtendableOperationResultDtl>(payload)
+                .map(|value| Self::ExtendableOperationResult(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            other => Err(serde::de::Error::custom(format!("unknown static variant OperationResult tag {other}"))),
         }
     }
 }
@@ -3314,33 +2947,24 @@ impl<'de> serde::Deserialize<'de> for Predicate {
     {
         let mut values = <Vec<serde_json::Value> as serde::Deserialize>::deserialize(deserializer)?;
         if values.len() != 2 {
-            return Err(serde::de::Error::custom(format!(
-                "expected static variant Predicate as [tag, value], got {} elements",
-                values.len()
-            )));
+            return Err(serde::de::Error::custom(format!("expected static variant Predicate as [tag, value], got {} elements", values.len())));
         }
         let payload = values.pop().expect("length checked");
         let tag_value = values.pop().expect("length checked");
-        let tag = tag_value.as_u64().ok_or_else(|| {
-            serde::de::Error::custom("expected numeric tag for static variant Predicate")
-        })? as u32;
+        let tag = tag_value
+            .as_u64()
+            .ok_or_else(|| serde::de::Error::custom("expected numeric tag for static variant Predicate"))? as u32;
         match tag {
-            0 => serde_json::from_value::<crate::generated::types::AccountNameEqLitPredicate>(
-                payload,
-            )
-            .map(|value| Self::AccountNameEqLitPredicate(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            1 => serde_json::from_value::<crate::generated::types::AssetSymbolEqLitPredicate>(
-                payload,
-            )
-            .map(|value| Self::AssetSymbolEqLitPredicate(Box::new(value)))
-            .map_err(serde::de::Error::custom),
+            0 => serde_json::from_value::<crate::generated::types::AccountNameEqLitPredicate>(payload)
+                .map(|value| Self::AccountNameEqLitPredicate(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            1 => serde_json::from_value::<crate::generated::types::AssetSymbolEqLitPredicate>(payload)
+                .map(|value| Self::AssetSymbolEqLitPredicate(Box::new(value)))
+                .map_err(serde::de::Error::custom),
             2 => serde_json::from_value::<crate::generated::types::BlockIdPredicate>(payload)
                 .map(|value| Self::BlockIdPredicate(Box::new(value)))
                 .map_err(serde::de::Error::custom),
-            other => Err(serde::de::Error::custom(format!(
-                "unknown static variant Predicate tag {other}"
-            ))),
+            other => Err(serde::de::Error::custom(format!("unknown static variant Predicate tag {other}"))),
         }
     }
 }
@@ -3380,28 +3004,21 @@ impl<'de> serde::Deserialize<'de> for SpecialAuthority {
     {
         let mut values = <Vec<serde_json::Value> as serde::Deserialize>::deserialize(deserializer)?;
         if values.len() != 2 {
-            return Err(serde::de::Error::custom(format!(
-                "expected static variant SpecialAuthority as [tag, value], got {} elements",
-                values.len()
-            )));
+            return Err(serde::de::Error::custom(format!("expected static variant SpecialAuthority as [tag, value], got {} elements", values.len())));
         }
         let payload = values.pop().expect("length checked");
         let tag_value = values.pop().expect("length checked");
-        let tag = tag_value.as_u64().ok_or_else(|| {
-            serde::de::Error::custom("expected numeric tag for static variant SpecialAuthority")
-        })? as u32;
+        let tag = tag_value
+            .as_u64()
+            .ok_or_else(|| serde::de::Error::custom("expected numeric tag for static variant SpecialAuthority"))? as u32;
         match tag {
             0 => serde_json::from_value::<crate::generated::types::NoSpecialAuthority>(payload)
                 .map(|value| Self::NoSpecialAuthority(Box::new(value)))
                 .map_err(serde::de::Error::custom),
-            1 => serde_json::from_value::<crate::generated::types::TopHoldersSpecialAuthority>(
-                payload,
-            )
-            .map(|value| Self::TopHoldersSpecialAuthority(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            other => Err(serde::de::Error::custom(format!(
-                "unknown static variant SpecialAuthority tag {other}"
-            ))),
+            1 => serde_json::from_value::<crate::generated::types::TopHoldersSpecialAuthority>(payload)
+                .map(|value| Self::TopHoldersSpecialAuthority(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            other => Err(serde::de::Error::custom(format!("unknown static variant SpecialAuthority tag {other}"))),
         }
     }
 }
@@ -3446,39 +3063,24 @@ impl<'de> serde::Deserialize<'de> for VestingPolicyInitializer {
     {
         let mut values = <Vec<serde_json::Value> as serde::Deserialize>::deserialize(deserializer)?;
         if values.len() != 2 {
-            return Err(serde::de::Error::custom(format!(
-                "expected static variant VestingPolicyInitializer as [tag, value], got {} elements",
-                values.len()
-            )));
+            return Err(serde::de::Error::custom(format!("expected static variant VestingPolicyInitializer as [tag, value], got {} elements", values.len())));
         }
         let payload = values.pop().expect("length checked");
         let tag_value = values.pop().expect("length checked");
-        let tag = tag_value.as_u64().ok_or_else(|| {
-            serde::de::Error::custom(
-                "expected numeric tag for static variant VestingPolicyInitializer",
-            )
-        })? as u32;
+        let tag = tag_value
+            .as_u64()
+            .ok_or_else(|| serde::de::Error::custom("expected numeric tag for static variant VestingPolicyInitializer"))? as u32;
         match tag {
-            0 => serde_json::from_value::<crate::generated::types::LinearVestingPolicyInitializer>(
-                payload,
-            )
-            .map(|value| Self::LinearVestingPolicyInitializer(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            1 => serde_json::from_value::<crate::generated::types::CddVestingPolicyInitializer>(
-                payload,
-            )
-            .map(|value| Self::CddVestingPolicyInitializer(Box::new(value)))
-            .map_err(serde::de::Error::custom),
-            2 => {
-                serde_json::from_value::<crate::generated::types::InstantVestingPolicyInitializer>(
-                    payload,
-                )
+            0 => serde_json::from_value::<crate::generated::types::LinearVestingPolicyInitializer>(payload)
+                .map(|value| Self::LinearVestingPolicyInitializer(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            1 => serde_json::from_value::<crate::generated::types::CddVestingPolicyInitializer>(payload)
+                .map(|value| Self::CddVestingPolicyInitializer(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            2 => serde_json::from_value::<crate::generated::types::InstantVestingPolicyInitializer>(payload)
                 .map(|value| Self::InstantVestingPolicyInitializer(Box::new(value)))
-                .map_err(serde::de::Error::custom)
-            }
-            other => Err(serde::de::Error::custom(format!(
-                "unknown static variant VestingPolicyInitializer tag {other}"
-            ))),
+                .map_err(serde::de::Error::custom),
+            other => Err(serde::de::Error::custom(format!("unknown static variant VestingPolicyInitializer tag {other}"))),
         }
     }
 }
@@ -3523,35 +3125,24 @@ impl<'de> serde::Deserialize<'de> for WorkerInitializer {
     {
         let mut values = <Vec<serde_json::Value> as serde::Deserialize>::deserialize(deserializer)?;
         if values.len() != 2 {
-            return Err(serde::de::Error::custom(format!(
-                "expected static variant WorkerInitializer as [tag, value], got {} elements",
-                values.len()
-            )));
+            return Err(serde::de::Error::custom(format!("expected static variant WorkerInitializer as [tag, value], got {} elements", values.len())));
         }
         let payload = values.pop().expect("length checked");
         let tag_value = values.pop().expect("length checked");
-        let tag = tag_value.as_u64().ok_or_else(|| {
-            serde::de::Error::custom("expected numeric tag for static variant WorkerInitializer")
-        })? as u32;
+        let tag = tag_value
+            .as_u64()
+            .ok_or_else(|| serde::de::Error::custom("expected numeric tag for static variant WorkerInitializer"))? as u32;
         match tag {
-            0 => {
-                serde_json::from_value::<crate::generated::types::RefundWorkerInitializer>(payload)
-                    .map(|value| Self::RefundWorkerInitializer(Box::new(value)))
-                    .map_err(serde::de::Error::custom)
-            }
-            1 => {
-                serde_json::from_value::<crate::generated::types::VestingBalanceWorkerInitializer>(
-                    payload,
-                )
+            0 => serde_json::from_value::<crate::generated::types::RefundWorkerInitializer>(payload)
+                .map(|value| Self::RefundWorkerInitializer(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            1 => serde_json::from_value::<crate::generated::types::VestingBalanceWorkerInitializer>(payload)
                 .map(|value| Self::VestingBalanceWorkerInitializer(Box::new(value)))
-                .map_err(serde::de::Error::custom)
-            }
+                .map_err(serde::de::Error::custom),
             2 => serde_json::from_value::<crate::generated::types::BurnWorkerInitializer>(payload)
                 .map(|value| Self::BurnWorkerInitializer(Box::new(value)))
                 .map_err(serde::de::Error::custom),
-            other => Err(serde::de::Error::custom(format!(
-                "unknown static variant WorkerInitializer tag {other}"
-            ))),
+            other => Err(serde::de::Error::custom(format!("unknown static variant WorkerInitializer tag {other}"))),
         }
     }
 }
