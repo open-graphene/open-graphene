@@ -138,6 +138,20 @@ It returns `Ok(None)` for an empty response, a first `null` entry, or a non-exac
 
 The `amount` field may be a JSON integer or a decimal string. The helper fail-closes when the response has no first balance object, the `asset_id` is missing or different from the requested `AssetIdRef`, or the amount is malformed. It returns `open_graphene_sdk_primitives::AssetAmount`.
 
+## Live smoke example
+
+The crate includes a read-only smoke example that exercises the current live client API without WIFs, signing, or broadcast.
+
+```bash
+GRAPHENE_RPC_URL=wss://node02.swaplock.chainpool.online:8090 \
+GRAPHENE_ACCOUNT_NAME=swaplock \
+GRAPHENE_ASSET_SYMBOL=BTS \
+cargo run --manifest-path open-graphene-packages/rust/graphene-sdk-live/Cargo.toml \
+  --example session_smoke
+```
+
+The example connects, prints the chain id and head block, resolves the account and asset ids, and reads the account balance for that asset.
+
 ## What this crate does not provide
 
 This crate intentionally does not:
