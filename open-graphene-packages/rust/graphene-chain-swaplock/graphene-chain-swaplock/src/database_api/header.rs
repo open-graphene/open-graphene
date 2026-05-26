@@ -1,35 +1,20 @@
 use std::error::Error;
 use std::time::Duration;
 
-use serde_json::Value;
-
 use crate::rpc::GrapheneRpc;
 
 pub fn head_block(
     rpc: &mut GrapheneRpc,
     database_api_id: u64,
 ) -> Result<open_graphene_sdk_core::HeadBlock, Box<dyn Error>> {
-    let dgp = rpc
-        .get_objects(database_api_id, ["2.1.0"])?
-        .get(0)
-        .cloned()
-        .ok_or("dynamic global properties object was not returned")?;
-    Ok(open_graphene_sdk_core::HeadBlock {
-        number: dgp
-            .get("head_block_number")
-            .and_then(Value::as_u64)
-            .ok_or("dynamic global properties missing head_block_number")?,
-        id: dgp
-            .get("head_block_id")
-            .and_then(Value::as_str)
-            .ok_or("dynamic global properties missing head_block_id")?
-            .to_string(),
-        time: dgp
-            .get("time")
-            .and_then(Value::as_str)
-            .ok_or("dynamic global properties missing time")?
-            .to_string(),
-    })
+    let expected = rpc.database_api_id()?;
+    if expected != database_api_id {
+        return Err(format!(
+            "database API id mismatch: expected {expected}, got {database_api_id}"
+        )
+        .into());
+    }
+    Ok(open_graphene_sdk_live::head_block(rpc.session_mut())?)
 }
 
 pub fn next_transaction_header(

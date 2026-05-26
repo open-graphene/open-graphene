@@ -9,6 +9,7 @@ pub mod database_api;
 pub mod history_api;
 pub mod network_broadcast_api;
 pub mod operations;
+pub mod profile;
 pub mod rpc;
 pub mod signing;
 pub mod transaction;
@@ -18,3 +19,4 @@ pub use operations::{
 };
 
 pub use graphene_chain_swaplock_bindings as bindings;
+pub use profile::SwaplockProfile;

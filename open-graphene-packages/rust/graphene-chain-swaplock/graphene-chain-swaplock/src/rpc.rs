@@ -40,6 +40,10 @@ impl GrapheneRpc {
             .ok_or_else(|| "history API is unavailable".into())
     }
 
+    pub fn session_mut(&mut self) -> &mut GrapheneSession {
+        &mut self.session
+    }
+
     pub fn call_database(
         &mut self,
         api_id: u64,

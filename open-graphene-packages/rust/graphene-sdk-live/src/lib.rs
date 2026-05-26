@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use open_graphene_sdk_core::HeadBlock;
-use open_graphene_transport::{GrapheneSession, TransportError, get_objects};
+use open_graphene_transport::{get_objects, GrapheneSession, TransportError};
 use serde_json::Value;
 use thiserror::Error;
 
@@ -55,8 +55,12 @@ impl<P: GrapheneChainProfile> GrapheneLiveClient<P> {
     }
 
     pub fn head_block(&mut self) -> Result<HeadBlock, LiveSdkError> {
-        parse_head_block_from_get_objects(get_objects(&mut self.session, ["2.1.0"])?)
+        head_block(&mut self.session)
     }
+}
+
+pub fn head_block(session: &mut GrapheneSession) -> Result<HeadBlock, LiveSdkError> {
+    parse_head_block_from_get_objects(get_objects(session, ["2.1.0"])?)
 }
 
 fn validate_chain_id<P: GrapheneChainProfile>(actual: &str) -> Result<(), LiveSdkError> {
