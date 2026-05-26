@@ -1,7 +1,12 @@
 use std::env;
 use std::error::Error;
 
-use crate::rpc::GrapheneRpc;
+use graphene_chain_swaplock_bindings::generated::{
+    AccountObject, AssetDynamicDataObject, AssetObject, OperationHistoryObject,
+};
+use open_graphene_sdk_core::HeadBlock;
+
+use crate::{database_api, history_api, rpc::GrapheneRpc};
 
 pub const DEFAULT_RPC_URL: &str = "wss://node02.swaplock.chainpool.online:8090";
 pub const GRAPHENE_RPC_URL_ENV: &str = "GRAPHENE_RPC_URL";
@@ -62,5 +67,69 @@ impl SwaplockSession {
         let api_id = self.rpc.network_broadcast_api_id()?;
         self.network_broadcast_api_id = Some(api_id);
         Ok(api_id)
+    }
+
+    pub fn head_block(&mut self) -> Result<HeadBlock, Box<dyn Error>> {
+        database_api::head_block(&mut self.rpc, self.database_api_id)
+    }
+
+    pub fn lookup_account_id(&mut self, account_name: &str) -> Result<String, Box<dyn Error>> {
+        database_api::lookup_account_id(&mut self.rpc, self.database_api_id, account_name)
+    }
+
+    pub fn lookup_account_id_optional(
+        &mut self,
+        account_name: &str,
+    ) -> Result<Option<String>, Box<dyn Error>> {
+        database_api::lookup_account_id_optional(&mut self.rpc, self.database_api_id, account_name)
+    }
+
+    pub fn lookup_asset_id(&mut self, symbol: &str) -> Result<String, Box<dyn Error>> {
+        database_api::lookup_asset_id(&mut self.rpc, self.database_api_id, symbol)
+    }
+
+    pub fn lookup_asset_id_optional(
+        &mut self,
+        symbol: &str,
+    ) -> Result<Option<String>, Box<dyn Error>> {
+        database_api::lookup_asset_id_optional(&mut self.rpc, self.database_api_id, symbol)
+    }
+
+    pub fn account_balance(
+        &mut self,
+        account_id: &str,
+        asset_id: &str,
+    ) -> Result<i64, Box<dyn Error>> {
+        database_api::account_balance(&mut self.rpc, self.database_api_id, account_id, asset_id)
+    }
+
+    pub fn account_object(
+        &mut self,
+        account_id: &str,
+    ) -> Result<Option<AccountObject>, Box<dyn Error>> {
+        database_api::account_object(&mut self.rpc, self.database_api_id, account_id)
+    }
+
+    pub fn asset_object(&mut self, asset_id: &str) -> Result<Option<AssetObject>, Box<dyn Error>> {
+        database_api::asset_object(&mut self.rpc, self.database_api_id, asset_id)
+    }
+
+    pub fn asset_dynamic_data_object(
+        &mut self,
+        asset_dynamic_data_id: &str,
+    ) -> Result<Option<AssetDynamicDataObject>, Box<dyn Error>> {
+        database_api::asset_dynamic_data_object(
+            &mut self.rpc,
+            self.database_api_id,
+            asset_dynamic_data_id,
+        )
+    }
+
+    pub fn account_history_objects(
+        &mut self,
+        query: &history_api::AccountHistoryQuery<'_>,
+    ) -> Result<Vec<OperationHistoryObject>, Box<dyn Error>> {
+        let history_api_id = self.history_api_id()?;
+        history_api::get_account_history_objects(&mut self.rpc, history_api_id, query)
     }
 }

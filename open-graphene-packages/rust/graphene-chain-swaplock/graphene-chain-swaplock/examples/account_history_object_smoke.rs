@@ -1,11 +1,7 @@
 use std::env;
 use std::error::Error;
 
-use graphene_chain_swaplock::{
-    database_api::lookup_account_id,
-    history_api::{get_account_history_objects, AccountHistoryQuery},
-    SwaplockSession,
-};
+use graphene_chain_swaplock::{history_api::AccountHistoryQuery, SwaplockSession};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let account_name =
@@ -14,9 +10,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut session = SwaplockSession::connect_from_env_or_default()?;
     let database_api_id = session.database_api_id();
     let history_api_id = session.history_api_id()?;
-    let account_id = lookup_account_id(session.rpc_mut(), database_api_id, &account_name)?;
+    let account_id = session.lookup_account_id(&account_name)?;
     let query = AccountHistoryQuery::recent(&account_id);
-    let history = get_account_history_objects(session.rpc_mut(), history_api_id, &query)?;
+    let history = session.account_history_objects(&query)?;
 
     println!("Connected: database_api_id={database_api_id} history_api_id={history_api_id}");
     println!("Account: {account_name} -> {account_id}");
