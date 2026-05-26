@@ -13,9 +13,27 @@ pub struct DatabaseApi<'session> {
     pub(crate) session: &'session mut GrapheneSession,
 }
 
+pub struct AccountByIdRequest<'session> {
+    session: &'session mut GrapheneSession,
+    account_id: String,
+}
+
+pub struct AccountByNameRequest<'session> {
+    session: &'session mut GrapheneSession,
+    account_name: String,
+}
+
 pub struct AccountsRequest<'session> {
     session: &'session mut GrapheneSession,
     names_or_ids: Vec<String>,
+}
+
+pub struct ChainIdRequest<'session> {
+    session: &'session mut GrapheneSession,
+}
+
+pub struct ChainPropertiesRequest<'session> {
+    session: &'session mut GrapheneSession,
 }
 
 pub struct DynamicGlobalPropertiesRequest<'session> {
@@ -25,6 +43,22 @@ pub struct DynamicGlobalPropertiesRequest<'session> {
 pub struct DynamicGlobalPropertiesSubscription<'session> {
     session: &'session mut GrapheneSession,
     initial: DynamicGlobalPropertyObject,
+}
+
+pub struct GlobalPropertiesRequest<'session> {
+    session: &'session mut GrapheneSession,
+}
+
+impl AccountByIdRequest<'_> {
+    pub async fn get(self) -> Result<AccountObject, SwaplockApiError> {
+        get_account_by_id(self.session, &self.account_id).await
+    }
+}
+
+impl AccountByNameRequest<'_> {
+    pub async fn get(self) -> Result<AccountObject, SwaplockApiError> {
+        get_account_by_name(self.session, &self.account_name).await
+    }
 }
 
 impl AccountsRequest<'_> {
@@ -55,6 +89,18 @@ impl AccountsRequest<'_> {
                 }
             })
             .collect()
+    }
+}
+
+impl ChainIdRequest<'_> {
+    pub async fn get(self) -> Result<String, SwaplockApiError> {
+        get_chain_id(self.session).await
+    }
+}
+
+impl ChainPropertiesRequest<'_> {
+    pub async fn get(self) -> Result<ChainPropertyObject, SwaplockApiError> {
+        get_chain_properties(self.session).await
     }
 }
 
@@ -106,21 +152,31 @@ impl DynamicGlobalPropertiesSubscription<'_> {
     }
 }
 
+impl GlobalPropertiesRequest<'_> {
+    pub async fn get(self) -> Result<GlobalPropertyObject, SwaplockApiError> {
+        get_global_properties(self.session).await
+    }
+}
+
 impl<'session> DatabaseApi<'session> {
-    pub async fn get_chain_id(&mut self) -> Result<String, SwaplockApiError> {
-        let value = self.session.database_call("get_chain_id", json!([]))?;
-        Ok(parse_chain_id(value)?)
+    pub fn account_by_id<S>(self, account_id: S) -> AccountByIdRequest<'session>
+    where
+        S: Into<String>,
+    {
+        AccountByIdRequest {
+            session: self.session,
+            account_id: account_id.into(),
+        }
     }
 
-    pub async fn get_chain_properties(&mut self) -> Result<ChainPropertyObject, SwaplockApiError> {
-        let value = self
-            .session
-            .database_call("get_chain_properties", json!([]))?;
-
-        serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
-            method: "get_chain_properties",
-            message: error.to_string(),
-        })
+    pub fn account_by_name<S>(self, account_name: S) -> AccountByNameRequest<'session>
+    where
+        S: Into<String>,
+    {
+        AccountByNameRequest {
+            session: self.session,
+            account_name: account_name.into(),
+        }
     }
 
     pub fn accounts<I, S>(self, names_or_ids: I) -> AccountsRequest<'session>
@@ -134,10 +190,50 @@ impl<'session> DatabaseApi<'session> {
         }
     }
 
+    pub fn chain_id(self) -> ChainIdRequest<'session> {
+        ChainIdRequest {
+            session: self.session,
+        }
+    }
+
+    pub fn chain_properties(self) -> ChainPropertiesRequest<'session> {
+        ChainPropertiesRequest {
+            session: self.session,
+        }
+    }
+
     pub fn dynamic_global_properties(self) -> DynamicGlobalPropertiesRequest<'session> {
         DynamicGlobalPropertiesRequest {
             session: self.session,
         }
+    }
+
+    pub fn global_properties(self) -> GlobalPropertiesRequest<'session> {
+        GlobalPropertiesRequest {
+            session: self.session,
+        }
+    }
+
+    pub async fn get_account_by_name(
+        &mut self,
+        account_name: &str,
+    ) -> Result<AccountObject, SwaplockApiError> {
+        get_account_by_name(self.session, account_name).await
+    }
+
+    pub async fn get_account_by_id(
+        &mut self,
+        account_id: &str,
+    ) -> Result<AccountObject, SwaplockApiError> {
+        get_account_by_id(self.session, account_id).await
+    }
+
+    pub async fn get_chain_id(&mut self) -> Result<String, SwaplockApiError> {
+        get_chain_id(self.session).await
+    }
+
+    pub async fn get_chain_properties(&mut self) -> Result<ChainPropertyObject, SwaplockApiError> {
+        get_chain_properties(self.session).await
     }
 
     pub async fn get_dynamic_global_properties(
@@ -149,14 +245,7 @@ impl<'session> DatabaseApi<'session> {
     pub async fn get_global_properties(
         &mut self,
     ) -> Result<GlobalPropertyObject, SwaplockApiError> {
-        let value = self
-            .session
-            .database_call("get_global_properties", json!([]))?;
-
-        serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
-            method: "get_global_properties",
-            message: error.to_string(),
-        })
+        get_global_properties(self.session).await
     }
 
     pub async fn subscribe_dynamic_global_properties(
@@ -164,52 +253,64 @@ impl<'session> DatabaseApi<'session> {
     ) -> Result<DynamicGlobalPropertiesSubscription<'session>, SwaplockApiError> {
         self.dynamic_global_properties().subscribe().await
     }
+}
 
-    pub async fn get_account_by_name(
-        &mut self,
-        account_name: &str,
-    ) -> Result<AccountObject, SwaplockApiError> {
-        let accounts = self
-            .session
-            .database_call("lookup_accounts", json!([account_name, 1]))?;
-        let account_id = accounts
-            .as_array()
-            .and_then(|rows| {
-                rows.iter().find_map(|row| {
-                    let row = row.as_array()?;
-                    let name = row.first()?.as_str()?;
-                    let id = row.get(1)?.as_str()?;
-                    (name == account_name).then(|| id.to_string())
-                })
+async fn get_account_by_name(
+    session: &mut GrapheneSession,
+    account_name: &str,
+) -> Result<AccountObject, SwaplockApiError> {
+    let accounts = session.database_call("lookup_accounts", json!([account_name, 1]))?;
+    let account_id = accounts
+        .as_array()
+        .and_then(|rows| {
+            rows.iter().find_map(|row| {
+                let row = row.as_array()?;
+                let name = row.first()?.as_str()?;
+                let id = row.get(1)?.as_str()?;
+                (name == account_name).then(|| id.to_string())
             })
-            .ok_or_else(|| SwaplockApiError::AccountNotFound {
-                account: account_name.to_string(),
-            })?;
-
-        self.get_account_by_id(&account_id).await
-    }
-
-    pub async fn get_account_by_id(
-        &mut self,
-        account_id: &str,
-    ) -> Result<AccountObject, SwaplockApiError> {
-        let objects = self
-            .session
-            .database_call("get_objects", json!([[account_id]]))?;
-        let account = objects
-            .as_array()
-            .and_then(|objects| objects.first())
-            .filter(|object| !object.is_null())
-            .cloned()
-            .ok_or_else(|| SwaplockApiError::AccountNotFound {
-                account: account_id.to_string(),
-            })?;
-
-        serde_json::from_value(account).map_err(|error| SwaplockApiError::UnexpectedResponse {
-            method: "get_objects",
-            message: error.to_string(),
         })
-    }
+        .ok_or_else(|| SwaplockApiError::AccountNotFound {
+            account: account_name.to_string(),
+        })?;
+
+    get_account_by_id(session, &account_id).await
+}
+
+async fn get_account_by_id(
+    session: &mut GrapheneSession,
+    account_id: &str,
+) -> Result<AccountObject, SwaplockApiError> {
+    let objects = session.database_call("get_objects", json!([[account_id]]))?;
+    let account = objects
+        .as_array()
+        .and_then(|objects| objects.first())
+        .filter(|object| !object.is_null())
+        .cloned()
+        .ok_or_else(|| SwaplockApiError::AccountNotFound {
+            account: account_id.to_string(),
+        })?;
+
+    serde_json::from_value(account).map_err(|error| SwaplockApiError::UnexpectedResponse {
+        method: "get_objects",
+        message: error.to_string(),
+    })
+}
+
+async fn get_chain_id(session: &mut GrapheneSession) -> Result<String, SwaplockApiError> {
+    let value = session.database_call("get_chain_id", json!([]))?;
+    Ok(parse_chain_id(value)?)
+}
+
+async fn get_chain_properties(
+    session: &mut GrapheneSession,
+) -> Result<ChainPropertyObject, SwaplockApiError> {
+    let value = session.database_call("get_chain_properties", json!([]))?;
+
+    serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
+        method: "get_chain_properties",
+        message: error.to_string(),
+    })
 }
 
 async fn get_dynamic_global_properties(
@@ -219,6 +320,17 @@ async fn get_dynamic_global_properties(
 
     serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
         method: "get_dynamic_global_properties",
+        message: error.to_string(),
+    })
+}
+
+async fn get_global_properties(
+    session: &mut GrapheneSession,
+) -> Result<GlobalPropertyObject, SwaplockApiError> {
+    let value = session.database_call("get_global_properties", json!([]))?;
+
+    serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
+        method: "get_global_properties",
         message: error.to_string(),
     })
 }

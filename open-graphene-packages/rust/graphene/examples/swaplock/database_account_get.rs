@@ -14,10 +14,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .connect()
         .await?;
 
-    let account = swaplock.database().get_account_by_name("swaplock").await?;
+    let account = swaplock
+        .database()
+        .account_by_name("swaplock")
+        .get()
+        .await?;
     println!("account by name: {} {}", account.id.0, account.name);
 
-    let same_account = swaplock.database().get_account_by_id(&account.id.0).await?;
+    let same_account = swaplock
+        .database()
+        .account_by_id(&account.id.0)
+        .get()
+        .await?;
     println!("account by id: {} {}", same_account.id.0, same_account.name);
 
     Ok(())

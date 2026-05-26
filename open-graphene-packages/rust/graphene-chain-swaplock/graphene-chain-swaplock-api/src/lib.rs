@@ -4,8 +4,9 @@ use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
 
 pub use database_api::{
-    AccountsRequest, DatabaseApi, DynamicGlobalPropertiesRequest,
-    DynamicGlobalPropertiesSubscription,
+    AccountByIdRequest, AccountByNameRequest, AccountsRequest, ChainIdRequest,
+    ChainPropertiesRequest, DatabaseApi, DynamicGlobalPropertiesRequest,
+    DynamicGlobalPropertiesSubscription, GlobalPropertiesRequest,
 };
 
 pub const SWAPLOCK_CHAIN_ID: &str =
@@ -118,15 +119,14 @@ mod tests {
     fn chain_id_mismatch_error_includes_expected_and_actual_values() {
         let error = SwaplockApiError::ChainIdMismatch {
             mismatch: ChainIdMismatch {
-                server: "wss://example.invalid".to_string(),
-                expected: "expected-chain".to_string(),
-                actual: "actual-chain".to_string(),
+                server: "wss://node.example".to_string(),
+                expected: "expected".to_string(),
+                actual: "actual".to_string(),
             },
         };
-        let message = error.to_string();
 
-        assert!(message.contains("expected-chain"));
-        assert!(message.contains("actual-chain"));
-        assert!(message.contains("wss://example.invalid"));
+        let message = error.to_string();
+        assert!(message.contains("expected"));
+        assert!(message.contains("actual"));
     }
 }

@@ -14,7 +14,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .connect()
         .await?;
 
-    let properties = swaplock.database().get_chain_properties().await?;
+    let properties = swaplock.database().chain_properties().get().await?;
 
     println!("id: {}", properties.id.0);
     println!("chain id: {}", properties.chain_id.0);
