@@ -2,7 +2,7 @@
 
 ## Status
 
-This plan started as part of the SDK/live feature freeze. The first two Swaplock proof targets, `limit_order_object` and `dynamic_global_property_object`, are now complete.
+This plan started as part of the SDK/live feature freeze. The first two Swaplock proof targets, `limit_order_object` and `dynamic_global_property_object`, are now complete. The account-balance read path is also complete as a typed value proof through generated `Asset`, not as an `account_balance_object` proof.
 
 Completed `limit_order_object` proof:
 
@@ -22,11 +22,21 @@ Completed `dynamic_global_property_object` proof:
 - `graphene-chain-swaplock::head_block` consumes generated `DynamicGlobalPropertyObject` instead of `sdk-live::head_block`.
 - The public Swaplock node `head_block_smoke` proof passed, returning head block `694851`.
 
-The plan remains useful as the template for the next generated live object. Future work should broaden this generated-object pattern; it should not add rich fields to `sdk-live` projections.
+Completed `get_account_balances -> asset` proof:
+
+- Swaplock and BitShares C++ both declare `database_api::get_account_balances(...) -> vector<asset>`.
+- `account_balance_object` exists as an internal indexed chain object, but this RPC does not return it.
+- Swaplock and BitShares spec generation now select `database_api::get_account_balances` and emit `get_account_balances -> vector<asset>`.
+- Generated bindings already emit `Asset`, including decimal-string or integer JSON deserialization for `amount`.
+- Swaplock high-level `account_balance` consumes generated `Asset` chain-locally and preserves the public `i64` return.
+- BitShares bindings include an integration fixture proving balance JSON deserializes through generated `Asset`.
+- `sdk-live::account_balance` remains a minimal Graphene-generic projection; do not add a rich account-balance model there.
 
 ## Reader and expected action
 
 This document is for the next internal engineer or agent working on Open Graphene code generation. The `limit_order_object` and `dynamic_global_property_object` proofs are done; use their implementations as reference paths for the next generated live object.
+
+The plan remains useful as the template for the next generated live object. Future work should broaden this generated-object pattern; it should not add rich fields to `sdk-live` projections. Balance reads should be treated as typed protocol-value coverage, not as a reason to invent an `account_balance_object` RPC shape.
 
 The expected repeatable pattern is:
 
@@ -393,8 +403,8 @@ This milestone should not:
 
 After `limit_order_object` and `dynamic_global_property_object` are proven, likely next generated live objects are:
 
-1. `account_balance_object`, because balance reads are simple and already live-proven;
-2. `asset_object` and `account_object`, because lookup helpers currently use partial response parsing;
-3. `operation_history_object`, because confirmation matching is still JSON-heavy and operation-specific.
+1. `asset_object` and `account_object`, because lookup helpers currently use partial response parsing;
+2. `operation_history_object`, because confirmation matching is still JSON-heavy and operation-specific;
+3. `account_balance_object` only if a real reflected RPC return path is selected; the current balance read path is already covered by `get_account_balances -> vector<asset>` and generated `Asset`.
 
 A separate milestone should handle generated Graphene broadcast JSON rendering. That work should not be mixed with live object generation, because it has different semantics and different failure modes.

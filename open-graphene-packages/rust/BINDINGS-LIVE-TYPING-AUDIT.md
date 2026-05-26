@@ -8,9 +8,9 @@ The immediate question is why the current live SDK and Swaplock helper layer sti
 
 ## Short answer
 
-The generated Swaplock bindings are strongest at the protocol transaction layer, and now have two proven live RPC object paths: `limit_order_object` for Swaplock order lookup and `dynamic_global_property_object` for Swaplock head-block reads.
+The generated Swaplock bindings are strongest at the protocol transaction layer, and now have two proven live RPC object paths: `limit_order_object` for Swaplock order lookup and `dynamic_global_property_object` for Swaplock head-block reads. Swaplock and BitShares account-balance reads are also proven through the real RPC wire shape, `get_account_balances -> vector<asset>`, using generated `Asset`.
 
-They cover generated operation structs, generated transaction structs, static variants, object id wrappers, `Asset`, `Price`, FC serialization, generated `LimitOrderObject`, and generated `DynamicGlobalPropertyObject`. They do not yet provide complete generated Rust structs for most other database/app objects returned by live RPC calls, such as account objects, asset objects, or account balances.
+They cover generated operation structs, generated transaction structs, static variants, object id wrappers, `Asset`, `Price`, FC serialization, generated `LimitOrderObject`, and generated `DynamicGlobalPropertyObject`. They do not yet provide complete generated Rust structs for most other database/app objects returned by live RPC calls, such as account objects, asset objects, or rich account-balance object paths.
 
 The current `sdk-live` `serde_json::Value` parsing exists because most generated live response object types do not yet exist. Some of the current hand-written parsing is a justified minimal projection into SDK primitives; richer response modeling would become duplicated manual bindings and should stop until the generator catches up.
 
@@ -25,10 +25,11 @@ The generated Swaplock bindings currently provide:
 - generated `LimitOrderObject` for the first typed live RPC object proof;
 - generated `DynamicGlobalPropertyObject` for the second typed live RPC object proof;
 - generated fixed-byte JSON deserialization for Graphene hex strings or byte arrays with exact length checks;
+- generated `Asset` for account-balance reads through the real `get_account_balances -> vector<asset>` RPC shape on Swaplock and BitShares;
 - FC serialization for generated ids, assets, operations, transactions, signatures, and supported protocol values;
 - serde support for many raw protocol structs, live object structs currently in the spec graph, and static variants.
 
-That is enough to build, mutate, sign, and FC-serialize local transactions with generated types, to consume Swaplock `get_limit_orders` through the generated `LimitOrderObject` path, and to consume Swaplock `get_dynamic_global_properties` through the generated `DynamicGlobalPropertyObject` path.
+That is enough to build, mutate, sign, and FC-serialize local transactions with generated types, to consume Swaplock `get_limit_orders` through the generated `LimitOrderObject` path, to consume Swaplock `get_dynamic_global_properties` through the generated `DynamicGlobalPropertyObject` path, and to consume Swaplock/BitShares account balances through generated `Asset` values.
 
 ## What generated bindings do not yet cover
 
@@ -36,11 +37,11 @@ The generated bindings do not yet provide complete Rust structs for most databas
 
 - `account_object`;
 - `asset_object`;
-- `account_balance_object`;
+- `account_balance_object` as a rich chain object, unless a real reflected RPC return path is selected;
 - richer `operation_history_object` usage across all live flows;
 - typed unions for `get_objects` results.
 
-`limit_order_object` and `dynamic_global_property_object` are the first exceptions. Swaplock spec generation selects `get_limit_orders` and `get_dynamic_global_properties`, generated bindings emit `LimitOrderObject` and `DynamicGlobalPropertyObject`, and `graphene-chain-swaplock` uses those generated types for order lookup and head-block reads. This is a proof of direction, not broad live-object completion.
+`limit_order_object` and `dynamic_global_property_object` are the first live object exceptions. Swaplock spec generation selects `get_limit_orders` and `get_dynamic_global_properties`, generated bindings emit `LimitOrderObject` and `DynamicGlobalPropertyObject`, and `graphene-chain-swaplock` uses those generated types for order lookup and head-block reads. Account-balance reads are a separate typed-value proof rather than an object proof: both Swaplock and BitShares select `get_account_balances`, whose real C++ signature returns `vector<asset>`, and generated bindings deserialize those balance entries as `Asset`. This is a proof of direction, not broad live-object completion.
 
 The generated spec contains `objectTypes`, so it knows object id spaces and type ids such as `account -> 1.2.x`, `asset -> 1.3.x`, `limit_order -> 1.7.x`, and `dynamic_global_property -> 2.1.x`. That is not the same as having generated response structs with fields.
 
@@ -53,7 +54,7 @@ The generated RPC method coverage is also incomplete. Current runtime code uses 
 - `get_limit_orders`;
 - `broadcast_transaction`.
 
-Those are currently hand-wrapped in `open-graphene-transport` and interpreted above transport because the generator/spec layer does not yet emit typed RPC clients or typed response bindings for them.
+Those are currently hand-wrapped in `open-graphene-transport` and interpreted above transport because the generator/spec layer does not yet emit typed RPC clients. Some response value types are now generated and used chain-locally, such as `get_account_balances -> Asset`, `get_limit_orders -> LimitOrderObject`, and `get_dynamic_global_properties -> DynamicGlobalPropertyObject`.
 
 ## Where generated bindings are used correctly today
 
@@ -85,6 +86,8 @@ This is a coherent use of current bindings: generated protocol types are the loc
 - `AssetAmount`;
 - frozen `LimitOrderSummary { id, seller }` for legacy/shared callers;
 - `bool` for `limit_order_exists`.
+
+`account_balance` is intentionally a minimal shared projection over the real Graphene API shape, `database.get_account_balances(account, [asset]) -> vector<asset>`. Swaplock and BitShares generated bindings now both cover that response as generated `Asset`; chain-specific crates should use generated `Asset` when they need chain-local parsing. Do not model this RPC as `account_balance_object` unless a different real RPC method returns that object.
 
 This is acceptable only as minimal Graphene-generic projection. It should not grow into a complete manually modeled object layer. Swaplock rich order lookup has moved to the generated `LimitOrderObject` path, and Swaplock head-block reads have moved to the generated `DynamicGlobalPropertyObject` path in the chain-specific crate.
 
@@ -180,8 +183,9 @@ Generate Rust structs for the app/database objects actually used by live flows f
 
 - `AccountObject`;
 - `AssetObject`;
-- `AccountBalanceObject`;
 - `OperationHistoryObject`.
+
+Do not list `AccountBalanceObject` as the next target merely because balance reads exist. The currently used `get_account_balances` RPC returns `vector<asset>`, not `account_balance_object`, and that path is already covered by generated `Asset` for Swaplock and BitShares. `AccountBalanceObject` should only become a generated live-object target if a real reflected RPC return path exposes it.
 
 `LimitOrderObject` and `DynamicGlobalPropertyObject` are already proven for Swaplock. Future object work should follow those patterns: enter the type graph through a real reflected RPC return, keep generated bindings as wire types, and convert to SDK primitives at the chain-specific seam.
 

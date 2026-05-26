@@ -147,6 +147,8 @@ It returns `Ok(None)` for an empty response, a first `null` entry, or a non-exac
 
 The `amount` field may be a JSON integer or a decimal string. The helper fail-closes when the response has no first balance object, the `asset_id` is missing or different from the requested `AssetIdRef`, or the amount is malformed. It returns `open_graphene_sdk_primitives::AssetAmount`.
 
+This is a typed protocol-value path, not an `account_balance_object` path. Swaplock and BitShares generated bindings now both deserialize this response as generated `Asset`; chain-specific crates should use that generated type when they need chain-local parsing while preserving their public SDK projection.
+
 ## Head block semantics
 
 `head_block(session)` calls Graphene `database.get_objects(["2.1.0"])` and parses the first dynamic-global-property object into `HeadBlock { number, id, time }`.
@@ -226,7 +228,7 @@ Implemented today:
 - Swaplock head-block reads through generated `DynamicGlobalPropertyObject` in the chain-specific crate, not through `sdk-live`;
 - Swaplock rich limit-order lookup through generated `LimitOrderObject` in the chain-specific crate, not through `sdk-live`.
 
-Likely next candidates are BitShares generated object parity for dynamic global properties, generated `account_balance_object`, or generated `account_object` / `asset_object` coverage for lookup helpers.
+Likely next generated object candidates are `account_object`, `asset_object`, or `operation_history_object`. Do not treat `account_balance_object` as the next target merely because balance reads exist: the current `get_account_balances` RPC returns `vector<asset>` and is already covered by generated `Asset` in Swaplock and BitShares.
 
 ## Required fee semantics
 
