@@ -8,11 +8,11 @@ The immediate question is why the current live SDK and Swaplock helper layer sti
 
 ## Short answer
 
-The generated Swaplock bindings are currently strongest at the protocol transaction layer, not at the full live RPC object layer.
+The generated Swaplock bindings are strongest at the protocol transaction layer, and now have one proven live RPC object path: `limit_order_object` for Swaplock order lookup.
 
-They cover generated operation structs, generated transaction structs, static variants, object id wrappers, `Asset`, `Price`, and FC serialization. They do not yet provide complete generated Rust structs for most database/app objects returned by live RPC calls, such as account objects, asset objects, dynamic global properties, account balances, or limit order objects.
+They cover generated operation structs, generated transaction structs, static variants, object id wrappers, `Asset`, `Price`, FC serialization, and the generated `LimitOrderObject` used by `graphene-chain-swaplock` after the first live object proof. They do not yet provide complete generated Rust structs for most other database/app objects returned by live RPC calls, such as account objects, asset objects, dynamic global properties, or account balances.
 
-The current `sdk-live` `serde_json::Value` parsing exists because those generated live response object types do not yet exist. Some of the current hand-written parsing is a justified minimal projection into SDK primitives; richer response modeling would become duplicated manual bindings and should stop until the generator catches up.
+The current `sdk-live` `serde_json::Value` parsing exists because most generated live response object types do not yet exist. Some of the current hand-written parsing is a justified minimal projection into SDK primitives; richer response modeling would become duplicated manual bindings and should stop until the generator catches up.
 
 ## Current generated binding coverage
 
@@ -22,10 +22,11 @@ The generated Swaplock bindings currently provide:
 - generated protocol value structs such as `Asset`, `Price`, `Authority`, `Transaction`, and `SignedTransaction`;
 - generated static variants such as `Operation`, `OperationResult`, and `FutureExtensions`;
 - generated object id wrappers such as `AccountId`, `AssetId`, `LimitOrderId`, and many others;
+- generated `LimitOrderObject` for the first typed live RPC object proof;
 - FC serialization for generated ids, assets, operations, transactions, signatures, and supported protocol values;
-- serde support for many raw protocol structs and static variants.
+- serde support for many raw protocol structs, live object structs currently in the spec graph, and static variants.
 
-That is enough to build, mutate, sign, and FC-serialize local transactions with generated types.
+That is enough to build, mutate, sign, and FC-serialize local transactions with generated types, and to consume Swaplock `get_limit_orders` through the generated `LimitOrderObject` path.
 
 ## What generated bindings do not yet cover
 
@@ -35,9 +36,10 @@ The generated bindings do not yet provide complete Rust structs for most databas
 - `account_object`;
 - `asset_object`;
 - `account_balance_object`;
-- `limit_order_object`;
 - richer `operation_history_object` usage across all live flows;
 - typed unions for `get_objects` results.
+
+`limit_order_object` is the first exception: Swaplock spec generation selects `get_limit_orders`, generated bindings emit `LimitOrderObject`, and `graphene-chain-swaplock` uses that generated type for order lookup. This is a proof of direction, not broad live-object completion.
 
 The generated spec contains `objectTypes`, so it knows object id spaces and type ids such as `account -> 1.2.x`, `asset -> 1.3.x`, `limit_order -> 1.7.x`, and `dynamic_global_property -> 2.1.x`. That is not the same as having generated response structs with fields.
 
@@ -80,10 +82,10 @@ This is a coherent use of current bindings: generated protocol types are the loc
 - `AccountIdRef`;
 - `AssetIdRef`;
 - `AssetAmount`;
-- `LimitOrderSummary { id, seller }`;
+- frozen `LimitOrderSummary { id, seller }` for legacy/shared callers;
 - `bool` for `limit_order_exists`.
 
-This is acceptable only as minimal Graphene-generic projection. It should not grow into a complete manually modeled object layer.
+This is acceptable only as minimal Graphene-generic projection. It should not grow into a complete manually modeled object layer. Swaplock rich order lookup has moved to the generated `LimitOrderObject` path in the chain-specific crate.
 
 ### 3. Chain-local broadcast JSON renderers
 
@@ -243,13 +245,18 @@ Stop adding new SDK/live features. Commit this audit and use it as the boundary 
 
 ### Phase 1: Generator proof for one live object
 
-Pick one small, high-value object and prove full extraction/generation. Best candidate: `limit_order_object`, because we already have live proof around create/find/cancel.
+Status: complete for Swaplock `limit_order_object`.
 
-Goal:
+The proof now covers:
 
-- generate `LimitOrderObject` from real C++ reflected fields;
-- deserialize real `get_limit_orders` response into it in the Swaplock chain crate;
-- keep `sdk-live` limited to primitive projection or remove the manual projection if the typed chain layer supersedes it.
+- Swaplock spec generation selects `database_api::get_limit_orders` and emits `get_limit_orders -> vector<limit_order_object>`;
+- generated object metadata links `objectTypes.limit_order.structRef` to `limit_order_object`;
+- generated bindings emit `LimitOrderObject` with inherited `id`, seller, price, amount, fee, action, and optional take-profit fields;
+- generated i64 fields accept Graphene live JSON numbers or decimal strings;
+- `graphene-chain-swaplock::find_limit_order` deserializes live `get_limit_orders` results into generated `LimitOrderObject` instead of using `sdk-live::LimitOrderSummary`;
+- private testnet `trading_scenario` passed, opening, finding, canceling, and observing order `1.7.16` gone.
+
+Remaining work after this proof is broadening the pattern to more objects, not adding fields to `sdk-live::LimitOrderSummary`.
 
 ### Phase 2: Broadcast JSON renderer proof
 

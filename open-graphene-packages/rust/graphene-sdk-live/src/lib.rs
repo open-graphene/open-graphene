@@ -20,6 +20,11 @@ pub trait GrapheneChainProfile {
     }
 }
 
+/// Frozen minimal projection for legacy/shared limit-order reads.
+///
+/// Rich limit-order payloads should use generated chain binding types such as
+/// `graphene_chain_swaplock_bindings::generated::LimitOrderObject` in a
+/// chain-specific crate. Do not add more fields here.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct LimitOrderSummary {
     pub id: LimitOrderIdRef,
@@ -202,6 +207,12 @@ pub fn required_fee_for_operation_json(
     )
 }
 
+/// Returns a frozen minimal limit-order projection.
+///
+/// This helper remains for Graphene-generic callers that only need order id and
+/// seller id. Chain-specific crates should prefer generated object types for
+/// rich order payloads; Swaplock order lookup now uses generated
+/// `LimitOrderObject` instead of this projection.
 pub fn limit_orders(
     session: &mut GrapheneSession,
     base_asset_id: &AssetIdRef,

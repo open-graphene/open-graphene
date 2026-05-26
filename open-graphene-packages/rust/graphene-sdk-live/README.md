@@ -153,7 +153,11 @@ The `amount` field may be a JSON integer or a decimal string. The helper fail-cl
 [{"id": "1.7.x", "seller": "1.2.x"}]
 ```
 
-It returns `Vec<LimitOrderSummary>`, where `id` is validated as `LimitOrderIdRef` and `seller` is validated as `AccountIdRef`. The helper intentionally exposes only the generic fields currently needed by chain wrappers. It does not parse price objects, infer market direction, filter by seller, wait for order lifecycle changes, or parse generated chain object types.
+It returns `Vec<LimitOrderSummary>`, where `id` is validated as `LimitOrderIdRef` and `seller` is validated as `AccountIdRef`.
+
+This helper is now a frozen minimal projection. It was useful during the live SDK spike, but it is not the path for rich order objects. Swaplock order lookup now uses the generated chain binding type `graphene_chain_swaplock_bindings::generated::LimitOrderObject`, and the private testnet `trading_scenario` live proof passed with order `1.7.16` opened, found through that generated object path, canceled, and observed gone.
+
+Do not add price, amount, fill, or lifecycle fields to `LimitOrderSummary`. For rich order payloads, add generated object coverage and consume it in the chain-specific crate.
 
 `limit_order_exists(session, order_id)` calls Graphene `database.get_objects([order_id])` and interprets the first result using Graphene object lookup semantics:
 
@@ -208,11 +212,12 @@ Implemented today:
 - `lookup_asset_id` / `lookup_asset_id_optional`;
 - `account_balance`;
 - `required_fee_for_operation_json`;
-- `limit_orders`;
+- `limit_orders` as a frozen minimal projection;
 - `limit_order_exists`;
-- Swaplock integration for head-block, account lookup, asset lookup, account balance, required fee, limit-order reads, and limit-order existence checks while preserving existing Swaplock helper signatures.
+- Swaplock integration for head-block, account lookup, asset lookup, account balance, required fee, and limit-order existence checks while preserving existing Swaplock helper signatures;
+- Swaplock rich limit-order lookup through generated `LimitOrderObject` in the chain-specific crate, not through `sdk-live`.
 
-Likely next candidates are live order-existence proof and documentation cleanup, or a future typed object layer for richer limit-order fields if more callers need price/amount details.
+Likely next candidates are documentation cleanup for other frozen projections, BitShares generated object parity, or generated typed coverage for `dynamic_global_property_object` so head-block reads can follow the same pattern.
 
 ## Required fee semantics
 

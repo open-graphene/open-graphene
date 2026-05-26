@@ -2,19 +2,28 @@
 
 ## Status
 
-This plan is part of the SDK/live feature freeze. It does not add a new runtime feature. It defines the next generator milestone needed before the project should add richer live SDK response models.
+This plan started as part of the SDK/live feature freeze. The first proof target, Swaplock `limit_order_object`, is now complete.
 
-The first proof target is `limit_order_object` because the current Swaplock stack already has live proof for the full order lifecycle: create an unmatched limit order, find it through `get_limit_orders`, cancel it, and observe that it is gone.
+Completed proof:
+
+- Swaplock spec generation selects `database_api::get_limit_orders` and emits `get_limit_orders -> vector<limit_order_object>`.
+- Generated object metadata links `objectTypes.limit_order.structRef` to `limit_order_object`.
+- Generated bindings emit `LimitOrderObject` with inherited `id`, seller, price, amount, fee, action, and optional take-profit fields.
+- Generated i64 fields accept Graphene live JSON numbers or decimal strings; the first live proof exposed `for_sale` as a decimal string.
+- `graphene-chain-swaplock::find_limit_order` consumes generated `LimitOrderObject` instead of `sdk-live::LimitOrderSummary`.
+- The private Swaplock testnet `trading_scenario` passed after the migration, opening, finding, canceling, and observing order `1.7.16` gone.
+
+The plan remains useful as the template for the next generated live object. Future work should broaden this generated-object pattern; it should not add rich fields to `sdk-live::LimitOrderSummary`.
 
 ## Reader and expected action
 
-This document is for the next internal engineer or agent working on Open Graphene code generation. After reading it, they should be able to implement the first generated live object proof for `limit_order_object` without inventing JSON shapes or expanding `sdk-live` manually.
+This document is for the next internal engineer or agent working on Open Graphene code generation. The `limit_order_object` proof is done; use its implementation as the reference path for the next generated live object.
 
-The expected action is:
+The expected repeatable pattern is:
 
-1. extend spec generation so object types can point to reflected object structs;
-2. extend Rust binding generation to emit a typed `LimitOrderObject`;
-3. prove that Swaplock order reads can deserialize live RPC payloads into that generated type;
+1. extend spec generation so the target RPC response reaches a reflected object struct;
+2. extend Rust binding generation only when a known wire type needs explicit modeling;
+3. prove that the chain crate can deserialize live RPC payloads into generated types;
 4. keep `sdk-live` as a minimal projection/orchestration layer rather than a hand-written object binding layer.
 
 ## Why `limit_order_object` first
@@ -353,11 +362,11 @@ Acceptance criteria:
 - no secrets are printed;
 - build artifacts are removed afterward.
 
-### Step 5: Decide whether to keep or deprecate the minimal `sdk-live` projection
+### Step 5: Keep or deprecate the minimal `sdk-live` projection
 
-After the typed chain adapter works, decide whether `sdk-live::limit_orders` remains useful as a minimal shared projection or should be frozen/deprecated in favor of generated chain-specific typed adapters.
+After the typed chain adapter worked, the project chose to freeze `sdk-live::limit_orders` as a minimal historical/shared projection. Swaplock rich order lookup now uses generated `LimitOrderObject` directly.
 
-Do not decide this before the generated object proof exists.
+Do not add fields to `LimitOrderSummary`. If another chain needs rich order fields, generate and consume that chain's object type instead.
 
 ## Non-goals
 
