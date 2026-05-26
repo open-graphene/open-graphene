@@ -43,6 +43,21 @@ where
     session.database_call("lookup_asset_symbols", lookup_asset_symbols_params(symbols))
 }
 
+pub fn get_account_balances<I, S>(
+    session: &mut GrapheneSession,
+    account_id: impl Into<String>,
+    asset_ids: I,
+) -> Result<Value, TransportError>
+where
+    I: IntoIterator<Item = S>,
+    S: Into<String>,
+{
+    session.database_call(
+        "get_account_balances",
+        get_account_balances_params(account_id, asset_ids),
+    )
+}
+
 fn get_objects_params<I, S>(ids: I) -> Value
 where
     I: IntoIterator<Item = S>,
@@ -67,6 +82,18 @@ where
 {
     let symbols = symbols.into_iter().map(Into::into).collect::<Vec<String>>();
     json!([symbols])
+}
+
+fn get_account_balances_params<I, S>(account_id: impl Into<String>, asset_ids: I) -> Value
+where
+    I: IntoIterator<Item = S>,
+    S: Into<String>,
+{
+    let asset_ids = asset_ids
+        .into_iter()
+        .map(Into::into)
+        .collect::<Vec<String>>();
+    json!([account_id.into(), asset_ids])
 }
 
 #[cfg(test)]
@@ -107,6 +134,14 @@ mod tests {
         assert_eq!(
             lookup_asset_symbols_params(["TEST", "BTS"]),
             json!([["TEST", "BTS"]])
+        );
+    }
+
+    #[test]
+    fn builds_account_balances_params() {
+        assert_eq!(
+            get_account_balances_params("1.2.100", ["1.3.0"]),
+            json!(["1.2.100", ["1.3.0"]])
         );
     }
 }

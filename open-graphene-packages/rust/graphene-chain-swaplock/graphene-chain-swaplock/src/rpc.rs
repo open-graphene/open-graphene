@@ -2,6 +2,7 @@ use std::error::Error;
 
 use open_graphene_transport::{
     broadcast_transaction as transport_broadcast_transaction,
+    get_account_balances as transport_get_account_balances,
     get_account_history as transport_get_account_history, get_objects as transport_get_objects,
     get_required_fees as transport_get_required_fees, lookup_accounts as transport_lookup_accounts,
     lookup_asset_symbols as transport_lookup_asset_symbols,
@@ -96,6 +97,24 @@ impl GrapheneRpc {
     {
         ensure_api_id("database", self.session.api_ids().database, api_id)?;
         Ok(transport_lookup_asset_symbols(&mut self.session, symbols)?)
+    }
+
+    pub fn get_account_balances<I, S>(
+        &mut self,
+        api_id: u64,
+        account_id: impl Into<String>,
+        asset_ids: I,
+    ) -> Result<Value, Box<dyn Error>>
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        ensure_api_id("database", self.session.api_ids().database, api_id)?;
+        Ok(transport_get_account_balances(
+            &mut self.session,
+            account_id,
+            asset_ids,
+        )?)
     }
 
     pub fn call_network_broadcast(

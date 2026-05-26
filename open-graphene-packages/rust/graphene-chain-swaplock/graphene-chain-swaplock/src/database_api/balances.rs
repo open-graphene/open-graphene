@@ -2,7 +2,7 @@ use std::error::Error;
 use std::thread::sleep;
 use std::time::Duration;
 
-use serde_json::{json, Value};
+use serde_json::Value;
 
 use crate::rpc::GrapheneRpc;
 
@@ -12,11 +12,7 @@ pub fn account_balance(
     account_id: &str,
     asset_id: &str,
 ) -> Result<i64, Box<dyn Error>> {
-    let balances = rpc.call_database(
-        api_id,
-        "get_account_balances",
-        json!([account_id, [asset_id]]),
-    )?;
+    let balances = rpc.get_account_balances(api_id, account_id, [asset_id])?;
     let balance = balances
         .as_array()
         .and_then(|values| values.first())
@@ -56,6 +52,8 @@ fn json_i64(value: &Value) -> Option<i64> {
 
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
     use super::*;
 
     #[test]
