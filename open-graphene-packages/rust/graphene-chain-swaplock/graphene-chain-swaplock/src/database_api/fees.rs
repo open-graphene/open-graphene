@@ -32,11 +32,7 @@ where
         .and_then(|operations| operations.first())
         .cloned()
         .ok_or("transaction JSON missing first operation")?;
-    let result = rpc.call_database(
-        database_api_id,
-        "get_required_fees",
-        json!([[op_json], fee_asset_id]),
-    )?;
+    let result = rpc.get_required_fees(database_api_id, json!([op_json]), fee_asset_id)?;
     parse_asset(
         result
             .as_array()

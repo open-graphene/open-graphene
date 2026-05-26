@@ -10,6 +10,17 @@ where
     session.database_call("get_objects", get_objects_params(ids))
 }
 
+pub fn get_required_fees(
+    session: &mut GrapheneSession,
+    operations_json: Value,
+    fee_asset_id: impl Into<String>,
+) -> Result<Value, TransportError> {
+    session.database_call(
+        "get_required_fees",
+        get_required_fees_params(operations_json, fee_asset_id),
+    )
+}
+
 fn get_objects_params<I, S>(ids: I) -> Value
 where
     I: IntoIterator<Item = S>,
@@ -17,6 +28,10 @@ where
 {
     let ids = ids.into_iter().map(Into::into).collect::<Vec<String>>();
     json!([ids])
+}
+
+fn get_required_fees_params(operations_json: Value, fee_asset_id: impl Into<String>) -> Value {
+    json!([operations_json, fee_asset_id.into()])
 }
 
 #[cfg(test)]
@@ -34,5 +49,13 @@ mod tests {
     #[test]
     fn preserves_empty_object_id_list_shape() {
         assert_eq!(get_objects_params(Vec::<String>::new()), json!([[]]));
+    }
+
+    #[test]
+    fn wraps_required_fees_operations_and_asset_id_in_graphene_params_array() {
+        assert_eq!(
+            get_required_fees_params(json!([[0, {"foo": "bar"}]]), "1.3.0"),
+            json!([[[0, {"foo": "bar"}]], "1.3.0"])
+        );
     }
 }
