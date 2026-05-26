@@ -1,0 +1,11 @@
+[package]
+name = "open-graphene-transport"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/open-graphene/open-graphene"
+description = "Chain-agnostic Graphene JSON-RPC transport primitives for Open Graphene."
+
+[dependencies]
+serde_json = "1"
+thiserror = "2"
