@@ -1,3 +1,5 @@
+use std::time::{Duration, Instant};
+
 use graphene::Graphene;
 
 #[tokio::main(flavor = "current_thread")]
@@ -23,18 +25,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         initial.head_block_number, initial.time
     );
 
-    let update = swaplock
-        .database()
-        .next_dynamic_global_properties_update()
-        .await?;
-    println!(
-        "update head block: {} {}",
-        update.head_block_number, update.time
-    );
-    println!(
-        "last irreversible block: {}",
-        update.last_irreversible_block_num
-    );
+    let started_at = Instant::now();
+    let run_for = Duration::from_secs(60);
+    let mut updates = 0_u64;
+
+    while started_at.elapsed() < run_for {
+        let update = swaplock
+            .database()
+            .next_dynamic_global_properties_update()
+            .await?;
+        updates += 1;
+        println!(
+            "update #{updates}: head block {} {} | last irreversible block {}",
+            update.head_block_number, update.time, update.last_irreversible_block_num
+        );
+    }
+
+    println!("received {updates} updates in {:?}", started_at.elapsed());
 
     Ok(())
 }
