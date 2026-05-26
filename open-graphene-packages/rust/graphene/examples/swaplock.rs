@@ -1,6 +1,5 @@
 use graphene::Graphene;
 
-#[allow(dead_code)]
 async fn connect_to_swaplock() -> Result<(), Box<dyn std::error::Error>> {
     let swaplock = Graphene::swaplock()
         .servers([
@@ -34,4 +33,9 @@ async fn connect_via_generic_builder() -> Result<(), Box<dyn std::error::Error>>
     Ok(())
 }
 
-fn main() {}
+#[tokio::main(flavor = "current_thread")]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    connect_to_swaplock().await?;
+    connect_via_generic_builder().await?;
+    Ok(())
+}

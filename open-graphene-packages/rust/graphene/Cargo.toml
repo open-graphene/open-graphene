@@ -7,3 +7,6 @@ description = "High-level Open Graphene Rust API facade."
 repository = "https://github.com/open-graphene/open-graphene"
 
 [dependencies]
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt"] }
