@@ -11,7 +11,36 @@ pub struct DatabaseApi<'session> {
     pub(crate) session: &'session mut GrapheneSession,
 }
 
-impl DatabaseApi<'_> {
+pub struct DynamicGlobalPropertiesSubscription<'session> {
+    session: &'session mut GrapheneSession,
+    initial: DynamicGlobalPropertyObject,
+}
+
+impl DynamicGlobalPropertiesSubscription<'_> {
+    pub fn initial(&self) -> &DynamicGlobalPropertyObject {
+        &self.initial
+    }
+
+    pub async fn next_update(&mut self) -> Result<DynamicGlobalPropertyObject, SwaplockApiError> {
+        loop {
+            let notice = self.session.next_notice()?;
+            let JsonRpcInbound::Notice {
+                callback_id,
+                payload,
+            } = notice
+            else {
+                continue;
+            };
+            if callback_id != DYNAMIC_GLOBAL_PROPERTIES_CALLBACK_ID {
+                continue;
+            }
+
+            return dynamic_global_properties_from_value("notice", payload);
+        }
+    }
+}
+
+impl<'session> DatabaseApi<'session> {
     pub async fn get_chain_id(&mut self) -> Result<String, SwaplockApiError> {
         let value = self.session.database_call("get_chain_id", json!([]))?;
         Ok(parse_chain_id(value)?)
@@ -31,8 +60,8 @@ impl DatabaseApi<'_> {
     }
 
     pub async fn subscribe_dynamic_global_properties(
-        &mut self,
-    ) -> Result<DynamicGlobalPropertyObject, SwaplockApiError> {
+        self,
+    ) -> Result<DynamicGlobalPropertiesSubscription<'session>, SwaplockApiError> {
         self.session.database_call(
             "set_subscribe_callback",
             json!([DYNAMIC_GLOBAL_PROPERTIES_CALLBACK_ID, false]),
@@ -40,28 +69,12 @@ impl DatabaseApi<'_> {
         let value = self
             .session
             .database_call("get_objects", json!([[DYNAMIC_GLOBAL_PROPERTIES_ID], true]))?;
+        let initial = dynamic_global_properties_from_value("get_objects", value)?;
 
-        dynamic_global_properties_from_value("get_objects", value)
-    }
-
-    pub async fn next_dynamic_global_properties_update(
-        &mut self,
-    ) -> Result<DynamicGlobalPropertyObject, SwaplockApiError> {
-        loop {
-            let notice = self.session.next_notice()?;
-            let JsonRpcInbound::Notice {
-                callback_id,
-                payload,
-            } = notice
-            else {
-                continue;
-            };
-            if callback_id != DYNAMIC_GLOBAL_PROPERTIES_CALLBACK_ID {
-                continue;
-            }
-
-            return dynamic_global_properties_from_value("notice", payload);
-        }
+        Ok(DynamicGlobalPropertiesSubscription {
+            session: self.session,
+            initial,
+        })
     }
 
     pub async fn get_account_by_name(

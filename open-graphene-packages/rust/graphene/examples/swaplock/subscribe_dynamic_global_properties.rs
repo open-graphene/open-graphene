@@ -16,13 +16,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .connect()
         .await?;
 
-    let initial = swaplock
+    let mut subscription = swaplock
         .database()
         .subscribe_dynamic_global_properties()
         .await?;
     println!(
         "subscribed at head block: {} {}",
-        initial.head_block_number, initial.time
+        subscription.initial().head_block_number,
+        subscription.initial().time
     );
 
     let started_at = Instant::now();
@@ -30,10 +31,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut updates = 0_u64;
 
     while started_at.elapsed() < run_for {
-        let update = swaplock
-            .database()
-            .next_dynamic_global_properties_update()
-            .await?;
+        let update = subscription.next_update().await?;
         updates += 1;
         println!(
             "update #{updates}: head block {} {} | last irreversible block {}",

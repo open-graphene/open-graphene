@@ -3,7 +3,7 @@ mod database_api;
 use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
 
-pub use database_api::DatabaseApi;
+pub use database_api::{DatabaseApi, DynamicGlobalPropertiesSubscription};
 
 pub const SWAPLOCK_CHAIN_ID: &str =
     "2267f694d96b7ffdcba1a98c63c09e720a18a85ad34954e299c66d5a42234098";
