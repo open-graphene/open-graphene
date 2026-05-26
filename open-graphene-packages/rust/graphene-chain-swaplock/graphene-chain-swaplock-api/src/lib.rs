@@ -4,7 +4,8 @@ use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
 
 pub use database_api::{
-    DatabaseApi, DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription,
+    AccountsRequest, DatabaseApi, DynamicGlobalPropertiesRequest,
+    DynamicGlobalPropertiesSubscription,
 };
 
 pub const SWAPLOCK_CHAIN_ID: &str =

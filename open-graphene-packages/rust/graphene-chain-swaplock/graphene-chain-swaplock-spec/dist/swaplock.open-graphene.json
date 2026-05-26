@@ -28837,6 +28837,73 @@
       }
     },
     {
+      "name": "get_accounts",
+      "apiClass": "database_api",
+      "apiName": "database",
+      "params": [
+        {
+          "index": 0,
+          "name": "account_names_or_ids",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "source": {
+            "name": "account_names_or_ids",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/database_api.hpp",
+            "line": 274
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        },
+        {
+          "index": 1,
+          "name": "subscribe",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "bool"
+            }
+          },
+          "required": false,
+          "nullable": true,
+          "source": {
+            "name": "subscribe",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/database_api.hpp",
+            "line": 274
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "vector",
+        "inner": {
+          "kind": "optional",
+          "inner": {
+            "kind": "ref",
+            "name": "account_object"
+          }
+        }
+      },
+      "isSubscription": false,
+      "source": {
+        "name": "get_accounts",
+        "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/database_api.hpp",
+        "line": 274
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "selected in config, present in FC_API, and signature found"
+      }
+    },
+    {
       "name": "get_chain_properties",
       "apiClass": "database_api",
       "apiName": "database",

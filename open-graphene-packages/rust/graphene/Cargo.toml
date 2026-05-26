@@ -21,6 +21,10 @@ name = "swaplock_get_account"
 path = "examples/swaplock/get_account.rs"
 
 [[example]]
+name = "swaplock_get_accounts"
+path = "examples/swaplock/get_accounts.rs"
+
+[[example]]
 name = "swaplock_get_chain_properties"
 path = "examples/swaplock/get_chain_properties.rs"
 

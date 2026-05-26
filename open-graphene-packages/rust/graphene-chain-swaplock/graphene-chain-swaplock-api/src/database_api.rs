@@ -13,6 +13,11 @@ pub struct DatabaseApi<'session> {
     pub(crate) session: &'session mut GrapheneSession,
 }
 
+pub struct AccountsRequest<'session> {
+    session: &'session mut GrapheneSession,
+    names_or_ids: Vec<String>,
+}
+
 pub struct DynamicGlobalPropertiesRequest<'session> {
     session: &'session mut GrapheneSession,
 }
@@ -20,6 +25,37 @@ pub struct DynamicGlobalPropertiesRequest<'session> {
 pub struct DynamicGlobalPropertiesSubscription<'session> {
     session: &'session mut GrapheneSession,
     initial: DynamicGlobalPropertyObject,
+}
+
+impl AccountsRequest<'_> {
+    pub async fn get(self) -> Result<Vec<Option<AccountObject>>, SwaplockApiError> {
+        let value = self
+            .session
+            .database_call("get_accounts", json!([self.names_or_ids, false]))?;
+
+        let accounts = value
+            .as_array()
+            .ok_or_else(|| SwaplockApiError::UnexpectedResponse {
+                method: "get_accounts",
+                message: "expected array response".to_string(),
+            })?;
+
+        accounts
+            .iter()
+            .map(|account| {
+                if account.is_null() {
+                    Ok(None)
+                } else {
+                    serde_json::from_value(account.clone())
+                        .map(Some)
+                        .map_err(|error| SwaplockApiError::UnexpectedResponse {
+                            method: "get_accounts",
+                            message: error.to_string(),
+                        })
+                }
+            })
+            .collect()
+    }
 }
 
 impl<'session> DynamicGlobalPropertiesRequest<'session> {
@@ -85,6 +121,17 @@ impl<'session> DatabaseApi<'session> {
             method: "get_chain_properties",
             message: error.to_string(),
         })
+    }
+
+    pub fn accounts<I, S>(self, names_or_ids: I) -> AccountsRequest<'session>
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        AccountsRequest {
+            session: self.session,
+            names_or_ids: names_or_ids.into_iter().map(Into::into).collect(),
+        }
     }
 
     pub fn dynamic_global_properties(self) -> DynamicGlobalPropertiesRequest<'session> {
