@@ -7,8 +7,8 @@ use graphene_chain_swaplock_bindings::generated::{
     CommitteeMemberUpdateGlobalParametersOperationFeeParamsT, CreateTakeProfitOrderAction,
     CreditOfferCreateOperation, CreditOfferId, CreditOfferUpdateOperation,
     CustomAuthorityCreateOperation, CustomAuthorityId, CustomAuthorityUpdateOperation,
-    CustomOperation, FcSerialize, FcSerializeError, FeeParameters, FeeSchedule, FutureExtensions,
-    HtlcHash, HtlcId, HtlcRefundOperation, InstantVestingPolicyInitializer, LimitOrderAutoAction,
+    CustomOperation, FcSerialize, FcSerializeError, FeeParameters, FeeSchedule, HtlcHash, HtlcId,
+    HtlcRefundOperation, InstantVestingPolicyInitializer, LimitOrderAutoAction,
     LimitOrderCancelOperation, LimitOrderCreateOperation, LimitOrderId, LimitOrderUpdateOperation,
     LinearVestingPolicyInitializer, MemoData, NoSpecialAuthority, OpWrapper, Operation, Predicate,
     Price, ProposalCreateOperation, RefundWorkerInitializer, Restriction, Signature,
@@ -31,7 +31,7 @@ fn sample_transfer_operation() -> TransferOperation {
             asset_id: AssetId("1.3.0".to_string()),
         },
         memo: None,
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
     }
 }
 
@@ -60,7 +60,7 @@ fn sample_proposal_create_operation() -> ProposalCreateOperation {
             op: Operation::TransferOperation(Box::new(sample_transfer_operation())),
         }],
         review_period_seconds: Some(60),
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
     }
 }
 
@@ -82,7 +82,7 @@ fn sample_transaction_with_operations(operations: Vec<Operation>) -> Transaction
         ref_block_prefix: 2,
         expiration: "1970-01-01T00:00:03".to_string(),
         operations,
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
     }
 }
 
@@ -95,7 +95,7 @@ fn sample_signed_transaction_with_operations(
         ref_block_prefix: 2,
         expiration: "1970-01-01T00:00:03".to_string(),
         operations,
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
         signatures,
     }
 }
@@ -181,7 +181,7 @@ fn sample_limit_order_create_operation() -> LimitOrderCreateOperation {
         },
         expiration: "2026-05-25T12:01:00".to_string(),
         fill_or_kill: true,
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
     }
 }
 
@@ -193,7 +193,7 @@ fn sample_limit_order_cancel_operation() -> LimitOrderCancelOperation {
         },
         fee_paying_account: AccountId("1.2.1".to_string()),
         order: LimitOrderId("1.7.1".to_string()),
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
     }
 }
 
@@ -215,10 +215,10 @@ fn sample_limit_order_update_operation() -> LimitOrderUpdateOperation {
                 size_percent: 50,
                 expiration_seconds: 3_600,
                 repeat: true,
-                extensions: FutureExtensions::VoidT(Box::new(())),
+                extensions: vec![],
             }),
         )]),
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
     }
 }
 
@@ -251,7 +251,7 @@ fn sample_credit_offer_create_operation() -> CreditOfferCreateOperation {
         auto_disable_time: "2020-01-01T00:00:00".to_string(),
         acceptable_collateral: vec![(AssetId("1.3.0".to_string()), sample_price())],
         acceptable_borrowers: vec![(AccountId("1.2.1".to_string()), 99)],
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
     }
 }
 
@@ -271,7 +271,7 @@ fn sample_credit_offer_update_operation() -> CreditOfferUpdateOperation {
         auto_disable_time: None,
         acceptable_collateral: Some(vec![(AssetId("1.3.0".to_string()), sample_price())]),
         acceptable_borrowers: Some(vec![(AccountId("1.2.1".to_string()), 99)]),
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
     }
 }
 
@@ -345,7 +345,7 @@ fn sample_restriction() -> Restriction {
         member_index: 2,
         restriction_type: 1,
         argument: ArgumentType::Bool(Box::new(true)),
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
     }
 }
 
@@ -362,7 +362,7 @@ fn sample_custom_authority_create_operation() -> CustomAuthorityCreateOperation 
         operation_type: 0,
         auth: sample_authority(),
         restrictions: vec![sample_restriction()],
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
     }
 }
 
@@ -380,7 +380,7 @@ fn sample_custom_authority_update_operation() -> CustomAuthorityUpdateOperation 
         new_auth: None,
         restrictions_to_remove: vec![1, 3],
         restrictions_to_add: vec![sample_restriction()],
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
     }
 }
 
@@ -435,7 +435,7 @@ fn sample_asset_update_feed_producers_operation() -> AssetUpdateFeedProducersOpe
             AccountId("1.2.2".to_string()),
             AccountId("1.2.5".to_string()),
         ],
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
     }
 }
 
@@ -463,7 +463,7 @@ fn sample_assert_operation() -> AssertOperation {
             id: vec![0x44; 20],
         }))],
         required_auths: vec![AccountId("1.2.1".to_string())],
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
     }
 }
 
@@ -534,7 +534,7 @@ fn sample_account_options() -> AccountOptions {
         num_witness: 1,
         num_committee: 2,
         votes: vec![VoteId("1:5".to_string())],
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
     }
 }
 
@@ -1125,7 +1125,7 @@ fn limit_order_auto_action_fc_serializes_take_profit_action() {
             size_percent: 50,
             expiration_seconds: 3_600,
             repeat: true,
-            extensions: FutureExtensions::VoidT(Box::new(())),
+            extensions: vec![],
         }))
         .to_fc_bytes()
         .expect("serialize take profit auto action"),

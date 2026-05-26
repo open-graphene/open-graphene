@@ -2,11 +2,11 @@ use std::convert::Infallible;
 
 use open_graphene_sdk_core::TransactionHeader;
 use open_graphene_sdk_operations::{
-    build_limit_order_create_transaction_for, signed_transaction_broadcast_json,
     LimitOrderCreateAdapter, LimitOrderCreateChainTypes, LimitOrderCreateInput,
-    SignedTransactionJsonParts,
+    SignedTransactionJsonParts, build_limit_order_create_transaction_for,
+    signed_transaction_broadcast_json,
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use thiserror::Error;
 
 use crate::operations::builder::SwaplockOperationBuilderTypes;
@@ -166,11 +166,10 @@ fn asset_json(asset: &Asset) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use graphene_chain_swaplock_bindings::generated::FcSerialize;
     use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId};
     use graphene_chain_swaplock_bindings::generated::operations::TransferOperation;
-    use graphene_chain_swaplock_bindings::generated::static_variants::FutureExtensions;
     use graphene_chain_swaplock_bindings::generated::types::Signature;
-    use graphene_chain_swaplock_bindings::generated::FcSerialize;
 
     fn input() -> LimitOrderCreateTransactionInput {
         LimitOrderCreateTransactionInput {
@@ -208,10 +207,10 @@ mod tests {
                     ),
                     expiration: input.order_expiration,
                     fill_or_kill: input.fill_or_kill,
-                    extensions: FutureExtensions::empty(),
+                    extensions: vec![],
                 },
             ))],
-            extensions: FutureExtensions::empty(),
+            extensions: vec![],
         }
     }
 
@@ -299,9 +298,9 @@ mod tests {
                 to: AccountId::new("1.2.101"),
                 amount: Asset::new(100_000, AssetId::new("1.3.0")),
                 memo: None,
-                extensions: FutureExtensions::empty(),
+                extensions: vec![],
             }))],
-            extensions: FutureExtensions::empty(),
+            extensions: vec![],
             signatures: vec![],
         };
 

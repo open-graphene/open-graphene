@@ -14,14 +14,14 @@ impl GrapheneOperationBuilderTypes for SwaplockOperationBuilderTypes {
     type AccountId = AccountId;
     type AssetId = AssetId;
     type LimitOrderId = LimitOrderId;
-    type FutureExtensions = FutureExtensions;
+    type FutureExtensions = Vec<FutureExtensions>;
 
     fn asset(amount: i64, asset_id: Self::AssetId) -> Self::Asset {
         Asset::new(amount, asset_id)
     }
 
     fn empty_extensions() -> Self::FutureExtensions {
-        FutureExtensions::empty()
+        vec![]
     }
 
     fn transaction(

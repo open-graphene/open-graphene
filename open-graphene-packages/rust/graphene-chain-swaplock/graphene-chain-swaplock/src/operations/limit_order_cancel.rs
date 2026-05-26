@@ -2,11 +2,11 @@ use std::convert::Infallible;
 
 use open_graphene_sdk_core::TransactionHeader;
 use open_graphene_sdk_operations::{
-    build_limit_order_cancel_transaction_for, signed_transaction_broadcast_json,
     LimitOrderCancelAdapter, LimitOrderCancelChainTypes, LimitOrderCancelInput,
-    SignedTransactionJsonParts,
+    SignedTransactionJsonParts, build_limit_order_cancel_transaction_for,
+    signed_transaction_broadcast_json,
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use thiserror::Error;
 
 use crate::operations::builder::SwaplockOperationBuilderTypes;
@@ -144,11 +144,10 @@ fn asset_json(asset: &Asset) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use graphene_chain_swaplock_bindings::generated::FcSerialize;
     use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId, LimitOrderId};
     use graphene_chain_swaplock_bindings::generated::operations::TransferOperation;
-    use graphene_chain_swaplock_bindings::generated::static_variants::FutureExtensions;
     use graphene_chain_swaplock_bindings::generated::types::Signature;
-    use graphene_chain_swaplock_bindings::generated::FcSerialize;
 
     fn input() -> LimitOrderCancelTransactionInput {
         LimitOrderCancelTransactionInput {
@@ -172,10 +171,10 @@ mod tests {
                     fee: Asset::new(input.fee_amount, AssetId::new(input.fee_asset_id)),
                     fee_paying_account: AccountId::new(input.fee_paying_account_id),
                     order: LimitOrderId::new(input.order_id),
-                    extensions: FutureExtensions::empty(),
+                    extensions: vec![],
                 },
             ))],
-            extensions: FutureExtensions::empty(),
+            extensions: vec![],
         }
     }
 
@@ -259,9 +258,9 @@ mod tests {
                 to: AccountId::new("1.2.101"),
                 amount: Asset::new(100_000, AssetId::new("1.3.0")),
                 memo: None,
-                extensions: FutureExtensions::empty(),
+                extensions: vec![],
             }))],
-            extensions: FutureExtensions::empty(),
+            extensions: vec![],
             signatures: vec![],
         };
 

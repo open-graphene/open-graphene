@@ -2,10 +2,10 @@ use std::convert::Infallible;
 
 use open_graphene_sdk_core::TransactionHeader;
 use open_graphene_sdk_operations::{
-    build_asset_issue_transaction_for, signed_transaction_broadcast_json, AssetIssueAdapter,
-    AssetIssueChainTypes, AssetIssueInput, SignedTransactionJsonParts,
+    AssetIssueAdapter, AssetIssueChainTypes, AssetIssueInput, SignedTransactionJsonParts,
+    build_asset_issue_transaction_for, signed_transaction_broadcast_json,
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use thiserror::Error;
 
 use crate::operations::builder::SwaplockOperationBuilderTypes;
@@ -156,11 +156,10 @@ fn asset_json(asset: &Asset) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use graphene_chain_swaplock_bindings::generated::FcSerialize;
     use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId};
     use graphene_chain_swaplock_bindings::generated::operations::TransferOperation;
-    use graphene_chain_swaplock_bindings::generated::static_variants::FutureExtensions;
     use graphene_chain_swaplock_bindings::generated::types::{MemoData, Signature};
-    use graphene_chain_swaplock_bindings::generated::FcSerialize;
 
     fn input() -> AssetIssueTransactionInput {
         AssetIssueTransactionInput {
@@ -188,10 +187,10 @@ mod tests {
                     asset_to_issue: Asset::new(input.amount, AssetId::new(input.asset_id)),
                     issue_to_account: AccountId(input.issue_to_account_id),
                     memo: None,
-                    extensions: FutureExtensions::empty(),
+                    extensions: vec![],
                 },
             ))],
-            extensions: FutureExtensions::empty(),
+            extensions: vec![],
         }
     }
 
@@ -282,9 +281,9 @@ mod tests {
                     asset_id: AssetId("1.3.0".to_string()),
                 },
                 memo: None,
-                extensions: FutureExtensions::empty(),
+                extensions: vec![],
             }))],
-            extensions: FutureExtensions::empty(),
+            extensions: vec![],
             signatures: vec![],
         };
 

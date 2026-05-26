@@ -160,7 +160,7 @@ The chain-specific high-level crate should own:
 
 Do not start by generating every object or every object route.
 
-A small first slice should prove one narrow helper end to end. Swaplock `AssetObject` is now the first such proof, with local BitShares generated-type parity. The next slice should repeat the pattern for `account_object` or start extracting the repeated one-slot parsing shape into generated helpers.
+A small first slice should prove one narrow helper end to end. Swaplock `AssetObject` and `AccountObject` are now the first such proofs, with local BitShares generated-type parity for `AssetObject`. The next slice should either extract the repeated one-slot parsing shape into generated or shared chain-local helpers, or continue Swaplock-first with dependent asset data objects.
 
 For each new object:
 

@@ -142,8 +142,11 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         "block_id_type" | "checksum_type" => TypeRef::FixedBytes { bytes: 20 },
         "digest_type" => TypeRef::FixedBytes { bytes: 32 },
         "signature_type" => TypeRef::Signature,
-        "extensions_type" => TypeRef::StaticVariantRef {
-            name: "future_extensions".to_string(),
+        "extensions_type" => TypeRef::Set {
+            inner: Box::new(TypeRef::StaticVariantRef {
+                name: "future_extensions".to_string(),
+            }),
+            ordering: OrderingRule::StaticVariantTag,
         },
         "asset"
         | "authority"
@@ -437,8 +440,11 @@ mod tests {
         assert_eq!(resolve_cpp_type("time_point_sec"), TypeRef::TimePointSec);
         assert_eq!(
             resolve_cpp_type("extensions_type"),
-            TypeRef::StaticVariantRef {
-                name: "future_extensions".to_string()
+            TypeRef::Set {
+                inner: Box::new(TypeRef::StaticVariantRef {
+                    name: "future_extensions".to_string()
+                }),
+                ordering: OrderingRule::StaticVariantTag,
             }
         );
         assert_eq!(resolve_cpp_type("void_t"), TypeRef::Void);

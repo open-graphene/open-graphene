@@ -6,7 +6,8 @@ pub mod header;
 pub mod orders;
 
 pub use accounts::{
-    active_public_key_for_account, lookup_account_id, lookup_account_id_optional, wait_for_account,
+    account_object, active_public_key_for_account, lookup_account_id, lookup_account_id_optional,
+    wait_for_account,
 };
 pub use assets::{asset_object, lookup_asset_id, lookup_asset_id_optional, wait_for_asset};
 pub use balances::{account_balance, wait_for_balance_at_least};

@@ -1,6 +1,5 @@
 use graphene_chain_swaplock_bindings::generated::{
-    AccountId, Asset, AssetId, FutureExtensions, LimitOrderObject, LimitOrderId, Operation,
-    TransferOperation,
+    AccountId, Asset, AssetId, LimitOrderId, LimitOrderObject, Operation, TransferOperation,
 };
 
 #[test]
@@ -17,7 +16,7 @@ fn operation_serializes_as_graphene_tagged_tuple() {
             asset_id: AssetId("1.3.0".to_string()),
         },
         memo: None,
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
     }));
 
     let json = serde_json::to_value(&operation).expect("serialize operation");
@@ -38,7 +37,7 @@ fn operation_deserializes_from_graphene_tagged_tuple() {
             "to": "1.2.2",
             "amount": { "amount": 100000, "asset_id": "1.3.0" },
             "memo": null,
-            "extensions": [0, null]
+            "extensions": []
         }
     ]);
 

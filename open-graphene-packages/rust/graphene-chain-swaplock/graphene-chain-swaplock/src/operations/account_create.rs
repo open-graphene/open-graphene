@@ -1,16 +1,16 @@
 use std::convert::Infallible;
 
 use open_graphene_sdk_operations::{
-    build_account_create_transaction_for, signed_transaction_broadcast_json, AccountCreateAdapter,
-    AccountCreateChainTypes, AccountCreateInput, SignedTransactionJsonParts,
+    AccountCreateAdapter, AccountCreateChainTypes, AccountCreateInput, SignedTransactionJsonParts,
+    build_account_create_transaction_for, signed_transaction_broadcast_json,
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use thiserror::Error;
 
 use crate::operations::builder::SwaplockOperationBuilderTypes;
 use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId};
 use graphene_chain_swaplock_bindings::generated::operations::AccountCreateOperation;
-use graphene_chain_swaplock_bindings::generated::static_variants::{FutureExtensions, Operation};
+use graphene_chain_swaplock_bindings::generated::static_variants::Operation;
 use graphene_chain_swaplock_bindings::generated::types::{
     AccountCreateOperationExt, AccountOptions, Asset, Authority, SignedTransaction, Transaction,
 };
@@ -130,7 +130,7 @@ pub fn build_account_create_transaction(input: AccountCreateTransactionInput) ->
                     .unwrap_or_else(empty_account_create_extensions),
             },
         ))],
-        extensions: FutureExtensions::empty(),
+        extensions: vec![],
     }
 }
 
@@ -150,7 +150,7 @@ pub fn account_options(memo_key: String, voting_account_id: String) -> AccountOp
         num_witness: 0,
         num_committee: 0,
         votes: Vec::new(),
-        extensions: FutureExtensions::empty(),
+        extensions: vec![],
     }
 }
 
@@ -229,7 +229,7 @@ fn authority_json(authority: &Authority) -> Value {
 }
 
 fn account_options_json(options: &AccountOptions) -> Result<Value, AccountCreateJsonError> {
-    if !matches!(options.extensions, FutureExtensions::VoidT(_)) {
+    if !options.extensions.is_empty() {
         return Err(AccountCreateJsonError::UnsupportedExtensions);
     }
     Ok(json!({
@@ -264,13 +264,13 @@ fn asset_json(asset: &Asset) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use graphene_chain_swaplock_bindings::generated::FcSerialize;
     use graphene_chain_swaplock_bindings::generated::ids::VoteId;
     use graphene_chain_swaplock_bindings::generated::operations::TransferOperation;
     use graphene_chain_swaplock_bindings::generated::static_variants::SpecialAuthority;
     use graphene_chain_swaplock_bindings::generated::types::{
         Signature, TopHoldersSpecialAuthority,
     };
-    use graphene_chain_swaplock_bindings::generated::FcSerialize;
 
     const PUBLIC_KEY: &str = "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV";
 
@@ -312,7 +312,7 @@ mod tests {
                         .unwrap_or_else(empty_account_create_extensions),
                 },
             ))],
-            extensions: FutureExtensions::empty(),
+            extensions: vec![],
         }
     }
 
@@ -446,9 +446,9 @@ mod tests {
                     asset_id: AssetId("1.3.0".to_string()),
                 },
                 memo: None,
-                extensions: FutureExtensions::empty(),
+                extensions: vec![],
             }))],
-            extensions: FutureExtensions::empty(),
+            extensions: vec![],
             signatures: vec![],
         };
 

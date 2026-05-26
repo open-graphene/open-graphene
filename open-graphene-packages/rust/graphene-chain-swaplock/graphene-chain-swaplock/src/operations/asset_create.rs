@@ -2,16 +2,16 @@ use std::convert::Infallible;
 
 use open_graphene_sdk_core::TransactionHeader;
 use open_graphene_sdk_operations::{
-    build_asset_create_transaction_for, signed_transaction_broadcast_json, AssetCreateAdapter,
-    AssetCreateChainTypes, AssetCreateInput, SignedTransactionJsonParts,
+    AssetCreateAdapter, AssetCreateChainTypes, AssetCreateInput, SignedTransactionJsonParts,
+    build_asset_create_transaction_for, signed_transaction_broadcast_json,
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use thiserror::Error;
 
 use crate::operations::builder::SwaplockOperationBuilderTypes;
 use graphene_chain_swaplock_bindings::generated::ids::AssetId;
 use graphene_chain_swaplock_bindings::generated::operations::AssetCreateOperation;
-use graphene_chain_swaplock_bindings::generated::static_variants::{FutureExtensions, Operation};
+use graphene_chain_swaplock_bindings::generated::static_variants::Operation;
 use graphene_chain_swaplock_bindings::generated::types::{
     AdditionalAssetOptions, Asset, AssetOptions, Price, SignedTransaction, Transaction,
 };
@@ -217,7 +217,7 @@ fn operation_json(operation: &Operation) -> Result<Value, AssetCreateJsonError> 
     if operation.is_prediction_market {
         return Err(AssetCreateJsonError::UnsupportedPredictionMarket);
     }
-    if !matches!(operation.extensions, FutureExtensions::VoidT(_)) {
+    if !operation.extensions.is_empty() {
         return Err(AssetCreateJsonError::UnsupportedExtensions);
     }
 
@@ -284,12 +284,12 @@ fn asset_json(asset: &Asset) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use graphene_chain_swaplock_bindings::generated::FcSerialize;
     use graphene_chain_swaplock_bindings::generated::ids::AccountId;
     use graphene_chain_swaplock_bindings::generated::operations::TransferOperation;
     use graphene_chain_swaplock_bindings::generated::types::{
         BitassetOptions, BitassetOptionsExt, Signature,
     };
-    use graphene_chain_swaplock_bindings::generated::FcSerialize;
 
     fn input() -> AssetCreateTransactionInput {
         AssetCreateTransactionInput {
@@ -320,10 +320,10 @@ mod tests {
                     common_options: minimal_asset_options(input.max_supply, input.description),
                     bitasset_opts: None,
                     is_prediction_market: false,
-                    extensions: FutureExtensions::empty(),
+                    extensions: vec![],
                 },
             ))],
-            extensions: FutureExtensions::empty(),
+            extensions: vec![],
         }
     }
 
@@ -432,9 +432,9 @@ mod tests {
                     asset_id: AssetId("1.3.0".to_string()),
                 },
                 memo: None,
-                extensions: FutureExtensions::empty(),
+                extensions: vec![],
             }))],
-            extensions: FutureExtensions::empty(),
+            extensions: vec![],
             signatures: vec![],
         };
 

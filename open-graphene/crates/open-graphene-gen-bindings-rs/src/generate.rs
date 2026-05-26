@@ -553,6 +553,16 @@ fn render_fc_transfer_path_impls(out: &mut String, protocol: &Protocol) -> Resul
         .any(|variant| variant.name == "future_extensions")
     {
         out.push_str(
+            "fn future_extensions_tag(value: &crate::generated::static_variants::FutureExtensions) -> u64 {\n",
+        );
+        out.push_str("    match value {\n");
+        out.push_str(
+            "        crate::generated::static_variants::FutureExtensions::VoidT(_) => 0u64,\n",
+        );
+        out.push_str("    }\n");
+        out.push_str("}\n\n");
+
+        out.push_str(
             "impl FcSerialize for crate::generated::static_variants::FutureExtensions {\n",
         );
         out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
@@ -1197,7 +1207,9 @@ fn render_fc_value_serialize_lines(value_expr: &str, ty: &TypeRef, indent: &str)
                 render_fc_value_serialize_lines(&format!("{value_expr}.1"), second, indent)?;
             Ok(format!("{first_lines}{second_lines}"))
         }
-        TypeRef::Set { inner, .. } if is_fee_parameters_type(inner) => {
+        TypeRef::Set { inner, .. }
+            if is_fee_parameters_type(inner) || is_future_extensions_type(inner) =>
+        {
             render_fc_static_variant_set_serialize_lines(value_expr, inner, indent)
         }
         TypeRef::Set { inner, .. } if is_fc_supported_set(inner) => {
@@ -1341,17 +1353,21 @@ fn render_fc_static_variant_set_serialize_lines(
     inner: &TypeRef,
     indent: &str,
 ) -> Result<String> {
-    if !is_fee_parameters_type(inner) {
+    let tag_fn = if is_fee_parameters_type(inner) {
+        "fee_parameters_tag"
+    } else if is_future_extensions_type(inner) {
+        "future_extensions_tag"
+    } else {
         return Err(GenBindingsRsError::Render {
             message: "internal error: unsupported static variant set type".to_string(),
         });
-    }
+    };
 
     Ok(format!(
         "{indent}write_varint({value_expr}.len() as u64, out);\n\
          {indent}let mut previous_key: Option<u64> = None;\n\
          {indent}for value in &{value_expr} {{\n\
-         {indent}    let key = fee_parameters_tag(value);\n\
+         {indent}    let key = {tag_fn}(value);\n\
          {indent}    if previous_key.is_some_and(|previous| previous >= key) {{\n\
          {indent}        return Err(FcSerializeError::UnsupportedValue {{ type_name: \"Set\", reason: \"set values must be sorted and unique\" }});\n\
          {indent}    }}\n\
@@ -1438,6 +1454,10 @@ fn is_fc_supported_set(inner: &TypeRef) -> bool {
 
 fn is_fee_parameters_type(ty: &TypeRef) -> bool {
     matches!(ty, TypeRef::StaticVariantRef { name } if name == "fee_parameters")
+}
+
+fn is_future_extensions_type(ty: &TypeRef) -> bool {
+    matches!(ty, TypeRef::StaticVariantRef { name } if name == "future_extensions")
 }
 
 fn is_fc_supported_flat_map(key: &TypeRef, value: &TypeRef) -> bool {
@@ -1556,7 +1576,13 @@ fn is_fc_supported_type(
         }
         TypeRef::Set { inner, .. } if is_vote_id_type(inner) => true,
         TypeRef::Set { inner, .. } if is_fee_parameters_type(inner) => true,
-        TypeRef::Set { inner, .. } if is_fc_supported_set(inner) => true,
+        TypeRef::Set { inner, .. }
+            if is_fc_supported_set(inner)
+                || is_fee_parameters_type(inner)
+                || is_future_extensions_type(inner) =>
+        {
+            true
+        }
         TypeRef::FlatMap { key, value, .. } if is_fc_supported_flat_map(key, value) => true,
         TypeRef::Pair { first, second } => {
             is_fc_supported_type(protocol, first, supported_structs)
@@ -2255,6 +2281,7 @@ fn rust_string_literal(value: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use open_graphene_json_schema::types::OrderingRule;
     use open_graphene_json_schema::{ChainDef, FieldDef, OperationDef};
 
     #[test]
@@ -2752,8 +2779,11 @@ mod tests {
                 FieldDef {
                     index: 24,
                     name: "extensions".to_string(),
-                    ty: TypeRef::StaticVariantRef {
-                        name: "future_extensions".to_string(),
+                    ty: TypeRef::Set {
+                        inner: Box::new(TypeRef::StaticVariantRef {
+                            name: "future_extensions".to_string(),
+                        }),
+                        ordering: OrderingRule::StaticVariantTag,
                     },
                     source: None,
                     support: None,
@@ -3262,8 +3292,11 @@ mod tests {
                 FieldDef {
                     index: 4,
                     name: "extensions".to_string(),
-                    ty: TypeRef::StaticVariantRef {
-                        name: "future_extensions".to_string(),
+                    ty: TypeRef::Set {
+                        inner: Box::new(TypeRef::StaticVariantRef {
+                            name: "future_extensions".to_string(),
+                        }),
+                        ordering: OrderingRule::StaticVariantTag,
                     },
                     source: None,
                     support: None,
@@ -3312,8 +3345,11 @@ mod tests {
                 FieldDef {
                     index: 4,
                     name: "extensions".to_string(),
-                    ty: TypeRef::StaticVariantRef {
-                        name: "future_extensions".to_string(),
+                    ty: TypeRef::Set {
+                        inner: Box::new(TypeRef::StaticVariantRef {
+                            name: "future_extensions".to_string(),
+                        }),
+                        ordering: OrderingRule::StaticVariantTag,
                     },
                     source: None,
                     support: None,
@@ -3384,7 +3420,9 @@ mod tests {
             types.contains("pub operations: Vec<crate::generated::static_variants::Operation>,")
         );
         assert!(
-            types.contains("pub extensions: crate::generated::static_variants::FutureExtensions,")
+            types.contains(
+                "pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,"
+            )
         );
         assert!(types.contains("pub struct SignedTransaction"));
         assert!(types.contains("pub signatures: Vec<crate::generated::types::Signature>,"));

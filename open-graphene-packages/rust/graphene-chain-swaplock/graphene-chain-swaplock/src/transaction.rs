@@ -53,9 +53,8 @@ pub fn set_first_operation_fee(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::operations::transfer::{build_transfer_transaction, TransferTransactionInput};
+    use crate::operations::transfer::{TransferTransactionInput, build_transfer_transaction};
     use graphene_chain_swaplock_bindings::generated::ids::AssetId;
-    use graphene_chain_swaplock_bindings::generated::static_variants::FutureExtensions;
 
     #[test]
     fn set_first_operation_fee_updates_supported_operation() {
@@ -82,7 +81,7 @@ mod tests {
             ref_block_prefix: 2,
             expiration: "2026-01-01T00:00:00".to_string(),
             operations: Vec::new(),
-            extensions: FutureExtensions::empty(),
+            extensions: vec![],
         };
 
         let err = set_first_operation_fee(

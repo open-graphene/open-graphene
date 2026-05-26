@@ -2,10 +2,10 @@ use std::convert::Infallible;
 
 use open_graphene_sdk_core::TransactionHeader;
 use open_graphene_sdk_operations::{
-    build_transfer_transaction_for, signed_transaction_broadcast_json, SignedTransactionJsonParts,
-    TransferAdapter, TransferChainTypes, TransferInput,
+    SignedTransactionJsonParts, TransferAdapter, TransferChainTypes, TransferInput,
+    build_transfer_transaction_for, signed_transaction_broadcast_json,
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use thiserror::Error;
 
 use crate::operations::builder::SwaplockOperationBuilderTypes;
@@ -147,10 +147,9 @@ fn asset_json(asset: &Asset) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId};
-    use graphene_chain_swaplock_bindings::generated::static_variants::FutureExtensions;
-    use graphene_chain_swaplock_bindings::generated::types::Signature;
     use graphene_chain_swaplock_bindings::generated::FcSerialize;
+    use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId};
+    use graphene_chain_swaplock_bindings::generated::types::Signature;
 
     #[test]
     fn builds_transfer_transaction_with_generated_swaplock_types() {
@@ -182,9 +181,9 @@ mod tests {
                     asset_id: AssetId("1.3.0".to_string()),
                 },
                 memo: None,
-                extensions: FutureExtensions::empty(),
+                extensions: vec![],
             }))],
-            extensions: FutureExtensions::empty(),
+            extensions: vec![],
         };
 
         assert_eq!(

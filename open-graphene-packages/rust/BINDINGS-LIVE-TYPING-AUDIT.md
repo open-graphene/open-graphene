@@ -8,9 +8,9 @@ The immediate question is why the current live SDK and Swaplock helper layer sti
 
 ## Short answer
 
-The generated Swaplock bindings are strongest at the protocol transaction layer, and now have two proven live RPC object paths: `limit_order_object` for Swaplock order lookup and `dynamic_global_property_object` for Swaplock head-block reads. Swaplock and BitShares account-balance reads are also proven through the real RPC wire shape, `get_account_balances -> vector<asset>`, using generated `Asset`.
+The generated Swaplock bindings are strongest at the protocol transaction layer, and now have four proven live/read RPC object paths: `limit_order_object` for Swaplock order lookup, `dynamic_global_property_object` for Swaplock head-block reads, `asset_object` through typed `get_objects`, and `account_object` through typed `get_objects`. Swaplock and BitShares account-balance reads are also proven through the real RPC wire shape, `get_account_balances -> vector<asset>`, using generated `Asset`.
 
-They cover generated operation structs, generated transaction structs, static variants, object id wrappers, `Asset`, `Price`, FC serialization, generated `LimitOrderObject`, and generated `DynamicGlobalPropertyObject`. They do not yet provide complete generated Rust structs for most other database/app objects returned by live RPC calls, such as account objects, asset objects, or rich account-balance object paths.
+They cover generated operation structs, generated transaction structs, static variants, object id wrappers, `Asset`, `Price`, FC serialization, generated `LimitOrderObject`, generated `DynamicGlobalPropertyObject`, generated `AssetObject`, and generated `AccountObject`. They do not yet provide complete generated Rust structs for most other database/app objects returned by live RPC calls, such as rich account-balance object paths or the rest of the `objectTypes` table.
 
 The current `sdk-live` `serde_json::Value` parsing exists because most generated live response object types do not yet exist. Some of the current hand-written parsing is a justified minimal projection into SDK primitives; richer response modeling would become duplicated manual bindings and should stop until the generator catches up.
 
@@ -26,6 +26,8 @@ The generated Swaplock bindings currently provide:
 - generated `DynamicGlobalPropertyObject` for the second typed live RPC object proof;
 - generated fixed-byte JSON deserialization for Graphene hex strings or byte arrays with exact length checks;
 - generated `AssetObject` for the first narrow typed `get_objects` proof on Swaplock and local BitShares parity;
+- generated `AccountObject` for the second narrow typed `get_objects` proof on Swaplock;
+- generated `extensions_type` as an ordered static-variant set (`Vec<FutureExtensions>`) rather than a single `FutureExtensions`, matching Graphene JSON `[]` and FC set encoding;
 - generated `Asset` for account-balance reads through the real `get_account_balances -> vector<asset>` RPC shape on Swaplock and BitShares;
 - FC serialization for generated ids, assets, operations, transactions, signatures, and supported protocol values;
 - serde support for many raw protocol structs, live object structs currently in the spec graph, and static variants.
@@ -36,13 +38,9 @@ That is enough to build, mutate, sign, and FC-serialize local transactions with 
 
 The generated bindings do not yet provide complete Rust structs for most database/app objects returned by RPC methods:
 
-- `account_object`;
-- `asset_object`;
-- `account_balance_object` as a rich chain object, unless a real reflected RPC return path is selected;
-- richer `operation_history_object` usage across all live flows;
-- typed unions for `get_objects` results.
+- typed unions for broad mixed `get_objects` results.
 
-`limit_order_object` and `dynamic_global_property_object` are the first live object exceptions. Swaplock spec generation selects `get_limit_orders` and `get_dynamic_global_properties`, generated bindings emit `LimitOrderObject` and `DynamicGlobalPropertyObject`, and `graphene-chain-swaplock` uses those generated types for order lookup and head-block reads. Swaplock `asset_object` is the first narrow typed `get_objects` proof, with local BitShares generated-type parity: it is explicitly selected through `object_structs`, generated as `AssetObject`, and consumed by a Swaplock chain-local helper that preserves positional `null` and rejects mismatched ids. Account-balance reads are a separate typed-value proof rather than an object proof: both Swaplock and BitShares select `get_account_balances`, whose real C++ signature returns `vector<asset>`, and generated bindings deserialize those balance entries as `Asset`. This is a proof of direction, not broad live-object completion.
+`limit_order_object` and `dynamic_global_property_object` are the first live object exceptions. Swaplock spec generation selects `get_limit_orders` and `get_dynamic_global_properties`, generated bindings emit `LimitOrderObject` and `DynamicGlobalPropertyObject`, and `graphene-chain-swaplock` uses those generated types for order lookup and head-block reads. Swaplock `asset_object` and `account_object` are the first narrow typed `get_objects` proofs: they are explicitly selected through `object_structs`, generated as `AssetObject` and `AccountObject`, and consumed by Swaplock chain-local helpers that preserve positional `null` and reject mismatched ids. BitShares currently has local generated-type parity for `AssetObject`; new work is Swaplock-first unless cross-chain generator risk needs parity. Account-balance reads are a separate typed-value proof rather than an object proof: both Swaplock and BitShares select `get_account_balances`, whose real C++ signature returns `vector<asset>`, and generated bindings deserialize those balance entries as `Asset`. This is a proof of direction, not broad live-object completion.
 
 The generated spec contains `objectTypes`, so it knows object id spaces and type ids such as `account -> 1.2.x`, `asset -> 1.3.x`, `limit_order -> 1.7.x`, and `dynamic_global_property -> 2.1.x`. That is not the same as having generated response structs with fields.
 

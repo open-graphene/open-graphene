@@ -4,39 +4,56 @@
 
 use serde::{Deserialize, Serialize};
 
-pub(crate) fn deserialize_i64_from_number_or_decimal_string<'de, D>(deserializer: D) -> Result<i64, D::Error>
+pub(crate) fn deserialize_i64_from_number_or_decimal_string<'de, D>(
+    deserializer: D,
+) -> Result<i64, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
     let value = serde_json::Value::deserialize(deserializer)?;
     match value {
-        serde_json::Value::Number(number) => number.as_i64().ok_or_else(|| serde::de::Error::custom(format!("expected signed 64-bit integer, got {number}"))),
+        serde_json::Value::Number(number) => number.as_i64().ok_or_else(|| {
+            serde::de::Error::custom(format!("expected signed 64-bit integer, got {number}"))
+        }),
         serde_json::Value::String(value) => value.parse::<i64>().map_err(serde::de::Error::custom),
-        other => Err(serde::de::Error::custom(format!("expected signed 64-bit integer number or decimal string, got {other}"))),
+        other => Err(serde::de::Error::custom(format!(
+            "expected signed 64-bit integer number or decimal string, got {other}"
+        ))),
     }
 }
 
-fn deserialize_fixed_bytes_from_hex_string_or_byte_array<'de, D>(deserializer: D, expected_len: usize) -> Result<Vec<u8>, D::Error>
+fn deserialize_fixed_bytes_from_hex_string_or_byte_array<'de, D>(
+    deserializer: D,
+    expected_len: usize,
+) -> Result<Vec<u8>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
     let value = serde_json::Value::deserialize(deserializer)?;
     let bytes = match value {
-        serde_json::Value::String(value) => decode_hex_bytes(&value).map_err(serde::de::Error::custom)?,
+        serde_json::Value::String(value) => {
+            decode_hex_bytes(&value).map_err(serde::de::Error::custom)?
+        }
         serde_json::Value::Array(values) => values
             .into_iter()
             .map(|value| match value {
                 serde_json::Value::Number(number) => number
                     .as_u64()
                     .and_then(|value| u8::try_from(value).ok())
-                    .ok_or_else(|| serde::de::Error::custom(format!("expected byte value 0..255, got {number}"))),
-                other => Err(serde::de::Error::custom(format!("expected byte value, got {other}"))),
+                    .ok_or_else(|| {
+                        serde::de::Error::custom(format!(
+                            "expected byte value 0..255, got {number}"
+                        ))
+                    }),
+                other => Err(serde::de::Error::custom(format!(
+                    "expected byte value, got {other}"
+                ))),
             })
             .collect::<Result<Vec<u8>, D::Error>>()?,
         other => {
             return Err(serde::de::Error::custom(format!(
                 "expected fixed bytes as hex string or byte array, got {other}"
-            )))
+            )));
         }
     };
     if bytes.len() != expected_len {
@@ -54,25 +71,33 @@ fn decode_hex_bytes(value: &str) -> Result<Vec<u8>, String> {
     }
     (0..value.len())
         .step_by(2)
-        .map(|index| u8::from_str_radix(&value[index..index + 2], 16).map_err(|error| error.to_string()))
+        .map(|index| {
+            u8::from_str_radix(&value[index..index + 2], 16).map_err(|error| error.to_string())
+        })
         .collect()
 }
 
-pub(crate) fn deserialize_fixed_bytes_20_from_hex_string_or_byte_array<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
+pub(crate) fn deserialize_fixed_bytes_20_from_hex_string_or_byte_array<'de, D>(
+    deserializer: D,
+) -> Result<Vec<u8>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
     deserialize_fixed_bytes_from_hex_string_or_byte_array(deserializer, 20)
 }
 
-pub(crate) fn deserialize_fixed_bytes_32_from_hex_string_or_byte_array<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
+pub(crate) fn deserialize_fixed_bytes_32_from_hex_string_or_byte_array<'de, D>(
+    deserializer: D,
+) -> Result<Vec<u8>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
     deserialize_fixed_bytes_from_hex_string_or_byte_array(deserializer, 32)
 }
 
-pub(crate) fn deserialize_fixed_bytes_33_from_hex_string_or_byte_array<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
+pub(crate) fn deserialize_fixed_bytes_33_from_hex_string_or_byte_array<'de, D>(
+    deserializer: D,
+) -> Result<Vec<u8>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
@@ -275,14 +300,43 @@ pub struct AccountCreateOperationExt {
 
 /// Raw protocol struct `account_create_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct AccountCreateOperationFeeParamsT {
-}
+pub struct AccountCreateOperationFeeParamsT {}
 
 /// Raw protocol struct `account_name_eq_lit_predicate`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AccountNameEqLitPredicate {
     pub account_id: crate::generated::ids::AccountId,
     pub name: String,
+}
+
+/// Raw protocol struct `account_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AccountObject {
+    pub id: crate::generated::ids::AccountId,
+    pub membership_expiration_date: String,
+    pub registrar: crate::generated::ids::AccountId,
+    pub referrer: crate::generated::ids::AccountId,
+    pub lifetime_referrer: crate::generated::ids::AccountId,
+    pub network_fee_percentage: u16,
+    pub lifetime_referrer_fee_percentage: u16,
+    pub referrer_rewards_percentage: u16,
+    pub name: String,
+    pub owner: crate::generated::types::Authority,
+    pub active: crate::generated::types::Authority,
+    pub options: crate::generated::types::AccountOptions,
+    pub num_committee_voted: u16,
+    pub statistics: crate::generated::ids::AccountStatisticsId,
+    pub whitelisting_accounts: Vec<crate::generated::ids::AccountId>,
+    pub whitelisted_accounts: serde_json::Value,
+    pub blacklisted_accounts: serde_json::Value,
+    pub blacklisting_accounts: Vec<crate::generated::ids::AccountId>,
+    pub cashback_vb: Option<crate::generated::ids::VestingBalanceId>,
+    pub owner_special_authority: crate::generated::static_variants::SpecialAuthority,
+    pub active_special_authority: crate::generated::static_variants::SpecialAuthority,
+    pub top_n_control_flags: u8,
+    pub allowed_assets: Option<Vec<crate::generated::ids::AssetId>>,
+    pub creation_block_num: u32,
+    pub creation_time: String,
 }
 
 /// Raw protocol struct `account_options`.
@@ -293,7 +347,7 @@ pub struct AccountOptions {
     pub num_witness: u16,
     pub num_committee: u16,
     pub votes: Vec<crate::generated::ids::VoteId>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 /// Raw protocol struct `account_transfer_operation_fee_params_t`.
@@ -318,8 +372,7 @@ pub struct AccountUpdateOperationFeeParamsT {
 
 /// Raw protocol struct `account_upgrade_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct AccountUpgradeOperationFeeParamsT {
-}
+pub struct AccountUpgradeOperationFeeParamsT {}
 
 /// Raw protocol struct `account_whitelist_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -344,7 +397,9 @@ pub struct AssertOperationFeeParamsT {
 /// Raw protocol struct `asset`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Asset {
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub amount: i64,
     pub asset_id: crate::generated::ids::AssetId,
 }
@@ -375,8 +430,7 @@ pub struct AssetClaimPoolOperationFeeParamsT {
 
 /// Raw protocol struct `asset_create_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct AssetCreateOperationFeeParamsT {
-}
+pub struct AssetCreateOperationFeeParamsT {}
 
 /// Raw protocol struct `asset_fund_fee_pool_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -415,10 +469,14 @@ pub struct AssetObject {
 /// Raw protocol struct `asset_options`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AssetOptions {
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub max_supply: i64,
     pub market_fee_percent: u16,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub max_market_fee: i64,
     pub issuer_permissions: u16,
     pub flags: u16,
@@ -451,8 +509,7 @@ pub struct AssetReserveOperationFeeParamsT {
 
 /// Raw protocol struct `asset_settle_cancel_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct AssetSettleCancelOperationFeeParamsT {
-}
+pub struct AssetSettleCancelOperationFeeParamsT {}
 
 /// Raw protocol struct `asset_settle_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -487,8 +544,7 @@ pub struct AssetUpdateIssuerOperationFeeParamsT {
 
 /// Raw protocol struct `asset_update_operation_ext`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct AssetUpdateOperationExt {
-}
+pub struct AssetUpdateOperationExt {}
 
 /// Raw protocol struct `asset_update_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -507,13 +563,11 @@ pub struct Authority {
 
 /// Raw protocol struct `balance_claim_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct BalanceClaimOperationFeeParamsT {
-}
+pub struct BalanceClaimOperationFeeParamsT {}
 
 /// Raw protocol struct `bid_collateral_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct BidCollateralOperationFeeParamsT {
-}
+pub struct BidCollateralOperationFeeParamsT {}
 
 /// Raw protocol struct `bitasset_options`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -536,7 +590,9 @@ pub struct BitassetOptionsExt {
 /// Raw protocol struct `blind_input`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BlindInput {
-    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array"
+    )]
     pub commitment: Vec<u8>,
     pub owner: crate::generated::types::Authority,
 }
@@ -544,7 +600,9 @@ pub struct BlindInput {
 /// Raw protocol struct `blind_output`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BlindOutput {
-    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array"
+    )]
     pub commitment: Vec<u8>,
     pub range_proof: Vec<u8>,
     pub owner: crate::generated::types::Authority,
@@ -561,19 +619,19 @@ pub struct BlindTransferOperationFeeParamsT {
 /// Raw protocol struct `block_id_predicate`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BlockIdPredicate {
-    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array"
+    )]
     pub id: Vec<u8>,
 }
 
 /// Raw protocol struct `burn_worker_initializer`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct BurnWorkerInitializer {
-}
+pub struct BurnWorkerInitializer {}
 
 /// Raw protocol struct `call_order_update_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct CallOrderUpdateOperationFeeParamsT {
-}
+pub struct CallOrderUpdateOperationFeeParamsT {}
 
 /// Raw protocol struct `cdd_vesting_policy_initializer`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -603,16 +661,24 @@ pub struct ChainParameters {
     pub network_percent_of_fee: u16,
     pub lifetime_referrer_percent_of_fee: u16,
     pub cashback_vesting_period_seconds: u32,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub cashback_vesting_threshold: i64,
     pub count_non_member_votes: bool,
     pub allow_non_member_whitelists: bool,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub witness_pay_per_block: i64,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub worker_budget_per_day: i64,
     pub max_predicate_opcode: u16,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub fee_liquidation_threshold: i64,
     pub accounts_per_fee_scale: u16,
     pub account_fee_scale_bitshifts: u8,
@@ -655,13 +721,12 @@ pub struct CreateTakeProfitOrderAction {
     pub size_percent: u16,
     pub expiration_seconds: u32,
     pub repeat: bool,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 /// Raw protocol struct `credit_deal_expired_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct CreditDealExpiredOperationFeeParamsT {
-}
+pub struct CreditDealExpiredOperationFeeParamsT {}
 
 /// Raw protocol struct `credit_deal_repay_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -707,8 +772,7 @@ pub struct CreditOfferUpdateOperationFeeParamsT {
 
 /// Raw protocol struct `custom_authority_create_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct CustomAuthorityCreateOperationFeeParamsT {
-}
+pub struct CustomAuthorityCreateOperationFeeParamsT {}
 
 /// Raw protocol struct `custom_authority_delete_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -727,8 +791,7 @@ pub struct CustomAuthorityOptionsType {
 
 /// Raw protocol struct `custom_authority_update_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct CustomAuthorityUpdateOperationFeeParamsT {
-}
+pub struct CustomAuthorityUpdateOperationFeeParamsT {}
 
 /// Raw protocol struct `custom_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -742,18 +805,26 @@ pub struct CustomOperationFeeParamsT {
 pub struct DynamicGlobalPropertyObject {
     pub id: crate::generated::ids::DynamicGlobalPropertyId,
     pub head_block_number: u32,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array"
+    )]
     pub head_block_id: Vec<u8>,
     pub time: String,
     pub current_witness: crate::generated::ids::WitnessId,
     pub next_maintenance_time: String,
     pub last_vote_tally_time: String,
     pub last_budget_time: String,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub witness_budget: i64,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub total_pob: i64,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub total_inactive: i64,
     pub accounts_registered_this_interval: u32,
     pub recently_missed_count: u32,
@@ -765,8 +836,7 @@ pub struct DynamicGlobalPropertyObject {
 
 /// Raw protocol struct `execute_bid_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct ExecuteBidOperationFeeParamsT {
-}
+pub struct ExecuteBidOperationFeeParamsT {}
 
 /// Raw protocol struct `extendable_operation_result_dtl`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -782,8 +852,7 @@ pub struct ExtendableOperationResultDtl {
 
 /// Raw protocol struct `fba_distribute_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct FbaDistributeOperationFeeParamsT {
-}
+pub struct FbaDistributeOperationFeeParamsT {}
 
 /// Raw protocol struct `fee_schedule`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -794,8 +863,7 @@ pub struct FeeSchedule {
 
 /// Raw protocol struct `fill_order_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct FillOrderOperationFeeParamsT {
-}
+pub struct FillOrderOperationFeeParamsT {}
 
 /// Raw protocol struct `generic_exchange_operation_result`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -821,13 +889,11 @@ pub struct HtlcCreateOperationAdditionalOptionsType {
 
 /// Raw protocol struct `htlc_create_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct HtlcCreateOperationFeeParamsT {
-}
+pub struct HtlcCreateOperationFeeParamsT {}
 
 /// Raw protocol struct `htlc_extend_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct HtlcExtendOperationFeeParamsT {
-}
+pub struct HtlcExtendOperationFeeParamsT {}
 
 /// Raw protocol struct `htlc_options`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -838,33 +904,27 @@ pub struct HtlcOptions {
 
 /// Raw protocol struct `htlc_redeem_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct HtlcRedeemOperationFeeParamsT {
-}
+pub struct HtlcRedeemOperationFeeParamsT {}
 
 /// Raw protocol struct `htlc_redeemed_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct HtlcRedeemedOperationFeeParamsT {
-}
+pub struct HtlcRedeemedOperationFeeParamsT {}
 
 /// Raw protocol struct `htlc_refund_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct HtlcRefundOperationFeeParamsT {
-}
+pub struct HtlcRefundOperationFeeParamsT {}
 
 /// Raw protocol struct `instant_vesting_policy_initializer`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct InstantVestingPolicyInitializer {
-}
+pub struct InstantVestingPolicyInitializer {}
 
 /// Raw protocol struct `limit_order_cancel_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct LimitOrderCancelOperationFeeParamsT {
-}
+pub struct LimitOrderCancelOperationFeeParamsT {}
 
 /// Raw protocol struct `limit_order_create_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct LimitOrderCreateOperationFeeParamsT {
-}
+pub struct LimitOrderCreateOperationFeeParamsT {}
 
 /// Raw protocol struct `limit_order_object`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -872,11 +932,15 @@ pub struct LimitOrderObject {
     pub id: crate::generated::ids::LimitOrderId,
     pub expiration: String,
     pub seller: crate::generated::ids::AccountId,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub for_sale: i64,
     pub sell_price: crate::generated::types::Price,
     pub filled_amount: String,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub deferred_fee: i64,
     pub deferred_paid_fee: crate::generated::types::Asset,
     pub is_settled_debt: bool,
@@ -886,8 +950,7 @@ pub struct LimitOrderObject {
 
 /// Raw protocol struct `limit_order_update_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct LimitOrderUpdateOperationFeeParamsT {
-}
+pub struct LimitOrderUpdateOperationFeeParamsT {}
 
 /// Raw protocol struct `linear_vesting_policy_initializer`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -936,13 +999,17 @@ pub struct LiquidityPoolWithdrawOperationFeeParamsT {
 /// Raw protocol struct `maybe_signed_block_header`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MaybeSignedBlockHeader {
-    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array"
+    )]
     pub previous: Vec<u8>,
     pub timestamp: String,
     pub witness: crate::generated::ids::WitnessId,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array"
+    )]
     pub transaction_merkle_root: Vec<u8>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
     pub witness_signature: Option<crate::generated::types::Signature>,
 }
 
@@ -951,17 +1018,20 @@ pub struct MaybeSignedBlockHeader {
 pub struct MemoData {
     pub from: Option<String>,
     pub amount: crate::generated::types::Asset,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_32_from_hex_string_or_byte_array")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_32_from_hex_string_or_byte_array"
+    )]
     pub blinding_factor: Vec<u8>,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array"
+    )]
     pub commitment: Vec<u8>,
     pub check: u32,
 }
 
 /// Raw protocol struct `no_special_authority`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct NoSpecialAuthority {
-}
+pub struct NoSpecialAuthority {}
 
 /// Raw protocol struct `op_wrapper`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -998,7 +1068,10 @@ pub struct Price {
 }
 
 impl Price {
-    pub fn new(base: crate::generated::types::Asset, quote: crate::generated::types::Asset) -> Self {
+    pub fn new(
+        base: crate::generated::types::Asset,
+        quote: crate::generated::types::Asset,
+    ) -> Self {
         Self { base, quote }
     }
 }
@@ -1019,7 +1092,7 @@ pub struct ProcessedTransaction {
     pub ref_block_prefix: u32,
     pub expiration: String,
     pub operations: Vec<crate::generated::static_variants::Operation>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
     pub signatures: Vec<crate::generated::types::Signature>,
     pub operation_results: Vec<crate::generated::static_variants::OperationResult>,
 }
@@ -1044,8 +1117,7 @@ pub struct ProposalUpdateOperationFeeParamsT {
 
 /// Raw protocol struct `refund_worker_initializer`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct RefundWorkerInitializer {
-}
+pub struct RefundWorkerInitializer {}
 
 /// Raw protocol struct `restriction`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -1053,7 +1125,7 @@ pub struct Restriction {
     pub member_index: u32,
     pub restriction_type: u32,
     pub argument: crate::generated::static_variants::ArgumentType,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 /// Raw protocol struct `samet_fund_borrow_operation_fee_params_t`.
@@ -1089,13 +1161,17 @@ pub struct SametFundUpdateOperationFeeParamsT {
 /// Raw protocol struct `signed_block`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SignedBlock {
-    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array"
+    )]
     pub previous: Vec<u8>,
     pub timestamp: String,
     pub witness: crate::generated::ids::WitnessId,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array"
+    )]
     pub transaction_merkle_root: Vec<u8>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
     pub witness_signature: crate::generated::types::Signature,
     pub transactions: Vec<crate::generated::types::ProcessedTransaction>,
 }
@@ -1107,7 +1183,7 @@ pub struct SignedTransaction {
     pub ref_block_prefix: u32,
     pub expiration: String,
     pub operations: Vec<crate::generated::static_variants::Operation>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
     pub signatures: Vec<crate::generated::types::Signature>,
 }
 
@@ -1145,7 +1221,7 @@ pub struct Transaction {
     pub ref_block_prefix: u32,
     pub expiration: String,
     pub operations: Vec<crate::generated::static_variants::Operation>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 /// Raw protocol struct `transfer_from_blind_operation_fee_params_t`.
@@ -1188,8 +1264,7 @@ pub struct VestingBalanceWorkerInitializer {
 
 /// Raw protocol struct `void_result`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct VoidResult {
-}
+pub struct VoidResult {}
 
 /// Raw protocol struct `withdraw_permission_claim_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -1218,14 +1293,18 @@ pub struct WithdrawPermissionUpdateOperationFeeParamsT {
 /// Raw protocol struct `witness_create_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct WitnessCreateOperationFeeParamsT {
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub fee: i64,
 }
 
 /// Raw protocol struct `witness_update_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct WitnessUpdateOperationFeeParamsT {
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub fee: i64,
 }
 

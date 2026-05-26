@@ -720,6 +720,7 @@ mod tests {
     use super::*;
     use crate::config::GeneratorConfig;
     use crate::extract::{RawEnumValue, RawField};
+    use open_graphene_json_schema::OrderingRule;
 
     #[test]
     fn build_protocol_emits_enums_from_reflect_enum() {
@@ -1236,8 +1237,11 @@ mod tests {
         );
         assert_eq!(
             transaction.fields[4].ty,
-            TypeRef::StaticVariantRef {
-                name: "future_extensions".to_string()
+            TypeRef::Set {
+                inner: Box::new(TypeRef::StaticVariantRef {
+                    name: "future_extensions".to_string()
+                }),
+                ordering: OrderingRule::StaticVariantTag,
             }
         );
         assert!(
