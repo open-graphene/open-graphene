@@ -1,13 +1,14 @@
 use std::error::Error;
 
 use open_graphene_transport::{
+    AccountHistoryQuery as TransportAccountHistoryQuery, GrapheneSession,
     broadcast_transaction as transport_broadcast_transaction,
     get_account_balances as transport_get_account_balances,
     get_account_history as transport_get_account_history,
+    get_dynamic_global_properties as transport_get_dynamic_global_properties,
     get_limit_orders as transport_get_limit_orders, get_objects as transport_get_objects,
     get_required_fees as transport_get_required_fees, lookup_accounts as transport_lookup_accounts,
     lookup_asset_symbols as transport_lookup_asset_symbols,
-    AccountHistoryQuery as TransportAccountHistoryQuery, GrapheneSession,
 };
 use serde_json::Value;
 
@@ -61,6 +62,11 @@ impl GrapheneRpc {
     {
         ensure_api_id("database", self.session.api_ids().database, api_id)?;
         Ok(transport_get_objects(&mut self.session, ids)?)
+    }
+
+    pub fn get_dynamic_global_properties(&mut self, api_id: u64) -> Result<Value, Box<dyn Error>> {
+        ensure_api_id("database", self.session.api_ids().database, api_id)?;
+        Ok(transport_get_dynamic_global_properties(&mut self.session)?)
     }
 
     pub fn get_required_fees(

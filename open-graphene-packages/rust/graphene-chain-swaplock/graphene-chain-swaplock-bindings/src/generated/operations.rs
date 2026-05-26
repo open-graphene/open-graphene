@@ -500,6 +500,7 @@ pub struct TransferToBlindOperation {
     pub fee: crate::generated::types::Asset,
     pub amount: crate::generated::types::Asset,
     pub from: crate::generated::ids::AccountId,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_32_from_hex_string_or_byte_array")]
     pub blinding_factor: Vec<u8>,
     pub outputs: Vec<crate::generated::types::BlindOutput>,
 }
@@ -522,6 +523,7 @@ pub struct TransferFromBlindOperation {
     pub fee: crate::generated::types::Asset,
     pub amount: crate::generated::types::Asset,
     pub to: crate::generated::ids::AccountId,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_32_from_hex_string_or_byte_array")]
     pub blinding_factor: Vec<u8>,
     pub inputs: Vec<crate::generated::types::BlindInput>,
 }

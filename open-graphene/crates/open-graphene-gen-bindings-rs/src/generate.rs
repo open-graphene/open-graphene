@@ -220,6 +220,62 @@ fn render_types(protocol: &Protocol) -> Result<String> {
     out.push_str("        other => Err(serde::de::Error::custom(format!(\"expected signed 64-bit integer number or decimal string, got {other}\"))),\n");
     out.push_str("    }\n");
     out.push_str("}\n\n");
+    if protocol_uses_fixed_bytes(protocol) {
+        out.push_str("fn deserialize_fixed_bytes_from_hex_string_or_byte_array<'de, D>(deserializer: D, expected_len: usize) -> Result<Vec<u8>, D::Error>\n");
+        out.push_str("where\n");
+        out.push_str("    D: serde::Deserializer<'de>,\n");
+        out.push_str("{\n");
+        out.push_str("    let value = serde_json::Value::deserialize(deserializer)?;\n");
+        out.push_str("    let bytes = match value {\n");
+        out.push_str("        serde_json::Value::String(value) => decode_hex_bytes(&value).map_err(serde::de::Error::custom)?,\n");
+        out.push_str("        serde_json::Value::Array(values) => values\n");
+        out.push_str("            .into_iter()\n");
+        out.push_str("            .map(|value| match value {\n");
+        out.push_str("                serde_json::Value::Number(number) => number\n");
+        out.push_str("                    .as_u64()\n");
+        out.push_str("                    .and_then(|value| u8::try_from(value).ok())\n");
+        out.push_str("                    .ok_or_else(|| serde::de::Error::custom(format!(\"expected byte value 0..255, got {number}\"))),\n");
+        out.push_str("                other => Err(serde::de::Error::custom(format!(\"expected byte value, got {other}\"))),\n");
+        out.push_str("            })\n");
+        out.push_str("            .collect::<Result<Vec<u8>, D::Error>>()?,\n");
+        out.push_str("        other => {\n");
+        out.push_str("            return Err(serde::de::Error::custom(format!(\n");
+        out.push_str(
+            "                \"expected fixed bytes as hex string or byte array, got {other}\"\n",
+        );
+        out.push_str("            )))\n");
+        out.push_str("        }\n");
+        out.push_str("    };\n");
+        out.push_str("    if bytes.len() != expected_len {\n");
+        out.push_str("        return Err(serde::de::Error::custom(format!(\n");
+        out.push_str("            \"expected {expected_len} fixed bytes, got {}\",\n");
+        out.push_str("            bytes.len()\n");
+        out.push_str("        )));\n");
+        out.push_str("    }\n");
+        out.push_str("    Ok(bytes)\n");
+        out.push_str("}\n\n");
+        out.push_str("fn decode_hex_bytes(value: &str) -> Result<Vec<u8>, String> {\n");
+        out.push_str("    if !value.len().is_multiple_of(2) {\n");
+        out.push_str("        return Err(\"hex string has odd length\".to_string());\n");
+        out.push_str("    }\n");
+        out.push_str("    (0..value.len())\n");
+        out.push_str("        .step_by(2)\n");
+        out.push_str("        .map(|index| u8::from_str_radix(&value[index..index + 2], 16).map_err(|error| error.to_string()))\n");
+        out.push_str("        .collect()\n");
+        out.push_str("}\n\n");
+        for len in fixed_byte_lengths(protocol) {
+            out.push_str(&format!(
+                "pub(crate) fn deserialize_fixed_bytes_{len}_from_hex_string_or_byte_array<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>\n"
+            ));
+            out.push_str("where\n");
+            out.push_str("    D: serde::Deserializer<'de>,\n");
+            out.push_str("{\n");
+            out.push_str(&format!(
+                "    deserialize_fixed_bytes_from_hex_string_or_byte_array(deserializer, {len})\n"
+            ));
+            out.push_str("}\n\n");
+        }
+    }
 
     let mut emitted = BTreeSet::new();
     if protocol_uses_signature(protocol) {
@@ -409,6 +465,11 @@ fn render_fields(out: &mut String, protocol: &Protocol, fields: &[FieldDef]) -> 
             out.push_str(
                 "    #[serde(deserialize_with = \"crate::generated::types::deserialize_i64_from_number_or_decimal_string\")]\n",
             );
+        }
+        if let TypeRef::FixedBytes { bytes } = field.ty {
+            out.push_str(&format!(
+                "    #[serde(deserialize_with = \"crate::generated::types::deserialize_fixed_bytes_{bytes}_from_hex_string_or_byte_array\")]\n"
+            ));
         }
         out.push_str(&format!("    pub {field_name}: {ty},\n"));
     }
@@ -1838,6 +1899,91 @@ fn type_uses_signature(ty: &TypeRef) -> bool {
     }
 }
 
+fn protocol_uses_fixed_bytes(protocol: &Protocol) -> bool {
+    !fixed_byte_lengths(protocol).is_empty()
+}
+
+fn fixed_byte_lengths(protocol: &Protocol) -> BTreeSet<usize> {
+    let mut lengths = BTreeSet::new();
+
+    for struct_def in &protocol.structs {
+        for field in &struct_def.fields {
+            collect_fixed_byte_lengths_from_type(&field.ty, &mut lengths);
+        }
+    }
+    for operation in &protocol.operations {
+        for field in &operation.fields {
+            collect_fixed_byte_lengths_from_type(&field.ty, &mut lengths);
+        }
+    }
+    for static_variant in &protocol.static_variants {
+        for arm in &static_variant.variants {
+            collect_fixed_byte_lengths_from_type(&arm.ty, &mut lengths);
+        }
+    }
+    for method in &protocol.rpc_methods {
+        for param in &method.params {
+            collect_fixed_byte_lengths_from_type(&param.ty, &mut lengths);
+        }
+        if let Some(returns) = &method.returns {
+            collect_fixed_byte_lengths_from_type(returns, &mut lengths);
+        }
+        for notice in &method.notices {
+            if let Some(payload) = &notice.payload {
+                collect_fixed_byte_lengths_from_type(payload, &mut lengths);
+            }
+        }
+    }
+
+    lengths
+}
+
+fn collect_fixed_byte_lengths_from_type(ty: &TypeRef, lengths: &mut BTreeSet<usize>) {
+    match ty {
+        TypeRef::FixedBytes { bytes } => {
+            lengths.insert(*bytes as usize);
+        }
+        TypeRef::Optional { inner } | TypeRef::Vector { inner } | TypeRef::Set { inner, .. } => {
+            collect_fixed_byte_lengths_from_type(inner, lengths);
+        }
+        TypeRef::Map { key, value, .. } | TypeRef::FlatMap { key, value, .. } => {
+            collect_fixed_byte_lengths_from_type(key, lengths);
+            collect_fixed_byte_lengths_from_type(value, lengths);
+        }
+        TypeRef::Pair { first, second } => {
+            collect_fixed_byte_lengths_from_type(first, lengths);
+            collect_fixed_byte_lengths_from_type(second, lengths);
+        }
+        TypeRef::Void
+        | TypeRef::Bool
+        | TypeRef::Uint8
+        | TypeRef::Uint16
+        | TypeRef::Uint32
+        | TypeRef::Int32 { .. }
+        | TypeRef::Int64 { .. }
+        | TypeRef::Uint64 { .. }
+        | TypeRef::Uint128 { .. }
+        | TypeRef::UnsignedVarint
+        | TypeRef::CallbackHandle
+        | TypeRef::String
+        | TypeRef::Bytes
+        | TypeRef::FixedHex { .. }
+        | TypeRef::TimePointSec
+        | TypeRef::TimePoint
+        | TypeRef::PublicKey { .. }
+        | TypeRef::Address
+        | TypeRef::Signature
+        | TypeRef::ObjectId
+        | TypeRef::ProtocolObjectId { .. }
+        | TypeRef::ProtocolObjectUnion { .. }
+        | TypeRef::VoteId
+        | TypeRef::Ref { .. }
+        | TypeRef::StaticVariantRef { .. }
+        | TypeRef::AnyJson { .. }
+        | TypeRef::Unsupported { .. } => {}
+    }
+}
+
 fn collect_protocol_object_id_names(protocol: &Protocol) -> BTreeSet<String> {
     let mut names = BTreeSet::new();
 
@@ -3038,6 +3184,36 @@ mod tests {
             },
             &supported_structs,
         ));
+    }
+
+    #[test]
+    fn renders_fixed_bytes_json_deserializer_for_hex_strings() {
+        let mut protocol = minimal_protocol();
+        protocol.structs.push(StructDef {
+            name: "dynamic_global_property_object".to_string(),
+            source_name: None,
+            kind: StructKind::Struct,
+            wire_tag: None,
+            fields: vec![FieldDef {
+                index: 0,
+                name: "head_block_id".to_string(),
+                ty: TypeRef::FixedBytes { bytes: 20 },
+                source: None,
+                support: None,
+            }],
+            support: None,
+        });
+
+        let types = render_types(&protocol).expect("render types");
+
+        assert!(
+            types
+                .contains("pub(crate) fn deserialize_fixed_bytes_20_from_hex_string_or_byte_array")
+        );
+        assert!(types.contains(
+            "#[serde(deserialize_with = \"crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array\")]"
+        ));
+        assert!(types.contains("pub head_block_id: Vec<u8>,"));
     }
 
     #[test]

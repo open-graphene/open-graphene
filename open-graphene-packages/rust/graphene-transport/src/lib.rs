@@ -7,14 +7,14 @@ pub mod session;
 pub mod websocket;
 
 pub use database_api::{
-    get_account_balances, get_limit_orders, get_objects, get_required_fees, lookup_accounts,
-    lookup_asset_symbols,
+    get_account_balances, get_dynamic_global_properties, get_limit_orders, get_objects,
+    get_required_fees, lookup_accounts, lookup_asset_symbols,
 };
 pub use error::TransportError;
-pub use history_api::{get_account_history, AccountHistoryQuery};
+pub use history_api::{AccountHistoryQuery, get_account_history};
 pub use json_rpc::{
-    graphene_call_params, parse_inbound, JsonRpcInbound, JsonRpcRequest, GRAPHENE_CALL_METHOD,
+    GRAPHENE_CALL_METHOD, JsonRpcInbound, JsonRpcRequest, graphene_call_params, parse_inbound,
 };
 pub use network_broadcast_api::broadcast_transaction;
-pub use session::{parse_api_id, parse_chain_id, ApiIds, GrapheneSession};
+pub use session::{ApiIds, GrapheneSession, parse_api_id, parse_chain_id};
 pub use websocket::WebSocketTransport;

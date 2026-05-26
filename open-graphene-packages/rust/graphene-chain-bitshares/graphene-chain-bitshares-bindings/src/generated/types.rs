@@ -16,6 +16,69 @@ where
     }
 }
 
+fn deserialize_fixed_bytes_from_hex_string_or_byte_array<'de, D>(deserializer: D, expected_len: usize) -> Result<Vec<u8>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let value = serde_json::Value::deserialize(deserializer)?;
+    let bytes = match value {
+        serde_json::Value::String(value) => decode_hex_bytes(&value).map_err(serde::de::Error::custom)?,
+        serde_json::Value::Array(values) => values
+            .into_iter()
+            .map(|value| match value {
+                serde_json::Value::Number(number) => number
+                    .as_u64()
+                    .and_then(|value| u8::try_from(value).ok())
+                    .ok_or_else(|| serde::de::Error::custom(format!("expected byte value 0..255, got {number}"))),
+                other => Err(serde::de::Error::custom(format!("expected byte value, got {other}"))),
+            })
+            .collect::<Result<Vec<u8>, D::Error>>()?,
+        other => {
+            return Err(serde::de::Error::custom(format!(
+                "expected fixed bytes as hex string or byte array, got {other}"
+            )))
+        }
+    };
+    if bytes.len() != expected_len {
+        return Err(serde::de::Error::custom(format!(
+            "expected {expected_len} fixed bytes, got {}",
+            bytes.len()
+        )));
+    }
+    Ok(bytes)
+}
+
+fn decode_hex_bytes(value: &str) -> Result<Vec<u8>, String> {
+    if !value.len().is_multiple_of(2) {
+        return Err("hex string has odd length".to_string());
+    }
+    (0..value.len())
+        .step_by(2)
+        .map(|index| u8::from_str_radix(&value[index..index + 2], 16).map_err(|error| error.to_string()))
+        .collect()
+}
+
+pub(crate) fn deserialize_fixed_bytes_20_from_hex_string_or_byte_array<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    deserialize_fixed_bytes_from_hex_string_or_byte_array(deserializer, 20)
+}
+
+pub(crate) fn deserialize_fixed_bytes_32_from_hex_string_or_byte_array<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    deserialize_fixed_bytes_from_hex_string_or_byte_array(deserializer, 32)
+}
+
+pub(crate) fn deserialize_fixed_bytes_33_from_hex_string_or_byte_array<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    deserialize_fixed_bytes_from_hex_string_or_byte_array(deserializer, 33)
+}
+
 /// Graphene compact recoverable ECDSA signature bytes.
 /// Wire layout: one compact header byte followed by 32-byte r and 32-byte s.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -457,6 +520,7 @@ pub struct BitassetOptionsExt {
 /// Raw protocol struct `blind_input`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BlindInput {
+    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array")]
     pub commitment: Vec<u8>,
     pub owner: crate::generated::types::Authority,
 }
@@ -464,6 +528,7 @@ pub struct BlindInput {
 /// Raw protocol struct `blind_output`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BlindOutput {
+    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array")]
     pub commitment: Vec<u8>,
     pub range_proof: Vec<u8>,
     pub owner: crate::generated::types::Authority,
@@ -480,6 +545,7 @@ pub struct BlindTransferOperationFeeParamsT {
 /// Raw protocol struct `block_id_predicate`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BlockIdPredicate {
+    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
     pub id: Vec<u8>,
 }
 
@@ -828,9 +894,11 @@ pub struct LiquidityPoolWithdrawOperationFeeParamsT {
 /// Raw protocol struct `maybe_signed_block_header`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MaybeSignedBlockHeader {
+    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
     pub previous: Vec<u8>,
     pub timestamp: String,
     pub witness: crate::generated::ids::WitnessId,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
     pub transaction_merkle_root: Vec<u8>,
     pub extensions: crate::generated::static_variants::FutureExtensions,
     pub witness_signature: Option<crate::generated::types::Signature>,
@@ -841,7 +909,9 @@ pub struct MaybeSignedBlockHeader {
 pub struct MemoData {
     pub from: Option<String>,
     pub amount: crate::generated::types::Asset,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_32_from_hex_string_or_byte_array")]
     pub blinding_factor: Vec<u8>,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array")]
     pub commitment: Vec<u8>,
     pub check: u32,
 }
@@ -977,9 +1047,11 @@ pub struct SametFundUpdateOperationFeeParamsT {
 /// Raw protocol struct `signed_block`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SignedBlock {
+    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
     pub previous: Vec<u8>,
     pub timestamp: String,
     pub witness: crate::generated::ids::WitnessId,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
     pub transaction_merkle_root: Vec<u8>,
     pub extensions: crate::generated::static_variants::FutureExtensions,
     pub witness_signature: crate::generated::types::Signature,

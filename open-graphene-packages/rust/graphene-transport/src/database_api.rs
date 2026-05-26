@@ -1,4 +1,4 @@
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::{GrapheneSession, TransportError};
 
@@ -8,6 +8,12 @@ where
     S: Into<String>,
 {
     session.database_call("get_objects", get_objects_params(ids))
+}
+
+pub fn get_dynamic_global_properties(
+    session: &mut GrapheneSession,
+) -> Result<Value, TransportError> {
+    session.database_call("get_dynamic_global_properties", json!([]))
 }
 
 pub fn get_required_fees(
