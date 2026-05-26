@@ -41,6 +41,15 @@ pub enum TransportError {
 
     #[error("websocket connection closed")]
     ConnectionClosed,
+
+    #[error("Graphene API `{name}` is unavailable on this node")]
+    MissingApi { name: &'static str },
+
+    #[error("Graphene API `{name}` discovery returned non-integer id: {value}")]
+    InvalidApiId { name: &'static str, value: Value },
+
+    #[error("database.get_chain_id returned non-string value: {value}")]
+    InvalidChainId { value: Value },
 }
 
 impl TransportError {
