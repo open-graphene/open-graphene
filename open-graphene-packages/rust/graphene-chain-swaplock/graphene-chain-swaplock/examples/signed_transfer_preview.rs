@@ -17,6 +17,7 @@ use graphene_chain_swaplock::transaction::set_first_operation_fee;
 use graphene_chain_swaplock::transfer::{
     build_transfer_transaction, signed_transaction_json, TransferTransactionInput,
 };
+use graphene_chain_swaplock::SwaplockSession;
 use serde_json::{json, Value};
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -38,22 +39,22 @@ fn main() -> Result<(), Box<dyn Error>> {
         .unwrap_or(1_000_000);
     let human_amount = env::var("SWAPLOCK_TRANSFER_AMOUNT").unwrap_or_else(|_| "1".to_string());
 
-    let mut rpc = GrapheneRpc::connect(&rpc_url)?;
-    let database_api_id = rpc.database_api_id()?;
-    let asset_precision = asset_precision(&mut rpc, database_api_id, &asset_id)?;
+    let mut session = SwaplockSession::connect(&rpc_url)?;
+    let database_api_id = session.database_api_id();
+    let asset_precision = asset_precision(session.rpc_mut(), database_api_id, &asset_id)?;
     let amount = transfer_amount_raw(&human_amount, asset_precision)?;
 
-    let from_id = lookup_account_id(&mut rpc, database_api_id, &from_account)?;
-    let to_id = lookup_account_id(&mut rpc, database_api_id, &to_account)?;
+    let from_id = lookup_account_id(session.rpc_mut(), database_api_id, &from_account)?;
+    let to_id = lookup_account_id(session.rpc_mut(), database_api_id, &to_account)?;
     let expected_public_key = match env::var("SWAPLOCK_ACTIVE_PUBLIC_KEY") {
         Ok(public_key) => Some(("env", public_key)),
         Err(env::VarError::NotPresent) => {
-            active_public_key_for_account(&mut rpc, database_api_id, &from_id)?
+            active_public_key_for_account(session.rpc_mut(), database_api_id, &from_id)?
                 .map(|public_key| ("chain_active_authority", public_key))
         }
         Err(err) => return Err(err.into()),
     };
-    let head = head_block(&mut rpc, database_api_id)?;
+    let head = head_block(session.rpc_mut(), database_api_id)?;
     let head_block_number = head.number;
     let header =
         open_graphene_sdk_core::transaction_header_from_head(&head, Duration::from_secs(60))?;
@@ -74,7 +75,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     let fee = required_fee(
-        &mut rpc,
+        session.rpc_mut(),
         database_api_id,
         &transaction,
         &asset_id,
@@ -88,7 +89,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         )
         .into());
     }
-    let balance_before = account_balance(&mut rpc, database_api_id, &from_id, &asset_id)?;
+    let balance_before = account_balance(session.rpc_mut(), database_api_id, &from_id, &asset_id)?;
     open_graphene_sdk_core::ensure_sufficient_balance(&open_graphene_sdk_core::BalanceCheck {
         balance: open_graphene_sdk_core::AssetAmount {
             amount: balance_before,
@@ -178,10 +179,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    let network_broadcast_api_id = rpc.network_broadcast_api_id()?;
-    let history_api_id = rpc.history_api_id()?;
+    let network_broadcast_api_id = session.network_broadcast_api_id()?;
+    let history_api_id = session.history_api_id()?;
     broadcast_transaction(
-        &mut rpc,
+        session.rpc_mut(),
         network_broadcast_api_id,
         signed_transaction_json(&signed_transaction)?,
     )?;
@@ -196,7 +197,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         min_block_num: head_block_number,
     };
     let confirmation = wait_for_account_history_confirmation(
-        &mut rpc,
+        session.rpc_mut(),
         history_api_id,
         &AccountHistoryQuery::recent(&from_id),
         &confirm_poll_config()?,

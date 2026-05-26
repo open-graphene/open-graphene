@@ -18,6 +18,7 @@ use graphene_chain_swaplock::history_api::{
 };
 use graphene_chain_swaplock::rpc::GrapheneRpc;
 use graphene_chain_swaplock::transaction::set_first_operation_fee;
+use graphene_chain_swaplock::SwaplockSession;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let rpc_url = env::var("SWAPLOCK_RPC_URL")?;
@@ -37,16 +38,16 @@ fn main() -> Result<(), Box<dyn Error>> {
         .transpose()?
         .unwrap_or(1_000_000_000);
 
-    let mut rpc = GrapheneRpc::connect(&rpc_url)?;
-    let database_api_id = rpc.database_api_id()?;
-    if lookup_account_id_optional(&mut rpc, database_api_id, &new_account)?.is_some() {
+    let mut session = SwaplockSession::connect(&rpc_url)?;
+    let database_api_id = session.database_api_id();
+    if lookup_account_id_optional(session.rpc_mut(), database_api_id, &new_account)?.is_some() {
         return Err(format!("account already exists: {new_account}").into());
     }
 
-    let registrar_id = lookup_account_id(&mut rpc, database_api_id, &registrar_account)?;
+    let registrar_id = lookup_account_id(session.rpc_mut(), database_api_id, &registrar_account)?;
     let registrar_signing_public_key = match env::var("SWAPLOCK_ACTIVE_PUBLIC_KEY") {
         Ok(public_key) => public_key,
-        Err(env::VarError::NotPresent) => active_public_key_for_account(&mut rpc, database_api_id, &registrar_id)?.ok_or("could not determine a single registrar active public key; set SWAPLOCK_ACTIVE_PUBLIC_KEY")?,
+        Err(env::VarError::NotPresent) => active_public_key_for_account(session.rpc_mut(), database_api_id, &registrar_id)?.ok_or("could not determine a single registrar active public key; set SWAPLOCK_ACTIVE_PUBLIC_KEY")?,
         Err(err) => return Err(err.into()),
     };
     let new_account_public_key = match env::var("SWAPLOCK_NEW_ACCOUNT_PUBLIC_KEY") {
@@ -55,7 +56,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Err(err) => return Err(err.into()),
     };
 
-    let head = head_block(&mut rpc, database_api_id)?;
+    let head = head_block(session.rpc_mut(), database_api_id)?;
     let head_block_number = head.number;
     let header =
         open_graphene_sdk_core::transaction_header_from_head(&head, Duration::from_secs(60))?;
@@ -77,7 +78,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     let fee = required_fee(
-        &mut rpc,
+        session.rpc_mut(),
         database_api_id,
         &transaction,
         &asset_id,
@@ -91,8 +92,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         .into());
     }
     set_first_operation_fee(&mut transaction, fee.clone())?;
-    let balance_before =
-        account_balance(&mut rpc, database_api_id, &registrar_id, &fee.asset_id.0)?;
+    let balance_before = account_balance(
+        session.rpc_mut(),
+        database_api_id,
+        &registrar_id,
+        &fee.asset_id.0,
+    )?;
     if balance_before < fee.amount {
         return Err(format!(
             "insufficient balance for fee asset {}: balance {}, required {}",
@@ -115,10 +120,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         );
     }
 
-    let network_broadcast_api_id = rpc.network_broadcast_api_id()?;
-    let history_api_id = rpc.history_api_id()?;
+    let network_broadcast_api_id = session.network_broadcast_api_id()?;
+    let history_api_id = session.history_api_id()?;
     sign_and_broadcast_transaction(
-        &mut rpc,
+        session.rpc_mut(),
         network_broadcast_api_id,
         &transaction,
         &wif,
@@ -127,7 +132,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     )?;
     println!("Broadcast: submitted");
 
-    let created_id = wait_for_account(&mut rpc, database_api_id, &new_account)?
+    let created_id = wait_for_account(session.rpc_mut(), database_api_id, &new_account)?
         .ok_or("broadcast submitted but new account was not found")?;
     println!("Created: {new_account} ({created_id})");
     let criteria = AccountCreateConfirmationCriteria {
@@ -135,7 +140,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         min_block_num: head_block_number,
     };
     let history = get_account_history(
-        &mut rpc,
+        session.rpc_mut(),
         history_api_id,
         &AccountHistoryQuery::recent(&registrar_id),
     )?;

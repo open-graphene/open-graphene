@@ -35,6 +35,7 @@ use graphene_chain_swaplock::transaction::apply_required_fee;
 use graphene_chain_swaplock::transfer::{
     build_transfer_transaction, signed_transaction_json as transfer_json, TransferTransactionInput,
 };
+use graphene_chain_swaplock::SwaplockSession;
 use serde_json::Value;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -83,13 +84,13 @@ fn run_trading_scenario_from_env() -> Result<TradingScenarioResult, Box<dyn Erro
     let order_sell_amount = env_i64("SWAPLOCK_SCENARIO_ORDER_SELL_AMOUNT", 100_000)?;
     let order_receive_amount = env_i64("SWAPLOCK_SCENARIO_ORDER_RECEIVE_AMOUNT", 10_000_000_000)?;
 
-    let mut rpc = GrapheneRpc::connect(&rpc_url)?;
-    let database_api_id = rpc.database_api_id()?;
-    let network_broadcast_api_id = rpc.network_broadcast_api_id()?;
+    let mut session = SwaplockSession::connect(&rpc_url)?;
+    let database_api_id = session.database_api_id();
+    let network_broadcast_api_id = session.network_broadcast_api_id()?;
 
-    let registrar_id = lookup_account_id(&mut rpc, database_api_id, &registrar_account)?;
+    let registrar_id = lookup_account_id(session.rpc_mut(), database_api_id, &registrar_account)?;
     let signing_public_key =
-        active_public_key_for_account(&mut rpc, database_api_id, &registrar_id)?
+        active_public_key_for_account(session.rpc_mut(), database_api_id, &registrar_id)?
             .ok_or("could not determine registrar active public key from chain")?;
     if let Ok(env_public_key) = env::var("SWAPLOCK_ACTIVE_PUBLIC_KEY") {
         if env_public_key != signing_public_key {
@@ -115,7 +116,7 @@ fn run_trading_scenario_from_env() -> Result<TradingScenarioResult, Box<dyn Erro
     println!("Scenario assets: {asset_a_symbol}, {asset_b_symbol}");
 
     create_account_if_missing(
-        &mut rpc,
+        session.rpc_mut(),
         database_api_id,
         network_broadcast_api_id,
         &wif,
@@ -126,7 +127,7 @@ fn run_trading_scenario_from_env() -> Result<TradingScenarioResult, Box<dyn Erro
         &account_a,
     )?;
     create_account_if_missing(
-        &mut rpc,
+        session.rpc_mut(),
         database_api_id,
         network_broadcast_api_id,
         &wif,
@@ -137,13 +138,13 @@ fn run_trading_scenario_from_env() -> Result<TradingScenarioResult, Box<dyn Erro
         &account_b,
     )?;
 
-    let account_a_id = wait_for_account(&mut rpc, database_api_id, &account_a)?
+    let account_a_id = wait_for_account(session.rpc_mut(), database_api_id, &account_a)?
         .ok_or("account A was not found after creation")?;
-    let account_b_id = wait_for_account(&mut rpc, database_api_id, &account_b)?
+    let account_b_id = wait_for_account(session.rpc_mut(), database_api_id, &account_b)?
         .ok_or("account B was not found after creation")?;
 
     create_asset_if_missing(
-        &mut rpc,
+        session.rpc_mut(),
         database_api_id,
         network_broadcast_api_id,
         &wif,
@@ -154,7 +155,7 @@ fn run_trading_scenario_from_env() -> Result<TradingScenarioResult, Box<dyn Erro
         &asset_a_symbol,
     )?;
     create_asset_if_missing(
-        &mut rpc,
+        session.rpc_mut(),
         database_api_id,
         network_broadcast_api_id,
         &wif,
@@ -165,13 +166,13 @@ fn run_trading_scenario_from_env() -> Result<TradingScenarioResult, Box<dyn Erro
         &asset_b_symbol,
     )?;
 
-    let asset_a_id = wait_for_asset(&mut rpc, database_api_id, &asset_a_symbol)?
+    let asset_a_id = wait_for_asset(session.rpc_mut(), database_api_id, &asset_a_symbol)?
         .ok_or("asset A was not found after creation")?;
-    let asset_b_id = wait_for_asset(&mut rpc, database_api_id, &asset_b_symbol)?
+    let asset_b_id = wait_for_asset(session.rpc_mut(), database_api_id, &asset_b_symbol)?
         .ok_or("asset B was not found after creation")?;
 
     fund_core(
-        &mut rpc,
+        session.rpc_mut(),
         database_api_id,
         network_broadcast_api_id,
         &wif,
@@ -183,7 +184,7 @@ fn run_trading_scenario_from_env() -> Result<TradingScenarioResult, Box<dyn Erro
         account_core_funding,
     )?;
     fund_core(
-        &mut rpc,
+        session.rpc_mut(),
         database_api_id,
         network_broadcast_api_id,
         &wif,
@@ -196,7 +197,7 @@ fn run_trading_scenario_from_env() -> Result<TradingScenarioResult, Box<dyn Erro
     )?;
 
     issue_asset(
-        &mut rpc,
+        session.rpc_mut(),
         database_api_id,
         network_broadcast_api_id,
         &wif,
@@ -209,7 +210,7 @@ fn run_trading_scenario_from_env() -> Result<TradingScenarioResult, Box<dyn Erro
         issue_amount,
     )?;
     issue_asset(
-        &mut rpc,
+        session.rpc_mut(),
         database_api_id,
         network_broadcast_api_id,
         &wif,
@@ -223,14 +224,14 @@ fn run_trading_scenario_from_env() -> Result<TradingScenarioResult, Box<dyn Erro
     )?;
 
     wait_for_balance_at_least(
-        &mut rpc,
+        session.rpc_mut(),
         database_api_id,
         &account_a_id,
         &asset_a_id,
         issue_amount,
     )?;
     wait_for_balance_at_least(
-        &mut rpc,
+        session.rpc_mut(),
         database_api_id,
         &account_b_id,
         &asset_b_id,
@@ -238,7 +239,7 @@ fn run_trading_scenario_from_env() -> Result<TradingScenarioResult, Box<dyn Erro
     )?;
 
     let order_id = create_unmatched_order(
-        &mut rpc,
+        session.rpc_mut(),
         database_api_id,
         network_broadcast_api_id,
         &wif,
@@ -254,7 +255,7 @@ fn run_trading_scenario_from_env() -> Result<TradingScenarioResult, Box<dyn Erro
     println!("Opened limit order: {order_id}");
 
     cancel_order(
-        &mut rpc,
+        session.rpc_mut(),
         database_api_id,
         network_broadcast_api_id,
         &wif,
@@ -264,7 +265,7 @@ fn run_trading_scenario_from_env() -> Result<TradingScenarioResult, Box<dyn Erro
         &account_a_id,
         &order_id,
     )?;
-    wait_for_order_gone(&mut rpc, database_api_id, &order_id)?;
+    wait_for_order_gone(session.rpc_mut(), database_api_id, &order_id)?;
 
     println!("Scenario complete: created accounts/assets, issued balances, opened and canceled {order_id}");
     Ok(TradingScenarioResult {

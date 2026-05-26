@@ -13,6 +13,7 @@ use graphene_chain_swaplock::database_api::{
 };
 use graphene_chain_swaplock::rpc::GrapheneRpc;
 use graphene_chain_swaplock::transaction::set_first_operation_fee;
+use graphene_chain_swaplock::SwaplockSession;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let rpc_url = env::var("SWAPLOCK_RPC_URL")?;
@@ -42,15 +43,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         .transpose()?
         .unwrap_or(1_000_000_000);
 
-    let mut rpc = GrapheneRpc::connect(&rpc_url)?;
-    let database_api_id = rpc.database_api_id()?;
-    if lookup_asset_id_optional(&mut rpc, database_api_id, &symbol)?.is_some() {
+    let mut session = SwaplockSession::connect(&rpc_url)?;
+    let database_api_id = session.database_api_id();
+    if lookup_asset_id_optional(session.rpc_mut(), database_api_id, &symbol)?.is_some() {
         return Err(format!("asset symbol already exists: {symbol}").into());
     }
 
-    let issuer_id = lookup_account_id(&mut rpc, database_api_id, &issuer_account)?;
+    let issuer_id = lookup_account_id(session.rpc_mut(), database_api_id, &issuer_account)?;
     let issuer_signing_public_key =
-        active_public_key_for_account(&mut rpc, database_api_id, &issuer_id)?
+        active_public_key_for_account(session.rpc_mut(), database_api_id, &issuer_id)?
             .ok_or("could not determine a single issuer active public key from chain")?;
     if let Ok(env_public_key) = env::var("SWAPLOCK_ACTIVE_PUBLIC_KEY") {
         if env_public_key != issuer_signing_public_key {
@@ -61,7 +62,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    let head = head_block(&mut rpc, database_api_id)?;
+    let head = head_block(session.rpc_mut(), database_api_id)?;
     let head_block_number = head.number;
     let header =
         open_graphene_sdk_core::transaction_header_from_head(&head, Duration::from_secs(60))?;
@@ -80,7 +81,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     let fee = required_fee(
-        &mut rpc,
+        session.rpc_mut(),
         database_api_id,
         &transaction,
         &fee_asset_id,
@@ -94,7 +95,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         .into());
     }
     set_first_operation_fee(&mut transaction, fee.clone())?;
-    let balance_before = account_balance(&mut rpc, database_api_id, &issuer_id, &fee.asset_id.0)?;
+    let balance_before = account_balance(
+        session.rpc_mut(),
+        database_api_id,
+        &issuer_id,
+        &fee.asset_id.0,
+    )?;
     if balance_before < fee.amount {
         return Err(format!(
             "insufficient balance for fee asset {}: balance {}, required {}",
@@ -116,9 +122,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         );
     }
 
-    let network_broadcast_api_id = rpc.network_broadcast_api_id()?;
+    let network_broadcast_api_id = session.network_broadcast_api_id()?;
     sign_and_broadcast_transaction(
-        &mut rpc,
+        session.rpc_mut(),
         network_broadcast_api_id,
         &transaction,
         &wif,
@@ -127,7 +133,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     )?;
     println!("Broadcast: submitted");
 
-    let created_id = wait_for_asset(&mut rpc, database_api_id, &symbol)?
+    let created_id = wait_for_asset(session.rpc_mut(), database_api_id, &symbol)?
         .ok_or("broadcast submitted but new asset was not found")?;
     println!("Created asset: {symbol} ({created_id})");
 
