@@ -160,9 +160,11 @@ The chain-specific high-level crate should own:
 
 Do not start by generating every object or every object route.
 
-A small first slice should prove one narrow helper end to end:
+A small first slice should prove one narrow helper end to end. Swaplock `AssetObject` is now the first such proof; the next slice should either add BitShares parity for the same object or repeat the pattern for `account_object`.
 
-1. choose a currently useful object with reflected fields, likely `account_object` or `asset_object`;
+For each new object:
+
+1. choose a currently useful object with reflected fields;
 2. ensure the object struct is generated from C++ reflection;
 3. generate or hand-write a temporary chain-local typed helper that parses one `get_objects` slot into that generated type;
 4. preserve `null` as `Missing`;

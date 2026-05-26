@@ -11,6 +11,8 @@ pub struct GeneratorConfig {
     pub source: SourceConfig,
     pub output: OutputConfig,
     #[serde(default)]
+    pub object_structs: Vec<String>,
+    #[serde(default)]
     pub rpc_apis: Vec<RpcApiConfig>,
 }
 

@@ -1979,6 +1979,208 @@
       }
     },
     {
+      "name": "asset_object",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "asset"
+          },
+          "source": {
+            "name": "id",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/asset_object.hpp",
+            "line": 75
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "inherited object id from graphene::db::object for reflected Graphene object"
+          }
+        },
+        {
+          "index": 1,
+          "name": "symbol",
+          "type": {
+            "kind": "string"
+          },
+          "source": {
+            "name": "symbol",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/asset_object.hpp",
+            "line": 127
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "precision",
+          "type": {
+            "kind": "uint8"
+          },
+          "source": {
+            "name": "precision",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/asset_object.hpp",
+            "line": 130
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "issuer",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "issuer",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/asset_object.hpp",
+            "line": 132
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "options",
+          "type": {
+            "kind": "ref",
+            "name": "asset_options"
+          },
+          "source": {
+            "name": "options",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/asset_object.hpp",
+            "line": 134
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 5,
+          "name": "dynamic_asset_data_id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "asset_dynamic_data"
+          },
+          "source": {
+            "name": "dynamic_asset_data_id",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/asset_object.hpp",
+            "line": 136
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 6,
+          "name": "bitasset_data_id",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "asset_bitasset_data"
+            }
+          },
+          "source": {
+            "name": "bitasset_data_id",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/asset_object.hpp",
+            "line": 139
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 7,
+          "name": "buyback_account",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "account"
+            }
+          },
+          "source": {
+            "name": "buyback_account",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/asset_object.hpp",
+            "line": 141
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 8,
+          "name": "for_liquidity_pool",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "liquidity_pool"
+            }
+          },
+          "source": {
+            "name": "for_liquidity_pool",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/asset_object.hpp",
+            "line": 143
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 9,
+          "name": "creation_block_num",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "creation_block_num",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/asset_object.hpp",
+            "line": 146
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 10,
+          "name": "creation_time",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "creation_time",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/asset_object.hpp",
+            "line": 149
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
       "name": "asset_options",
       "kind": "struct",
       "fields": [
@@ -26617,6 +26819,7 @@
       "cppAlias": "asset_id_type",
       "objectSpace": 1,
       "typeId": 3,
+      "structRef": "asset_object",
       "source": {
         "name": "asset",
         "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/types.hpp",

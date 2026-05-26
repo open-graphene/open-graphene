@@ -396,6 +396,22 @@ pub struct AssetIssueOperationFeeParamsT {
     pub fee: u64,
 }
 
+/// Raw protocol struct `asset_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AssetObject {
+    pub id: crate::generated::ids::AssetId,
+    pub symbol: String,
+    pub precision: u8,
+    pub issuer: crate::generated::ids::AccountId,
+    pub options: crate::generated::types::AssetOptions,
+    pub dynamic_asset_data_id: crate::generated::ids::AssetDynamicDataId,
+    pub bitasset_data_id: Option<crate::generated::ids::AssetBitassetDataId>,
+    pub buyback_account: Option<crate::generated::ids::AccountId>,
+    pub for_liquidity_pool: Option<crate::generated::ids::LiquidityPoolId>,
+    pub creation_block_num: u32,
+    pub creation_time: String,
+}
+
 /// Raw protocol struct `asset_options`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AssetOptions {

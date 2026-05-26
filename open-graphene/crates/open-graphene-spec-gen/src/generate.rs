@@ -41,7 +41,7 @@ pub fn build_protocol(
     facts: &SourceFacts,
     mut rpc_methods: Vec<RpcMethodDef>,
 ) -> Protocol {
-    let (structs, static_variants) = build_type_graph(facts, &rpc_methods);
+    let (structs, static_variants) = build_type_graph(config, facts, &rpc_methods);
     let operations = build_operations(&static_variants, &structs);
     let object_types = build_object_types(facts, &structs);
     let enums = build_enums(facts);
@@ -78,6 +78,7 @@ pub fn build_protocol(
 }
 
 fn build_type_graph(
+    config: &GeneratorConfig,
     facts: &SourceFacts,
     rpc_methods: &[RpcMethodDef],
 ) -> (Vec<StructDef>, Vec<StaticVariantDef>) {
@@ -97,6 +98,7 @@ fn build_type_graph(
         }
     }
     seed_protocol_root_struct_refs(&mut struct_refs);
+    seed_configured_object_struct_refs(config, facts, &mut struct_refs);
 
     loop {
         let mut changed = false;
@@ -159,6 +161,22 @@ fn build_type_graph(
 fn seed_protocol_root_struct_refs(struct_refs: &mut BTreeSet<String>) {
     struct_refs.insert("transaction".to_string());
     struct_refs.insert("signed_transaction".to_string());
+}
+
+fn seed_configured_object_struct_refs(
+    config: &GeneratorConfig,
+    facts: &SourceFacts,
+    struct_refs: &mut BTreeSet<String>,
+) {
+    for object_struct in &config.object_structs {
+        if facts
+            .object_types
+            .iter()
+            .any(|object_type| object_type.struct_ref.as_ref() == Some(object_struct))
+        {
+            struct_refs.insert(object_struct.clone());
+        }
+    }
 }
 
 fn build_enums(facts: &SourceFacts) -> Vec<EnumDef> {
@@ -910,6 +928,74 @@ mod tests {
         );
         assert_eq!(limit_order.fields[1].name, "seller");
         assert_eq!(limit_order.fields[1].index, 1);
+    }
+
+    #[test]
+    fn build_protocol_seeds_configured_object_structs() {
+        let config: GeneratorConfig = toml::from_str(
+            r#"
+            object_structs = ["asset_object"]
+
+            [chain]
+            id = "bitshares"
+            public_key_prefix = "BTS"
+
+            [output]
+            dist = "./dist/bitshares.open-graphene.json"
+
+            [source]
+            chain_repo = "../../blockchains/bitshares/bitshares-core"
+            "#,
+        )
+        .expect("parse config");
+        let facts = SourceFacts {
+            classes: vec![RawClass {
+                name: "asset_object".to_string(),
+                qualified_name: Some("graphene::chain::asset_object".to_string()),
+                methods: vec![],
+                fields: vec![RawField {
+                    name: "symbol".to_string(),
+                    type_expr: "string".to_string(),
+                    source: SourceLoc {
+                        file: PathBuf::from("asset_object.hpp"),
+                        line: 80,
+                    },
+                }],
+                source: SourceLoc {
+                    file: PathBuf::from("asset_object.hpp"),
+                    line: 75,
+                },
+            }],
+            object_types: vec![RawObjectType {
+                object_type: "asset".to_string(),
+                cpp_alias: "asset_id_type".to_string(),
+                object_space_name: "protocol_ids".to_string(),
+                object_space: Some(1),
+                object_type_name: "asset_object_type".to_string(),
+                type_id: Some(3),
+                struct_ref: Some("asset_object".to_string()),
+                source: SourceLoc {
+                    file: PathBuf::from("types.hpp"),
+                    line: 10,
+                },
+                id_namespace: "protocol".to_string(),
+            }],
+            ..SourceFacts::default()
+        };
+
+        let protocol = build_protocol(&config, &facts, vec![]);
+
+        let asset = protocol
+            .structs
+            .iter()
+            .find(|struct_def| struct_def.name == "asset_object")
+            .expect("configured asset_object emitted");
+        assert_eq!(asset.fields[0].name, "id");
+        assert_eq!(asset.fields[1].name, "symbol");
+        assert_eq!(
+            protocol.object_types[0].struct_ref.as_deref(),
+            Some("asset_object")
+        );
     }
 
     #[test]

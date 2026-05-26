@@ -381,6 +381,7 @@ mod tests {
             output: OutputConfig {
                 dist: "./dist/bitshares.open-graphene.json".to_string(),
             },
+            object_structs: vec![],
             rpc_apis: vec![RpcApiConfig {
                 name: "database".to_string(),
                 api_class: "database_api".to_string(),
