@@ -205,7 +205,7 @@ pub enum ProtocolObject {
 }
 ```
 
-Exact design should follow the extracted spec and real Graphene object spaces.
+Exact design should follow the extracted spec and real Graphene object spaces. See `TYPED-GET-OBJECTS-DESIGN.md` for the routing, positional `null`, and fail-closed helper rules that should guide the first implementation slice.
 
 ### 3. Typed RPC method metadata/client generation
 

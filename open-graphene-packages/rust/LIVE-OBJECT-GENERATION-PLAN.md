@@ -403,8 +403,10 @@ This milestone should not:
 
 After `limit_order_object` and `dynamic_global_property_object` are proven, likely next generated live objects are:
 
-1. `asset_object` and `account_object`, because lookup helpers currently use partial response parsing;
+1. `asset_object` and `account_object`, because lookup helpers currently use partial response parsing and should follow the typed `get_objects` routing design;
 2. `operation_history_object`, because confirmation matching is still JSON-heavy and operation-specific;
 3. `account_balance_object` only if a real reflected RPC return path is selected; the current balance read path is already covered by `get_account_balances -> vector<asset>` and generated `Asset`.
+
+Before implementing `asset_object` or `account_object`, read `TYPED-GET-OBJECTS-DESIGN.md`. Those objects likely enter through `get_objects`, which requires positional `null` handling and object-id-based routing rather than a simple concrete RPC return type.
 
 A separate milestone should handle generated Graphene broadcast JSON rendering. That work should not be mixed with live object generation, because it has different semantics and different failure modes.
