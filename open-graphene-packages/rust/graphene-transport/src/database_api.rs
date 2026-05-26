@@ -21,6 +21,17 @@ pub fn get_required_fees(
     )
 }
 
+pub fn lookup_accounts(
+    session: &mut GrapheneSession,
+    lower_bound_name: impl Into<String>,
+    limit: u64,
+) -> Result<Value, TransportError> {
+    session.database_call(
+        "lookup_accounts",
+        lookup_accounts_params(lower_bound_name, limit),
+    )
+}
+
 fn get_objects_params<I, S>(ids: I) -> Value
 where
     I: IntoIterator<Item = S>,
@@ -32,6 +43,10 @@ where
 
 fn get_required_fees_params(operations_json: Value, fee_asset_id: impl Into<String>) -> Value {
     json!([operations_json, fee_asset_id.into()])
+}
+
+fn lookup_accounts_params(lower_bound_name: impl Into<String>, limit: u64) -> Value {
+    json!([lower_bound_name.into(), limit])
 }
 
 #[cfg(test)]
@@ -56,6 +71,14 @@ mod tests {
         assert_eq!(
             get_required_fees_params(json!([[0, {"foo": "bar"}]]), "1.3.0"),
             json!([[[0, {"foo": "bar"}]], "1.3.0"])
+        );
+    }
+
+    #[test]
+    fn builds_lookup_accounts_params() {
+        assert_eq!(
+            lookup_accounts_params("swaplock", 1),
+            json!(["swaplock", 1])
         );
     }
 }

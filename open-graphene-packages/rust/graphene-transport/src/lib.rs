@@ -6,7 +6,7 @@ pub mod network_broadcast_api;
 pub mod session;
 pub mod websocket;
 
-pub use database_api::{get_objects, get_required_fees};
+pub use database_api::{get_objects, get_required_fees, lookup_accounts};
 pub use error::TransportError;
 pub use history_api::{get_account_history, AccountHistoryQuery};
 pub use json_rpc::{
