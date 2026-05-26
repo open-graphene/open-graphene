@@ -23,6 +23,7 @@ This directory contains Rust runtime crates, SDK helper crates, and generated ch
 - [Open Graphene Transport API](graphene-transport/README.md) documents the current live `open-graphene-transport` crate API, including `GrapheneSession`, blocking WebSocket calls, database/history/broadcast helpers, and non-goals.
 - [Open Graphene SDK Live API](graphene-sdk-live/README.md) documents the current `open-graphene-sdk-live` API, including chain profiles, `GrapheneLiveClient`, read helpers, facade integration, and non-goals.
 - [Open Graphene SDK Live Design](SDK-LIVE-DESIGN.md) defines the proposed shared live SDK boundary above transport and below chain-specific generated bindings/signing/operation code.
+- [Binding Usage and Live Typing Audit](BINDINGS-LIVE-TYPING-AUDIT.md) freezes new SDK/live feature growth and records why current bindings cover protocol transactions but not yet full typed live RPC payloads.
 
 ## Swaplock live trading scenario
 

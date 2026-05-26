@@ -1,0 +1,297 @@
+# Binding Usage and Live Typing Audit
+
+## Status
+
+This is a stop-the-line architecture checkpoint. New SDK/live features are intentionally frozen until the binding and live-typing boundaries are made coherent.
+
+The immediate question is why the current live SDK and Swaplock helper layer still parse many RPC payloads through `serde_json::Value` even though `graphene-chain-swaplock-bindings` exists and was created to type Graphene payload serialization and deserialization.
+
+## Short answer
+
+The generated Swaplock bindings are currently strongest at the protocol transaction layer, not at the full live RPC object layer.
+
+They cover generated operation structs, generated transaction structs, static variants, object id wrappers, `Asset`, `Price`, and FC serialization. They do not yet provide complete generated Rust structs for most database/app objects returned by live RPC calls, such as account objects, asset objects, dynamic global properties, account balances, or limit order objects.
+
+The current `sdk-live` `serde_json::Value` parsing exists because those generated live response object types do not yet exist. Some of the current hand-written parsing is a justified minimal projection into SDK primitives; richer response modeling would become duplicated manual bindings and should stop until the generator catches up.
+
+## Current generated binding coverage
+
+The generated Swaplock bindings currently provide:
+
+- protocol operation structs such as `TransferOperation`, `AssetIssueOperation`, `AssetCreateOperation`, `LimitOrderCreateOperation`, and `LimitOrderCancelOperation`;
+- generated protocol value structs such as `Asset`, `Price`, `Authority`, `Transaction`, and `SignedTransaction`;
+- generated static variants such as `Operation`, `OperationResult`, and `FutureExtensions`;
+- generated object id wrappers such as `AccountId`, `AssetId`, `LimitOrderId`, and many others;
+- FC serialization for generated ids, assets, operations, transactions, signatures, and supported protocol values;
+- serde support for many raw protocol structs and static variants.
+
+That is enough to build, mutate, sign, and FC-serialize local transactions with generated types.
+
+## What generated bindings do not yet cover
+
+The generated bindings do not yet provide complete Rust structs for most database/app objects returned by RPC methods:
+
+- `dynamic_global_property_object`;
+- `account_object`;
+- `asset_object`;
+- `account_balance_object`;
+- `limit_order_object`;
+- richer `operation_history_object` usage across all live flows;
+- typed unions for `get_objects` results.
+
+The generated spec contains `objectTypes`, so it knows object id spaces and type ids such as `account -> 1.2.x`, `asset -> 1.3.x`, `limit_order -> 1.7.x`, and `dynamic_global_property -> 2.1.x`. That is not the same as having generated response structs with fields.
+
+The generated RPC method coverage is also incomplete. Current runtime code uses Graphene calls such as:
+
+- `lookup_accounts`;
+- `lookup_asset_symbols`;
+- `get_account_balances`;
+- `get_required_fees`;
+- `get_limit_orders`;
+- `broadcast_transaction`.
+
+Those are currently hand-wrapped in `open-graphene-transport` and interpreted above transport because the generator/spec layer does not yet emit typed RPC clients or typed response bindings for them.
+
+## Where generated bindings are used correctly today
+
+`graphene-chain-swaplock` correctly uses generated bindings for local protocol construction and signing:
+
+- operation builders produce generated `Transaction` values;
+- fee application mutates generated operation variants in a generated `Transaction`;
+- signing uses generated transaction FC bytes and generated signatures;
+- operation modules render chain-local broadcast JSON from generated `SignedTransaction` values;
+- live wrappers convert SDK primitive results back into generated Swaplock protocol types when their public API requires generated types.
+
+This is a coherent use of current bindings: generated protocol types are the local transaction truth.
+
+## Where `serde_json::Value` remains today
+
+`serde_json::Value` remains in three distinct places. They should not be treated the same.
+
+### 1. Transport envelope layer
+
+`open-graphene-transport` returns `serde_json::Value` for Graphene JSON-RPC results. This is acceptable because transport is chain-generic and should not depend on generated chain bindings.
+
+### 2. Minimal shared live projections
+
+`open-graphene-sdk-live` currently parses small live responses into SDK primitive/core types:
+
+- `HeadBlock`;
+- `AccountIdRef`;
+- `AssetIdRef`;
+- `AssetAmount`;
+- `LimitOrderSummary { id, seller }`;
+- `bool` for `limit_order_exists`.
+
+This is acceptable only as minimal Graphene-generic projection. It should not grow into a complete manually modeled object layer.
+
+### 3. Chain-local broadcast JSON renderers
+
+`graphene-chain-swaplock` operation modules manually render signed transactions and operations into Graphene broadcast JSON. This is currently necessary because generated serde is not yet a proven broadcast JSON renderer.
+
+## Why generated serde cannot simply replace broadcast JSON renderers yet
+
+Generated `Serialize`/`Deserialize` is useful, but it is not currently equivalent to Graphene broadcast JSON semantics.
+
+Known mismatches and risks:
+
+- `Signature(pub Vec<u8>)` is a byte vector at the protocol level, while broadcast JSON requires hex string signatures;
+- some extension/static-variant values serialize as Graphene tagged variants such as `[0, null]`, while live broadcast payloads for empty extensions use `[]`;
+- operation static variants need `[tag, payload]`, but nested extension and signature shapes are context-sensitive;
+- FC/preimage bytes, generated serde JSON, and broadcast JSON are related but not identical wire surfaces.
+
+Therefore, replacing chain-local renderers with `serde_json::to_value(&signed_transaction)` would be unsafe until the generator emits an explicit Graphene broadcast JSON rendering capability with tests against live-accepted payloads.
+
+## Boundary rules from this checkpoint
+
+### Transport
+
+`open-graphene-transport` owns:
+
+- JSON-RPC request/response mechanics;
+- WebSocket calls;
+- API discovery;
+- Graphene-generic RPC envelopes.
+
+It must not import generated chain bindings or parse generated chain objects.
+
+### SDK Live
+
+`open-graphene-sdk-live` owns:
+
+- shared read-only live helpers above transport;
+- chain-id profile validation;
+- small SDK primitive/core projections;
+- fail-closed shape checks for minimal responses.
+
+It must not:
+
+- import generated chain bindings;
+- sign, broadcast, build transactions, render operations, or apply fees;
+- choose fee/retry/confirmation policy;
+- grow rich manually modeled app/database object types.
+
+### Chain-specific high-level crates
+
+`graphene-chain-swaplock` owns:
+
+- chain profile constants;
+- chain-specific helper APIs;
+- generated binding usage;
+- operation builders and chain-local broadcast JSON renderers;
+- signing and broadcast composition;
+- confirmation policy and examples;
+- conversion between SDK primitives and generated chain protocol types where needed.
+
+### Generated bindings
+
+`graphene-chain-swaplock-bindings` should stay protocol-only today, but its generator should be extended before we add richer live typing.
+
+## Freeze rules
+
+Until the typing plan is implemented, freeze new SDK/live features.
+
+Allowed work:
+
+- documentation;
+- audits;
+- tests proving existing assumptions;
+- generator design;
+- small refactors that reduce inconsistency without expanding public capability.
+
+Disallowed work for now:
+
+- new operation flows;
+- new rich `sdk-live` response models;
+- new order book or market APIs;
+- more live helpers that model app objects manually;
+- replacing broadcast renderers with generated serde without a dedicated renderer capability.
+
+## Required generator capabilities
+
+The next generator-oriented milestone should focus on these capabilities before adding more live SDK surface.
+
+### 1. Generated app/database object structs
+
+Generate Rust structs for the app/database objects actually used by live flows first:
+
+- `DynamicGlobalPropertyObject`;
+- `AccountObject`;
+- `AssetObject`;
+- `AccountBalanceObject`;
+- `LimitOrderObject`;
+- `OperationHistoryObject`.
+
+These should be derived from real C++ reflected object definitions, not invented from observed JSON samples.
+
+### 2. Typed object result union
+
+Generate a typed `get_objects` result representation for known object types, preserving `null` for missing objects.
+
+A future shape could be:
+
+```rust
+pub enum ProtocolObject {
+    Account(AccountObject),
+    Asset(AssetObject),
+    LimitOrder(LimitOrderObject),
+    DynamicGlobalProperty(DynamicGlobalPropertyObject),
+    // ...
+}
+```
+
+Exact design should follow the extracted spec and real Graphene object spaces.
+
+### 3. Typed RPC method metadata/client generation
+
+Extend spec generation and binding generation for the RPC methods currently used by runtime code:
+
+- `get_objects`;
+- `lookup_accounts`;
+- `lookup_asset_symbols`;
+- `get_account_balances`;
+- `get_required_fees`;
+- `get_limit_orders`;
+- `get_account_history`;
+- `broadcast_transaction`.
+
+The generated surface does not have to replace `open-graphene-transport`, but it should provide typed request/response adapters at the chain-specific layer.
+
+### 4. Explicit Graphene broadcast JSON renderer
+
+Generate a dedicated broadcast JSON renderer rather than relying on generic serde.
+
+It must handle:
+
+- `SignedTransaction` to `broadcast_transaction` JSON;
+- operations as `[tag, payload]`;
+- signatures as hex strings;
+- empty extension fields as the live-accepted Graphene JSON shape;
+- fail-closed unsupported extension variants or unsupported operation shapes.
+
+This capability should be tested against current manually accepted Swaplock payloads before replacing manual renderers.
+
+### 5. Conversion bridge to SDK primitives
+
+Once generated app objects exist, chain crates should convert from generated chain objects to stable SDK primitives/projections at their public seam, rather than having `sdk-live` invent rich object models.
+
+## Recommended cleanup path
+
+### Phase 0: Freeze
+
+Stop adding new SDK/live features. Commit this audit and use it as the boundary document.
+
+### Phase 1: Generator proof for one live object
+
+Pick one small, high-value object and prove full extraction/generation. Best candidate: `limit_order_object`, because we already have live proof around create/find/cancel.
+
+Goal:
+
+- generate `LimitOrderObject` from real C++ reflected fields;
+- deserialize real `get_limit_orders` response into it in the Swaplock chain crate;
+- keep `sdk-live` limited to primitive projection or remove the manual projection if the typed chain layer supersedes it.
+
+### Phase 2: Broadcast JSON renderer proof
+
+Pick one operation, likely `transfer`, and generate a dedicated broadcast JSON renderer that exactly matches the existing manual renderer and live-accepted payloads.
+
+Goal:
+
+- prove `generated SignedTransaction -> broadcast JSON` without hand-written operation JSON;
+- keep FC serialization unchanged;
+- compare generated renderer output against existing manual renderer tests;
+- run one live transfer proof.
+
+### Phase 3: Replace manual renderers incrementally
+
+After generated renderer proof works, replace operation renderers one by one:
+
+- transfer;
+- account create;
+- asset issue;
+- asset create;
+- limit order create;
+- limit order cancel.
+
+### Phase 4: Revisit `sdk-live`
+
+Once chain-specific typed RPC adapters exist, revisit whether `sdk-live` should keep current projections or become a thinner orchestration layer over chain-provided typed adapters.
+
+## Decision checkpoint
+
+The current code should be considered a successful spike/proof, not the final architecture.
+
+Keep current commits because they prove:
+
+- transport/session/API discovery;
+- shared read helper seams;
+- Swaplock facade migration pattern;
+- live fee reads;
+- live limit-order lifecycle reads;
+- live signing/broadcast/confirmation flows.
+
+But stop adding feature surface until generated binding coverage catches up to the architecture promise.
+
+The central decision is:
+
+> Generated bindings remain the authoritative home for protocol and future typed live payloads. `sdk-live` may expose minimal shared projections only. Rich app/database object typing and broadcast JSON rendering should be generated or chain-local, not manually rebuilt in `sdk-live`.
