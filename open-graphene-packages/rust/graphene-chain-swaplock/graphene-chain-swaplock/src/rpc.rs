@@ -1,6 +1,8 @@
 use std::error::Error;
 
-use open_graphene_transport::GrapheneSession;
+use open_graphene_transport::{
+    broadcast_transaction as transport_broadcast_transaction, GrapheneSession,
+};
 use serde_json::Value;
 
 pub struct GrapheneRpc {
@@ -55,6 +57,23 @@ impl GrapheneRpc {
             .ok_or("network_broadcast API is unavailable")?;
         ensure_api_id("network_broadcast", expected, api_id)?;
         Ok(self.session.network_broadcast_call(method, params)?)
+    }
+
+    pub fn broadcast_transaction(
+        &mut self,
+        api_id: u64,
+        transaction_json: Value,
+    ) -> Result<(), Box<dyn Error>> {
+        let expected = self
+            .session
+            .api_ids()
+            .network_broadcast
+            .ok_or("network_broadcast API is unavailable")?;
+        ensure_api_id("network_broadcast", expected, api_id)?;
+        Ok(transport_broadcast_transaction(
+            &mut self.session,
+            transaction_json,
+        )?)
     }
 
     pub fn call_history(

@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use serde_json::{json, Value};
+use serde_json::Value;
 
 use crate::rpc::GrapheneRpc;
 
@@ -9,10 +9,5 @@ pub fn broadcast_transaction(
     network_broadcast_api_id: u64,
     transaction_json: Value,
 ) -> Result<(), Box<dyn Error>> {
-    rpc.call_network_broadcast(
-        network_broadcast_api_id,
-        "broadcast_transaction",
-        json!([transaction_json]),
-    )?;
-    Ok(())
+    rpc.broadcast_transaction(network_broadcast_api_id, transaction_json)
 }
