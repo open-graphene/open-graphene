@@ -17,6 +17,7 @@ This directory contains Rust runtime crates, SDK helper crates, and generated ch
 - [SDK Builder Bridge Ergonomics Spike](SDK-BUILDER-BRIDGE-ERGONOMICS.md) measures current Swaplock/BitShares bridge duplication and records why the explicit generated-type bridge remains preferable for now.
 - [Limit Order Create SDK Design Spike](LIMIT-ORDER-CREATE-SDK-DESIGN.md) compares raw protocol-shaped, price-based, and builder-style input designs and records the implemented raw `limit_order_create` flow.
 - [Generated SDK Adapter Capability Design](../../open-graphene/crates/open-graphene-gen-bindings-rs/SDK-CAPABILITY-DESIGN.md) records the opt-in generated SDK adapter direction and the boundary for small protocol-level generated helpers.
+- [Graphene Transport Design](GRAPHENE-TRANSPORT-DESIGN.md) describes the chain-agnostic JSON-RPC transport layer, WebSocket notice semantics, HTTP call-only direction, and reconnect boundaries.
 
 ## Swaplock live trading scenario
 
