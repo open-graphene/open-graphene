@@ -11,6 +11,7 @@ pub mod network_broadcast_api;
 pub mod operations;
 pub mod profile;
 pub mod rpc;
+pub mod session;
 pub mod signing;
 pub mod transaction;
 
@@ -20,3 +21,4 @@ pub use operations::{
 
 pub use graphene_chain_swaplock_bindings as bindings;
 pub use profile::SwaplockProfile;
+pub use session::SwaplockSession;
