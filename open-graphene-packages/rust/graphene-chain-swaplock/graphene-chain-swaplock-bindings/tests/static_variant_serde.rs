@@ -1,5 +1,6 @@
 use graphene_chain_swaplock_bindings::generated::{
-    AccountId, Asset, AssetId, FutureExtensions, Operation, TransferOperation,
+    AccountId, Asset, AssetId, FutureExtensions, LimitOrderObject, LimitOrderId, Operation,
+    TransferOperation,
 };
 
 #[test]
@@ -51,4 +52,33 @@ fn operation_deserializes_from_graphene_tagged_tuple() {
         }
         other => panic!("unexpected operation variant: {other:?}"),
     }
+}
+
+#[test]
+fn limit_order_object_deserializes_from_graphene_json() {
+    let json = serde_json::json!({
+        "id": "1.7.14",
+        "expiration": "2026-05-26T12:00:00",
+        "seller": "1.2.100",
+        "for_sale": 100000,
+        "sell_price": {
+            "base": { "amount": 100000, "asset_id": "1.3.0" },
+            "quote": { "amount": 50000, "asset_id": "1.3.1" }
+        },
+        "filled_amount": "0",
+        "deferred_fee": 0,
+        "deferred_paid_fee": { "amount": 0, "asset_id": "1.3.0" },
+        "is_settled_debt": false,
+        "on_fill": [],
+        "take_profit_order_id": null
+    });
+
+    let order: LimitOrderObject = serde_json::from_value(json).expect("deserialize order");
+
+    assert_eq!(order.id, LimitOrderId("1.7.14".to_string()));
+    assert_eq!(order.seller, AccountId("1.2.100".to_string()));
+    assert_eq!(order.filled_amount, "0");
+    assert_eq!(order.sell_price.base.asset_id, AssetId("1.3.0".to_string()));
+    assert_eq!(order.on_fill.len(), 0);
+    assert_eq!(order.take_profit_order_id, None);
 }

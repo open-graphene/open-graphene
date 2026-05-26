@@ -85,6 +85,10 @@ pub enum TypeRef {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         fc: Option<FcEncoding>,
     },
+    Uint128 {
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        json: Option<JsonShape>,
+    },
     UnsignedVarint,
     /// Numeric handle used on the wire to correlate RPC notices with a client-side callback.
     CallbackHandle,

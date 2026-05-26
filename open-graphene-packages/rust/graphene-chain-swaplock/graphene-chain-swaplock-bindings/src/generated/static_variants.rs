@@ -3146,4 +3146,3 @@ impl<'de> serde::Deserialize<'de> for WorkerInitializer {
         }
     }
 }
-

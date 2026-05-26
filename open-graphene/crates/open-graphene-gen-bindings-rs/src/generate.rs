@@ -53,7 +53,7 @@ pub fn generate_bindings(
 
     for (file_name, contents) in files {
         let path = out_dir.join(file_name);
-        fs::write(&path, contents)
+        fs::write(&path, normalize_generated_contents(&contents))
             .map_err(|source| GenBindingsRsError::WriteOutput { path, source })?;
     }
 
@@ -65,6 +65,10 @@ pub fn generate_bindings(
         struct_count: protocol.structs.len(),
         operation_count: protocol.operations.len(),
     })
+}
+
+fn normalize_generated_contents(contents: &str) -> String {
+    format!("{}\n", contents.trim_end())
 }
 
 fn render_mod(protocol: &Protocol) -> Result<String> {
@@ -1486,6 +1490,7 @@ fn is_fc_supported_type(
         | TypeRef::FlatMap { .. }
         | TypeRef::Int64 { .. }
         | TypeRef::Uint64 { .. }
+        | TypeRef::Uint128 { .. }
         | TypeRef::UnsignedVarint
         | TypeRef::CallbackHandle
         | TypeRef::FixedHex { .. }
@@ -1544,10 +1549,20 @@ fn render_static_variant_constructor_impl(
     arms: &[(u32, String, String, String)],
 ) {
     out.push_str(&format!("impl {enum_name} {{\n"));
-    for (_, variant_name, ty, method_name) in arms {
-        out.push_str(&format!(
-            "    pub fn {method_name}(value: {ty}) -> Self {{\n        Self::{variant_name}(Box::new(value))\n    }}\n\n"
-        ));
+    for (index, (_, variant_name, ty, method_name)) in arms.iter().enumerate() {
+        if index > 0 {
+            out.push('\n');
+        }
+        let signature = format!("    pub fn {method_name}(value: {ty}) -> Self {{");
+        if signature.len() <= 100 {
+            out.push_str(&format!(
+                "{signature}\n        Self::{variant_name}(Box::new(value))\n    }}\n"
+            ));
+        } else {
+            out.push_str(&format!(
+                "    pub fn {method_name}(\n        value: {ty},\n    ) -> Self {{\n        Self::{variant_name}(Box::new(value))\n    }}\n"
+            ));
+        }
     }
     out.push_str("}\n\n");
 }
@@ -1682,6 +1697,7 @@ fn render_type_ref(protocol: &Protocol, ty: &TypeRef) -> Result<String> {
             "String".to_string()
         }
         TypeRef::Uint64 { .. } => "u64".to_string(),
+        TypeRef::Uint128 { .. } => "String".to_string(),
         TypeRef::UnsignedVarint | TypeRef::CallbackHandle => "u64".to_string(),
         TypeRef::String
         | TypeRef::FixedHex { .. }
@@ -1784,6 +1800,7 @@ fn type_uses_signature(ty: &TypeRef) -> bool {
         | TypeRef::Int32 { .. }
         | TypeRef::Int64 { .. }
         | TypeRef::Uint64 { .. }
+        | TypeRef::Uint128 { .. }
         | TypeRef::UnsignedVarint
         | TypeRef::CallbackHandle
         | TypeRef::String
@@ -1864,6 +1881,7 @@ fn collect_protocol_object_id_names_from_type(ty: &TypeRef, names: &mut BTreeSet
         | TypeRef::Int32 { .. }
         | TypeRef::Int64 { .. }
         | TypeRef::Uint64 { .. }
+        | TypeRef::Uint128 { .. }
         | TypeRef::UnsignedVarint
         | TypeRef::CallbackHandle
         | TypeRef::String

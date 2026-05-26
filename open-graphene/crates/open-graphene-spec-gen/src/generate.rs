@@ -425,7 +425,8 @@ fn find_raw_class<'a>(facts: &'a SourceFacts, name: &str) -> Option<&'a RawClass
 
 fn raw_class_to_struct_def(class: &RawClass, facts: &SourceFacts) -> StructDef {
     let reflect = find_raw_reflect(facts, class);
-    let fields = reflected_or_declared_fields(class, reflect, facts);
+    let mut fields = reflected_or_declared_fields(class, reflect, facts);
+    prepend_inherited_object_id_field(class, facts, &mut fields);
     let support_reason = if reflect.is_some() {
         "fields ordered and filtered by FC_REFLECT; field declarations provide types"
     } else {
@@ -442,6 +443,47 @@ fn raw_class_to_struct_def(class: &RawClass, facts: &SourceFacts) -> StructDef {
             status: SupportStatus::Provisional,
             reason: Some(support_reason.to_string()),
         }),
+    }
+}
+
+fn prepend_inherited_object_id_field(
+    class: &RawClass,
+    facts: &SourceFacts,
+    fields: &mut Vec<FieldDef>,
+) {
+    if fields.iter().any(|field| field.name == "id") {
+        return;
+    }
+
+    let Some(object_type) = facts
+        .object_types
+        .iter()
+        .find(|object_type| object_type.struct_ref.as_deref() == Some(class.name.as_str()))
+    else {
+        return;
+    };
+
+    fields.insert(
+        0,
+        FieldDef {
+            index: 0,
+            name: "id".to_string(),
+            ty: TypeRef::ProtocolObjectId {
+                object_type: object_type.object_type.clone(),
+            },
+            source: Some(source_meta("id", &class.source)),
+            support: Some(SupportDef {
+                status: SupportStatus::Provisional,
+                reason: Some(
+                    "inherited object id from graphene::db::object for reflected Graphene object"
+                        .to_string(),
+                ),
+            }),
+        },
+    );
+
+    for (index, field) in fields.iter_mut().enumerate() {
+        field.index = index as u32;
     }
 }
 
@@ -779,6 +821,95 @@ mod tests {
             panic!("expected protocol object union");
         };
         assert_eq!(object_types, &vec!["account".to_string()]);
+    }
+
+    #[test]
+    fn build_protocol_adds_inherited_id_to_object_structs() {
+        let config: GeneratorConfig = toml::from_str(
+            r#"
+            [chain]
+            id = "bitshares"
+            public_key_prefix = "BTS"
+
+            [output]
+            dist = "./dist/bitshares.open-graphene.json"
+
+            [source]
+            chain_repo = "../../blockchains/bitshares/bitshares-core"
+            "#,
+        )
+        .expect("parse config");
+        let facts = SourceFacts {
+            classes: vec![RawClass {
+                name: "limit_order_object".to_string(),
+                qualified_name: Some("graphene::chain::limit_order_object".to_string()),
+                methods: vec![],
+                fields: vec![RawField {
+                    name: "seller".to_string(),
+                    type_expr: "account_id_type".to_string(),
+                    source: SourceLoc {
+                        file: PathBuf::from("market_object.hpp"),
+                        line: 47,
+                    },
+                }],
+                source: SourceLoc {
+                    file: PathBuf::from("market_object.hpp"),
+                    line: 45,
+                },
+            }],
+            object_types: vec![RawObjectType {
+                object_type: "limit_order".to_string(),
+                cpp_alias: "limit_order_id_type".to_string(),
+                object_space_name: "protocol_ids".to_string(),
+                object_space: Some(1),
+                object_type_name: "limit_order_object_type".to_string(),
+                type_id: Some(7),
+                struct_ref: Some("limit_order_object".to_string()),
+                source: SourceLoc {
+                    file: PathBuf::from("types.hpp"),
+                    line: 10,
+                },
+                id_namespace: "protocol".to_string(),
+            }],
+            ..SourceFacts::default()
+        };
+        let rpc_methods = vec![RpcMethodDef {
+            name: "get_limit_orders".to_string(),
+            api_class: "database_api".to_string(),
+            api_name: Some("database".to_string()),
+            params: vec![],
+            returns: Some(TypeRef::Vector {
+                inner: Box::new(TypeRef::Ref {
+                    name: "limit_order_object".to_string(),
+                }),
+            }),
+            is_subscription: false,
+            notices: vec![],
+            binding_hints: None,
+            source: None,
+            support: None,
+        }];
+
+        let protocol = build_protocol(&config, &facts, rpc_methods);
+
+        assert_eq!(
+            protocol.object_types[0].struct_ref.as_deref(),
+            Some("limit_order_object")
+        );
+        let limit_order = protocol
+            .structs
+            .iter()
+            .find(|struct_def| struct_def.name == "limit_order_object")
+            .expect("limit_order_object emitted");
+        assert_eq!(limit_order.fields[0].name, "id");
+        assert_eq!(
+            limit_order.fields[0].ty,
+            TypeRef::ProtocolObjectId {
+                object_type: "limit_order".to_string()
+            }
+        );
+        assert_eq!(limit_order.fields[1].name, "seller");
+        assert_eq!(limit_order.fields[1].index, 1);
     }
 
     #[test]

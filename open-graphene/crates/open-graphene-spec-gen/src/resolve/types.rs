@@ -121,6 +121,9 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
             json: None,
             fc: None,
         },
+        "fc::uint128_t" => TypeRef::Uint128 {
+            json: Some(open_graphene_json_schema::types::JsonShape::DecimalString),
+        },
         "string" | "std::string" => TypeRef::String,
         "share_type" => TypeRef::Int64 {
             json: None,
@@ -584,6 +587,12 @@ mod tests {
             }
         );
         assert_eq!(resolve_cpp_type("unsigned_int"), TypeRef::Uint32);
+        assert_eq!(
+            resolve_cpp_type("fc::uint128_t"),
+            TypeRef::Uint128 {
+                json: Some(open_graphene_json_schema::types::JsonShape::DecimalString)
+            }
+        );
         assert_eq!(resolve_cpp_type("char"), TypeRef::String);
         assert_eq!(resolve_cpp_type("vector<char>"), TypeRef::Bytes);
         assert_eq!(resolve_cpp_type("std::vector<char>"), TypeRef::Bytes);

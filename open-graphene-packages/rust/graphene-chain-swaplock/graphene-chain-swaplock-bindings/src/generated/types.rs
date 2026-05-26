@@ -739,6 +739,22 @@ pub struct LimitOrderCancelOperationFeeParamsT {
 pub struct LimitOrderCreateOperationFeeParamsT {
 }
 
+/// Raw protocol struct `limit_order_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LimitOrderObject {
+    pub id: crate::generated::ids::LimitOrderId,
+    pub expiration: String,
+    pub seller: crate::generated::ids::AccountId,
+    pub for_sale: i64,
+    pub sell_price: crate::generated::types::Price,
+    pub filled_amount: String,
+    pub deferred_fee: i64,
+    pub deferred_paid_fee: crate::generated::types::Asset,
+    pub is_settled_debt: bool,
+    pub on_fill: Vec<crate::generated::static_variants::LimitOrderAutoAction>,
+    pub take_profit_order_id: Option<crate::generated::ids::LimitOrderId>,
+}
+
 /// Raw protocol struct `limit_order_update_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct LimitOrderUpdateOperationFeeParamsT {
@@ -823,6 +839,7 @@ pub struct OpWrapper {
 /// Raw protocol struct `operation_history_object`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct OperationHistoryObject {
+    pub id: crate::generated::ids::OperationHistoryId,
     pub op: crate::generated::static_variants::Operation,
     pub result: crate::generated::static_variants::OperationResult,
     pub block_num: u32,
