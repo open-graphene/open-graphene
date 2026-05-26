@@ -27427,6 +27427,67 @@
       }
     },
     {
+      "name": "get_account_balances",
+      "apiClass": "database_api",
+      "apiName": "database",
+      "params": [
+        {
+          "index": 0,
+          "name": "account_name_or_id",
+          "type": {
+            "kind": "string"
+          },
+          "source": {
+            "name": "account_name_or_id",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/database_api.hpp",
+            "line": 358
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        },
+        {
+          "index": 1,
+          "name": "assets",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "asset"
+            },
+            "ordering": "unresolved"
+          },
+          "source": {
+            "name": "assets",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/database_api.hpp",
+            "line": 358
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "vector",
+        "inner": {
+          "kind": "ref",
+          "name": "asset"
+        }
+      },
+      "isSubscription": false,
+      "source": {
+        "name": "get_account_balances",
+        "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/../../../../blockchains/bitshares/bitshares-core/libraries/app/include/graphene/app/database_api.hpp",
+        "line": 358
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "selected in config, present in FC_API, and signature found"
+      }
+    },
+    {
       "name": "get_dynamic_global_properties",
       "apiClass": "database_api",
       "apiName": "database",

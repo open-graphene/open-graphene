@@ -1,4 +1,3 @@
-use graphene_chain_bitshares_bindings::generated::FcSerialize;
 use graphene_chain_bitshares_bindings::generated::ids::{
     AccountId, AssetId, DynamicGlobalPropertyId, LimitOrderId, WitnessId,
 };
@@ -7,6 +6,7 @@ use graphene_chain_bitshares_bindings::generated::static_variants::{FutureExtens
 use graphene_chain_bitshares_bindings::generated::types::{
     Asset, DynamicGlobalPropertyObject, LimitOrderObject, Signature, SignedTransaction, Transaction,
 };
+use graphene_chain_bitshares_bindings::generated::FcSerialize;
 
 fn transfer_operation() -> Operation {
     Operation::TransferOperation(Box::new(TransferOperation {
@@ -23,6 +23,19 @@ fn transfer_operation() -> Operation {
         memo: None,
         extensions: FutureExtensions::VoidT(Box::new(())),
     }))
+}
+
+#[test]
+fn bitshares_account_balance_asset_deserializes_from_graphene_json() {
+    let json = serde_json::json!({
+        "amount": "12345",
+        "asset_id": "1.3.0"
+    });
+
+    let balance: Asset = serde_json::from_value(json).expect("deserialize balance asset");
+
+    assert_eq!(balance.amount, 12_345);
+    assert_eq!(balance.asset_id, AssetId("1.3.0".to_string()));
 }
 
 #[test]
@@ -85,8 +98,8 @@ fn bitshares_dynamic_global_property_object_deserializes_from_graphene_json() {
     assert_eq!(
         properties.head_block_id,
         vec![
-            0x00, 0x09, 0x4d, 0xf6, 0x44, 0xfe, 0x61, 0x74, 0x90, 0xae, 0x11, 0x6a,
-            0x01, 0x00, 0x40, 0x0d, 0x03, 0x00, 0x00, 0x00,
+            0x00, 0x09, 0x4d, 0xf6, 0x44, 0xfe, 0x61, 0x74, 0x90, 0xae, 0x11, 0x6a, 0x01, 0x00,
+            0x40, 0x0d, 0x03, 0x00, 0x00, 0x00,
         ]
     );
     assert_eq!(properties.time, "2026-05-25T12:00:00");
