@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::time::Duration;
 
+use graphene_chain_swaplock_bindings::generated::types::OperationHistoryObject;
 use open_graphene_transport::AccountHistoryQuery as TransportAccountHistoryQuery;
 use serde_json::Value;
 
@@ -68,6 +69,33 @@ pub fn get_account_history(
     rpc.get_account_history(history_api_id, &query.to_transport_query())
 }
 
+pub fn get_account_history_objects(
+    rpc: &mut GrapheneRpc,
+    history_api_id: u64,
+    query: &AccountHistoryQuery<'_>,
+) -> Result<Vec<OperationHistoryObject>, Box<dyn Error>> {
+    let history = get_account_history(rpc, history_api_id, query)?;
+    operation_history_objects_from_value(&history)
+}
+
+fn operation_history_objects_from_value(
+    history: &Value,
+) -> Result<Vec<OperationHistoryObject>, Box<dyn Error>> {
+    let Some(entries) = history.as_array() else {
+        return Err("get_account_history result is not an array".into());
+    };
+
+    entries
+        .iter()
+        .cloned()
+        .map(|entry| {
+            serde_json::from_value::<OperationHistoryObject>(entry).map_err(|err| {
+                format!("failed to deserialize operation history object: {err}").into()
+            })
+        })
+        .collect()
+}
+
 pub fn wait_for_account_history_confirmation<F>(
     rpc: &mut GrapheneRpc,
     history_api_id: u64,
@@ -122,6 +150,25 @@ where
     Ok(None)
 }
 
+pub fn find_account_history_object_confirmation<F>(
+    history: &[OperationHistoryObject],
+    matcher: F,
+) -> Option<HistoryConfirmation>
+where
+    F: Fn(&OperationHistoryObject) -> bool,
+{
+    history
+        .iter()
+        .find(|entry| matcher(entry))
+        .map(|entry| HistoryConfirmation {
+            id: entry.id.0.clone(),
+            block_num: u64::from(entry.block_num),
+            trx_in_block: Some(u64::from(entry.trx_in_block)),
+            op_in_trx: Some(u64::from(entry.op_in_trx)),
+            virtual_op: Some(u64::from(entry.virtual_op)),
+        })
+}
+
 pub fn history_entry_matches_account_create(
     entry: &Value,
     criteria: &AccountCreateConfirmationCriteria<'_>,
@@ -133,6 +180,20 @@ pub fn history_entry_matches_account_create(
         return false;
     };
     payload.get("name").and_then(Value::as_str) == Some(criteria.account_name)
+}
+
+pub fn operation_history_object_matches_account_create(
+    entry: &OperationHistoryObject,
+    criteria: &AccountCreateConfirmationCriteria<'_>,
+) -> bool {
+    if !operation_history_object_matches_min_block(entry, criteria.min_block_num) {
+        return false;
+    }
+
+    entry
+        .op
+        .as_account_create()
+        .is_some_and(|operation| operation.name == criteria.account_name)
 }
 
 pub fn history_entry_matches_transfer(
@@ -151,8 +212,33 @@ pub fn history_entry_matches_transfer(
         && asset_value_matches(payload.get("fee"), criteria.fee_amount, criteria.asset_id)
 }
 
+pub fn operation_history_object_matches_transfer(
+    entry: &OperationHistoryObject,
+    criteria: &TransferConfirmationCriteria<'_>,
+) -> bool {
+    if !operation_history_object_matches_min_block(entry, criteria.min_block_num) {
+        return false;
+    }
+
+    let Some(operation) = entry.op.as_transfer() else {
+        return false;
+    };
+
+    operation.from.0 == criteria.from_id
+        && operation.to.0 == criteria.to_id
+        && generated_asset_matches(&operation.amount, criteria.amount, criteria.asset_id)
+        && generated_asset_matches(&operation.fee, criteria.fee_amount, criteria.asset_id)
+}
+
 fn history_entry_matches_min_block(entry: &Value, min_block_num: u64) -> bool {
     entry.get("block_num").and_then(Value::as_u64) >= Some(min_block_num)
+}
+
+fn operation_history_object_matches_min_block(
+    entry: &OperationHistoryObject,
+    min_block_num: u64,
+) -> bool {
+    u64::from(entry.block_num) >= min_block_num
 }
 
 fn history_entry_payload_for_operation(entry: &Value, operation_id: u64) -> Option<&Value> {
@@ -169,6 +255,14 @@ fn asset_value_matches(value: Option<&Value>, amount: i64, asset_id: &str) -> bo
     };
     value.get("amount").and_then(json_i64) == Some(amount)
         && value.get("asset_id").and_then(Value::as_str) == Some(asset_id)
+}
+
+fn generated_asset_matches(
+    value: &graphene_chain_swaplock_bindings::generated::types::Asset,
+    amount: i64,
+    asset_id: &str,
+) -> bool {
+    value.amount == amount && value.asset_id.0 == asset_id
 }
 
 fn json_i64(value: &Value) -> Option<i64> {
@@ -189,6 +283,50 @@ mod tests {
             AccountHistoryQuery::recent("1.2.100").params(),
             json!(["1.2.100", "1.11.0", 20, "1.11.0"])
         );
+    }
+
+    #[test]
+    fn generated_operation_history_object_matches_transfer_fields() {
+        let history = json!([
+            {
+                "id": "1.11.22",
+                "op": [0, {
+                    "fee": { "amount": "10", "asset_id": "1.3.0" },
+                    "from": "1.2.100",
+                    "to": "1.2.0",
+                    "amount": { "amount": "100000", "asset_id": "1.3.0" },
+                    "memo": null,
+                    "extensions": []
+                }],
+                "result": [0, {}],
+                "block_num": 123,
+                "trx_in_block": 1,
+                "op_in_trx": 0,
+                "virtual_op": 0,
+                "is_virtual": false,
+                "block_time": "2026-05-26T12:00:00"
+            }
+        ]);
+        let history = operation_history_objects_from_value(&history)
+            .expect("generated operation history objects deserialize");
+        let criteria = TransferConfirmationCriteria {
+            from_id: "1.2.100",
+            to_id: "1.2.0",
+            amount: 100000,
+            asset_id: "1.3.0",
+            fee_amount: 10,
+            min_block_num: 123,
+        };
+        let confirmation = find_account_history_object_confirmation(&history, |entry| {
+            operation_history_object_matches_transfer(entry, &criteria)
+        })
+        .expect("matching generated transfer history is confirmed");
+
+        assert_eq!(confirmation.id, "1.11.22");
+        assert_eq!(confirmation.block_num, 123);
+        assert_eq!(confirmation.trx_in_block, Some(1));
+        assert_eq!(confirmation.op_in_trx, Some(0));
+        assert_eq!(confirmation.virtual_op, Some(0));
     }
 
     #[test]

@@ -2,7 +2,7 @@
 
 ## Status
 
-This plan started as part of the SDK/live feature freeze. The first two Swaplock proof targets, `limit_order_object` and `dynamic_global_property_object`, are now complete. The account-balance read path is also complete as a typed value proof through generated `Asset`, not as an `account_balance_object` proof.
+This plan started as part of the SDK/live feature freeze. The first three Swaplock direct RPC object proof targets, `limit_order_object`, `dynamic_global_property_object`, and `operation_history_object`, are now complete. The account-balance read path is also complete as a typed value proof through generated `Asset`, not as an `account_balance_object` proof.
 
 Completed `limit_order_object` proof:
 
@@ -21,6 +21,15 @@ Completed `dynamic_global_property_object` proof:
 - Generated fixed-byte fields accept Graphene live JSON hex strings or byte arrays and enforce exact byte length; the live proof used `head_block_id` as a hex string.
 - `graphene-chain-swaplock::head_block` consumes generated `DynamicGlobalPropertyObject` instead of `sdk-live::head_block`.
 - The public Swaplock node `head_block_smoke` proof passed, returning head block `694851`.
+
+Completed `operation_history_object` proof:
+
+- Swaplock spec generation selects `history_api::get_account_history` and emits `get_account_history -> vector<operation_history_object>`.
+- Generated object metadata links `objectTypes.operation_history.structRef` to `operation_history_object`.
+- Generated bindings emit `OperationHistoryObject` with inherited `id`, generated `Operation`, generated `OperationResult`, block position fields, virtual-operation metadata, and block time.
+- `graphene-chain-swaplock::get_account_history_objects` consumes the existing raw RPC result and deserializes it into generated `OperationHistoryObject` values chain-locally.
+- Generated transfer history matching now uses `Operation::as_transfer()` plus generated `Asset` fields instead of manually traversing JSON for the typed path.
+- The public Swaplock node `account_history_object_smoke` proof passed for `committee-account -> 1.2.0`, returning 20 generated history objects and latest object `1.11.203`.
 
 Completed `get_account_balances -> asset` proof:
 
@@ -50,7 +59,7 @@ Completed `asset_object`, `account_object`, and `asset_dynamic_data_object` type
 
 ## Reader and expected action
 
-This document is for the next internal engineer or agent working on Open Graphene code generation. The `limit_order_object` and `dynamic_global_property_object` proofs are done; use their implementations as reference paths for the next generated live object.
+This document is for the next internal engineer or agent working on Open Graphene code generation. The `limit_order_object`, `dynamic_global_property_object`, and `operation_history_object` proofs are done; use their implementations as reference paths for the next generated live object.
 
 The plan remains useful as the template for the next generated live object. Future work should broaden this generated-object pattern; it should not add rich fields to `sdk-live` projections. Balance reads should be treated as typed protocol-value coverage, not as a reason to invent an `account_balance_object` RPC shape.
 
