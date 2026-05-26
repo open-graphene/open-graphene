@@ -20,6 +20,7 @@ This directory contains Rust runtime crates, SDK helper crates, and generated ch
 - [Generated SDK Adapter Capability Design](../../open-graphene/crates/open-graphene-gen-bindings-rs/SDK-CAPABILITY-DESIGN.md) records the opt-in generated SDK adapter direction and the boundary for small protocol-level generated helpers.
 - [Graphene Transport Design](GRAPHENE-TRANSPORT-DESIGN.md) describes the chain-agnostic JSON-RPC transport layer, WebSocket notice semantics, HTTP call-only direction, and reconnect boundaries.
 - [Open Graphene Transport API](graphene-transport/README.md) documents the current live `open-graphene-transport` crate API, including `GrapheneSession`, blocking WebSocket calls, database/history/broadcast helpers, and non-goals.
+- [Open Graphene SDK Live Design](SDK-LIVE-DESIGN.md) defines the proposed shared live SDK boundary above transport and below chain-specific generated bindings/signing/operation code.
 
 ## Swaplock live trading scenario
 
