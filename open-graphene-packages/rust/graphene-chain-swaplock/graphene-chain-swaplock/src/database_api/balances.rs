@@ -2,7 +2,7 @@ use std::error::Error;
 use std::thread::sleep;
 use std::time::Duration;
 
-use serde_json::Value;
+use open_graphene_sdk_core::{AccountIdRef, AssetIdRef};
 
 use crate::rpc::GrapheneRpc;
 
@@ -12,18 +12,10 @@ pub fn account_balance(
     account_id: &str,
     asset_id: &str,
 ) -> Result<i64, Box<dyn Error>> {
-    let balances = rpc.get_account_balances(api_id, account_id, [asset_id])?;
-    let balance = balances
-        .as_array()
-        .and_then(|values| values.first())
-        .ok_or("get_account_balances returned no balance")?;
-    if balance.get("asset_id").and_then(Value::as_str) != Some(asset_id) {
-        return Err("get_account_balances returned unexpected asset_id".into());
-    }
-    balance
-        .get("amount")
-        .and_then(json_i64)
-        .ok_or_else(|| "balance missing integer amount".into())
+    ensure_database_api_id(rpc, api_id)?;
+    let account_id = AccountIdRef::parse(account_id)?;
+    let asset_id = AssetIdRef::parse(asset_id)?;
+    Ok(open_graphene_sdk_live::account_balance(rpc.session_mut(), &account_id, &asset_id)?.amount)
 }
 
 pub fn wait_for_balance_at_least(
@@ -44,22 +36,10 @@ pub fn wait_for_balance_at_least(
     Err(format!("balance for {account_id} {asset_id} did not reach {minimum}").into())
 }
 
-fn json_i64(value: &Value) -> Option<i64> {
-    value
-        .as_i64()
-        .or_else(|| value.as_str().and_then(|value| value.parse().ok()))
-}
-
-#[cfg(test)]
-mod tests {
-    use serde_json::json;
-
-    use super::*;
-
-    #[test]
-    fn json_i64_accepts_integer_or_string() {
-        assert_eq!(json_i64(&json!(42)), Some(42));
-        assert_eq!(json_i64(&json!("42")), Some(42));
-        assert_eq!(json_i64(&json!("nope")), None);
+fn ensure_database_api_id(rpc: &mut GrapheneRpc, api_id: u64) -> Result<(), Box<dyn Error>> {
+    let expected = rpc.database_api_id()?;
+    if expected != api_id {
+        return Err(format!("database API id mismatch: expected {expected}, got {api_id}").into());
     }
+    Ok(())
 }

@@ -1,9 +1,10 @@
 use std::marker::PhantomData;
 
 use open_graphene_sdk_core::HeadBlock;
-use open_graphene_sdk_primitives::{AccountIdRef, AssetIdRef, ObjectIdError};
+use open_graphene_sdk_primitives::{AccountIdRef, AssetAmount, AssetIdRef, ObjectIdError};
 use open_graphene_transport::{
-    get_objects, lookup_accounts, lookup_asset_symbols, GrapheneSession, TransportError,
+    get_account_balances, get_objects, lookup_accounts, lookup_asset_symbols, GrapheneSession,
+    TransportError,
 };
 use serde_json::Value;
 use thiserror::Error;
@@ -35,6 +36,8 @@ pub enum LiveSdkError {
     InvalidAccountLookup { reason: &'static str, value: Value },
     #[error("invalid asset lookup result: {reason}: {value}")]
     InvalidAssetLookup { reason: &'static str, value: Value },
+    #[error("invalid account balance result: {reason}: {value}")]
+    InvalidAccountBalance { reason: &'static str, value: Value },
 }
 
 pub struct GrapheneLiveClient<P> {
@@ -92,6 +95,14 @@ impl<P: GrapheneChainProfile> GrapheneLiveClient<P> {
     ) -> Result<Option<AssetIdRef>, LiveSdkError> {
         lookup_asset_id_optional(&mut self.session, symbol)
     }
+
+    pub fn account_balance(
+        &mut self,
+        account_id: &AccountIdRef,
+        asset_id: &AssetIdRef,
+    ) -> Result<AssetAmount, LiveSdkError> {
+        account_balance(&mut self.session, account_id, asset_id)
+    }
 }
 
 pub fn head_block(session: &mut GrapheneSession) -> Result<HeadBlock, LiveSdkError> {
@@ -130,6 +141,17 @@ pub fn lookup_asset_id_optional(
     symbol: &str,
 ) -> Result<Option<AssetIdRef>, LiveSdkError> {
     parse_lookup_asset_response(lookup_asset_symbols(session, [symbol])?, symbol)
+}
+
+pub fn account_balance(
+    session: &mut GrapheneSession,
+    account_id: &AccountIdRef,
+    asset_id: &AssetIdRef,
+) -> Result<AssetAmount, LiveSdkError> {
+    parse_account_balance_response(
+        get_account_balances(session, account_id.to_string(), [asset_id.to_string()])?,
+        asset_id,
+    )
 }
 
 fn validate_chain_id<P: GrapheneChainProfile>(actual: &str) -> Result<(), LiveSdkError> {
@@ -241,6 +263,45 @@ fn parse_lookup_asset_response(
 
 fn invalid_asset_lookup(reason: &'static str, value: Value) -> LiveSdkError {
     LiveSdkError::InvalidAssetLookup { reason, value }
+}
+
+fn parse_account_balance_response(
+    value: Value,
+    expected_asset_id: &AssetIdRef,
+) -> Result<AssetAmount, LiveSdkError> {
+    let balance = value
+        .as_array()
+        .and_then(|values| values.first())
+        .ok_or_else(|| invalid_account_balance("missing balance", value.clone()))?;
+
+    let returned_asset_id = balance
+        .get("asset_id")
+        .and_then(Value::as_str)
+        .ok_or_else(|| invalid_account_balance("missing asset_id", balance.clone()))?;
+    let returned_asset_id = AssetIdRef::parse(returned_asset_id)?;
+    if &returned_asset_id != expected_asset_id {
+        return Err(invalid_account_balance(
+            "unexpected asset_id",
+            balance.clone(),
+        ));
+    }
+
+    let amount = balance
+        .get("amount")
+        .and_then(json_i64)
+        .ok_or_else(|| invalid_account_balance("missing integer amount", balance.clone()))?;
+
+    Ok(AssetAmount::new(amount, returned_asset_id))
+}
+
+fn json_i64(value: &Value) -> Option<i64> {
+    value
+        .as_i64()
+        .or_else(|| value.as_str().and_then(|value| value.parse().ok()))
+}
+
+fn invalid_account_balance(reason: &'static str, value: Value) -> LiveSdkError {
+    LiveSdkError::InvalidAccountBalance { reason, value }
 }
 
 #[cfg(test)]
@@ -480,6 +541,93 @@ mod tests {
         assert!(matches!(
             error,
             LiveSdkError::ObjectId(ObjectIdError::UnexpectedType { .. })
+        ));
+    }
+
+    #[test]
+    fn parses_account_balance_with_integer_amount() {
+        let asset_id = AssetIdRef::parse("1.3.0").unwrap();
+        let balance =
+            parse_account_balance_response(json!([{"amount": 42, "asset_id": "1.3.0"}]), &asset_id)
+                .unwrap();
+
+        assert_eq!(balance, AssetAmount::new(42, asset_id));
+    }
+
+    #[test]
+    fn parses_account_balance_with_string_amount() {
+        let asset_id = AssetIdRef::parse("1.3.0").unwrap();
+        let balance = parse_account_balance_response(
+            json!([{"amount": "42", "asset_id": "1.3.0"}]),
+            &asset_id,
+        )
+        .unwrap();
+
+        assert_eq!(balance, AssetAmount::new(42, asset_id));
+    }
+
+    #[test]
+    fn account_balance_rejects_missing_balance() {
+        let asset_id = AssetIdRef::parse("1.3.0").unwrap();
+        let error = parse_account_balance_response(json!([]), &asset_id).unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::InvalidAccountBalance { reason, .. } if reason == "missing balance"
+        ));
+    }
+
+    #[test]
+    fn account_balance_rejects_missing_asset_id() {
+        let asset_id = AssetIdRef::parse("1.3.0").unwrap();
+        let error = parse_account_balance_response(json!([{"amount": 42}]), &asset_id).unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::InvalidAccountBalance { reason, .. } if reason == "missing asset_id"
+        ));
+    }
+
+    #[test]
+    fn account_balance_rejects_unexpected_asset_id() {
+        let asset_id = AssetIdRef::parse("1.3.0").unwrap();
+        let error =
+            parse_account_balance_response(json!([{"amount": 42, "asset_id": "1.3.1"}]), &asset_id)
+                .unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::InvalidAccountBalance { reason, .. } if reason == "unexpected asset_id"
+        ));
+    }
+
+    #[test]
+    fn account_balance_rejects_non_asset_object_id() {
+        let asset_id = AssetIdRef::parse("1.3.0").unwrap();
+        let error = parse_account_balance_response(
+            json!([{"amount": 42, "asset_id": "1.2.100"}]),
+            &asset_id,
+        )
+        .unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::ObjectId(ObjectIdError::UnexpectedType { .. })
+        ));
+    }
+
+    #[test]
+    fn account_balance_rejects_malformed_amount() {
+        let asset_id = AssetIdRef::parse("1.3.0").unwrap();
+        let error = parse_account_balance_response(
+            json!([{"amount": "nope", "asset_id": "1.3.0"}]),
+            &asset_id,
+        )
+        .unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::InvalidAccountBalance { reason, .. } if reason == "missing integer amount"
         ));
     }
 }

@@ -25,6 +25,7 @@ use open_graphene_sdk_live::{
     lookup_account_id_optional,
     lookup_asset_id,
     lookup_asset_id_optional,
+    account_balance,
 };
 ```
 
@@ -32,7 +33,8 @@ The helpers use `open_graphene_transport::GrapheneSession` and return shared SDK
 
 - `head_block(...) -> open_graphene_sdk_core::HeadBlock`;
 - `lookup_account_id(...) -> open_graphene_sdk_primitives::AccountIdRef`;
-- `lookup_asset_id(...) -> open_graphene_sdk_primitives::AssetIdRef`.
+- `lookup_asset_id(...) -> open_graphene_sdk_primitives::AssetIdRef`;
+- `account_balance(...) -> open_graphene_sdk_primitives::AssetAmount`.
 
 ## Chain profiles
 
@@ -65,11 +67,13 @@ let mut client = GrapheneLiveClient::<SwaplockProfile>::connect(url)?;
 let head = client.head_block()?;
 let account_id = client.lookup_account_id("swaplock")?;
 let asset_id = client.lookup_asset_id("BTS")?;
+let balance = client.account_balance(&account_id, &asset_id)?;
 
 println!("chain_id={}", client.chain_id());
 println!("head={} {}", head.number, head.id);
 println!("account_id={account_id}");
 println!("asset_id={asset_id}");
+println!("balance={} {}", balance.amount, balance.asset_id);
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
@@ -124,6 +128,16 @@ It returns `Ok(None)` for an empty response, a first `null` entry, or a non-exac
 
 `lookup_asset_id(session, symbol)` wraps the optional helper and returns `LiveSdkError::AssetNotFound` when no exact match exists.
 
+## Balance semantics
+
+`account_balance(session, account_id, asset_id)` calls Graphene `database.get_account_balances(account_id, [asset_id])` and expects a response shaped like:
+
+```json
+[{"amount": "12345", "asset_id": "1.3.x"}]
+```
+
+The `amount` field may be a JSON integer or a decimal string. The helper fail-closes when the response has no first balance object, the `asset_id` is missing or different from the requested `AssetIdRef`, or the amount is malformed. It returns `open_graphene_sdk_primitives::AssetAmount`.
+
 ## What this crate does not provide
 
 This crate intentionally does not:
@@ -153,6 +167,7 @@ Implemented today:
 - `head_block`;
 - `lookup_account_id` / `lookup_account_id_optional`;
 - `lookup_asset_id` / `lookup_asset_id_optional`;
-- Swaplock integration for head-block, account lookup, and asset lookup while preserving existing Swaplock helper signatures.
+- `account_balance`;
+- Swaplock integration for head-block, account lookup, asset lookup, and account balance reads while preserving existing Swaplock helper signatures.
 
-Likely next candidates are balance reads and fee reads, but those have more response-shape nuance and should be moved in small slices.
+Likely next candidates are fee reads and order reads, but those have more response-shape nuance and should be moved in small slices.
