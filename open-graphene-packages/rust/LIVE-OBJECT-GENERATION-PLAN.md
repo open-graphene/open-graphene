@@ -2,9 +2,9 @@
 
 ## Status
 
-This plan started as part of the SDK/live feature freeze. The first proof target, Swaplock `limit_order_object`, is now complete.
+This plan started as part of the SDK/live feature freeze. The first two Swaplock proof targets, `limit_order_object` and `dynamic_global_property_object`, are now complete.
 
-Completed proof:
+Completed `limit_order_object` proof:
 
 - Swaplock spec generation selects `database_api::get_limit_orders` and emits `get_limit_orders -> vector<limit_order_object>`.
 - Generated object metadata links `objectTypes.limit_order.structRef` to `limit_order_object`.
@@ -13,11 +13,20 @@ Completed proof:
 - `graphene-chain-swaplock::find_limit_order` consumes generated `LimitOrderObject` instead of `sdk-live::LimitOrderSummary`.
 - The private Swaplock testnet `trading_scenario` passed after the migration, opening, finding, canceling, and observing order `1.7.16` gone.
 
-The plan remains useful as the template for the next generated live object. Future work should broaden this generated-object pattern; it should not add rich fields to `sdk-live::LimitOrderSummary`.
+Completed `dynamic_global_property_object` proof:
+
+- Swaplock spec generation selects `database_api::get_dynamic_global_properties` and emits `get_dynamic_global_properties -> dynamic_global_property_object`.
+- Generated object metadata links `objectTypes.dynamic_global_property.structRef` to `dynamic_global_property_object`.
+- Generated bindings emit `DynamicGlobalPropertyObject` with inherited `id`, head block fields, maintenance fields, budget fields, and participation fields.
+- Generated fixed-byte fields accept Graphene live JSON hex strings or byte arrays and enforce exact byte length; the live proof used `head_block_id` as a hex string.
+- `graphene-chain-swaplock::head_block` consumes generated `DynamicGlobalPropertyObject` instead of `sdk-live::head_block`.
+- The public Swaplock node `head_block_smoke` proof passed, returning head block `694851`.
+
+The plan remains useful as the template for the next generated live object. Future work should broaden this generated-object pattern; it should not add rich fields to `sdk-live` projections.
 
 ## Reader and expected action
 
-This document is for the next internal engineer or agent working on Open Graphene code generation. The `limit_order_object` proof is done; use its implementation as the reference path for the next generated live object.
+This document is for the next internal engineer or agent working on Open Graphene code generation. The `limit_order_object` and `dynamic_global_property_object` proofs are done; use their implementations as reference paths for the next generated live object.
 
 The expected repeatable pattern is:
 
@@ -382,11 +391,10 @@ This milestone should not:
 
 ## Follow-up milestones
 
-After `limit_order_object` is proven, likely next generated live objects are:
+After `limit_order_object` and `dynamic_global_property_object` are proven, likely next generated live objects are:
 
-1. `dynamic_global_property_object`, because head block reads currently parse this by hand;
-2. `account_balance_object`, because balance reads are simple and already live-proven;
-3. `asset_object` and `account_object`, because lookup helpers currently use partial response parsing;
-4. `operation_history_object`, because confirmation matching is still JSON-heavy and operation-specific.
+1. `account_balance_object`, because balance reads are simple and already live-proven;
+2. `asset_object` and `account_object`, because lookup helpers currently use partial response parsing;
+3. `operation_history_object`, because confirmation matching is still JSON-heavy and operation-specific.
 
 A separate milestone should handle generated Graphene broadcast JSON rendering. That work should not be mixed with live object generation, because it has different semantics and different failure modes.

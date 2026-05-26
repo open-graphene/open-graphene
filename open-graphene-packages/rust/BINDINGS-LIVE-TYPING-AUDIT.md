@@ -8,9 +8,9 @@ The immediate question is why the current live SDK and Swaplock helper layer sti
 
 ## Short answer
 
-The generated Swaplock bindings are strongest at the protocol transaction layer, and now have one proven live RPC object path: `limit_order_object` for Swaplock order lookup.
+The generated Swaplock bindings are strongest at the protocol transaction layer, and now have two proven live RPC object paths: `limit_order_object` for Swaplock order lookup and `dynamic_global_property_object` for Swaplock head-block reads.
 
-They cover generated operation structs, generated transaction structs, static variants, object id wrappers, `Asset`, `Price`, FC serialization, and the generated `LimitOrderObject` used by `graphene-chain-swaplock` after the first live object proof. They do not yet provide complete generated Rust structs for most other database/app objects returned by live RPC calls, such as account objects, asset objects, dynamic global properties, or account balances.
+They cover generated operation structs, generated transaction structs, static variants, object id wrappers, `Asset`, `Price`, FC serialization, generated `LimitOrderObject`, and generated `DynamicGlobalPropertyObject`. They do not yet provide complete generated Rust structs for most other database/app objects returned by live RPC calls, such as account objects, asset objects, or account balances.
 
 The current `sdk-live` `serde_json::Value` parsing exists because most generated live response object types do not yet exist. Some of the current hand-written parsing is a justified minimal projection into SDK primitives; richer response modeling would become duplicated manual bindings and should stop until the generator catches up.
 
@@ -23,23 +23,24 @@ The generated Swaplock bindings currently provide:
 - generated static variants such as `Operation`, `OperationResult`, and `FutureExtensions`;
 - generated object id wrappers such as `AccountId`, `AssetId`, `LimitOrderId`, and many others;
 - generated `LimitOrderObject` for the first typed live RPC object proof;
+- generated `DynamicGlobalPropertyObject` for the second typed live RPC object proof;
+- generated fixed-byte JSON deserialization for Graphene hex strings or byte arrays with exact length checks;
 - FC serialization for generated ids, assets, operations, transactions, signatures, and supported protocol values;
 - serde support for many raw protocol structs, live object structs currently in the spec graph, and static variants.
 
-That is enough to build, mutate, sign, and FC-serialize local transactions with generated types, and to consume Swaplock `get_limit_orders` through the generated `LimitOrderObject` path.
+That is enough to build, mutate, sign, and FC-serialize local transactions with generated types, to consume Swaplock `get_limit_orders` through the generated `LimitOrderObject` path, and to consume Swaplock `get_dynamic_global_properties` through the generated `DynamicGlobalPropertyObject` path.
 
 ## What generated bindings do not yet cover
 
 The generated bindings do not yet provide complete Rust structs for most database/app objects returned by RPC methods:
 
-- `dynamic_global_property_object`;
 - `account_object`;
 - `asset_object`;
 - `account_balance_object`;
 - richer `operation_history_object` usage across all live flows;
 - typed unions for `get_objects` results.
 
-`limit_order_object` is the first exception: Swaplock spec generation selects `get_limit_orders`, generated bindings emit `LimitOrderObject`, and `graphene-chain-swaplock` uses that generated type for order lookup. This is a proof of direction, not broad live-object completion.
+`limit_order_object` and `dynamic_global_property_object` are the first exceptions. Swaplock spec generation selects `get_limit_orders` and `get_dynamic_global_properties`, generated bindings emit `LimitOrderObject` and `DynamicGlobalPropertyObject`, and `graphene-chain-swaplock` uses those generated types for order lookup and head-block reads. This is a proof of direction, not broad live-object completion.
 
 The generated spec contains `objectTypes`, so it knows object id spaces and type ids such as `account -> 1.2.x`, `asset -> 1.3.x`, `limit_order -> 1.7.x`, and `dynamic_global_property -> 2.1.x`. That is not the same as having generated response structs with fields.
 
@@ -78,14 +79,14 @@ This is a coherent use of current bindings: generated protocol types are the loc
 
 `open-graphene-sdk-live` currently parses small live responses into SDK primitive/core types:
 
-- `HeadBlock`;
+- `HeadBlock` as a legacy/shared projection for generic callers;
 - `AccountIdRef`;
 - `AssetIdRef`;
 - `AssetAmount`;
 - frozen `LimitOrderSummary { id, seller }` for legacy/shared callers;
 - `bool` for `limit_order_exists`.
 
-This is acceptable only as minimal Graphene-generic projection. It should not grow into a complete manually modeled object layer. Swaplock rich order lookup has moved to the generated `LimitOrderObject` path in the chain-specific crate.
+This is acceptable only as minimal Graphene-generic projection. It should not grow into a complete manually modeled object layer. Swaplock rich order lookup has moved to the generated `LimitOrderObject` path, and Swaplock head-block reads have moved to the generated `DynamicGlobalPropertyObject` path in the chain-specific crate.
 
 ### 3. Chain-local broadcast JSON renderers
 
@@ -177,14 +178,12 @@ The next generator-oriented milestone should focus on these capabilities before 
 
 Generate Rust structs for the app/database objects actually used by live flows first:
 
-- `DynamicGlobalPropertyObject`;
 - `AccountObject`;
 - `AssetObject`;
 - `AccountBalanceObject`;
-- `LimitOrderObject`;
 - `OperationHistoryObject`.
 
-These should be derived from real C++ reflected object definitions, not invented from observed JSON samples.
+`LimitOrderObject` and `DynamicGlobalPropertyObject` are already proven for Swaplock. Future object work should follow those patterns: enter the type graph through a real reflected RPC return, keep generated bindings as wire types, and convert to SDK primitives at the chain-specific seam.
 
 ### 2. Typed object result union
 
@@ -243,11 +242,11 @@ Once generated app objects exist, chain crates should convert from generated cha
 
 Stop adding new SDK/live features. Commit this audit and use it as the boundary document.
 
-### Phase 1: Generator proof for one live object
+### Phase 1: Generator proof for live objects
 
-Status: complete for Swaplock `limit_order_object`.
+Status: complete for Swaplock `limit_order_object` and `dynamic_global_property_object`.
 
-The proof now covers:
+The limit-order proof covers:
 
 - Swaplock spec generation selects `database_api::get_limit_orders` and emits `get_limit_orders -> vector<limit_order_object>`;
 - generated object metadata links `objectTypes.limit_order.structRef` to `limit_order_object`;
@@ -256,7 +255,16 @@ The proof now covers:
 - `graphene-chain-swaplock::find_limit_order` deserializes live `get_limit_orders` results into generated `LimitOrderObject` instead of using `sdk-live::LimitOrderSummary`;
 - private testnet `trading_scenario` passed, opening, finding, canceling, and observing order `1.7.16` gone.
 
-Remaining work after this proof is broadening the pattern to more objects, not adding fields to `sdk-live::LimitOrderSummary`.
+The dynamic-global-property proof covers:
+
+- Swaplock spec generation selects `database_api::get_dynamic_global_properties` and emits `get_dynamic_global_properties -> dynamic_global_property_object`;
+- generated object metadata links `objectTypes.dynamic_global_property.structRef` to `dynamic_global_property_object`;
+- generated bindings emit `DynamicGlobalPropertyObject` with inherited `id`, head block fields, maintenance fields, budget fields, and participation fields;
+- generated fixed-byte fields accept Graphene live JSON hex strings or byte arrays and enforce exact byte length;
+- `graphene-chain-swaplock::head_block` deserializes live `get_dynamic_global_properties` results into generated `DynamicGlobalPropertyObject` instead of using the shared `sdk-live::head_block` parser;
+- read-only `head_block_smoke` live proof passed against the public Swaplock node, returning head block `694851`.
+
+Remaining work after these proofs is broadening the pattern to more objects, not adding fields to `sdk-live` projections.
 
 ### Phase 2: Broadcast JSON renderer proof
 

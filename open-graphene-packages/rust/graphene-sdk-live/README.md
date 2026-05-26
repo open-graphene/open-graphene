@@ -88,7 +88,7 @@ println!("balance={} {}", balance.amount, balance.asset_id);
 
 ## Facade integration pattern
 
-Chain crates that already wrap `GrapheneSession` can use the free helpers without giving ownership of the session to `GrapheneLiveClient`.
+Chain crates that already wrap `GrapheneSession` can keep their public facade while choosing the right parsing layer internally. When generated binding coverage exists, the chain crate should parse the rich live object itself and only return the stable SDK projection at its public seam. Schematically:
 
 ```rust
 pub fn head_block(
@@ -103,11 +103,13 @@ pub fn head_block(
         .into());
     }
 
-    Ok(open_graphene_sdk_live::head_block(rpc.session_mut())?)
+    let properties: graphene_chain_swaplock_bindings::generated::DynamicGlobalPropertyObject =
+        serde_json::from_value(rpc.get_dynamic_global_properties(database_api_id)?)?;
+    Ok(convert_generated_properties_to_head_block(properties))
 }
 ```
 
-This is the current Swaplock migration pattern: preserve the public chain-crate API and delegate only the Graphene-generic read/parsing work to `sdk-live`.
+This is the current Swaplock migration pattern: preserve the public chain-crate API and move rich live object parsing to the chain crate when generated binding coverage exists. `sdk-live` remains available for Graphene-generic projections, but chain-specific crates should prefer generated object types for rich live wire payloads.
 
 ## Lookup semantics
 
@@ -144,6 +146,12 @@ It returns `Ok(None)` for an empty response, a first `null` entry, or a non-exac
 ```
 
 The `amount` field may be a JSON integer or a decimal string. The helper fail-closes when the response has no first balance object, the `asset_id` is missing or different from the requested `AssetIdRef`, or the amount is malformed. It returns `open_graphene_sdk_primitives::AssetAmount`.
+
+## Head block semantics
+
+`head_block(session)` calls Graphene `database.get_objects(["2.1.0"])` and parses the first dynamic-global-property object into `HeadBlock { number, id, time }`.
+
+This helper remains a minimal Graphene-generic projection for shared callers. Swaplock now has generated `DynamicGlobalPropertyObject` coverage and its high-level `head_block` helper consumes `database.get_dynamic_global_properties` through generated chain bindings instead of this shared parser. Do not add maintenance, witness, budget, or participation fields to `HeadBlock`; for rich dynamic-global-property payloads, add generated object coverage and consume it in the chain-specific crate.
 
 ## Limit order semantics
 
@@ -214,10 +222,11 @@ Implemented today:
 - `required_fee_for_operation_json`;
 - `limit_orders` as a frozen minimal projection;
 - `limit_order_exists`;
-- Swaplock integration for head-block, account lookup, asset lookup, account balance, required fee, and limit-order existence checks while preserving existing Swaplock helper signatures;
+- Swaplock integration for account lookup, asset lookup, account balance, required fee, and limit-order existence checks while preserving existing Swaplock helper signatures;
+- Swaplock head-block reads through generated `DynamicGlobalPropertyObject` in the chain-specific crate, not through `sdk-live`;
 - Swaplock rich limit-order lookup through generated `LimitOrderObject` in the chain-specific crate, not through `sdk-live`.
 
-Likely next candidates are documentation cleanup for other frozen projections, BitShares generated object parity, or generated typed coverage for `dynamic_global_property_object` so head-block reads can follow the same pattern.
+Likely next candidates are BitShares generated object parity for dynamic global properties, generated `account_balance_object`, or generated `account_object` / `asset_object` coverage for lookup helpers.
 
 ## Required fee semantics
 
