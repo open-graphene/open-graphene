@@ -1,7 +1,9 @@
 use std::error::Error;
 
 use open_graphene_transport::{
-    broadcast_transaction as transport_broadcast_transaction, GrapheneSession,
+    broadcast_transaction as transport_broadcast_transaction,
+    get_account_history as transport_get_account_history,
+    AccountHistoryQuery as TransportAccountHistoryQuery, GrapheneSession,
 };
 use serde_json::Value;
 
@@ -89,6 +91,20 @@ impl GrapheneRpc {
             .ok_or("history API is unavailable")?;
         ensure_api_id("history", expected, api_id)?;
         Ok(self.session.history_call(method, params)?)
+    }
+
+    pub fn get_account_history(
+        &mut self,
+        api_id: u64,
+        query: &TransportAccountHistoryQuery,
+    ) -> Result<Value, Box<dyn Error>> {
+        let expected = self
+            .session
+            .api_ids()
+            .history
+            .ok_or("history API is unavailable")?;
+        ensure_api_id("history", expected, api_id)?;
+        Ok(transport_get_account_history(&mut self.session, query)?)
     }
 }
 

@@ -1,7 +1,8 @@
 use std::error::Error;
 use std::time::Duration;
 
-use serde_json::{json, Value};
+use open_graphene_transport::AccountHistoryQuery as TransportAccountHistoryQuery;
+use serde_json::Value;
 
 use crate::rpc::GrapheneRpc;
 
@@ -23,7 +24,11 @@ impl<'a> AccountHistoryQuery<'a> {
     }
 
     pub fn params(&self) -> Value {
-        json!([self.account_id, self.stop, self.limit, self.start])
+        self.to_transport_query().params()
+    }
+
+    fn to_transport_query(&self) -> TransportAccountHistoryQuery {
+        TransportAccountHistoryQuery::new(self.account_id, self.stop, self.limit, self.start)
     }
 }
 
@@ -60,7 +65,7 @@ pub fn get_account_history(
     history_api_id: u64,
     query: &AccountHistoryQuery<'_>,
 ) -> Result<Value, Box<dyn Error>> {
-    rpc.call_history(history_api_id, "get_account_history", query.params())
+    rpc.get_account_history(history_api_id, &query.to_transport_query())
 }
 
 pub fn wait_for_account_history_confirmation<F>(
@@ -174,6 +179,8 @@ fn json_i64(value: &Value) -> Option<i64> {
 
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
     use super::*;
 
     #[test]

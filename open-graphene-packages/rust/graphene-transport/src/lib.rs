@@ -1,10 +1,12 @@
 pub mod error;
+pub mod history_api;
 pub mod json_rpc;
 pub mod network_broadcast_api;
 pub mod session;
 pub mod websocket;
 
 pub use error::TransportError;
+pub use history_api::{get_account_history, AccountHistoryQuery};
 pub use json_rpc::{
     graphene_call_params, parse_inbound, JsonRpcInbound, JsonRpcRequest, GRAPHENE_CALL_METHOD,
 };
