@@ -212,6 +212,7 @@ dependencies = [
  "open-graphene-sdk-live",
  "open-graphene-sdk-operations",
  "open-graphene-transport",
+ "serde",
  "serde_json",
  "thiserror 2.0.18",
 ]

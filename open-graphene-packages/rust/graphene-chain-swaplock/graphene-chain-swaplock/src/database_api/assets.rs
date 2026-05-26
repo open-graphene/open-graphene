@@ -4,8 +4,8 @@ use std::time::Duration;
 
 use graphene_chain_swaplock_bindings::generated::AssetObject;
 use open_graphene_sdk_core::AssetIdRef;
-use serde_json::Value;
 
+use crate::database_api::objects::typed_object_from_get_objects_result;
 use crate::rpc::GrapheneRpc;
 
 pub fn lookup_asset_id(
@@ -56,36 +56,15 @@ pub fn wait_for_asset(
 
 fn asset_object_from_get_objects_result(
     requested_asset_id: &AssetIdRef,
-    value: Value,
+    value: serde_json::Value,
 ) -> Result<Option<AssetObject>, Box<dyn Error>> {
-    let values = value
-        .as_array()
-        .ok_or("get_objects asset response must be an array")?;
-    if values.len() != 1 {
-        return Err(format!(
-            "get_objects asset response must contain exactly one slot, got {}",
-            values.len()
-        )
-        .into());
-    }
-
-    let Some(slot) = values.first() else {
-        return Err("get_objects asset response must contain one slot".into());
-    };
-    if slot.is_null() {
-        return Ok(None);
-    }
-
-    let asset: AssetObject = serde_json::from_value(slot.clone())?;
-    let returned_asset_id = AssetIdRef::parse(&asset.id.0)?;
-    if &returned_asset_id != requested_asset_id {
-        return Err(format!(
-            "get_objects asset id mismatch: expected {requested_asset_id}, got {returned_asset_id}"
-        )
-        .into());
-    }
-
-    Ok(Some(asset))
+    typed_object_from_get_objects_result(
+        "asset",
+        requested_asset_id,
+        value,
+        AssetIdRef::parse,
+        |asset: &AssetObject| asset.id.0.as_str(),
+    )
 }
 
 fn ensure_database_api_id(rpc: &mut GrapheneRpc, api_id: u64) -> Result<(), Box<dyn Error>> {
@@ -102,7 +81,7 @@ mod tests {
 
     use super::*;
 
-    fn asset_object_json(id: &str) -> Value {
+    fn asset_object_json(id: &str) -> serde_json::Value {
         serde_json::json!({
             "id": id,
             "symbol": "BTS",
@@ -168,9 +147,11 @@ mod tests {
 
         let error = asset_object_from_get_objects_result(&requested_asset_id, result).unwrap_err();
 
-        assert!(error
-            .to_string()
-            .contains("get_objects asset id mismatch: expected 1.3.0, got 1.3.1"));
+        assert!(
+            error
+                .to_string()
+                .contains("get_objects asset id mismatch: expected 1.3.0, got 1.3.1")
+        );
     }
 
     #[test]
@@ -180,9 +161,11 @@ mod tests {
 
         let error = asset_object_from_get_objects_result(&requested_asset_id, result).unwrap_err();
 
-        assert!(error
-            .to_string()
-            .contains("get_objects asset response must contain exactly one slot, got 2"));
+        assert!(
+            error
+                .to_string()
+                .contains("get_objects asset response must contain exactly one slot, got 2")
+        );
     }
 
     #[test]

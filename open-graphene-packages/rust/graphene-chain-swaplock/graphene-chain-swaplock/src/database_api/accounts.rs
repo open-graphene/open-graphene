@@ -4,8 +4,8 @@ use std::time::Duration;
 
 use graphene_chain_swaplock_bindings::generated::AccountObject;
 use open_graphene_sdk_core::AccountIdRef;
-use serde_json::Value;
 
+use crate::database_api::objects::typed_object_from_get_objects_result;
 use crate::rpc::GrapheneRpc;
 
 pub fn lookup_account_id(
@@ -74,36 +74,15 @@ pub fn active_public_key_for_account(
 
 fn account_object_from_get_objects_result(
     requested_account_id: &AccountIdRef,
-    value: Value,
+    value: serde_json::Value,
 ) -> Result<Option<AccountObject>, Box<dyn Error>> {
-    let values = value
-        .as_array()
-        .ok_or("get_objects account response must be an array")?;
-    if values.len() != 1 {
-        return Err(format!(
-            "get_objects account response must contain exactly one slot, got {}",
-            values.len()
-        )
-        .into());
-    }
-
-    let Some(slot) = values.first() else {
-        return Err("get_objects account response must contain one slot".into());
-    };
-    if slot.is_null() {
-        return Ok(None);
-    }
-
-    let account: AccountObject = serde_json::from_value(slot.clone())?;
-    let returned_account_id = AccountIdRef::parse(&account.id.0)?;
-    if &returned_account_id != requested_account_id {
-        return Err(format!(
-            "get_objects account id mismatch: expected {requested_account_id}, got {returned_account_id}"
-        )
-        .into());
-    }
-
-    Ok(Some(account))
+    typed_object_from_get_objects_result(
+        "account",
+        requested_account_id,
+        value,
+        AccountIdRef::parse,
+        |account: &AccountObject| account.id.0.as_str(),
+    )
 }
 
 fn ensure_database_api_id(rpc: &mut GrapheneRpc, api_id: u64) -> Result<(), Box<dyn Error>> {
@@ -120,7 +99,7 @@ mod tests {
 
     use super::*;
 
-    fn account_object_json(id: &str) -> Value {
+    fn account_object_json(id: &str) -> serde_json::Value {
         serde_json::json!({
             "id": id,
             "membership_expiration_date": "1970-01-01T00:00:00",

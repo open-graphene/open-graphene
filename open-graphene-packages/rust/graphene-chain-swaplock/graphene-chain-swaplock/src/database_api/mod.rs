@@ -3,6 +3,7 @@ pub mod assets;
 pub mod balances;
 pub mod fees;
 pub mod header;
+mod objects;
 pub mod orders;
 
 pub use accounts::{
