@@ -9,13 +9,13 @@ pub const CHAIN_ID: &str = "swaplock";
 pub const CHAIN_ID_HEX: &str = "2267f694d96b7ffdcba1a98c63c09e720a18a85ad34954e299c66d5a42234098";
 pub const PUBLIC_KEY_PREFIX: &str = "BTS";
 
-pub const STRUCT_COUNT: usize = 211;
+pub const STRUCT_COUNT: usize = 212;
 pub const ENUM_COUNT: usize = 11;
 pub const STATIC_VARIANT_COUNT: usize = 11;
 pub const OPERATION_COUNT: usize = 78;
 pub const OBJECT_TYPE_COUNT: usize = 42;
 pub const RPC_API_COUNT: usize = 2;
-pub const RPC_METHOD_COUNT: usize = 7;
+pub const RPC_METHOD_COUNT: usize = 8;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
@@ -430,6 +430,30 @@ impl CallOrderId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 8;
 }
+
+/// Object ID for `chain` protocol objects.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct ChainId(pub String);
+
+impl ChainId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for ChainId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for ChainId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 
 /// Object ID for `chain_property` protocol objects.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]

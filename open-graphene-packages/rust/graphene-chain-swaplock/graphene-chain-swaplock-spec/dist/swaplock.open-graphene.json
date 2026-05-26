@@ -5482,6 +5482,67 @@
       }
     },
     {
+      "name": "chain_property_object",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "chain_property"
+          },
+          "source": {
+            "name": "id",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/chain_property_object.hpp",
+            "line": 33
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "inherited object id from graphene::db::object for reflected Graphene object"
+          }
+        },
+        {
+          "index": 1,
+          "name": "chain_id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "chain"
+          },
+          "source": {
+            "name": "chain_id",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/chain_property_object.hpp",
+            "line": 33
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 2,
+          "name": "immutable_parameters",
+          "type": {
+            "kind": "any_json",
+            "reason": "unsupported C++ type mapping: immutable_chain_parameters"
+          },
+          "source": {
+            "name": "immutable_parameters",
+            "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/chain_property_object.hpp",
+            "line": 35
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+      }
+    },
+    {
       "name": "committee_member_create_operation",
       "kind": "struct",
       "fields": [
@@ -28371,6 +28432,7 @@
       "cppAlias": "chain_property_id_type",
       "objectSpace": 2,
       "typeId": 11,
+      "structRef": "chain_property_object",
       "source": {
         "name": "chain_property",
         "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/types.hpp",
@@ -28768,6 +28830,26 @@
         "name": "get_account_balances",
         "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/database_api.hpp",
         "line": 358
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "selected in config, present in FC_API, and signature found"
+      }
+    },
+    {
+      "name": "get_chain_properties",
+      "apiClass": "database_api",
+      "apiName": "database",
+      "params": [],
+      "returns": {
+        "kind": "ref",
+        "name": "chain_property_object"
+      },
+      "isSubscription": false,
+      "source": {
+        "name": "get_chain_properties",
+        "file": "/Users/lunacrafts/workspaces/open-graphene-next/open-graphene-v1/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/database_api.hpp",
+        "line": 199
       },
       "support": {
         "status": "provisional",

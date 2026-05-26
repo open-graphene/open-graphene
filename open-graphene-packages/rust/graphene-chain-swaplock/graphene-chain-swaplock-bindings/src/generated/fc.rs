@@ -88,6 +88,12 @@ impl FcSerialize for crate::generated::ids::CallOrderId {
     }
 }
 
+impl FcSerialize for crate::generated::ids::ChainId {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_protocol_object_id(&self.0, None, None, out)
+    }
+}
+
 impl FcSerialize for crate::generated::ids::ChainPropertyId {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         write_protocol_object_id(&self.0, Some(2), Some(11), out)

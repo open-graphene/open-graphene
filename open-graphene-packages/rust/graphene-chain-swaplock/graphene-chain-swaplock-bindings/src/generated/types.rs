@@ -675,6 +675,14 @@ pub struct ChainParametersExt {
     pub maker_fee_discount_percent: Option<u16>,
 }
 
+/// Raw protocol struct `chain_property_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ChainPropertyObject {
+    pub id: crate::generated::ids::ChainPropertyId,
+    pub chain_id: crate::generated::ids::ChainId,
+    pub immutable_parameters: serde_json::Value,
+}
+
 /// Raw protocol struct `committee_member_create_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CommitteeMemberCreateOperationFeeParamsT {
