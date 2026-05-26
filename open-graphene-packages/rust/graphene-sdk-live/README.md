@@ -26,6 +26,7 @@ use open_graphene_sdk_live::{
     lookup_asset_id,
     lookup_asset_id_optional,
     account_balance,
+    required_fee_for_operation_json,
 };
 ```
 
@@ -34,7 +35,8 @@ The helpers use `open_graphene_transport::GrapheneSession` and return shared SDK
 - `head_block(...) -> open_graphene_sdk_core::HeadBlock`;
 - `lookup_account_id(...) -> open_graphene_sdk_primitives::AccountIdRef`;
 - `lookup_asset_id(...) -> open_graphene_sdk_primitives::AssetIdRef`;
-- `account_balance(...) -> open_graphene_sdk_primitives::AssetAmount`.
+- `account_balance(...) -> open_graphene_sdk_primitives::AssetAmount`;
+- `required_fee_for_operation_json(...) -> open_graphene_sdk_primitives::AssetAmount`.
 
 ## Chain profiles
 
@@ -182,13 +184,24 @@ Implemented today:
 - `lookup_account_id` / `lookup_account_id_optional`;
 - `lookup_asset_id` / `lookup_asset_id_optional`;
 - `account_balance`;
+- `required_fee_for_operation_json`;
 - Swaplock integration for head-block, account lookup, asset lookup, and account balance reads while preserving existing Swaplock helper signatures.
 
-Likely next candidates are fee reads and order reads, but those have more response-shape nuance and should be moved in small slices.
+Likely next candidates are Swaplock fee wrapper migration and order reads, but those should be moved in small slices.
 
-## Planned fee helper boundary
+## Required fee semantics
 
-The next intended `sdk-live` fee helper should stop at the Graphene-generic fee read boundary:
+`required_fee_for_operation_json(session, operation_json, fee_asset_id)` calls Graphene `database.get_required_fees([operation_json], fee_asset_id)` and expects a response shaped like:
+
+```json
+[{"amount": "123", "asset_id": "1.3.x"}]
+```
+
+The helper expects the caller to provide already-rendered operation JSON. It does not build transactions, render generated operations, choose fee policy, or apply the returned fee to a transaction. The returned fee amount may be a JSON integer or a decimal string. The helper fail-closes when the response has no first fee object, the `asset_id` is missing or different from the requested `AssetIdRef`, or the amount is malformed. It returns `open_graphene_sdk_primitives::AssetAmount`.
+
+## Fee helper boundary
+
+`required_fee_for_operation_json` stops at the Graphene-generic fee read boundary:
 
 ```rust
 pub fn required_fee_for_operation_json(
@@ -198,6 +211,6 @@ pub fn required_fee_for_operation_json(
 ) -> Result<AssetAmount, LiveSdkError>;
 ```
 
-It should call `database.get_required_fees([operation_json], fee_asset_id)` and parse the first returned fee object into `AssetAmount` with the same amount and asset-id validation used by balance parsing.
+It calls `database.get_required_fees([operation_json], fee_asset_id)` and parses the first returned fee object into `AssetAmount` with the same amount and asset-id validation used by balance parsing.
 
-It should not render operations, inspect generated transaction types, choose fee policy, apply fees, sign, broadcast, or return generated chain binding types. Chain crates such as `graphene-chain-swaplock` should keep their current transaction/renderer wrapper and convert the returned `AssetAmount` into the generated chain `Asset` type needed by existing callers.
+It does not render operations, inspect generated transaction types, choose fee policy, apply fees, sign, broadcast, or return generated chain binding types. Chain crates such as `graphene-chain-swaplock` should keep their current transaction/renderer wrapper and convert the returned `AssetAmount` into the generated chain `Asset` type needed by existing callers.

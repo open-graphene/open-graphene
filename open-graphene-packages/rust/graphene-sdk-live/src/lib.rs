@@ -3,8 +3,8 @@ use std::marker::PhantomData;
 use open_graphene_sdk_core::HeadBlock;
 use open_graphene_sdk_primitives::{AccountIdRef, AssetAmount, AssetIdRef, ObjectIdError};
 use open_graphene_transport::{
-    get_account_balances, get_objects, lookup_accounts, lookup_asset_symbols, GrapheneSession,
-    TransportError,
+    get_account_balances, get_objects, get_required_fees, lookup_accounts, lookup_asset_symbols,
+    GrapheneSession, TransportError,
 };
 use serde_json::Value;
 use thiserror::Error;
@@ -38,6 +38,8 @@ pub enum LiveSdkError {
     InvalidAssetLookup { reason: &'static str, value: Value },
     #[error("invalid account balance result: {reason}: {value}")]
     InvalidAccountBalance { reason: &'static str, value: Value },
+    #[error("invalid required fee result: {reason}: {value}")]
+    InvalidRequiredFee { reason: &'static str, value: Value },
 }
 
 pub struct GrapheneLiveClient<P> {
@@ -103,6 +105,14 @@ impl<P: GrapheneChainProfile> GrapheneLiveClient<P> {
     ) -> Result<AssetAmount, LiveSdkError> {
         account_balance(&mut self.session, account_id, asset_id)
     }
+
+    pub fn required_fee_for_operation_json(
+        &mut self,
+        operation_json: Value,
+        fee_asset_id: &AssetIdRef,
+    ) -> Result<AssetAmount, LiveSdkError> {
+        required_fee_for_operation_json(&mut self.session, operation_json, fee_asset_id)
+    }
 }
 
 pub fn head_block(session: &mut GrapheneSession) -> Result<HeadBlock, LiveSdkError> {
@@ -151,6 +161,21 @@ pub fn account_balance(
     parse_account_balance_response(
         get_account_balances(session, account_id.to_string(), [asset_id.to_string()])?,
         asset_id,
+    )
+}
+
+pub fn required_fee_for_operation_json(
+    session: &mut GrapheneSession,
+    operation_json: Value,
+    fee_asset_id: &AssetIdRef,
+) -> Result<AssetAmount, LiveSdkError> {
+    parse_required_fee_response(
+        get_required_fees(
+            session,
+            Value::Array(vec![operation_json]),
+            fee_asset_id.to_string(),
+        )?,
+        fee_asset_id,
     )
 }
 
@@ -274,24 +299,45 @@ fn parse_account_balance_response(
         .and_then(|values| values.first())
         .ok_or_else(|| invalid_account_balance("missing balance", value.clone()))?;
 
-    let returned_asset_id = balance
+    parse_asset_amount_object(balance, expected_asset_id, invalid_account_balance)
+}
+
+fn parse_required_fee_response(
+    value: Value,
+    expected_asset_id: &AssetIdRef,
+) -> Result<AssetAmount, LiveSdkError> {
+    let fee = value
+        .as_array()
+        .and_then(|values| values.first())
+        .ok_or_else(|| invalid_required_fee("missing fee", value.clone()))?;
+
+    parse_asset_amount_object(fee, expected_asset_id, invalid_required_fee)
+}
+
+fn parse_asset_amount_object(
+    value: &Value,
+    expected_asset_id: &AssetIdRef,
+    invalid: fn(&'static str, Value) -> LiveSdkError,
+) -> Result<AssetAmount, LiveSdkError> {
+    let returned_asset_id = value
         .get("asset_id")
         .and_then(Value::as_str)
-        .ok_or_else(|| invalid_account_balance("missing asset_id", balance.clone()))?;
+        .ok_or_else(|| invalid("missing asset_id", value.clone()))?;
     let returned_asset_id = AssetIdRef::parse(returned_asset_id)?;
     if &returned_asset_id != expected_asset_id {
-        return Err(invalid_account_balance(
-            "unexpected asset_id",
-            balance.clone(),
-        ));
+        return Err(invalid("unexpected asset_id", value.clone()));
     }
 
-    let amount = balance
+    let amount = value
         .get("amount")
         .and_then(json_i64)
-        .ok_or_else(|| invalid_account_balance("missing integer amount", balance.clone()))?;
+        .ok_or_else(|| invalid("missing integer amount", value.clone()))?;
 
     Ok(AssetAmount::new(amount, returned_asset_id))
+}
+
+fn invalid_required_fee(reason: &'static str, value: Value) -> LiveSdkError {
+    LiveSdkError::InvalidRequiredFee { reason, value }
 }
 
 fn json_i64(value: &Value) -> Option<i64> {
@@ -628,6 +674,89 @@ mod tests {
         assert!(matches!(
             error,
             LiveSdkError::InvalidAccountBalance { reason, .. } if reason == "missing integer amount"
+        ));
+    }
+
+    #[test]
+    fn parses_required_fee_with_integer_amount() {
+        let asset_id = AssetIdRef::parse("1.3.0").unwrap();
+        let fee =
+            parse_required_fee_response(json!([{"amount": 7, "asset_id": "1.3.0"}]), &asset_id)
+                .unwrap();
+
+        assert_eq!(fee, AssetAmount::new(7, asset_id));
+    }
+
+    #[test]
+    fn parses_required_fee_with_string_amount() {
+        let asset_id = AssetIdRef::parse("1.3.0").unwrap();
+        let fee =
+            parse_required_fee_response(json!([{"amount": "8", "asset_id": "1.3.0"}]), &asset_id)
+                .unwrap();
+
+        assert_eq!(fee, AssetAmount::new(8, asset_id));
+    }
+
+    #[test]
+    fn required_fee_rejects_missing_fee() {
+        let asset_id = AssetIdRef::parse("1.3.0").unwrap();
+        let error = parse_required_fee_response(json!([]), &asset_id).unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::InvalidRequiredFee { reason, .. } if reason == "missing fee"
+        ));
+    }
+
+    #[test]
+    fn required_fee_rejects_missing_asset_id() {
+        let asset_id = AssetIdRef::parse("1.3.0").unwrap();
+        let error = parse_required_fee_response(json!([{"amount": 7}]), &asset_id).unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::InvalidRequiredFee { reason, .. } if reason == "missing asset_id"
+        ));
+    }
+
+    #[test]
+    fn required_fee_rejects_unexpected_asset_id() {
+        let asset_id = AssetIdRef::parse("1.3.0").unwrap();
+        let error =
+            parse_required_fee_response(json!([{"amount": 7, "asset_id": "1.3.1"}]), &asset_id)
+                .unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::InvalidRequiredFee { reason, .. } if reason == "unexpected asset_id"
+        ));
+    }
+
+    #[test]
+    fn required_fee_rejects_non_asset_object_id() {
+        let asset_id = AssetIdRef::parse("1.3.0").unwrap();
+        let error =
+            parse_required_fee_response(json!([{"amount": 7, "asset_id": "1.2.100"}]), &asset_id)
+                .unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::ObjectId(ObjectIdError::UnexpectedType { .. })
+        ));
+    }
+
+    #[test]
+    fn required_fee_rejects_malformed_amount() {
+        let asset_id = AssetIdRef::parse("1.3.0").unwrap();
+        let error = parse_required_fee_response(
+            json!([{"amount": "nope", "asset_id": "1.3.0"}]),
+            &asset_id,
+        )
+        .unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::InvalidRequiredFee { reason, .. } if reason == "missing integer amount"
         ));
     }
 }
