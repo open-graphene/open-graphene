@@ -1,5 +1,5 @@
 use graphene_chain_swaplock_bindings::generated::AccountObject;
-use open_graphene_transport::{GrapheneSession, get_objects, lookup_accounts, parse_chain_id};
+use open_graphene_transport::{GrapheneSession, parse_chain_id};
 use serde_json::json;
 
 use crate::SwaplockApiError;
@@ -18,7 +18,9 @@ impl DatabaseApi<'_> {
         &mut self,
         account_name: &str,
     ) -> Result<AccountObject, SwaplockApiError> {
-        let accounts = lookup_accounts(self.session, account_name, 1)?;
+        let accounts = self
+            .session
+            .database_call("lookup_accounts", json!([account_name, 1]))?;
         let account_id = accounts
             .as_array()
             .and_then(|rows| {
@@ -40,7 +42,9 @@ impl DatabaseApi<'_> {
         &mut self,
         account_id: &str,
     ) -> Result<AccountObject, SwaplockApiError> {
-        let objects = get_objects(self.session, [account_id])?;
+        let objects = self
+            .session
+            .database_call("get_objects", json!([[account_id]]))?;
         let account = objects
             .as_array()
             .and_then(|objects| objects.first())
