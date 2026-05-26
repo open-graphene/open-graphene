@@ -11,10 +11,20 @@ pub struct ServerConnectFailure {
     pub error: String,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ChainIdMismatch {
+    pub server: String,
+    pub expected: String,
+    pub actual: String,
+}
+
 #[derive(Debug, Error)]
 pub enum SwaplockApiError {
     #[error("at least one Swaplock RPC server is required")]
     MissingServers,
+
+    #[error("connected Swaplock RPC server returned unexpected chain id: {mismatch:?}")]
+    ChainIdMismatch { mismatch: ChainIdMismatch },
 
     #[error("all Swaplock RPC servers failed: {attempts:?}")]
     AllServersFailed { attempts: Vec<ServerConnectFailure> },
@@ -28,7 +38,10 @@ pub struct SwaplockApi {
 }
 
 impl SwaplockApi {
-    pub async fn connect<I, S>(servers: I) -> Result<Self, SwaplockApiError>
+    pub async fn connect<I, S>(
+        servers: I,
+        expected_chain_id: Option<&str>,
+    ) -> Result<Self, SwaplockApiError>
     where
         I: IntoIterator<Item = S>,
         S: Into<String>,
@@ -38,10 +51,25 @@ impl SwaplockApi {
             return Err(SwaplockApiError::MissingServers);
         }
 
+        let expected_chain_id = expected_chain_id.map(str::to_string);
         let mut attempts = Vec::new();
         for server in servers {
             match GrapheneSession::connect(&server) {
-                Ok(session) => return Ok(Self { session }),
+                Ok(session) => {
+                    if let Some(expected) = expected_chain_id.as_deref() {
+                        let actual = session.chain_id();
+                        if actual != expected {
+                            return Err(SwaplockApiError::ChainIdMismatch {
+                                mismatch: ChainIdMismatch {
+                                    server,
+                                    expected: expected.to_string(),
+                                    actual: actual.to_string(),
+                                },
+                            });
+                        }
+                    }
+                    return Ok(Self { session });
+                }
                 Err(error) => attempts.push(ServerConnectFailure {
                     server,
                     error: error.to_string(),
@@ -68,5 +96,21 @@ mod tests {
             SwaplockApiError::MissingServers.to_string(),
             "at least one Swaplock RPC server is required"
         );
+    }
+
+    #[test]
+    fn chain_id_mismatch_error_includes_expected_and_actual_values() {
+        let error = SwaplockApiError::ChainIdMismatch {
+            mismatch: ChainIdMismatch {
+                server: "wss://example.invalid".to_string(),
+                expected: "expected-chain".to_string(),
+                actual: "actual-chain".to_string(),
+            },
+        };
+        let message = error.to_string();
+
+        assert!(message.contains("expected-chain"));
+        assert!(message.contains("actual-chain"));
+        assert!(message.contains("wss://example.invalid"));
     }
 }

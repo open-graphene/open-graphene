@@ -67,7 +67,9 @@ impl<C> ChainClientBuilder<C> {
 impl ChainClientBuilder<Swaplock> {
     pub async fn connect(self) -> Result<SwaplockApi, GrapheneConnectError> {
         validate_config(&self.config)?;
-        Ok(SwaplockApi::connect(self.config.servers).await?)
+        let servers = self.config.servers;
+        let expected_chain_id = self.config.chain_id;
+        Ok(SwaplockApi::connect(servers, expected_chain_id.as_deref()).await?)
     }
 }
 
