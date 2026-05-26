@@ -1,5 +1,3 @@
-use std::time::{Duration, Instant};
-
 use graphene::Graphene;
 
 #[tokio::main(flavor = "current_thread")]
@@ -25,12 +23,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         subscription.initial().head_block_number,
         subscription.initial().time
     );
+    println!("listening for updates; press Ctrl-C to stop");
 
-    let started_at = Instant::now();
-    let run_for = Duration::from_secs(60);
     let mut updates = 0_u64;
 
-    while started_at.elapsed() < run_for {
+    loop {
         let update = subscription.next_update().await?;
         updates += 1;
         println!(
@@ -38,8 +35,4 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             update.head_block_number, update.time, update.last_irreversible_block_num
         );
     }
-
-    println!("received {updates} updates in {:?}", started_at.elapsed());
-
-    Ok(())
 }
