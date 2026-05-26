@@ -3,7 +3,7 @@ resolver = "3"
 members = [
     "open-graphene/crates/*",
     "open-graphene-packages/rust/graphene",
-    "open-graphene-packages/rust/graphene-chain-swaplock-api",
+    "open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-api",
     "open-graphene-packages/rust/graphene-fc",
     "open-graphene-packages/rust/graphene-sdk-primitives",
     "open-graphene-packages/rust/graphene-sdk-core",
