@@ -1,0 +1,34 @@
+[workspace]
+resolver = "3"
+members = [
+    "open-graphene/crates/*",
+    "open-graphene-packages/rust/graphene",
+    "open-graphene-packages/rust/graphene-fc",
+    "open-graphene-packages/rust/graphene-sdk-primitives",
+    "open-graphene-packages/rust/graphene-sdk-core",
+    "open-graphene-packages/rust/graphene-sdk-operations",
+    "open-graphene-packages/rust/graphene-transport",
+    "open-graphene-packages/rust/graphene-sdk-live",
+    "open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-bindings",
+    "open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock",
+    "open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-bindings",
+    "open-graphene-packages/rust/graphene-chain-acta/graphene-chain-acta-bindings",
+    "open-graphene-packages/rust/graphene-chain-rsquared/graphene-chain-rsquared-bindings",
+]
+
+[workspace.package]
+edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/open-graphene/open-graphene"
+
+[workspace.dependencies]
+schemars = "1.2.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2.0.18"
+clap = { version = "4", features = ["derive"] }
+tree-sitter = "0.26.9"
+tree-sitter-cpp = "0.23.4"
+walkdir = "2"
+pretty_assertions = "1"
+toml = "0.8"
