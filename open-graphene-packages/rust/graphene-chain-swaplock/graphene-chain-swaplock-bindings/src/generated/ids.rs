@@ -15,7 +15,7 @@ pub const STATIC_VARIANT_COUNT: usize = 11;
 pub const OPERATION_COUNT: usize = 78;
 pub const OBJECT_TYPE_COUNT: usize = 42;
 pub const RPC_API_COUNT: usize = 2;
-pub const RPC_METHOD_COUNT: usize = 6;
+pub const RPC_METHOD_COUNT: usize = 7;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
