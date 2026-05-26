@@ -6,6 +6,7 @@ use serde_json::{Value, json};
 
 use crate::SwaplockApiError;
 
+const ACCOUNT_CALLBACK_ID: u64 = 2;
 const DYNAMIC_GLOBAL_PROPERTIES_ID: &str = "2.1.0";
 const DYNAMIC_GLOBAL_PROPERTIES_CALLBACK_ID: u64 = 1;
 
@@ -21,6 +22,12 @@ pub struct AccountByIdRequest<'session> {
 pub struct AccountByNameRequest<'session> {
     session: &'session mut GrapheneSession,
     account_name: String,
+}
+
+pub struct AccountSubscription<'session> {
+    session: &'session mut GrapheneSession,
+    account_id: String,
+    initial: AccountObject,
 }
 
 pub struct AccountsRequest<'session> {
@@ -49,15 +56,48 @@ pub struct GlobalPropertiesRequest<'session> {
     session: &'session mut GrapheneSession,
 }
 
-impl AccountByIdRequest<'_> {
+impl<'session> AccountByIdRequest<'session> {
     pub async fn get(self) -> Result<AccountObject, SwaplockApiError> {
         get_account_by_id(self.session, &self.account_id).await
     }
+
+    pub async fn subscribe(self) -> Result<AccountSubscription<'session>, SwaplockApiError> {
+        subscribe_account_by_id(self.session, self.account_id).await
+    }
 }
 
-impl AccountByNameRequest<'_> {
+impl<'session> AccountByNameRequest<'session> {
     pub async fn get(self) -> Result<AccountObject, SwaplockApiError> {
         get_account_by_name(self.session, &self.account_name).await
+    }
+
+    pub async fn subscribe(self) -> Result<AccountSubscription<'session>, SwaplockApiError> {
+        let account = get_account_by_name(self.session, &self.account_name).await?;
+        subscribe_account_by_id(self.session, account.id.0).await
+    }
+}
+
+impl AccountSubscription<'_> {
+    pub fn initial(&self) -> &AccountObject {
+        &self.initial
+    }
+
+    pub async fn next_update(&mut self) -> Result<AccountObject, SwaplockApiError> {
+        loop {
+            let notice = self.session.next_notice()?;
+            let JsonRpcInbound::Notice {
+                callback_id,
+                payload,
+            } = notice
+            else {
+                continue;
+            };
+            if callback_id != ACCOUNT_CALLBACK_ID {
+                continue;
+            }
+
+            return account_from_value("notice", payload, &self.account_id);
+        }
     }
 }
 
@@ -282,19 +322,7 @@ async fn get_account_by_id(
     account_id: &str,
 ) -> Result<AccountObject, SwaplockApiError> {
     let objects = session.database_call("get_objects", json!([[account_id]]))?;
-    let account = objects
-        .as_array()
-        .and_then(|objects| objects.first())
-        .filter(|object| !object.is_null())
-        .cloned()
-        .ok_or_else(|| SwaplockApiError::AccountNotFound {
-            account: account_id.to_string(),
-        })?;
-
-    serde_json::from_value(account).map_err(|error| SwaplockApiError::UnexpectedResponse {
-        method: "get_objects",
-        message: error.to_string(),
-    })
+    account_from_value("get_objects", objects, account_id)
 }
 
 async fn get_chain_id(session: &mut GrapheneSession) -> Result<String, SwaplockApiError> {
@@ -331,6 +359,42 @@ async fn get_global_properties(
 
     serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
         method: "get_global_properties",
+        message: error.to_string(),
+    })
+}
+
+async fn subscribe_account_by_id(
+    session: &mut GrapheneSession,
+    account_id: String,
+) -> Result<AccountSubscription<'_>, SwaplockApiError> {
+    session.database_call(
+        "set_subscribe_callback",
+        json!([ACCOUNT_CALLBACK_ID, false]),
+    )?;
+    let value = session.database_call("get_objects", json!([[account_id], true]))?;
+    let initial = account_from_value("get_objects", value, &account_id)?;
+
+    Ok(AccountSubscription {
+        session,
+        account_id,
+        initial,
+    })
+}
+
+fn account_from_value(
+    method: &'static str,
+    value: Value,
+    account_id: &str,
+) -> Result<AccountObject, SwaplockApiError> {
+    let value = find_object_by_id(&value, account_id).ok_or_else(|| {
+        SwaplockApiError::UnexpectedResponse {
+            method,
+            message: format!("missing `{account_id}` account object"),
+        }
+    })?;
+
+    serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
+        method,
         message: error.to_string(),
     })
 }

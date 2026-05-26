@@ -4,7 +4,7 @@ use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
 
 pub use database_api::{
-    AccountByIdRequest, AccountByNameRequest, AccountsRequest, ChainIdRequest,
+    AccountByIdRequest, AccountByNameRequest, AccountSubscription, AccountsRequest, ChainIdRequest,
     ChainPropertiesRequest, DatabaseApi, DynamicGlobalPropertiesRequest,
     DynamicGlobalPropertiesSubscription, GlobalPropertiesRequest,
 };
