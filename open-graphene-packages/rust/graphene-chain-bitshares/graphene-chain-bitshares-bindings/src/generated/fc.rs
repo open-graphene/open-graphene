@@ -431,6 +431,23 @@ impl FcSerialize for crate::generated::types::AssetIssueOperationFeeParamsT {
     }
 }
 
+impl FcSerialize for crate::generated::types::AssetObject {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.id.fc_serialize(out)?;
+        self.symbol.fc_serialize(out)?;
+        self.precision.fc_serialize(out)?;
+        self.issuer.fc_serialize(out)?;
+        self.options.fc_serialize(out)?;
+        self.dynamic_asset_data_id.fc_serialize(out)?;
+        self.bitasset_data_id.fc_serialize(out)?;
+        self.buyback_account.fc_serialize(out)?;
+        self.for_liquidity_pool.fc_serialize(out)?;
+        self.creation_block_num.fc_serialize(out)?;
+        write_time_point_sec(&self.creation_time, out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::AssetOptions {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.max_supply.fc_serialize(out)?;

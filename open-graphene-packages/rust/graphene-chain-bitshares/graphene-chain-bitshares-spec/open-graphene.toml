@@ -1,3 +1,7 @@
+object_structs = [
+  "asset_object",
+]
+
 [chain]
 id = "bitshares"
 public_key_prefix = "BTS"

@@ -4,7 +4,8 @@ use graphene_chain_bitshares_bindings::generated::ids::{
 use graphene_chain_bitshares_bindings::generated::operations::TransferOperation;
 use graphene_chain_bitshares_bindings::generated::static_variants::{FutureExtensions, Operation};
 use graphene_chain_bitshares_bindings::generated::types::{
-    Asset, DynamicGlobalPropertyObject, LimitOrderObject, Signature, SignedTransaction, Transaction,
+    Asset, AssetObject, DynamicGlobalPropertyObject, LimitOrderObject, Signature,
+    SignedTransaction, Transaction,
 };
 use graphene_chain_bitshares_bindings::generated::FcSerialize;
 
@@ -36,6 +37,51 @@ fn bitshares_account_balance_asset_deserializes_from_graphene_json() {
 
     assert_eq!(balance.amount, 12_345);
     assert_eq!(balance.asset_id, AssetId("1.3.0".to_string()));
+}
+
+#[test]
+fn bitshares_asset_object_deserializes_from_get_objects_json() {
+    let json = serde_json::json!({
+        "id": "1.3.0",
+        "symbol": "BTS",
+        "precision": 5,
+        "issuer": "1.2.0",
+        "options": {
+            "max_supply": "1000000000000000",
+            "market_fee_percent": 0,
+            "max_market_fee": "0",
+            "issuer_permissions": 79,
+            "flags": 0,
+            "core_exchange_rate": {
+                "base": { "amount": 1, "asset_id": "1.3.0" },
+                "quote": { "amount": 1, "asset_id": "1.3.0" }
+            },
+            "whitelist_authorities": [],
+            "blacklist_authorities": [],
+            "whitelist_markets": [],
+            "blacklist_markets": [],
+            "description": "core asset",
+            "extensions": {}
+        },
+        "dynamic_asset_data_id": "2.3.0",
+        "bitasset_data_id": null,
+        "buyback_account": null,
+        "for_liquidity_pool": null,
+        "creation_block_num": 1,
+        "creation_time": "2026-05-26T12:00:00"
+    });
+
+    let asset: AssetObject = serde_json::from_value(json).expect("deserialize asset object");
+
+    assert_eq!(asset.id, AssetId("1.3.0".to_string()));
+    assert_eq!(asset.symbol, "BTS");
+    assert_eq!(asset.precision, 5);
+    assert_eq!(asset.issuer, AccountId("1.2.0".to_string()));
+    assert_eq!(asset.options.max_supply, 1_000_000_000_000_000);
+    assert_eq!(asset.dynamic_asset_data_id.0, "2.3.0");
+    assert_eq!(asset.bitasset_data_id, None);
+    assert_eq!(asset.buyback_account, None);
+    assert_eq!(asset.for_liquidity_pool, None);
 }
 
 #[test]

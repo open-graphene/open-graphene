@@ -32,12 +32,13 @@ Completed `get_account_balances -> asset` proof:
 - BitShares bindings include an integration fixture proving balance JSON deserializes through generated `Asset`.
 - `sdk-live::account_balance` remains a minimal Graphene-generic projection; do not add a rich account-balance model there.
 
-Completed `asset_object` first `get_objects` proof for Swaplock:
+Completed `asset_object` first `get_objects` proof for Swaplock and local BitShares parity:
 
-- Swaplock spec generation can now explicitly seed a narrow reflected object struct via `object_structs = ["asset_object"]`, without seeding every object type.
+- Swaplock and BitShares spec generation can now explicitly seed a narrow reflected object struct via `object_structs = ["asset_object"]`, without seeding every object type.
 - Generated object metadata links `objectTypes.asset.structRef` to `asset_object` when that struct is selected.
 - Generated bindings emit `AssetObject` with inherited `id`, symbol, precision, issuer, options, dynamic data id, optional bitasset/buyback/liquidity-pool ids, and creation fields.
 - `graphene-chain-swaplock::asset_object` calls `get_objects([asset_id])`, preserves `null` as `None`, deserializes a non-null slot into generated `AssetObject`, and fail-closes when the payload id differs from the requested id.
+- BitShares bindings include an integration fixture proving asset-object JSON deserializes through generated `AssetObject`.
 - The public Swaplock node `asset_object_smoke` proof passed for `BTS -> 1.3.0`.
 
 ## Reader and expected action

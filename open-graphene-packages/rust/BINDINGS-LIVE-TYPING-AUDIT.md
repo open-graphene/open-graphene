@@ -25,7 +25,7 @@ The generated Swaplock bindings currently provide:
 - generated `LimitOrderObject` for the first typed live RPC object proof;
 - generated `DynamicGlobalPropertyObject` for the second typed live RPC object proof;
 - generated fixed-byte JSON deserialization for Graphene hex strings or byte arrays with exact length checks;
-- generated `AssetObject` for the first narrow typed `get_objects` proof on Swaplock;
+- generated `AssetObject` for the first narrow typed `get_objects` proof on Swaplock and local BitShares parity;
 - generated `Asset` for account-balance reads through the real `get_account_balances -> vector<asset>` RPC shape on Swaplock and BitShares;
 - FC serialization for generated ids, assets, operations, transactions, signatures, and supported protocol values;
 - serde support for many raw protocol structs, live object structs currently in the spec graph, and static variants.
@@ -42,7 +42,7 @@ The generated bindings do not yet provide complete Rust structs for most databas
 - richer `operation_history_object` usage across all live flows;
 - typed unions for `get_objects` results.
 
-`limit_order_object` and `dynamic_global_property_object` are the first live object exceptions. Swaplock spec generation selects `get_limit_orders` and `get_dynamic_global_properties`, generated bindings emit `LimitOrderObject` and `DynamicGlobalPropertyObject`, and `graphene-chain-swaplock` uses those generated types for order lookup and head-block reads. Swaplock `asset_object` is the first narrow typed `get_objects` proof: it is explicitly selected through `object_structs`, generated as `AssetObject`, and consumed by a chain-local helper that preserves positional `null` and rejects mismatched ids. Account-balance reads are a separate typed-value proof rather than an object proof: both Swaplock and BitShares select `get_account_balances`, whose real C++ signature returns `vector<asset>`, and generated bindings deserialize those balance entries as `Asset`. This is a proof of direction, not broad live-object completion.
+`limit_order_object` and `dynamic_global_property_object` are the first live object exceptions. Swaplock spec generation selects `get_limit_orders` and `get_dynamic_global_properties`, generated bindings emit `LimitOrderObject` and `DynamicGlobalPropertyObject`, and `graphene-chain-swaplock` uses those generated types for order lookup and head-block reads. Swaplock `asset_object` is the first narrow typed `get_objects` proof, with local BitShares generated-type parity: it is explicitly selected through `object_structs`, generated as `AssetObject`, and consumed by a Swaplock chain-local helper that preserves positional `null` and rejects mismatched ids. Account-balance reads are a separate typed-value proof rather than an object proof: both Swaplock and BitShares select `get_account_balances`, whose real C++ signature returns `vector<asset>`, and generated bindings deserialize those balance entries as `Asset`. This is a proof of direction, not broad live-object completion.
 
 The generated spec contains `objectTypes`, so it knows object id spaces and type ids such as `account -> 1.2.x`, `asset -> 1.3.x`, `limit_order -> 1.7.x`, and `dynamic_global_property -> 2.1.x`. That is not the same as having generated response structs with fields.
 
