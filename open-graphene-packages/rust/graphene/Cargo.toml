@@ -11,3 +11,7 @@ graphene-chain-swaplock-api = { path = "../graphene-chain-swaplock/graphene-chai
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt"] }
+
+[[example]]
+name = "swaplock_get_chain_id"
+path = "examples/swaplock/get_chain_id.rs"
