@@ -32,6 +32,17 @@ pub fn lookup_accounts(
     )
 }
 
+pub fn lookup_asset_symbols<I, S>(
+    session: &mut GrapheneSession,
+    symbols: I,
+) -> Result<Value, TransportError>
+where
+    I: IntoIterator<Item = S>,
+    S: Into<String>,
+{
+    session.database_call("lookup_asset_symbols", lookup_asset_symbols_params(symbols))
+}
+
 fn get_objects_params<I, S>(ids: I) -> Value
 where
     I: IntoIterator<Item = S>,
@@ -47,6 +58,15 @@ fn get_required_fees_params(operations_json: Value, fee_asset_id: impl Into<Stri
 
 fn lookup_accounts_params(lower_bound_name: impl Into<String>, limit: u64) -> Value {
     json!([lower_bound_name.into(), limit])
+}
+
+fn lookup_asset_symbols_params<I, S>(symbols: I) -> Value
+where
+    I: IntoIterator<Item = S>,
+    S: Into<String>,
+{
+    let symbols = symbols.into_iter().map(Into::into).collect::<Vec<String>>();
+    json!([symbols])
 }
 
 #[cfg(test)]
@@ -79,6 +99,14 @@ mod tests {
         assert_eq!(
             lookup_accounts_params("swaplock", 1),
             json!(["swaplock", 1])
+        );
+    }
+
+    #[test]
+    fn wraps_asset_symbols_in_graphene_params_array() {
+        assert_eq!(
+            lookup_asset_symbols_params(["TEST", "BTS"]),
+            json!([["TEST", "BTS"]])
         );
     }
 }

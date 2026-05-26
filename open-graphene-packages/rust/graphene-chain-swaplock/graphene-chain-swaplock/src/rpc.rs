@@ -4,6 +4,7 @@ use open_graphene_transport::{
     broadcast_transaction as transport_broadcast_transaction,
     get_account_history as transport_get_account_history, get_objects as transport_get_objects,
     get_required_fees as transport_get_required_fees, lookup_accounts as transport_lookup_accounts,
+    lookup_asset_symbols as transport_lookup_asset_symbols,
     AccountHistoryQuery as TransportAccountHistoryQuery, GrapheneSession,
 };
 use serde_json::Value;
@@ -82,6 +83,19 @@ impl GrapheneRpc {
             lower_bound_name,
             limit,
         )?)
+    }
+
+    pub fn lookup_asset_symbols<I, S>(
+        &mut self,
+        api_id: u64,
+        symbols: I,
+    ) -> Result<Value, Box<dyn Error>>
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        ensure_api_id("database", self.session.api_ids().database, api_id)?;
+        Ok(transport_lookup_asset_symbols(&mut self.session, symbols)?)
     }
 
     pub fn call_network_broadcast(

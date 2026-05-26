@@ -2,7 +2,7 @@ use std::error::Error;
 use std::thread::sleep;
 use std::time::Duration;
 
-use serde_json::{json, Value};
+use serde_json::Value;
 
 use crate::rpc::GrapheneRpc;
 
@@ -20,7 +20,7 @@ pub fn lookup_asset_id_optional(
     api_id: u64,
     symbol: &str,
 ) -> Result<Option<String>, Box<dyn Error>> {
-    let result = rpc.call_database(api_id, "lookup_asset_symbols", json!([[symbol]]))?;
+    let result = rpc.lookup_asset_symbols(api_id, [symbol])?;
     let Some(asset) = result.as_array().and_then(|values| values.first()) else {
         return Ok(None);
     };
