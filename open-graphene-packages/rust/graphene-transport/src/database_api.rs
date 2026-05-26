@@ -58,6 +58,18 @@ where
     )
 }
 
+pub fn get_limit_orders(
+    session: &mut GrapheneSession,
+    base_asset_id: impl Into<String>,
+    quote_asset_id: impl Into<String>,
+    limit: u64,
+) -> Result<Value, TransportError> {
+    session.database_call(
+        "get_limit_orders",
+        get_limit_orders_params(base_asset_id, quote_asset_id, limit),
+    )
+}
+
 fn get_objects_params<I, S>(ids: I) -> Value
 where
     I: IntoIterator<Item = S>,
@@ -94,6 +106,14 @@ where
         .map(Into::into)
         .collect::<Vec<String>>();
     json!([account_id.into(), asset_ids])
+}
+
+fn get_limit_orders_params(
+    base_asset_id: impl Into<String>,
+    quote_asset_id: impl Into<String>,
+    limit: u64,
+) -> Value {
+    json!([base_asset_id.into(), quote_asset_id.into(), limit])
 }
 
 #[cfg(test)]
@@ -142,6 +162,14 @@ mod tests {
         assert_eq!(
             get_account_balances_params("1.2.100", ["1.3.0"]),
             json!(["1.2.100", ["1.3.0"]])
+        );
+    }
+
+    #[test]
+    fn builds_limit_orders_params() {
+        assert_eq!(
+            get_limit_orders_params("1.3.0", "1.3.1", 100),
+            json!(["1.3.0", "1.3.1", 100])
         );
     }
 }

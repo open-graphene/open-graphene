@@ -3,7 +3,8 @@ use std::error::Error;
 use open_graphene_transport::{
     broadcast_transaction as transport_broadcast_transaction,
     get_account_balances as transport_get_account_balances,
-    get_account_history as transport_get_account_history, get_objects as transport_get_objects,
+    get_account_history as transport_get_account_history,
+    get_limit_orders as transport_get_limit_orders, get_objects as transport_get_objects,
     get_required_fees as transport_get_required_fees, lookup_accounts as transport_lookup_accounts,
     lookup_asset_symbols as transport_lookup_asset_symbols,
     AccountHistoryQuery as TransportAccountHistoryQuery, GrapheneSession,
@@ -114,6 +115,22 @@ impl GrapheneRpc {
             &mut self.session,
             account_id,
             asset_ids,
+        )?)
+    }
+
+    pub fn get_limit_orders(
+        &mut self,
+        api_id: u64,
+        base_asset_id: impl Into<String>,
+        quote_asset_id: impl Into<String>,
+        limit: u64,
+    ) -> Result<Value, Box<dyn Error>> {
+        ensure_api_id("database", self.session.api_ids().database, api_id)?;
+        Ok(transport_get_limit_orders(
+            &mut self.session,
+            base_asset_id,
+            quote_asset_id,
+            limit,
         )?)
     }
 

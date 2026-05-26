@@ -2,7 +2,7 @@ use std::error::Error;
 use std::thread::sleep;
 use std::time::Duration;
 
-use serde_json::{json, Value};
+use serde_json::Value;
 
 use crate::rpc::GrapheneRpc;
 
@@ -32,11 +32,7 @@ pub fn find_limit_order(
     base_asset_id: &str,
     quote_asset_id: &str,
 ) -> Result<Option<String>, Box<dyn Error>> {
-    let orders = rpc.call_database(
-        api_id,
-        "get_limit_orders",
-        json!([base_asset_id, quote_asset_id, 100]),
-    )?;
+    let orders = rpc.get_limit_orders(api_id, base_asset_id, quote_asset_id, 100)?;
     let Some(orders) = orders.as_array() else {
         return Err("get_limit_orders result is not an array".into());
     };

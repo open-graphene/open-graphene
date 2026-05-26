@@ -7,7 +7,8 @@ pub mod session;
 pub mod websocket;
 
 pub use database_api::{
-    get_account_balances, get_objects, get_required_fees, lookup_accounts, lookup_asset_symbols,
+    get_account_balances, get_limit_orders, get_objects, get_required_fees, lookup_accounts,
+    lookup_asset_symbols,
 };
 pub use error::TransportError;
 pub use history_api::{get_account_history, AccountHistoryQuery};
