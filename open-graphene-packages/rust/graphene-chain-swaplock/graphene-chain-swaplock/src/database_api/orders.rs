@@ -2,6 +2,7 @@ use std::error::Error;
 use std::thread::sleep;
 use std::time::Duration;
 
+use open_graphene_sdk_core::{AccountIdRef, AssetIdRef};
 use serde_json::Value;
 
 use crate::rpc::GrapheneRpc;
@@ -32,18 +33,21 @@ pub fn find_limit_order(
     base_asset_id: &str,
     quote_asset_id: &str,
 ) -> Result<Option<String>, Box<dyn Error>> {
-    let orders = rpc.get_limit_orders(api_id, base_asset_id, quote_asset_id, 100)?;
-    let Some(orders) = orders.as_array() else {
-        return Err("get_limit_orders result is not an array".into());
-    };
-    for order in orders {
-        if order.get("seller").and_then(Value::as_str) == Some(seller_id) {
-            if let Some(id) = order.get("id").and_then(Value::as_str) {
-                return Ok(Some(id.to_string()));
-            }
-        }
-    }
-    Ok(None)
+    ensure_database_api_id(rpc, api_id)?;
+    let seller_id = AccountIdRef::parse(seller_id)?;
+    let base_asset_id = AssetIdRef::parse(base_asset_id)?;
+    let quote_asset_id = AssetIdRef::parse(quote_asset_id)?;
+    let orders = open_graphene_sdk_live::limit_orders(
+        rpc.session_mut(),
+        &base_asset_id,
+        &quote_asset_id,
+        100,
+    )?;
+
+    Ok(orders
+        .into_iter()
+        .find(|order| order.seller == seller_id)
+        .map(|order| order.id.to_string()))
 }
 
 pub fn wait_for_order_gone(
@@ -64,4 +68,12 @@ pub fn wait_for_order_gone(
         sleep(Duration::from_millis(500));
     }
     Err(format!("order still exists after cancel: {order_id}").into())
+}
+
+fn ensure_database_api_id(rpc: &mut GrapheneRpc, api_id: u64) -> Result<(), Box<dyn Error>> {
+    let expected = rpc.database_api_id()?;
+    if expected != api_id {
+        return Err(format!("database API id mismatch: expected {expected}, got {api_id}").into());
+    }
+    Ok(())
 }

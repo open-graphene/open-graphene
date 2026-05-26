@@ -27,6 +27,8 @@ use open_graphene_sdk_live::{
     lookup_asset_id_optional,
     account_balance,
     required_fee_for_operation_json,
+    limit_orders,
+    LimitOrderSummary,
 };
 ```
 
@@ -36,7 +38,8 @@ The helpers use `open_graphene_transport::GrapheneSession` and return shared SDK
 - `lookup_account_id(...) -> open_graphene_sdk_primitives::AccountIdRef`;
 - `lookup_asset_id(...) -> open_graphene_sdk_primitives::AssetIdRef`;
 - `account_balance(...) -> open_graphene_sdk_primitives::AssetAmount`;
-- `required_fee_for_operation_json(...) -> open_graphene_sdk_primitives::AssetAmount`.
+- `required_fee_for_operation_json(...) -> open_graphene_sdk_primitives::AssetAmount`;
+- `limit_orders(...) -> Vec<LimitOrderSummary>` with SDK primitive ids.
 
 ## Chain profiles
 
@@ -140,6 +143,16 @@ It returns `Ok(None)` for an empty response, a first `null` entry, or a non-exac
 
 The `amount` field may be a JSON integer or a decimal string. The helper fail-closes when the response has no first balance object, the `asset_id` is missing or different from the requested `AssetIdRef`, or the amount is malformed. It returns `open_graphene_sdk_primitives::AssetAmount`.
 
+## Limit order semantics
+
+`limit_orders(session, base_asset_id, quote_asset_id, limit)` calls Graphene `database.get_limit_orders(base_asset_id, quote_asset_id, limit)` and expects an array of limit order objects containing at least:
+
+```json
+[{"id": "1.7.x", "seller": "1.2.x"}]
+```
+
+It returns `Vec<LimitOrderSummary>`, where `id` is validated as `LimitOrderIdRef` and `seller` is validated as `AccountIdRef`. The helper intentionally exposes only the generic fields currently needed by chain wrappers. It does not parse price objects, infer market direction, filter by seller, wait for order lifecycle changes, or parse generated chain object types.
+
 ## Live smoke example
 
 The crate includes a read-only smoke example that exercises the current live client API without WIFs, signing, or broadcast.
@@ -185,9 +198,10 @@ Implemented today:
 - `lookup_asset_id` / `lookup_asset_id_optional`;
 - `account_balance`;
 - `required_fee_for_operation_json`;
-- Swaplock integration for head-block, account lookup, asset lookup, and account balance reads while preserving existing Swaplock helper signatures.
+- `limit_orders`;
+- Swaplock integration for head-block, account lookup, asset lookup, account balance, required fee, and limit-order reads while preserving existing Swaplock helper signatures.
 
-Likely next candidates are Swaplock fee wrapper migration and order reads, but those should be moved in small slices.
+Likely next candidates are live order-read proof and documentation cleanup, or a future typed object layer for richer limit-order fields if more callers need price/amount details.
 
 ## Required fee semantics
 

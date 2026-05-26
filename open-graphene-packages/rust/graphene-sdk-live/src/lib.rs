@@ -1,10 +1,12 @@
 use std::marker::PhantomData;
 
 use open_graphene_sdk_core::HeadBlock;
-use open_graphene_sdk_primitives::{AccountIdRef, AssetAmount, AssetIdRef, ObjectIdError};
+use open_graphene_sdk_primitives::{
+    AccountIdRef, AssetAmount, AssetIdRef, LimitOrderIdRef, ObjectIdError,
+};
 use open_graphene_transport::{
-    get_account_balances, get_objects, get_required_fees, lookup_accounts, lookup_asset_symbols,
-    GrapheneSession, TransportError,
+    get_account_balances, get_limit_orders as transport_get_limit_orders, get_objects,
+    get_required_fees, lookup_accounts, lookup_asset_symbols, GrapheneSession, TransportError,
 };
 use serde_json::Value;
 use thiserror::Error;
@@ -16,6 +18,12 @@ pub trait GrapheneChainProfile {
     fn expected_chain_id() -> Option<&'static str> {
         None
     }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct LimitOrderSummary {
+    pub id: LimitOrderIdRef,
+    pub seller: AccountIdRef,
 }
 
 #[derive(Debug, Error)]
@@ -40,6 +48,8 @@ pub enum LiveSdkError {
     InvalidAccountBalance { reason: &'static str, value: Value },
     #[error("invalid required fee result: {reason}: {value}")]
     InvalidRequiredFee { reason: &'static str, value: Value },
+    #[error("invalid limit orders result: {reason}: {value}")]
+    InvalidLimitOrders { reason: &'static str, value: Value },
 }
 
 pub struct GrapheneLiveClient<P> {
@@ -113,6 +123,15 @@ impl<P: GrapheneChainProfile> GrapheneLiveClient<P> {
     ) -> Result<AssetAmount, LiveSdkError> {
         required_fee_for_operation_json(&mut self.session, operation_json, fee_asset_id)
     }
+
+    pub fn limit_orders(
+        &mut self,
+        base_asset_id: &AssetIdRef,
+        quote_asset_id: &AssetIdRef,
+        limit: u64,
+    ) -> Result<Vec<LimitOrderSummary>, LiveSdkError> {
+        limit_orders(&mut self.session, base_asset_id, quote_asset_id, limit)
+    }
 }
 
 pub fn head_block(session: &mut GrapheneSession) -> Result<HeadBlock, LiveSdkError> {
@@ -177,6 +196,20 @@ pub fn required_fee_for_operation_json(
         )?,
         fee_asset_id,
     )
+}
+
+pub fn limit_orders(
+    session: &mut GrapheneSession,
+    base_asset_id: &AssetIdRef,
+    quote_asset_id: &AssetIdRef,
+    limit: u64,
+) -> Result<Vec<LimitOrderSummary>, LiveSdkError> {
+    parse_limit_orders_response(transport_get_limit_orders(
+        session,
+        base_asset_id.to_string(),
+        quote_asset_id.to_string(),
+        limit,
+    )?)
 }
 
 fn validate_chain_id<P: GrapheneChainProfile>(actual: &str) -> Result<(), LiveSdkError> {
@@ -288,6 +321,35 @@ fn parse_lookup_asset_response(
 
 fn invalid_asset_lookup(reason: &'static str, value: Value) -> LiveSdkError {
     LiveSdkError::InvalidAssetLookup { reason, value }
+}
+
+fn parse_limit_orders_response(value: Value) -> Result<Vec<LimitOrderSummary>, LiveSdkError> {
+    let orders = value
+        .as_array()
+        .ok_or_else(|| invalid_limit_orders("result is not an array", value.clone()))?;
+
+    orders
+        .iter()
+        .map(|order| {
+            let id = order
+                .get("id")
+                .and_then(Value::as_str)
+                .ok_or_else(|| invalid_limit_orders("missing id", order.clone()))?;
+            let seller = order
+                .get("seller")
+                .and_then(Value::as_str)
+                .ok_or_else(|| invalid_limit_orders("missing seller", order.clone()))?;
+
+            Ok(LimitOrderSummary {
+                id: LimitOrderIdRef::parse(id)?,
+                seller: AccountIdRef::parse(seller)?,
+            })
+        })
+        .collect()
+}
+
+fn invalid_limit_orders(reason: &'static str, value: Value) -> LiveSdkError {
+    LiveSdkError::InvalidLimitOrders { reason, value }
 }
 
 fn parse_account_balance_response(
@@ -757,6 +819,75 @@ mod tests {
         assert!(matches!(
             error,
             LiveSdkError::InvalidRequiredFee { reason, .. } if reason == "missing integer amount"
+        ));
+    }
+
+    #[test]
+    fn parses_limit_orders_with_id_and_seller() {
+        let orders = parse_limit_orders_response(json!([
+            {"id": "1.7.42", "seller": "1.2.100", "for_sale": 5}
+        ]))
+        .unwrap();
+
+        assert_eq!(orders.len(), 1);
+        assert_eq!(orders[0].id.to_string(), "1.7.42");
+        assert_eq!(orders[0].seller.to_string(), "1.2.100");
+    }
+
+    #[test]
+    fn parses_empty_limit_orders_response() {
+        assert_eq!(parse_limit_orders_response(json!([])).unwrap(), Vec::new());
+    }
+
+    #[test]
+    fn limit_orders_rejects_non_array_result() {
+        let error = parse_limit_orders_response(json!({"id": "1.7.42"})).unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::InvalidLimitOrders { reason, .. } if reason == "result is not an array"
+        ));
+    }
+
+    #[test]
+    fn limit_orders_rejects_missing_id() {
+        let error = parse_limit_orders_response(json!([{"seller": "1.2.100"}])).unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::InvalidLimitOrders { reason, .. } if reason == "missing id"
+        ));
+    }
+
+    #[test]
+    fn limit_orders_rejects_missing_seller() {
+        let error = parse_limit_orders_response(json!([{"id": "1.7.42"}])).unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::InvalidLimitOrders { reason, .. } if reason == "missing seller"
+        ));
+    }
+
+    #[test]
+    fn limit_orders_rejects_non_limit_order_id() {
+        let error = parse_limit_orders_response(json!([{"id": "1.2.100", "seller": "1.2.100"}]))
+            .unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::ObjectId(ObjectIdError::UnexpectedType { .. })
+        ));
+    }
+
+    #[test]
+    fn limit_orders_rejects_non_account_seller_id() {
+        let error =
+            parse_limit_orders_response(json!([{"id": "1.7.42", "seller": "1.3.0"}])).unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::ObjectId(ObjectIdError::UnexpectedType { .. })
         ));
     }
 }
