@@ -1,5 +1,7 @@
 use std::marker::PhantomData;
 
+use graphene_chain_swaplock_api::{SWAPLOCK_CHAIN_ID, SwaplockApi};
+
 use crate::client::{GrapheneClientConfig, validate_config};
 use crate::error::{GrapheneConfigError, GrapheneConnectError};
 
@@ -63,11 +65,11 @@ impl<C> ChainClientBuilder<C> {
 }
 
 impl ChainClientBuilder<Swaplock> {
-    pub async fn connect(self) -> Result<SwaplockClient, GrapheneConnectError> {
+    pub async fn connect(self) -> Result<SwaplockApi, GrapheneConnectError> {
         validate_config(&self.config)?;
-        Ok(SwaplockClient {
-            config: self.config,
-        })
+        Ok(SwaplockApi::mocked(
+            self.config.chain_id().unwrap_or(SWAPLOCK_CHAIN_ID),
+        ))
     }
 }
 
@@ -86,17 +88,6 @@ impl ChainClientBuilder<Acta> {
         Ok(ActaClient {
             config: self.config,
         })
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SwaplockClient {
-    config: GrapheneClientConfig,
-}
-
-impl SwaplockClient {
-    pub fn config(&self) -> &GrapheneClientConfig {
-        &self.config
     }
 }
 

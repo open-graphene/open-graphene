@@ -2,11 +2,10 @@ mod chain;
 mod client;
 mod error;
 
-pub use chain::{
-    Acta, ActaClient, BitShares, BitSharesClient, ChainClientBuilder, Swaplock, SwaplockClient,
-};
+pub use chain::{Acta, ActaClient, BitShares, BitSharesClient, ChainClientBuilder, Swaplock};
 pub use client::{GrapheneClient, GrapheneClientBuilder, GrapheneClientConfig};
 pub use error::{GrapheneConfigError, GrapheneConnectError};
+pub use graphene_chain_swaplock_api::{SWAPLOCK_CHAIN_ID, SwaplockApi, SwaplockApiError};
 
 pub struct Graphene;
 

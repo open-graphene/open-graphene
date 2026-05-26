@@ -1,0 +1,10 @@
+[package]
+name = "graphene-chain-swaplock-api"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "High-level Swaplock API surface for Open Graphene."
+repository = "https://github.com/open-graphene/open-graphene"
+
+[dependencies]
+thiserror = "2"

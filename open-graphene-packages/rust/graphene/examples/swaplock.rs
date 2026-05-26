@@ -14,7 +14,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .connect()
         .await?;
 
-    println!("configured servers: {}", swaplock.config().servers().len());
-    println!("configured prefix: {:?}", swaplock.config().prefix());
+    let chain_id = swaplock.get_chain_id().await?;
+
+    println!("chain id: {chain_id}");
     Ok(())
 }

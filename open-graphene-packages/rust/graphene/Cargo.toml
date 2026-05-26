@@ -7,6 +7,7 @@ description = "High-level Open Graphene Rust API facade."
 repository = "https://github.com/open-graphene/open-graphene"
 
 [dependencies]
+graphene-chain-swaplock-api = { path = "../graphene-chain-swaplock-api" }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt"] }
