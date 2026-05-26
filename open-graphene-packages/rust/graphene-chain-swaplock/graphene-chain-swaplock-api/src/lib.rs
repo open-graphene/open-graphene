@@ -29,8 +29,17 @@ pub enum SwaplockApiError {
     #[error("connected Swaplock RPC server returned unexpected chain id: {mismatch:?}")]
     ChainIdMismatch { mismatch: ChainIdMismatch },
 
+    #[error("account `{account}` was not found")]
+    AccountNotFound { account: String },
+
     #[error("all Swaplock RPC servers failed: {attempts:?}")]
     AllServersFailed { attempts: Vec<ServerConnectFailure> },
+
+    #[error("unexpected `{method}` response: {message}")]
+    UnexpectedResponse {
+        method: &'static str,
+        message: String,
+    },
 
     #[error(transparent)]
     Transport(#[from] TransportError),

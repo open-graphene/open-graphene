@@ -15,3 +15,7 @@ tokio = { version = "1", features = ["macros", "rt"] }
 [[example]]
 name = "swaplock_get_chain_id"
 path = "examples/swaplock/get_chain_id.rs"
+
+[[example]]
+name = "swaplock_get_account"
+path = "examples/swaplock/get_account.rs"
