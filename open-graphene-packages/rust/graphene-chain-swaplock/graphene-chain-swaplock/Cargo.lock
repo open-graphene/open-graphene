@@ -210,9 +210,9 @@ dependencies = [
  "graphene-chain-swaplock-bindings",
  "open-graphene-sdk-core",
  "open-graphene-sdk-operations",
+ "open-graphene-transport",
  "serde_json",
  "thiserror 2.0.18",
- "tungstenite",
 ]
 
 [[package]]
@@ -380,6 +380,15 @@ name = "open-graphene-sdk-primitives"
 version = "0.1.0"
 dependencies = [
  "thiserror 2.0.18",
+]
+
+[[package]]
+name = "open-graphene-transport"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+ "thiserror 2.0.18",
+ "tungstenite",
 ]
 
 [[package]]
