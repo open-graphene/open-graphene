@@ -132,6 +132,10 @@ impl<P: GrapheneChainProfile> GrapheneLiveClient<P> {
     ) -> Result<Vec<LimitOrderSummary>, LiveSdkError> {
         limit_orders(&mut self.session, base_asset_id, quote_asset_id, limit)
     }
+
+    pub fn limit_order_exists(&mut self, order_id: &LimitOrderIdRef) -> Result<bool, LiveSdkError> {
+        limit_order_exists(&mut self.session, order_id)
+    }
 }
 
 pub fn head_block(session: &mut GrapheneSession) -> Result<HeadBlock, LiveSdkError> {
@@ -210,6 +214,13 @@ pub fn limit_orders(
         quote_asset_id.to_string(),
         limit,
     )?)
+}
+
+pub fn limit_order_exists(
+    session: &mut GrapheneSession,
+    order_id: &LimitOrderIdRef,
+) -> Result<bool, LiveSdkError> {
+    parse_limit_order_exists_response(get_objects(session, [order_id.to_string()])?)
 }
 
 fn validate_chain_id<P: GrapheneChainProfile>(actual: &str) -> Result<(), LiveSdkError> {
@@ -350,6 +361,25 @@ fn parse_limit_orders_response(value: Value) -> Result<Vec<LimitOrderSummary>, L
 
 fn invalid_limit_orders(reason: &'static str, value: Value) -> LiveSdkError {
     LiveSdkError::InvalidLimitOrders { reason, value }
+}
+
+fn parse_limit_order_exists_response(value: Value) -> Result<bool, LiveSdkError> {
+    let order = value
+        .as_array()
+        .and_then(|values| values.first())
+        .ok_or_else(|| invalid_limit_orders("missing limit order object", value.clone()))?;
+
+    if order.is_null() {
+        return Ok(false);
+    }
+    if order.is_object() {
+        return Ok(true);
+    }
+
+    Err(invalid_limit_orders(
+        "limit order object is not an object or null",
+        order.clone(),
+    ))
 }
 
 fn parse_account_balance_response(
@@ -888,6 +918,46 @@ mod tests {
         assert!(matches!(
             error,
             LiveSdkError::ObjectId(ObjectIdError::UnexpectedType { .. })
+        ));
+    }
+
+    #[test]
+    fn limit_order_exists_returns_true_for_object() {
+        assert!(parse_limit_order_exists_response(json!([{"id": "1.7.42"}])).unwrap());
+    }
+
+    #[test]
+    fn limit_order_exists_returns_false_for_null() {
+        assert!(!parse_limit_order_exists_response(json!([null])).unwrap());
+    }
+
+    #[test]
+    fn limit_order_exists_rejects_empty_response() {
+        let error = parse_limit_order_exists_response(json!([])).unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::InvalidLimitOrders { reason, .. } if reason == "missing limit order object"
+        ));
+    }
+
+    #[test]
+    fn limit_order_exists_rejects_non_array_response() {
+        let error = parse_limit_order_exists_response(json!({"id": "1.7.42"})).unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::InvalidLimitOrders { reason, .. } if reason == "missing limit order object"
+        ));
+    }
+
+    #[test]
+    fn limit_order_exists_rejects_non_object_response() {
+        let error = parse_limit_order_exists_response(json!(["1.7.42"])).unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::InvalidLimitOrders { reason, .. } if reason == "limit order object is not an object or null"
         ));
     }
 }

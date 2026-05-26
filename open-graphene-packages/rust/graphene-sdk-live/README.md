@@ -28,6 +28,7 @@ use open_graphene_sdk_live::{
     account_balance,
     required_fee_for_operation_json,
     limit_orders,
+    limit_order_exists,
     LimitOrderSummary,
 };
 ```
@@ -39,7 +40,8 @@ The helpers use `open_graphene_transport::GrapheneSession` and return shared SDK
 - `lookup_asset_id(...) -> open_graphene_sdk_primitives::AssetIdRef`;
 - `account_balance(...) -> open_graphene_sdk_primitives::AssetAmount`;
 - `required_fee_for_operation_json(...) -> open_graphene_sdk_primitives::AssetAmount`;
-- `limit_orders(...) -> Vec<LimitOrderSummary>` with SDK primitive ids.
+- `limit_orders(...) -> Vec<LimitOrderSummary>` with SDK primitive ids;
+- `limit_order_exists(...) -> bool` for Graphene `[object]` / `[null]` existence checks.
 
 ## Chain profiles
 
@@ -153,6 +155,14 @@ The `amount` field may be a JSON integer or a decimal string. The helper fail-cl
 
 It returns `Vec<LimitOrderSummary>`, where `id` is validated as `LimitOrderIdRef` and `seller` is validated as `AccountIdRef`. The helper intentionally exposes only the generic fields currently needed by chain wrappers. It does not parse price objects, infer market direction, filter by seller, wait for order lifecycle changes, or parse generated chain object types.
 
+`limit_order_exists(session, order_id)` calls Graphene `database.get_objects([order_id])` and interprets the first result using Graphene object lookup semantics:
+
+- `[object]` -> `Ok(true)`;
+- `[null]` -> `Ok(false)`;
+- malformed or missing first result -> `LiveSdkError::InvalidLimitOrders`.
+
+It is intentionally limit-order-specific rather than a broad object cache or typed object lookup API.
+
 ## Live smoke example
 
 The crate includes a read-only smoke example that exercises the current live client API without WIFs, signing, or broadcast.
@@ -199,9 +209,10 @@ Implemented today:
 - `account_balance`;
 - `required_fee_for_operation_json`;
 - `limit_orders`;
-- Swaplock integration for head-block, account lookup, asset lookup, account balance, required fee, and limit-order reads while preserving existing Swaplock helper signatures.
+- `limit_order_exists`;
+- Swaplock integration for head-block, account lookup, asset lookup, account balance, required fee, limit-order reads, and limit-order existence checks while preserving existing Swaplock helper signatures.
 
-Likely next candidates are live order-read proof and documentation cleanup, or a future typed object layer for richer limit-order fields if more callers need price/amount details.
+Likely next candidates are live order-existence proof and documentation cleanup, or a future typed object layer for richer limit-order fields if more callers need price/amount details.
 
 ## Required fee semantics
 

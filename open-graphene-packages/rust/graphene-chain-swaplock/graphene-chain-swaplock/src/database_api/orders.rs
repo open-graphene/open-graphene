@@ -2,8 +2,7 @@ use std::error::Error;
 use std::thread::sleep;
 use std::time::Duration;
 
-use open_graphene_sdk_core::{AccountIdRef, AssetIdRef};
-use serde_json::Value;
+use open_graphene_sdk_core::{AccountIdRef, AssetIdRef, LimitOrderIdRef};
 
 use crate::rpc::GrapheneRpc;
 
@@ -55,13 +54,10 @@ pub fn wait_for_order_gone(
     api_id: u64,
     order_id: &str,
 ) -> Result<(), Box<dyn Error>> {
+    ensure_database_api_id(rpc, api_id)?;
+    let parsed_order_id = LimitOrderIdRef::parse(order_id)?;
     for _ in 0..20 {
-        let result = rpc.get_objects(api_id, [order_id])?;
-        if result
-            .as_array()
-            .and_then(|values| values.first())
-            .is_some_and(Value::is_null)
-        {
+        if !open_graphene_sdk_live::limit_order_exists(rpc.session_mut(), &parsed_order_id)? {
             println!("Order canceled: {order_id}");
             return Ok(());
         }
