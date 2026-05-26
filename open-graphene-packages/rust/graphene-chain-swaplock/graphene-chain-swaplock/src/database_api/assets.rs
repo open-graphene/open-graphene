@@ -2,8 +2,6 @@ use std::error::Error;
 use std::thread::sleep;
 use std::time::Duration;
 
-use serde_json::Value;
-
 use crate::rpc::GrapheneRpc;
 
 pub fn lookup_asset_id(
@@ -11,8 +9,8 @@ pub fn lookup_asset_id(
     api_id: u64,
     symbol: &str,
 ) -> Result<String, Box<dyn Error>> {
-    lookup_asset_id_optional(rpc, api_id, symbol)?
-        .ok_or_else(|| format!("asset not found: {symbol}").into())
+    ensure_database_api_id(rpc, api_id)?;
+    Ok(open_graphene_sdk_live::lookup_asset_id(rpc.session_mut(), symbol)?.to_string())
 }
 
 pub fn lookup_asset_id_optional(
@@ -20,25 +18,11 @@ pub fn lookup_asset_id_optional(
     api_id: u64,
     symbol: &str,
 ) -> Result<Option<String>, Box<dyn Error>> {
-    let result = rpc.lookup_asset_symbols(api_id, [symbol])?;
-    let Some(asset) = result.as_array().and_then(|values| values.first()) else {
-        return Ok(None);
-    };
-    if asset.is_null() {
-        return Ok(None);
-    }
-    let returned_symbol = asset
-        .get("symbol")
-        .and_then(Value::as_str)
-        .ok_or("lookup_asset_symbols result missing symbol")?;
-    if returned_symbol != symbol {
-        return Ok(None);
-    }
-    asset
-        .get("id")
-        .and_then(Value::as_str)
-        .map(|id| Some(id.to_string()))
-        .ok_or_else(|| "lookup_asset_symbols result missing id".into())
+    ensure_database_api_id(rpc, api_id)?;
+    Ok(
+        open_graphene_sdk_live::lookup_asset_id_optional(rpc.session_mut(), symbol)?
+            .map(|asset_id| asset_id.to_string()),
+    )
 }
 
 pub fn wait_for_asset(
@@ -53,4 +37,12 @@ pub fn wait_for_asset(
         sleep(Duration::from_millis(500));
     }
     Ok(None)
+}
+
+fn ensure_database_api_id(rpc: &mut GrapheneRpc, api_id: u64) -> Result<(), Box<dyn Error>> {
+    let expected = rpc.database_api_id()?;
+    if expected != api_id {
+        return Err(format!("database API id mismatch: expected {expected}, got {api_id}").into());
+    }
+    Ok(())
 }

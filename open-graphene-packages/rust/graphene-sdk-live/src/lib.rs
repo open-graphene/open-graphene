@@ -1,8 +1,10 @@
 use std::marker::PhantomData;
 
 use open_graphene_sdk_core::HeadBlock;
-use open_graphene_sdk_primitives::{AccountIdRef, ObjectIdError};
-use open_graphene_transport::{get_objects, lookup_accounts, GrapheneSession, TransportError};
+use open_graphene_sdk_primitives::{AccountIdRef, AssetIdRef, ObjectIdError};
+use open_graphene_transport::{
+    get_objects, lookup_accounts, lookup_asset_symbols, GrapheneSession, TransportError,
+};
 use serde_json::Value;
 use thiserror::Error;
 
@@ -23,12 +25,16 @@ pub enum LiveSdkError {
     ChainIdMismatch { expected: String, actual: String },
     #[error("account not found: {account_name}")]
     AccountNotFound { account_name: String },
+    #[error("asset not found: {symbol}")]
+    AssetNotFound { symbol: String },
     #[error(transparent)]
     ObjectId(#[from] ObjectIdError),
     #[error("invalid dynamic global properties object: {reason}: {value}")]
     InvalidDynamicGlobalProperties { reason: &'static str, value: Value },
     #[error("invalid account lookup result: {reason}: {value}")]
     InvalidAccountLookup { reason: &'static str, value: Value },
+    #[error("invalid asset lookup result: {reason}: {value}")]
+    InvalidAssetLookup { reason: &'static str, value: Value },
 }
 
 pub struct GrapheneLiveClient<P> {
@@ -75,6 +81,17 @@ impl<P: GrapheneChainProfile> GrapheneLiveClient<P> {
     ) -> Result<Option<AccountIdRef>, LiveSdkError> {
         lookup_account_id_optional(&mut self.session, account_name)
     }
+
+    pub fn lookup_asset_id(&mut self, symbol: &str) -> Result<AssetIdRef, LiveSdkError> {
+        lookup_asset_id(&mut self.session, symbol)
+    }
+
+    pub fn lookup_asset_id_optional(
+        &mut self,
+        symbol: &str,
+    ) -> Result<Option<AssetIdRef>, LiveSdkError> {
+        lookup_asset_id_optional(&mut self.session, symbol)
+    }
 }
 
 pub fn head_block(session: &mut GrapheneSession) -> Result<HeadBlock, LiveSdkError> {
@@ -97,6 +114,22 @@ pub fn lookup_account_id_optional(
     account_name: &str,
 ) -> Result<Option<AccountIdRef>, LiveSdkError> {
     parse_lookup_account_response(lookup_accounts(session, account_name, 1)?, account_name)
+}
+
+pub fn lookup_asset_id(
+    session: &mut GrapheneSession,
+    symbol: &str,
+) -> Result<AssetIdRef, LiveSdkError> {
+    lookup_asset_id_optional(session, symbol)?.ok_or_else(|| LiveSdkError::AssetNotFound {
+        symbol: symbol.to_string(),
+    })
+}
+
+pub fn lookup_asset_id_optional(
+    session: &mut GrapheneSession,
+    symbol: &str,
+) -> Result<Option<AssetIdRef>, LiveSdkError> {
+    parse_lookup_asset_response(lookup_asset_symbols(session, [symbol])?, symbol)
 }
 
 fn validate_chain_id<P: GrapheneChainProfile>(actual: &str) -> Result<(), LiveSdkError> {
@@ -177,6 +210,37 @@ fn parse_lookup_account_response(
 
 fn invalid_account_lookup(reason: &'static str, value: Value) -> LiveSdkError {
     LiveSdkError::InvalidAccountLookup { reason, value }
+}
+
+fn parse_lookup_asset_response(
+    value: Value,
+    symbol: &str,
+) -> Result<Option<AssetIdRef>, LiveSdkError> {
+    let Some(asset) = value.as_array().and_then(|values| values.first()) else {
+        return Ok(None);
+    };
+    if asset.is_null() {
+        return Ok(None);
+    }
+
+    let returned_symbol = asset
+        .get("symbol")
+        .and_then(Value::as_str)
+        .ok_or_else(|| invalid_asset_lookup("missing symbol", asset.clone()))?;
+    if returned_symbol != symbol {
+        return Ok(None);
+    }
+
+    let asset_id = asset
+        .get("id")
+        .and_then(Value::as_str)
+        .ok_or_else(|| invalid_asset_lookup("missing id", asset.clone()))?;
+
+    Ok(Some(AssetIdRef::parse(asset_id)?))
+}
+
+fn invalid_asset_lookup(reason: &'static str, value: Value) -> LiveSdkError {
+    LiveSdkError::InvalidAssetLookup { reason, value }
 }
 
 #[cfg(test)]
@@ -350,6 +414,68 @@ mod tests {
     fn account_lookup_rejects_non_account_object_id() {
         let error =
             parse_lookup_account_response(json!([["alice", "1.3.0"]]), "alice").unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::ObjectId(ObjectIdError::UnexpectedType { .. })
+        ));
+    }
+
+    #[test]
+    fn parses_exact_asset_lookup_response() {
+        let asset_id =
+            parse_lookup_asset_response(json!([{"id": "1.3.0", "symbol": "BTS"}]), "BTS")
+                .unwrap()
+                .unwrap();
+
+        assert_eq!(asset_id.to_string(), "1.3.0");
+    }
+
+    #[test]
+    fn asset_lookup_returns_none_for_empty_result() {
+        assert_eq!(parse_lookup_asset_response(json!([]), "BTS").unwrap(), None);
+    }
+
+    #[test]
+    fn asset_lookup_returns_none_for_null_result() {
+        assert_eq!(
+            parse_lookup_asset_response(json!([null]), "BTS").unwrap(),
+            None
+        );
+    }
+
+    #[test]
+    fn asset_lookup_returns_none_for_non_exact_symbol() {
+        assert_eq!(
+            parse_lookup_asset_response(json!([{"id": "1.3.0", "symbol": "BTST"}]), "BTS").unwrap(),
+            None
+        );
+    }
+
+    #[test]
+    fn asset_lookup_rejects_missing_symbol() {
+        let error = parse_lookup_asset_response(json!([{"id": "1.3.0"}]), "BTS").unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::InvalidAssetLookup { reason, .. } if reason == "missing symbol"
+        ));
+    }
+
+    #[test]
+    fn asset_lookup_rejects_missing_id() {
+        let error = parse_lookup_asset_response(json!([{"symbol": "BTS"}]), "BTS").unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::InvalidAssetLookup { reason, .. } if reason == "missing id"
+        ));
+    }
+
+    #[test]
+    fn asset_lookup_rejects_non_asset_object_id() {
+        let error = parse_lookup_asset_response(json!([{"id": "1.2.100", "symbol": "BTS"}]), "BTS")
+            .unwrap_err();
 
         assert!(matches!(
             error,
