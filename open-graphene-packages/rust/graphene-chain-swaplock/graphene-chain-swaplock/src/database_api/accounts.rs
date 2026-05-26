@@ -11,8 +11,8 @@ pub fn lookup_account_id(
     api_id: u64,
     account_name: &str,
 ) -> Result<String, Box<dyn Error>> {
-    lookup_account_id_optional(rpc, api_id, account_name)?
-        .ok_or_else(|| format!("account not found: {account_name}").into())
+    ensure_database_api_id(rpc, api_id)?;
+    Ok(open_graphene_sdk_live::lookup_account_id(rpc.session_mut(), account_name)?.to_string())
 }
 
 pub fn lookup_account_id_optional(
@@ -20,21 +20,11 @@ pub fn lookup_account_id_optional(
     api_id: u64,
     account_name: &str,
 ) -> Result<Option<String>, Box<dyn Error>> {
-    let result = rpc.lookup_accounts(api_id, account_name, 1)?;
-    let Some(pair) = result.as_array().and_then(|values| values.first()) else {
-        return Ok(None);
-    };
-    let returned_name = pair
-        .get(0)
-        .and_then(Value::as_str)
-        .ok_or("lookup_accounts result missing account name")?;
-    if returned_name != account_name {
-        return Ok(None);
-    }
-    pair.get(1)
-        .and_then(Value::as_str)
-        .map(|id| Some(id.to_string()))
-        .ok_or_else(|| "lookup_accounts result missing account id".into())
+    ensure_database_api_id(rpc, api_id)?;
+    Ok(
+        open_graphene_sdk_live::lookup_account_id_optional(rpc.session_mut(), account_name)?
+            .map(|account_id| account_id.to_string()),
+    )
 }
 
 pub fn wait_for_account(
@@ -76,4 +66,12 @@ pub fn active_public_key_for_account(
         .and_then(|pair| pair.first())
         .and_then(Value::as_str)
         .map(ToOwned::to_owned))
+}
+
+fn ensure_database_api_id(rpc: &mut GrapheneRpc, api_id: u64) -> Result<(), Box<dyn Error>> {
+    let expected = rpc.database_api_id()?;
+    if expected != api_id {
+        return Err(format!("database API id mismatch: expected {expected}, got {api_id}").into());
+    }
+    Ok(())
 }

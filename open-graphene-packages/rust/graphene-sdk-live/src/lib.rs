@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use open_graphene_sdk_core::HeadBlock;
-use open_graphene_transport::{get_objects, GrapheneSession, TransportError};
+use open_graphene_sdk_primitives::{AccountIdRef, ObjectIdError};
+use open_graphene_transport::{get_objects, lookup_accounts, GrapheneSession, TransportError};
 use serde_json::Value;
 use thiserror::Error;
 
@@ -20,8 +21,14 @@ pub enum LiveSdkError {
     Transport(#[from] TransportError),
     #[error("connected chain id mismatch: expected {expected}, got {actual}")]
     ChainIdMismatch { expected: String, actual: String },
+    #[error("account not found: {account_name}")]
+    AccountNotFound { account_name: String },
+    #[error(transparent)]
+    ObjectId(#[from] ObjectIdError),
     #[error("invalid dynamic global properties object: {reason}: {value}")]
     InvalidDynamicGlobalProperties { reason: &'static str, value: Value },
+    #[error("invalid account lookup result: {reason}: {value}")]
+    InvalidAccountLookup { reason: &'static str, value: Value },
 }
 
 pub struct GrapheneLiveClient<P> {
@@ -57,10 +64,39 @@ impl<P: GrapheneChainProfile> GrapheneLiveClient<P> {
     pub fn head_block(&mut self) -> Result<HeadBlock, LiveSdkError> {
         head_block(&mut self.session)
     }
+
+    pub fn lookup_account_id(&mut self, account_name: &str) -> Result<AccountIdRef, LiveSdkError> {
+        lookup_account_id(&mut self.session, account_name)
+    }
+
+    pub fn lookup_account_id_optional(
+        &mut self,
+        account_name: &str,
+    ) -> Result<Option<AccountIdRef>, LiveSdkError> {
+        lookup_account_id_optional(&mut self.session, account_name)
+    }
 }
 
 pub fn head_block(session: &mut GrapheneSession) -> Result<HeadBlock, LiveSdkError> {
     parse_head_block_from_get_objects(get_objects(session, ["2.1.0"])?)
+}
+
+pub fn lookup_account_id(
+    session: &mut GrapheneSession,
+    account_name: &str,
+) -> Result<AccountIdRef, LiveSdkError> {
+    lookup_account_id_optional(session, account_name)?.ok_or_else(|| {
+        LiveSdkError::AccountNotFound {
+            account_name: account_name.to_string(),
+        }
+    })
+}
+
+pub fn lookup_account_id_optional(
+    session: &mut GrapheneSession,
+    account_name: &str,
+) -> Result<Option<AccountIdRef>, LiveSdkError> {
+    parse_lookup_account_response(lookup_accounts(session, account_name, 1)?, account_name)
 }
 
 fn validate_chain_id<P: GrapheneChainProfile>(actual: &str) -> Result<(), LiveSdkError> {
@@ -113,6 +149,34 @@ fn parse_head_block_from_get_objects(value: Value) -> Result<HeadBlock, LiveSdkE
 
 fn invalid_dynamic_global_properties(reason: &'static str, value: Value) -> LiveSdkError {
     LiveSdkError::InvalidDynamicGlobalProperties { reason, value }
+}
+
+fn parse_lookup_account_response(
+    value: Value,
+    account_name: &str,
+) -> Result<Option<AccountIdRef>, LiveSdkError> {
+    let Some(pair) = value.as_array().and_then(|values| values.first()) else {
+        return Ok(None);
+    };
+
+    let returned_name = pair
+        .get(0)
+        .and_then(Value::as_str)
+        .ok_or_else(|| invalid_account_lookup("missing account name", pair.clone()))?;
+    if returned_name != account_name {
+        return Ok(None);
+    }
+
+    let account_id = pair
+        .get(1)
+        .and_then(Value::as_str)
+        .ok_or_else(|| invalid_account_lookup("missing account id", pair.clone()))?;
+
+    Ok(Some(AccountIdRef::parse(account_id)?))
+}
+
+fn invalid_account_lookup(reason: &'static str, value: Value) -> LiveSdkError {
+    LiveSdkError::InvalidAccountLookup { reason, value }
 }
 
 #[cfg(test)]
@@ -232,6 +296,64 @@ mod tests {
             error,
             LiveSdkError::InvalidDynamicGlobalProperties { reason, .. }
                 if reason == "missing time"
+        ));
+    }
+
+    #[test]
+    fn parses_exact_account_lookup_response() {
+        let account_id = parse_lookup_account_response(json!([["alice", "1.2.100"]]), "alice")
+            .unwrap()
+            .unwrap();
+
+        assert_eq!(account_id.to_string(), "1.2.100");
+    }
+
+    #[test]
+    fn account_lookup_returns_none_for_empty_result() {
+        assert_eq!(
+            parse_lookup_account_response(json!([]), "alice").unwrap(),
+            None
+        );
+    }
+
+    #[test]
+    fn account_lookup_returns_none_for_non_exact_name() {
+        assert_eq!(
+            parse_lookup_account_response(json!([["alice2", "1.2.100"]]), "alice").unwrap(),
+            None
+        );
+    }
+
+    #[test]
+    fn account_lookup_rejects_missing_account_name() {
+        let error = parse_lookup_account_response(json!([[null, "1.2.100"]]), "alice").unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::InvalidAccountLookup { reason, .. }
+                if reason == "missing account name"
+        ));
+    }
+
+    #[test]
+    fn account_lookup_rejects_missing_account_id() {
+        let error = parse_lookup_account_response(json!([["alice"]]), "alice").unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::InvalidAccountLookup { reason, .. }
+                if reason == "missing account id"
+        ));
+    }
+
+    #[test]
+    fn account_lookup_rejects_non_account_object_id() {
+        let error =
+            parse_lookup_account_response(json!([["alice", "1.3.0"]]), "alice").unwrap_err();
+
+        assert!(matches!(
+            error,
+            LiveSdkError::ObjectId(ObjectIdError::UnexpectedType { .. })
         ));
     }
 }
