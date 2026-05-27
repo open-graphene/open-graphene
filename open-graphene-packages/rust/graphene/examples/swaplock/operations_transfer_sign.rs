@@ -5,7 +5,7 @@ use graphene::Graphene;
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let wif = env::var("SWAPLOCK_ACTIVE_WIF")?;
-    let expected_public_key = env::var("SWAPLOCK_ACTIVE_PUBLIC_KEY")?;
+    let from_account = env::var("SWAPLOCK_ACCOUNT")?;
 
     let mut swaplock = Graphene::builder()
         .servers([
@@ -22,14 +22,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let prepared = swaplock
         .operations()
         .transfer()
-        .from("swaplock")
+        .from(&from_account)
         .to("1.2.0")
         .amount_raw(1, "BTS")
         .fee_asset("BTS")
         .max_fee_raw(1_000_000)
         .prepare()
         .await?;
-    let signed = prepared.sign_with_wif(&wif, &expected_public_key)?;
+    let signed = swaplock
+        .operations()
+        .sign_transfer_with_wif(prepared, &wif)
+        .await?;
     let transaction_json = signed.transaction_json()?;
 
     println!("signed transfer preview");
