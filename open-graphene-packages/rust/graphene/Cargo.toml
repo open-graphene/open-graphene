@@ -67,3 +67,7 @@ path = "examples/swaplock/database_dynamic_global_properties_subscribe.rs"
 [[example]]
 name = "swaplock_database_global_properties_get"
 path = "examples/swaplock/database_global_properties_get.rs"
+
+[[example]]
+name = "swaplock_history_account_get"
+path = "examples/swaplock/history_account_get.rs"

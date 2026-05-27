@@ -1,7 +1,13 @@
 mod database_api;
+mod history_api;
 
 use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
+
+pub use history_api::{
+    AccountHistoryByIdRequest, AccountHistoryCursor, AccountHistoryPage, AccountHistoryRequest,
+    DEFAULT_ACCOUNT_HISTORY_LIMIT, HistoryApi, MAX_ACCOUNT_HISTORY_LIMIT,
+};
 
 pub use database_api::{
     AccountBalancesByIdRequest, AccountBalancesRequest, AccountBalancesSubscription,
@@ -44,6 +50,13 @@ pub enum SwaplockApiError {
 
     #[error("all Swaplock RPC servers failed: {attempts:?}")]
     AllServersFailed { attempts: Vec<ServerConnectFailure> },
+
+    #[error("invalid `{method}` limit {limit}; expected 1..={max}")]
+    InvalidLimit {
+        method: &'static str,
+        limit: u32,
+        max: u32,
+    },
 
     #[error("unexpected `{method}` response: {message}")]
     UnexpectedResponse {
@@ -104,6 +117,12 @@ impl SwaplockApi {
 
     pub fn database(&mut self) -> DatabaseApi<'_> {
         DatabaseApi {
+            session: &mut self.session,
+        }
+    }
+
+    pub fn history(&mut self) -> HistoryApi<'_> {
+        HistoryApi {
             session: &mut self.session,
         }
     }
