@@ -1,16 +1,21 @@
 use std::time::Duration;
 
-use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId, LimitOrderId};
+use graphene_chain_swaplock_bindings::generated::fc::{
+    decode_public_key, is_graphene_canonical_compact_signature, verify_compact_signature_public_key,
+};
+use graphene_chain_swaplock_bindings::generated::ids::{
+    AccountId, AssetId, LimitOrderId, PUBLIC_KEY_PREFIX,
+};
 use graphene_chain_swaplock_bindings::generated::operations::TransferOperation;
 use graphene_chain_swaplock_bindings::generated::static_variants::{FutureExtensions, Operation};
-use graphene_chain_swaplock_bindings::generated::types::{Asset, Transaction};
+use graphene_chain_swaplock_bindings::generated::types::{Asset, SignedTransaction, Transaction};
 use open_graphene_sdk_core::{
     AssetAmount, AssetIdRef, BalanceCheck, HeadBlock, TransactionHeader, decimal_to_raw_amount,
     ensure_sufficient_balance, transaction_header_from_head,
 };
 use open_graphene_sdk_operations::{
-    GrapheneOperationBuilderTypes, TransferChainTypes, TransferInput,
-    build_transfer_transaction_for,
+    GrapheneOperationBuilderTypes, SignedTransactionJsonParts, TransferChainTypes, TransferInput,
+    build_transfer_transaction_for, signed_transaction_broadcast_json,
 };
 use open_graphene_transport::GrapheneSession;
 use serde_json::{Value, json};
@@ -39,6 +44,20 @@ enum TransferAmount {
 #[derive(Clone, Debug, PartialEq)]
 pub struct PreparedTransfer {
     transaction: Transaction,
+    from_id: String,
+    to_id: String,
+    asset_id: String,
+    amount: i64,
+    fee: Asset,
+    balance_before: i64,
+    balance_after: i64,
+    asset_precision: u8,
+    head_block_number: u64,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct SignedTransfer {
+    signed_transaction: SignedTransaction,
     from_id: String,
     to_id: String,
     asset_id: String,
@@ -313,6 +332,74 @@ impl PreparedTransfer {
     pub fn head_block_number(&self) -> u64 {
         self.head_block_number
     }
+
+    pub fn sign_with_wif(
+        self,
+        wif: &str,
+        expected_public_key: &str,
+    ) -> Result<SignedTransfer, SwaplockApiError> {
+        let signed_transaction =
+            sign_transfer_transaction_checked(&self.transaction, wif, expected_public_key)?;
+
+        Ok(SignedTransfer {
+            signed_transaction,
+            from_id: self.from_id,
+            to_id: self.to_id,
+            asset_id: self.asset_id,
+            amount: self.amount,
+            fee: self.fee,
+            balance_before: self.balance_before,
+            balance_after: self.balance_after,
+            asset_precision: self.asset_precision,
+            head_block_number: self.head_block_number,
+        })
+    }
+}
+
+impl SignedTransfer {
+    pub fn signed_transaction(&self) -> &SignedTransaction {
+        &self.signed_transaction
+    }
+
+    pub fn transaction_json(&self) -> Result<Value, SwaplockApiError> {
+        signed_transfer_json(&self.signed_transaction)
+    }
+
+    pub fn from_id(&self) -> &str {
+        &self.from_id
+    }
+
+    pub fn to_id(&self) -> &str {
+        &self.to_id
+    }
+
+    pub fn asset_id(&self) -> &str {
+        &self.asset_id
+    }
+
+    pub fn amount(&self) -> i64 {
+        self.amount
+    }
+
+    pub fn fee(&self) -> &Asset {
+        &self.fee
+    }
+
+    pub fn balance_before(&self) -> i64 {
+        self.balance_before
+    }
+
+    pub fn balance_after(&self) -> i64 {
+        self.balance_after
+    }
+
+    pub fn asset_precision(&self) -> u8 {
+        self.asset_precision
+    }
+
+    pub fn head_block_number(&self) -> u64 {
+        self.head_block_number
+    }
 }
 
 async fn resolve_account(
@@ -388,6 +475,76 @@ fn set_transfer_fee(transaction: &mut Transaction, fee: Asset) -> Result<(), Swa
     Ok(())
 }
 
+fn sign_transfer_transaction_checked(
+    transaction: &Transaction,
+    wif: &str,
+    expected_public_key: &str,
+) -> Result<SignedTransaction, SwaplockApiError> {
+    let signed_transaction =
+        transaction
+            .signed_with_wif(wif)
+            .map_err(|_| SwaplockApiError::InvalidTransfer {
+                message: "failed to sign transfer transaction".to_string(),
+            })?;
+    let signature =
+        signed_transaction
+            .signatures
+            .first()
+            .ok_or_else(|| SwaplockApiError::InvalidTransfer {
+                message: "signed transfer transaction has no signature".to_string(),
+            })?;
+    if !is_graphene_canonical_compact_signature(&signature.0) {
+        return Err(SwaplockApiError::InvalidTransfer {
+            message: "signature is not Graphene canonical".to_string(),
+        });
+    }
+
+    let digest = transaction.signature_digest_bytes().map_err(|error| {
+        SwaplockApiError::InvalidTransfer {
+            message: format!("failed to compute signature digest: {error}"),
+        }
+    })?;
+    let public_key =
+        decode_public_key(expected_public_key, Some(PUBLIC_KEY_PREFIX)).map_err(|_| {
+            SwaplockApiError::InvalidTransfer {
+                message: "invalid expected public key".to_string(),
+            }
+        })?;
+    let matches_public_key = verify_compact_signature_public_key(digest, &signature.0, public_key)
+        .map_err(|error| SwaplockApiError::InvalidTransfer {
+            message: format!("failed to verify signature public key: {error}"),
+        })?;
+    if !matches_public_key {
+        return Err(SwaplockApiError::InvalidTransfer {
+            message: "signature public key verification failed".to_string(),
+        });
+    }
+
+    Ok(signed_transaction)
+}
+
+fn signed_transfer_json(signed_transaction: &SignedTransaction) -> Result<Value, SwaplockApiError> {
+    let operations = signed_transaction
+        .operations
+        .iter()
+        .map(transfer_operation_json)
+        .collect::<Result<Vec<_>, _>>()?;
+
+    Ok(signed_transaction_broadcast_json(
+        SignedTransactionJsonParts {
+            ref_block_num: signed_transaction.ref_block_num,
+            ref_block_prefix: signed_transaction.ref_block_prefix,
+            expiration: &signed_transaction.expiration,
+            operations,
+            signatures: signed_transaction
+                .signatures
+                .iter()
+                .map(|signature| signature.0.as_slice())
+                .collect(),
+        },
+    ))
+}
+
 fn transfer_operation_json(operation: &Operation) -> Result<Value, SwaplockApiError> {
     let operation = operation
         .as_transfer()
@@ -424,6 +581,10 @@ mod tests {
     use super::*;
     use graphene_chain_swaplock_bindings::generated::ids::AssetId;
 
+    const FIXTURE_WIF: &str = "5J4eFhjREJA7hKG6KcvHofHMXyGQZCDpQE463PAaKo9xXY6UDPq";
+    const FIXTURE_PUBLIC_KEY: &str = "BTS7jDPoMwyjVH5obFmqzFNp4Ffp7G2nvC7FKFkrMBpo7Sy4uq5Mj";
+    const WRONG_PUBLIC_KEY: &str = "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV";
+
     #[test]
     fn transfer_operation_json_matches_graphene_wire_shape() {
         let transaction =
@@ -456,20 +617,7 @@ mod tests {
 
     #[test]
     fn set_transfer_fee_updates_transfer_operation() {
-        let mut transaction =
-            build_transfer_transaction_for::<SwaplockOperationBuilderTypes>(TransferInput::new(
-                TransactionHeader {
-                    ref_block_num: 2,
-                    ref_block_prefix: 3,
-                    expiration: "2026-05-25T12:01:00".to_string(),
-                },
-                "1.2.100",
-                "1.2.101",
-                100_000,
-                "1.3.0",
-                0,
-                "1.3.0",
-            ));
+        let mut transaction = fixture_transfer_transaction();
 
         set_transfer_fee(
             &mut transaction,
@@ -482,5 +630,101 @@ mod tests {
             panic!("fixture should contain transfer");
         };
         assert_eq!(operation.fee.amount, 42);
+    }
+
+    #[test]
+    fn signs_prepared_transfer_when_expected_public_key_matches() {
+        let prepared = fixture_prepared_transfer();
+
+        let signed = prepared
+            .sign_with_wif(FIXTURE_WIF, FIXTURE_PUBLIC_KEY)
+            .expect("fixture key signs transfer");
+
+        assert_eq!(signed.signed_transaction().signatures.len(), 1);
+        assert_eq!(signed.from_id(), "1.2.100");
+        assert_eq!(signed.to_id(), "1.2.101");
+        assert_eq!(signed.amount(), 100_000);
+    }
+
+    #[test]
+    fn rejects_signature_when_expected_public_key_does_not_match() {
+        let err = fixture_prepared_transfer()
+            .sign_with_wif(FIXTURE_WIF, WRONG_PUBLIC_KEY)
+            .expect_err("wrong public key fails verification");
+
+        assert_eq!(
+            err.to_string(),
+            "invalid transfer: signature public key verification failed"
+        );
+    }
+
+    #[test]
+    fn invalid_wif_error_does_not_echo_secret_like_input() {
+        let secret_like_value = "not-a-wif-secret-like-value";
+        let err = fixture_prepared_transfer()
+            .sign_with_wif(secret_like_value, FIXTURE_PUBLIC_KEY)
+            .expect_err("invalid WIF fails");
+
+        assert!(!err.to_string().contains(secret_like_value));
+        assert_eq!(
+            err.to_string(),
+            "invalid transfer: failed to sign transfer transaction"
+        );
+    }
+
+    #[test]
+    fn signed_transfer_json_matches_broadcast_shape() {
+        let signed = fixture_prepared_transfer()
+            .sign_with_wif(FIXTURE_WIF, FIXTURE_PUBLIC_KEY)
+            .expect("fixture key signs transfer");
+        let value = signed.transaction_json().unwrap();
+
+        assert_eq!(value["ref_block_num"], json!(2));
+        assert_eq!(value["ref_block_prefix"], json!(3));
+        assert_eq!(value["expiration"], json!("2026-05-25T12:01:00"));
+        assert_eq!(value["operations"][0][0], json!(0));
+        assert_eq!(value["operations"][0][1]["from"], json!("1.2.100"));
+        assert_eq!(value["operations"][0][1]["to"], json!("1.2.101"));
+        assert_eq!(
+            value["operations"][0][1]["amount"]["amount"],
+            json!(100_000)
+        );
+        assert_eq!(value["operations"][0][1]["fee"]["amount"], json!(200_000));
+        assert_eq!(value["signatures"].as_array().unwrap().len(), 1);
+    }
+
+    fn fixture_prepared_transfer() -> PreparedTransfer {
+        let mut transaction = fixture_transfer_transaction();
+        let fee = Asset::new(200_000, AssetId("1.3.0".to_string()));
+        set_transfer_fee(&mut transaction, fee.clone()).unwrap();
+
+        PreparedTransfer {
+            transaction,
+            from_id: "1.2.100".to_string(),
+            to_id: "1.2.101".to_string(),
+            asset_id: "1.3.0".to_string(),
+            amount: 100_000,
+            fee,
+            balance_before: 1_000_000,
+            balance_after: 700_000,
+            asset_precision: 5,
+            head_block_number: 123,
+        }
+    }
+
+    fn fixture_transfer_transaction() -> Transaction {
+        build_transfer_transaction_for::<SwaplockOperationBuilderTypes>(TransferInput::new(
+            TransactionHeader {
+                ref_block_num: 2,
+                ref_block_prefix: 3,
+                expiration: "2026-05-25T12:01:00".to_string(),
+            },
+            "1.2.100",
+            "1.2.101",
+            100_000,
+            "1.3.0",
+            0,
+            "1.3.0",
+        ))
     }
 }

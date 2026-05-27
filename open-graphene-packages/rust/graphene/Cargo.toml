@@ -73,6 +73,10 @@ name = "swaplock_operations_transfer_prepare"
 path = "examples/swaplock/operations_transfer_prepare.rs"
 
 [[example]]
+name = "swaplock_operations_transfer_sign"
+path = "examples/swaplock/operations_transfer_sign.rs"
+
+[[example]]
 name = "swaplock_history_account_get"
 path = "examples/swaplock/history_account_get.rs"
 

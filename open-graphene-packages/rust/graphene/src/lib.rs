@@ -8,7 +8,7 @@ pub use error::{GrapheneConfigError, GrapheneConnectError};
 pub use graphene_chain_swaplock_api::{
     AccountHistoryPage, AccountHistorySubscription, DEFAULT_ACCOUNT_HISTORY_LIMIT,
     DEFAULT_ACCOUNT_HISTORY_OFFSET, MAX_ACCOUNT_HISTORY_LIMIT, PreparedTransfer, SWAPLOCK_CHAIN_ID,
-    SwaplockApi, SwaplockApiError, TransferRequest,
+    SignedTransfer, SwaplockApi, SwaplockApiError, TransferRequest,
 };
 
 pub struct Graphene;

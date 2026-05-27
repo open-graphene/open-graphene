@@ -6,7 +6,7 @@ use open_graphene_sdk_core::{AmountError, BalanceError, HeaderError, ObjectIdErr
 use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
 
-pub use operations::{OperationsApi, PreparedTransfer, TransferRequest};
+pub use operations::{OperationsApi, PreparedTransfer, SignedTransfer, TransferRequest};
 
 pub use history::{
     AccountHistoryByIdRequest, AccountHistoryPage, AccountHistoryRequest,
