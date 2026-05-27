@@ -10,6 +10,7 @@ repository = "https://github.com/open-graphene/open-graphene"
 graphene-chain-swaplock-api = { path = "../graphene-chain-swaplock/graphene-chain-swaplock-api" }
 
 [dev-dependencies]
+dotenvy = "0.15"
 tokio = { version = "1", features = ["macros", "rt"] }
 
 [[example]]

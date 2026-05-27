@@ -4,6 +4,8 @@ use graphene::Graphene;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    dotenvy::dotenv().ok();
+
     let wif = env::var("SWAPLOCK_ACTIVE_WIF")?;
     let from_account = env::var("SWAPLOCK_ACCOUNT")?;
     let to_account = env::var("SWAPLOCK_TO_ACCOUNT").unwrap_or_else(|_| "1.2.0".to_string());
