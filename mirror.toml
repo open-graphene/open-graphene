@@ -13,6 +13,10 @@ git = "git@github.com:bitshares/bitsharesjs.git"
 path = "blockchains/bitshares/bitsharesjs"
 
 [[repositories]]
+git = "git@github.com:bitshares/bitshares-ui.git"
+path = "blockchains/bitshares/bitshares-ui"
+
+[[repositories]]
 git = "git@github.com:bitshares/bitsharesjs-ws.git"
 path = "blockchains/bitshares/bitsharesjs-ws"
 
