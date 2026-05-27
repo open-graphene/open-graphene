@@ -1,4 +1,4 @@
-mod database_api;
+mod database;
 mod history_api;
 
 use open_graphene_transport::{GrapheneSession, TransportError};
@@ -10,7 +10,7 @@ pub use history_api::{
     HistoryApi, MAX_ACCOUNT_HISTORY_LIMIT,
 };
 
-pub use database_api::{
+pub use database::{
     AccountBalancesByIdRequest, AccountBalancesRequest, AccountBalancesSubscription,
     AccountByIdRequest, AccountByNameRequest, AccountOrdersByIdRequest, AccountOrdersRequest,
     AccountOrdersSubscription, AccountSubscription, AccountsRequest, AssetByIdRequest,
