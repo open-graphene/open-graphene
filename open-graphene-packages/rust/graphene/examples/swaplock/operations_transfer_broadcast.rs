@@ -59,5 +59,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .map_or(0, Vec::len)
     );
 
+    let confirmation = swaplock
+        .operations()
+        .wait_for_transfer_confirmation(&receipt)
+        .await?;
+
+    println!(
+        "confirmed: block {}, history {}",
+        confirmation.block_num(),
+        confirmation.id()
+    );
+    println!("confirmation trx_in_block: {}", confirmation.trx_in_block());
+    println!("confirmation op_in_trx: {}", confirmation.op_in_trx());
+
     Ok(())
 }
