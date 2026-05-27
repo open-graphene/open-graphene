@@ -69,6 +69,10 @@ name = "swaplock_database_global_properties_get"
 path = "examples/swaplock/database_global_properties_get.rs"
 
 [[example]]
+name = "swaplock_operations_transfer_prepare"
+path = "examples/swaplock/operations_transfer_prepare.rs"
+
+[[example]]
 name = "swaplock_history_account_get"
 path = "examples/swaplock/history_account_get.rs"
 

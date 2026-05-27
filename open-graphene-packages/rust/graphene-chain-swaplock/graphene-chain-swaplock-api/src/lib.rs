@@ -1,8 +1,12 @@
 mod database;
 mod history;
+mod operations;
 
+use open_graphene_sdk_core::{AmountError, BalanceError, HeaderError, ObjectIdError};
 use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
+
+pub use operations::{OperationsApi, PreparedTransfer, TransferRequest};
 
 pub use history::{
     AccountHistoryByIdRequest, AccountHistoryPage, AccountHistoryRequest,
@@ -65,6 +69,27 @@ pub enum SwaplockApiError {
         message: String,
     },
 
+    #[error("missing transfer field `{field}`")]
+    MissingTransferField { field: &'static str },
+
+    #[error("invalid transfer: {message}")]
+    InvalidTransfer { message: String },
+
+    #[error("required transfer fee {required} exceeds max fee {max}")]
+    TransferFeeTooHigh { required: i64, max: i64 },
+
+    #[error(transparent)]
+    Header(#[from] HeaderError),
+
+    #[error(transparent)]
+    Amount(#[from] AmountError),
+
+    #[error(transparent)]
+    Balance(#[from] BalanceError),
+
+    #[error(transparent)]
+    ObjectId(#[from] ObjectIdError),
+
     #[error(transparent)]
     Transport(#[from] TransportError),
 }
@@ -124,6 +149,12 @@ impl SwaplockApi {
 
     pub fn history(&mut self) -> HistoryApi<'_> {
         HistoryApi {
+            session: &mut self.session,
+        }
+    }
+
+    pub fn operations(&mut self) -> OperationsApi<'_> {
+        OperationsApi {
             session: &mut self.session,
         }
     }
