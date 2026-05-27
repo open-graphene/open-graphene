@@ -1,10 +1,10 @@
 mod database;
-mod history_api;
+mod history;
 
 use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
 
-pub use history_api::{
+pub use history::{
     AccountHistoryByIdRequest, AccountHistoryPage, AccountHistoryRequest,
     AccountHistorySubscription, DEFAULT_ACCOUNT_HISTORY_LIMIT, DEFAULT_ACCOUNT_HISTORY_OFFSET,
     HistoryApi, MAX_ACCOUNT_HISTORY_LIMIT,

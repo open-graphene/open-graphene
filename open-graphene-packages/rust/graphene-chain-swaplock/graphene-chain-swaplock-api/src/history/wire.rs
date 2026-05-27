@@ -1,219 +1,21 @@
 use graphene_chain_swaplock_bindings::generated::OperationHistoryObject;
-use open_graphene_transport::{GrapheneSession, JsonRpcInbound};
+use open_graphene_transport::GrapheneSession;
 use serde_json::{Value, json};
 
 use crate::SwaplockApiError;
 
-pub const DEFAULT_ACCOUNT_HISTORY_LIMIT: u32 = 20;
-pub const DEFAULT_ACCOUNT_HISTORY_OFFSET: u32 = 0;
-pub const MAX_ACCOUNT_HISTORY_LIMIT: u32 = 98;
+use super::constants::{
+    ACCOUNT_HISTORY_METHOD, HISTORY_START_SENTINEL, HISTORY_STOP_SENTINEL,
+    MAX_ACCOUNT_HISTORY_LIMIT,
+};
+use super::page::AccountHistoryPage;
 
-const ACCOUNT_HISTORY_METHOD: &str = "get_account_history";
-const HISTORY_START_SENTINEL: &str = "1.11.0";
-const HISTORY_STOP_SENTINEL: &str = "1.11.0";
-const ACCOUNT_HISTORY_CALLBACK_ID: u64 = 6;
-
-pub struct HistoryApi<'session> {
-    pub(crate) session: &'session mut GrapheneSession,
+pub(super) struct AccountHistorySnapshot {
+    pub(super) page: AccountHistoryPage,
+    pub(super) newest_operation_id: Option<String>,
 }
 
-pub struct AccountHistoryRequest<'session> {
-    session: &'session mut GrapheneSession,
-    account_name_or_id: String,
-    limit: u32,
-    offset: u32,
-}
-
-pub struct AccountHistoryByIdRequest<'session> {
-    session: &'session mut GrapheneSession,
-    account_id: String,
-    limit: u32,
-    offset: u32,
-}
-
-pub struct AccountHistorySubscription<'session> {
-    session: &'session mut GrapheneSession,
-    account_name_or_id: String,
-    initial: AccountHistoryPage,
-    last_seen_operation_id: Option<String>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct AccountHistoryPage {
-    items: Vec<OperationHistoryObject>,
-    limit: u32,
-    offset: u32,
-    next_offset: Option<u32>,
-}
-
-struct AccountHistorySnapshot {
-    page: AccountHistoryPage,
-    newest_operation_id: Option<String>,
-}
-
-impl AccountHistoryPage {
-    pub fn items(&self) -> &[OperationHistoryObject] {
-        &self.items
-    }
-
-    pub fn limit(&self) -> u32 {
-        self.limit
-    }
-
-    pub fn offset(&self) -> u32 {
-        self.offset
-    }
-
-    pub fn next_offset(&self) -> Option<u32> {
-        self.next_offset
-    }
-
-    pub fn has_more(&self) -> bool {
-        self.next_offset.is_some()
-    }
-
-    pub fn into_items(self) -> Vec<OperationHistoryObject> {
-        self.items
-    }
-}
-
-impl<'session> HistoryApi<'session> {
-    pub fn account_history<S>(self, account_name_or_id: S) -> AccountHistoryRequest<'session>
-    where
-        S: Into<String>,
-    {
-        AccountHistoryRequest {
-            session: self.session,
-            account_name_or_id: account_name_or_id.into(),
-            limit: DEFAULT_ACCOUNT_HISTORY_LIMIT,
-            offset: DEFAULT_ACCOUNT_HISTORY_OFFSET,
-        }
-    }
-
-    pub fn account_history_by_id<S>(self, account_id: S) -> AccountHistoryByIdRequest<'session>
-    where
-        S: Into<String>,
-    {
-        AccountHistoryByIdRequest {
-            session: self.session,
-            account_id: account_id.into(),
-            limit: DEFAULT_ACCOUNT_HISTORY_LIMIT,
-            offset: DEFAULT_ACCOUNT_HISTORY_OFFSET,
-        }
-    }
-}
-
-impl<'session> AccountHistoryRequest<'session> {
-    pub fn limit(mut self, limit: u32) -> Self {
-        self.limit = limit;
-        self
-    }
-
-    pub fn offset(mut self, offset: u32) -> Self {
-        self.offset = offset;
-        self
-    }
-
-    pub async fn get(self) -> Result<AccountHistoryPage, SwaplockApiError> {
-        Ok(get_account_history_snapshot(
-            self.session,
-            &self.account_name_or_id,
-            self.limit,
-            self.offset,
-        )
-        .await?
-        .page)
-    }
-
-    pub async fn subscribe(self) -> Result<AccountHistorySubscription<'session>, SwaplockApiError> {
-        subscribe_account_history(
-            self.session,
-            self.account_name_or_id,
-            self.limit,
-            self.offset,
-        )
-        .await
-    }
-}
-
-impl<'session> AccountHistoryByIdRequest<'session> {
-    pub fn limit(mut self, limit: u32) -> Self {
-        self.limit = limit;
-        self
-    }
-
-    pub fn offset(mut self, offset: u32) -> Self {
-        self.offset = offset;
-        self
-    }
-
-    pub async fn get(self) -> Result<AccountHistoryPage, SwaplockApiError> {
-        Ok(
-            get_account_history_snapshot(self.session, &self.account_id, self.limit, self.offset)
-                .await?
-                .page,
-        )
-    }
-
-    pub async fn subscribe(self) -> Result<AccountHistorySubscription<'session>, SwaplockApiError> {
-        subscribe_account_history(self.session, self.account_id, self.limit, self.offset).await
-    }
-}
-
-impl AccountHistorySubscription<'_> {
-    pub fn initial(&self) -> &AccountHistoryPage {
-        &self.initial
-    }
-
-    pub async fn next_update(&mut self) -> Result<Vec<OperationHistoryObject>, SwaplockApiError> {
-        loop {
-            let notice = self.session.next_notice()?;
-            let JsonRpcInbound::Notice { callback_id, .. } = notice else {
-                continue;
-            };
-            if callback_id != ACCOUNT_HISTORY_CALLBACK_ID {
-                continue;
-            }
-
-            let updates = get_recent_account_history_since(
-                self.session,
-                &self.account_name_or_id,
-                self.last_seen_operation_id.as_deref(),
-            )
-            .await?;
-            if !updates.is_empty() {
-                self.last_seen_operation_id = updates.first().map(|item| item.id.0.clone());
-                return Ok(updates);
-            }
-        }
-    }
-}
-
-async fn subscribe_account_history(
-    session: &mut GrapheneSession,
-    account_name_or_id: String,
-    limit: u32,
-    offset: u32,
-) -> Result<AccountHistorySubscription<'_>, SwaplockApiError> {
-    validate_account_history_window(limit, offset)?;
-
-    session.database_call(
-        "set_subscribe_callback",
-        json!([ACCOUNT_HISTORY_CALLBACK_ID, false]),
-    )?;
-    session.database_call("get_full_accounts", json!([[account_name_or_id], true]))?;
-
-    let initial = get_account_history_snapshot(session, &account_name_or_id, limit, offset).await?;
-
-    Ok(AccountHistorySubscription {
-        session,
-        account_name_or_id,
-        last_seen_operation_id: initial.newest_operation_id,
-        initial: initial.page,
-    })
-}
-
-async fn get_account_history_snapshot(
+pub(super) async fn get_account_history_snapshot(
     session: &mut GrapheneSession,
     account_name_or_id: &str,
     limit: u32,
@@ -233,7 +35,7 @@ async fn get_account_history_snapshot(
     })
 }
 
-async fn get_recent_account_history_since(
+pub(super) async fn get_recent_account_history_since(
     session: &mut GrapheneSession,
     account_name_or_id: &str,
     last_seen_operation_id: Option<&str>,
@@ -310,12 +112,7 @@ fn account_history_page_from_items(
         .collect::<Vec<_>>();
     let next_offset = has_more.then_some(offset + limit);
 
-    AccountHistoryPage {
-        items,
-        limit,
-        offset,
-        next_offset,
-    }
+    AccountHistoryPage::new(items, limit, offset, next_offset)
 }
 
 #[cfg(test)]
