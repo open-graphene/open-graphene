@@ -1,11 +1,13 @@
 mod database;
 mod history;
+mod network_broadcast;
 mod operations;
 
 use open_graphene_sdk_core::{AmountError, BalanceError, HeaderError, ObjectIdError};
 use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
 
+pub use network_broadcast::{BroadcastReceipt, NetworkBroadcastApi};
 pub use operations::{OperationsApi, PreparedTransfer, SignedTransfer, TransferRequest};
 
 pub use history::{
@@ -155,6 +157,12 @@ impl SwaplockApi {
 
     pub fn operations(&mut self) -> OperationsApi<'_> {
         OperationsApi {
+            session: &mut self.session,
+        }
+    }
+
+    pub fn network_broadcast(&mut self) -> NetworkBroadcastApi<'_> {
+        NetworkBroadcastApi {
             session: &mut self.session,
         }
     }
