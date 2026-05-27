@@ -6,8 +6,9 @@ pub use chain::{Acta, ActaClient, BitShares, BitSharesClient, ChainClientBuilder
 pub use client::{GrapheneClient, GrapheneClientBuilder, GrapheneClientConfig};
 pub use error::{GrapheneConfigError, GrapheneConnectError};
 pub use graphene_chain_swaplock_api::{
-    AccountHistoryCursor, AccountHistoryPage, DEFAULT_ACCOUNT_HISTORY_LIMIT,
-    MAX_ACCOUNT_HISTORY_LIMIT, SWAPLOCK_CHAIN_ID, SwaplockApi, SwaplockApiError,
+    AccountHistoryCursor, AccountHistoryPage, AccountHistorySubscription,
+    DEFAULT_ACCOUNT_HISTORY_LIMIT, MAX_ACCOUNT_HISTORY_LIMIT, SWAPLOCK_CHAIN_ID, SwaplockApi,
+    SwaplockApiError,
 };
 
 pub struct Graphene;

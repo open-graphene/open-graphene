@@ -6,7 +6,8 @@ use thiserror::Error;
 
 pub use history_api::{
     AccountHistoryByIdRequest, AccountHistoryCursor, AccountHistoryPage, AccountHistoryRequest,
-    DEFAULT_ACCOUNT_HISTORY_LIMIT, HistoryApi, MAX_ACCOUNT_HISTORY_LIMIT,
+    AccountHistorySubscription, DEFAULT_ACCOUNT_HISTORY_LIMIT, HistoryApi,
+    MAX_ACCOUNT_HISTORY_LIMIT,
 };
 
 pub use database_api::{

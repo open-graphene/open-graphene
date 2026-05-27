@@ -1,5 +1,5 @@
 use graphene_chain_swaplock_bindings::generated::OperationHistoryObject;
-use open_graphene_transport::GrapheneSession;
+use open_graphene_transport::{GrapheneSession, JsonRpcInbound};
 use serde_json::{Value, json};
 
 use crate::SwaplockApiError;
@@ -10,6 +10,7 @@ pub const MAX_ACCOUNT_HISTORY_LIMIT: u32 = 98;
 const ACCOUNT_HISTORY_METHOD: &str = "get_account_history";
 const HISTORY_START_SENTINEL: &str = "1.11.0";
 const HISTORY_STOP_SENTINEL: &str = "1.11.0";
+const ACCOUNT_HISTORY_CALLBACK_ID: u64 = 6;
 
 pub struct HistoryApi<'session> {
     pub(crate) session: &'session mut GrapheneSession,
@@ -27,6 +28,11 @@ pub struct AccountHistoryByIdRequest<'session> {
     account_id: String,
     limit: u32,
     cursor: Option<AccountHistoryCursor>,
+}
+
+pub struct AccountHistorySubscription<'session> {
+    session: &'session mut GrapheneSession,
+    initial: AccountHistoryPage,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -112,6 +118,16 @@ impl<'session> AccountHistoryRequest<'session> {
         )
         .await
     }
+
+    pub async fn subscribe(self) -> Result<AccountHistorySubscription<'session>, SwaplockApiError> {
+        subscribe_account_history(
+            self.session,
+            self.account_name_or_id,
+            self.limit,
+            self.cursor,
+        )
+        .await
+    }
 }
 
 impl<'session> AccountHistoryByIdRequest<'session> {
@@ -132,6 +148,56 @@ impl<'session> AccountHistoryByIdRequest<'session> {
     pub async fn get(self) -> Result<AccountHistoryPage, SwaplockApiError> {
         get_account_history_page(self.session, self.account_id, self.limit, self.cursor).await
     }
+
+    pub async fn subscribe(self) -> Result<AccountHistorySubscription<'session>, SwaplockApiError> {
+        subscribe_account_history(self.session, self.account_id, self.limit, self.cursor).await
+    }
+}
+
+impl AccountHistorySubscription<'_> {
+    pub fn initial(&self) -> &AccountHistoryPage {
+        &self.initial
+    }
+
+    pub async fn next_update(&mut self) -> Result<Vec<OperationHistoryObject>, SwaplockApiError> {
+        loop {
+            let notice = self.session.next_notice()?;
+            let JsonRpcInbound::Notice {
+                callback_id,
+                payload,
+            } = notice
+            else {
+                continue;
+            };
+            if callback_id != ACCOUNT_HISTORY_CALLBACK_ID {
+                continue;
+            }
+
+            let updates = collect_operation_history_objects("notice", &payload)?;
+            if !updates.is_empty() {
+                return Ok(updates);
+            }
+        }
+    }
+}
+
+async fn subscribe_account_history(
+    session: &mut GrapheneSession,
+    account_name_or_id: String,
+    limit: u32,
+    cursor: Option<AccountHistoryCursor>,
+) -> Result<AccountHistorySubscription<'_>, SwaplockApiError> {
+    validate_account_history_limit(limit)?;
+
+    session.database_call(
+        "set_subscribe_callback",
+        json!([ACCOUNT_HISTORY_CALLBACK_ID, false]),
+    )?;
+    session.database_call("get_full_accounts", json!([[account_name_or_id], true]))?;
+
+    let initial = get_account_history_page(session, account_name_or_id, limit, cursor).await?;
+
+    Ok(AccountHistorySubscription { session, initial })
 }
 
 async fn get_account_history_page(
@@ -194,6 +260,45 @@ fn account_history_items_from_value(
         method: ACCOUNT_HISTORY_METHOD,
         message: error.to_string(),
     })
+}
+
+fn collect_operation_history_objects(
+    method: &'static str,
+    value: &Value,
+) -> Result<Vec<OperationHistoryObject>, SwaplockApiError> {
+    let mut objects = Vec::new();
+    collect_operation_history_objects_inner(method, value, &mut objects)?;
+    Ok(objects)
+}
+
+fn collect_operation_history_objects_inner(
+    method: &'static str,
+    value: &Value,
+    objects: &mut Vec<OperationHistoryObject>,
+) -> Result<(), SwaplockApiError> {
+    if value
+        .as_object()
+        .and_then(|object| object.get("id"))
+        .and_then(Value::as_str)
+        .is_some_and(|id| id.starts_with("1.11."))
+    {
+        let history: OperationHistoryObject =
+            serde_json::from_value(value.clone()).map_err(|error| {
+                SwaplockApiError::UnexpectedResponse {
+                    method,
+                    message: error.to_string(),
+                }
+            })?;
+        objects.push(history);
+    }
+
+    if let Some(array) = value.as_array() {
+        for item in array {
+            collect_operation_history_objects_inner(method, item, objects)?;
+        }
+    }
+
+    Ok(())
 }
 
 fn account_history_page_from_items(
@@ -342,5 +447,32 @@ mod tests {
             page.next_cursor(),
             Some(&AccountHistoryCursor::from_operation_id("1.11.7"))
         );
+    }
+
+    #[test]
+    fn collects_operation_history_objects_from_notice_payload() {
+        let updates = collect_operation_history_objects(
+            "notice",
+            &json!([[
+                operation_history_fixture("1.11.12"),
+                {"id": "1.2.100", "name": "swaplock"},
+                "1.11.11"
+            ]]),
+        )
+        .unwrap();
+
+        assert_eq!(updates.len(), 1);
+        assert_eq!(updates[0].id.0, "1.11.12");
+    }
+
+    #[test]
+    fn ignores_notice_payloads_without_full_history_objects() {
+        let updates = collect_operation_history_objects(
+            "notice",
+            &json!([["1.11.12", {"id": "1.2.100", "name": "swaplock"}]]),
+        )
+        .unwrap();
+
+        assert!(updates.is_empty());
     }
 }
