@@ -18,6 +18,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .history()
         .account_history("swaplock")
         .limit(5)
+        .offset(0)
         .subscribe()
         .await?;
 

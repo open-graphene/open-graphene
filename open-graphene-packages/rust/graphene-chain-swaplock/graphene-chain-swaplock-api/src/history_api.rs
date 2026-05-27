@@ -5,6 +5,7 @@ use serde_json::{Value, json};
 use crate::SwaplockApiError;
 
 pub const DEFAULT_ACCOUNT_HISTORY_LIMIT: u32 = 20;
+pub const DEFAULT_ACCOUNT_HISTORY_OFFSET: u32 = 0;
 pub const MAX_ACCOUNT_HISTORY_LIMIT: u32 = 98;
 
 const ACCOUNT_HISTORY_METHOD: &str = "get_account_history";
@@ -20,38 +21,34 @@ pub struct AccountHistoryRequest<'session> {
     session: &'session mut GrapheneSession,
     account_name_or_id: String,
     limit: u32,
-    cursor: Option<AccountHistoryCursor>,
+    offset: u32,
 }
 
 pub struct AccountHistoryByIdRequest<'session> {
     session: &'session mut GrapheneSession,
     account_id: String,
     limit: u32,
-    cursor: Option<AccountHistoryCursor>,
+    offset: u32,
 }
 
 pub struct AccountHistorySubscription<'session> {
     session: &'session mut GrapheneSession,
+    account_name_or_id: String,
     initial: AccountHistoryPage,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AccountHistoryCursor {
-    start_after: String,
+    last_seen_operation_id: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct AccountHistoryPage {
     items: Vec<OperationHistoryObject>,
-    next_cursor: Option<AccountHistoryCursor>,
+    limit: u32,
+    offset: u32,
+    next_offset: Option<u32>,
 }
 
-impl AccountHistoryCursor {
-    fn from_operation_id(id: impl Into<String>) -> Self {
-        Self {
-            start_after: id.into(),
-        }
-    }
+struct AccountHistorySnapshot {
+    page: AccountHistoryPage,
+    newest_operation_id: Option<String>,
 }
 
 impl AccountHistoryPage {
@@ -59,8 +56,20 @@ impl AccountHistoryPage {
         &self.items
     }
 
-    pub fn next_cursor(&self) -> Option<&AccountHistoryCursor> {
-        self.next_cursor.as_ref()
+    pub fn limit(&self) -> u32 {
+        self.limit
+    }
+
+    pub fn offset(&self) -> u32 {
+        self.offset
+    }
+
+    pub fn next_offset(&self) -> Option<u32> {
+        self.next_offset
+    }
+
+    pub fn has_more(&self) -> bool {
+        self.next_offset.is_some()
     }
 
     pub fn into_items(self) -> Vec<OperationHistoryObject> {
@@ -77,7 +86,7 @@ impl<'session> HistoryApi<'session> {
             session: self.session,
             account_name_or_id: account_name_or_id.into(),
             limit: DEFAULT_ACCOUNT_HISTORY_LIMIT,
-            cursor: None,
+            offset: DEFAULT_ACCOUNT_HISTORY_OFFSET,
         }
     }
 
@@ -89,7 +98,7 @@ impl<'session> HistoryApi<'session> {
             session: self.session,
             account_id: account_id.into(),
             limit: DEFAULT_ACCOUNT_HISTORY_LIMIT,
-            cursor: None,
+            offset: DEFAULT_ACCOUNT_HISTORY_OFFSET,
         }
     }
 }
@@ -100,23 +109,20 @@ impl<'session> AccountHistoryRequest<'session> {
         self
     }
 
-    pub fn cursor(mut self, cursor: AccountHistoryCursor) -> Self {
-        self.cursor = Some(cursor);
+    pub fn offset(mut self, offset: u32) -> Self {
+        self.offset = offset;
         self
     }
 
-    pub fn after(self, cursor: AccountHistoryCursor) -> Self {
-        self.cursor(cursor)
-    }
-
     pub async fn get(self) -> Result<AccountHistoryPage, SwaplockApiError> {
-        get_account_history_page(
+        Ok(get_account_history_snapshot(
             self.session,
-            self.account_name_or_id,
+            &self.account_name_or_id,
             self.limit,
-            self.cursor,
+            self.offset,
         )
-        .await
+        .await?
+        .page)
     }
 
     pub async fn subscribe(self) -> Result<AccountHistorySubscription<'session>, SwaplockApiError> {
@@ -124,7 +130,7 @@ impl<'session> AccountHistoryRequest<'session> {
             self.session,
             self.account_name_or_id,
             self.limit,
-            self.cursor,
+            self.offset,
         )
         .await
     }
@@ -136,21 +142,21 @@ impl<'session> AccountHistoryByIdRequest<'session> {
         self
     }
 
-    pub fn cursor(mut self, cursor: AccountHistoryCursor) -> Self {
-        self.cursor = Some(cursor);
+    pub fn offset(mut self, offset: u32) -> Self {
+        self.offset = offset;
         self
     }
 
-    pub fn after(self, cursor: AccountHistoryCursor) -> Self {
-        self.cursor(cursor)
-    }
-
     pub async fn get(self) -> Result<AccountHistoryPage, SwaplockApiError> {
-        get_account_history_page(self.session, self.account_id, self.limit, self.cursor).await
+        Ok(
+            get_account_history_snapshot(self.session, &self.account_id, self.limit, self.offset)
+                .await?
+                .page,
+        )
     }
 
     pub async fn subscribe(self) -> Result<AccountHistorySubscription<'session>, SwaplockApiError> {
-        subscribe_account_history(self.session, self.account_id, self.limit, self.cursor).await
+        subscribe_account_history(self.session, self.account_id, self.limit, self.offset).await
     }
 }
 
@@ -162,19 +168,21 @@ impl AccountHistorySubscription<'_> {
     pub async fn next_update(&mut self) -> Result<Vec<OperationHistoryObject>, SwaplockApiError> {
         loop {
             let notice = self.session.next_notice()?;
-            let JsonRpcInbound::Notice {
-                callback_id,
-                payload,
-            } = notice
-            else {
+            let JsonRpcInbound::Notice { callback_id, .. } = notice else {
                 continue;
             };
             if callback_id != ACCOUNT_HISTORY_CALLBACK_ID {
                 continue;
             }
 
-            let updates = collect_operation_history_objects("notice", &payload)?;
+            let updates = get_recent_account_history_since(
+                self.session,
+                &self.account_name_or_id,
+                self.last_seen_operation_id.as_deref(),
+            )
+            .await?;
             if !updates.is_empty() {
+                self.last_seen_operation_id = updates.first().map(|item| item.id.0.clone());
                 return Ok(updates);
             }
         }
@@ -185,9 +193,9 @@ async fn subscribe_account_history(
     session: &mut GrapheneSession,
     account_name_or_id: String,
     limit: u32,
-    cursor: Option<AccountHistoryCursor>,
+    offset: u32,
 ) -> Result<AccountHistorySubscription<'_>, SwaplockApiError> {
-    validate_account_history_limit(limit)?;
+    validate_account_history_window(limit, offset)?;
 
     session.database_call(
         "set_subscribe_callback",
@@ -195,36 +203,68 @@ async fn subscribe_account_history(
     )?;
     session.database_call("get_full_accounts", json!([[account_name_or_id], true]))?;
 
-    let initial = get_account_history_page(session, account_name_or_id, limit, cursor).await?;
+    let initial = get_account_history_snapshot(session, &account_name_or_id, limit, offset).await?;
 
-    Ok(AccountHistorySubscription { session, initial })
+    Ok(AccountHistorySubscription {
+        session,
+        account_name_or_id,
+        last_seen_operation_id: initial.newest_operation_id,
+        initial: initial.page,
+    })
 }
 
-async fn get_account_history_page(
+async fn get_account_history_snapshot(
     session: &mut GrapheneSession,
-    account_name_or_id: String,
+    account_name_or_id: &str,
     limit: u32,
-    cursor: Option<AccountHistoryCursor>,
-) -> Result<AccountHistoryPage, SwaplockApiError> {
-    validate_account_history_limit(limit)?;
+    offset: u32,
+) -> Result<AccountHistorySnapshot, SwaplockApiError> {
+    validate_account_history_window(limit, offset)?;
 
-    let params = account_history_params(&account_name_or_id, limit, cursor.as_ref())?;
+    let params = account_history_params(account_name_or_id, limit, offset)?;
     let value = session.history_call(ACCOUNT_HISTORY_METHOD, params)?;
     let raw_items = account_history_items_from_value(value)?;
+    let newest_operation_id = raw_items.first().map(|item| item.id.0.clone());
+    let page = account_history_page_from_items(raw_items, limit, offset);
 
-    Ok(account_history_page_from_items(
-        raw_items,
-        limit,
-        cursor.as_ref(),
-    ))
+    Ok(AccountHistorySnapshot {
+        page,
+        newest_operation_id,
+    })
 }
 
-fn validate_account_history_limit(limit: u32) -> Result<(), SwaplockApiError> {
-    if !(1..=MAX_ACCOUNT_HISTORY_LIMIT).contains(&limit) {
+async fn get_recent_account_history_since(
+    session: &mut GrapheneSession,
+    account_name_or_id: &str,
+    last_seen_operation_id: Option<&str>,
+) -> Result<Vec<OperationHistoryObject>, SwaplockApiError> {
+    let stop = last_seen_operation_id.unwrap_or(HISTORY_STOP_SENTINEL);
+    let value = session.history_call(
+        ACCOUNT_HISTORY_METHOD,
+        json!([
+            account_name_or_id,
+            stop,
+            MAX_ACCOUNT_HISTORY_LIMIT,
+            HISTORY_START_SENTINEL
+        ]),
+    )?;
+    account_history_items_from_value(value)
+}
+
+fn validate_account_history_window(limit: u32, offset: u32) -> Result<(), SwaplockApiError> {
+    let Some(window) = offset.checked_add(limit) else {
         return Err(SwaplockApiError::InvalidLimit {
             method: ACCOUNT_HISTORY_METHOD,
             limit,
-            max: MAX_ACCOUNT_HISTORY_LIMIT,
+            max: MAX_ACCOUNT_HISTORY_LIMIT.saturating_sub(offset),
+        });
+    };
+
+    if limit == 0 || window > MAX_ACCOUNT_HISTORY_LIMIT {
+        return Err(SwaplockApiError::InvalidLimit {
+            method: ACCOUNT_HISTORY_METHOD,
+            limit,
+            max: MAX_ACCOUNT_HISTORY_LIMIT.saturating_sub(offset),
         });
     }
     Ok(())
@@ -233,23 +273,17 @@ fn validate_account_history_limit(limit: u32) -> Result<(), SwaplockApiError> {
 fn account_history_params(
     account_name_or_id: &str,
     limit: u32,
-    cursor: Option<&AccountHistoryCursor>,
+    offset: u32,
 ) -> Result<Value, SwaplockApiError> {
-    validate_account_history_limit(limit)?;
+    validate_account_history_window(limit, offset)?;
 
-    let wire_limit = match cursor {
-        Some(_) => limit + 2,
-        None => limit + 1,
-    };
-    let start = cursor
-        .map(|cursor| cursor.start_after.as_str())
-        .unwrap_or(HISTORY_START_SENTINEL);
+    let wire_limit = offset + limit + 1;
 
     Ok(json!([
         account_name_or_id,
         HISTORY_STOP_SENTINEL,
         wire_limit,
-        start
+        HISTORY_START_SENTINEL
     ]))
 }
 
@@ -262,71 +296,26 @@ fn account_history_items_from_value(
     })
 }
 
-fn collect_operation_history_objects(
-    method: &'static str,
-    value: &Value,
-) -> Result<Vec<OperationHistoryObject>, SwaplockApiError> {
-    let mut objects = Vec::new();
-    collect_operation_history_objects_inner(method, value, &mut objects)?;
-    Ok(objects)
-}
-
-fn collect_operation_history_objects_inner(
-    method: &'static str,
-    value: &Value,
-    objects: &mut Vec<OperationHistoryObject>,
-) -> Result<(), SwaplockApiError> {
-    if value
-        .as_object()
-        .and_then(|object| object.get("id"))
-        .and_then(Value::as_str)
-        .is_some_and(|id| id.starts_with("1.11."))
-    {
-        let history: OperationHistoryObject =
-            serde_json::from_value(value.clone()).map_err(|error| {
-                SwaplockApiError::UnexpectedResponse {
-                    method,
-                    message: error.to_string(),
-                }
-            })?;
-        objects.push(history);
-    }
-
-    if let Some(array) = value.as_array() {
-        for item in array {
-            collect_operation_history_objects_inner(method, item, objects)?;
-        }
-    }
-
-    Ok(())
-}
-
 fn account_history_page_from_items(
     raw_items: Vec<OperationHistoryObject>,
     limit: u32,
-    cursor: Option<&AccountHistoryCursor>,
+    offset: u32,
 ) -> AccountHistoryPage {
-    let mut items = raw_items;
-    if let Some(cursor) = cursor {
-        if items
-            .first()
-            .is_some_and(|item| item.id.0 == cursor.start_after)
-        {
-            items.remove(0);
-        }
+    let total_needed = offset.saturating_add(limit) as usize;
+    let has_more = raw_items.len() > total_needed;
+    let items = raw_items
+        .into_iter()
+        .skip(offset as usize)
+        .take(limit as usize)
+        .collect::<Vec<_>>();
+    let next_offset = has_more.then_some(offset + limit);
+
+    AccountHistoryPage {
+        items,
+        limit,
+        offset,
+        next_offset,
     }
-
-    let has_more = items.len() > limit as usize;
-    items.truncate(limit as usize);
-    let next_cursor = has_more
-        .then(|| {
-            items
-                .last()
-                .map(|item| AccountHistoryCursor::from_operation_id(&item.id.0))
-        })
-        .flatten();
-
-    AccountHistoryPage { items, next_cursor }
 }
 
 #[cfg(test)]
@@ -362,37 +351,34 @@ mod tests {
     }
 
     #[test]
-    fn first_account_history_page_uses_lookahead_wire_shape() {
+    fn first_account_history_page_uses_offset_lookahead_wire_shape() {
         assert_eq!(
-            account_history_params("swaplock", 20, None).unwrap(),
+            account_history_params("swaplock", 20, 0).unwrap(),
             json!(["swaplock", "1.11.0", 21, "1.11.0"])
         );
     }
 
     #[test]
-    fn cursor_account_history_page_requests_cursor_duplicate_and_lookahead() {
-        let cursor = AccountHistoryCursor::from_operation_id("1.11.99");
-
+    fn offset_account_history_page_overscans_to_requested_window() {
         assert_eq!(
-            account_history_params("1.2.100", 5, Some(&cursor)).unwrap(),
-            json!(["1.2.100", "1.11.0", 7, "1.11.99"])
+            account_history_params("1.2.100", 5, 10).unwrap(),
+            json!(["1.2.100", "1.11.0", 16, "1.11.0"])
         );
     }
 
     #[test]
-    fn rejects_zero_and_too_large_history_limits() {
+    fn rejects_zero_limit_and_too_large_history_windows() {
         assert!(matches!(
-            account_history_params("1.2.100", 0, None),
-            Err(SwaplockApiError::InvalidLimit {
-                limit: 0,
-                max: MAX_ACCOUNT_HISTORY_LIMIT,
-                ..
-            })
+            account_history_params("1.2.100", 0, 0),
+            Err(SwaplockApiError::InvalidLimit { limit: 0, .. })
         ));
         assert!(matches!(
-            account_history_params("1.2.100", MAX_ACCOUNT_HISTORY_LIMIT + 1, None),
-            Err(SwaplockApiError::InvalidLimit { limit, max: MAX_ACCOUNT_HISTORY_LIMIT, .. })
-                if limit == MAX_ACCOUNT_HISTORY_LIMIT + 1
+            account_history_params("1.2.100", MAX_ACCOUNT_HISTORY_LIMIT, 1),
+            Err(SwaplockApiError::InvalidLimit {
+                limit: MAX_ACCOUNT_HISTORY_LIMIT,
+                max: 97,
+                ..
+            })
         ));
     }
 
@@ -407,72 +393,48 @@ mod tests {
     }
 
     #[test]
-    fn first_history_page_sets_cursor_when_lookahead_exists() {
-        let page = account_history_page_from_items(
-            parsed_history(&["1.11.10", "1.11.9", "1.11.8"]),
-            2,
-            None,
-        );
+    fn first_history_page_sets_next_offset_when_lookahead_exists() {
+        let page =
+            account_history_page_from_items(parsed_history(&["1.11.10", "1.11.9", "1.11.8"]), 2, 0);
 
+        assert_eq!(page.limit(), 2);
+        assert_eq!(page.offset(), 0);
         assert_eq!(page.items().len(), 2);
         assert_eq!(page.items()[0].id.0, "1.11.10");
         assert_eq!(page.items()[1].id.0, "1.11.9");
-        assert_eq!(
-            page.next_cursor(),
-            Some(&AccountHistoryCursor::from_operation_id("1.11.9"))
-        );
+        assert!(page.has_more());
+        assert_eq!(page.next_offset(), Some(2));
     }
 
     #[test]
-    fn history_page_has_no_cursor_when_shorter_than_limit() {
-        let page = account_history_page_from_items(parsed_history(&["1.11.10"]), 2, None);
-
-        assert_eq!(page.items().len(), 1);
-        assert_eq!(page.next_cursor(), None);
-    }
-
-    #[test]
-    fn cursor_history_page_drops_inclusive_cursor_duplicate() {
-        let cursor = AccountHistoryCursor::from_operation_id("1.11.9");
+    fn offset_history_page_skips_items_and_sets_next_offset() {
         let page = account_history_page_from_items(
-            parsed_history(&["1.11.9", "1.11.8", "1.11.7", "1.11.6"]),
+            parsed_history(&["1.11.10", "1.11.9", "1.11.8", "1.11.7", "1.11.6"]),
             2,
-            Some(&cursor),
+            2,
         );
 
+        assert_eq!(page.offset(), 2);
         assert_eq!(page.items().len(), 2);
         assert_eq!(page.items()[0].id.0, "1.11.8");
         assert_eq!(page.items()[1].id.0, "1.11.7");
-        assert_eq!(
-            page.next_cursor(),
-            Some(&AccountHistoryCursor::from_operation_id("1.11.7"))
-        );
+        assert_eq!(page.next_offset(), Some(4));
     }
 
     #[test]
-    fn collects_operation_history_objects_from_notice_payload() {
-        let updates = collect_operation_history_objects(
-            "notice",
-            &json!([[
-                operation_history_fixture("1.11.12"),
-                {"id": "1.2.100", "name": "swaplock"},
-                "1.11.11"
-            ]]),
-        )
-        .unwrap();
+    fn history_page_has_no_next_offset_when_shorter_than_limit() {
+        let page = account_history_page_from_items(parsed_history(&["1.11.10"]), 2, 0);
 
-        assert_eq!(updates.len(), 1);
-        assert_eq!(updates[0].id.0, "1.11.12");
+        assert_eq!(page.items().len(), 1);
+        assert_eq!(page.next_offset(), None);
+        assert!(!page.has_more());
     }
 
     #[test]
-    fn ignores_notice_payloads_without_full_history_objects() {
-        let updates = collect_operation_history_objects(
-            "notice",
-            &json!([["1.11.12", {"id": "1.2.100", "name": "swaplock"}]]),
-        )
-        .unwrap();
+    fn history_page_empty_when_offset_exceeds_loaded_items() {
+        let page = account_history_page_from_items(parsed_history(&["1.11.10"]), 2, 5);
 
-        assert!(updates.is_empty());
+        assert!(page.items().is_empty());
+        assert_eq!(page.next_offset(), None);
     }
 }

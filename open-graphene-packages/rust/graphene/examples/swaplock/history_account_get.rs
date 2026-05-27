@@ -18,10 +18,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .history()
         .account_history("swaplock")
         .limit(5)
+        .offset(0)
         .get()
         .await?;
 
-    println!("first history page entries: {}", first_page.items().len());
+    println!(
+        "first history page entries: {} offset {}",
+        first_page.items().len(),
+        first_page.offset()
+    );
     for item in first_page.items() {
         println!(
             "history entry: {} block {} time {}",
@@ -29,16 +34,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
     }
 
-    if let Some(cursor) = first_page.next_cursor().cloned() {
+    if let Some(next_offset) = first_page.next_offset() {
         let second_page = swaplock
             .history()
             .account_history("swaplock")
             .limit(5)
-            .cursor(cursor)
+            .offset(next_offset)
             .get()
             .await?;
 
-        println!("second history page entries: {}", second_page.items().len());
+        println!(
+            "second history page entries: {} offset {}",
+            second_page.items().len(),
+            second_page.offset()
+        );
         for item in second_page.items() {
             println!(
                 "history entry: {} block {} time {}",

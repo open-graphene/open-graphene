@@ -5,9 +5,9 @@ use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
 
 pub use history_api::{
-    AccountHistoryByIdRequest, AccountHistoryCursor, AccountHistoryPage, AccountHistoryRequest,
-    AccountHistorySubscription, DEFAULT_ACCOUNT_HISTORY_LIMIT, HistoryApi,
-    MAX_ACCOUNT_HISTORY_LIMIT,
+    AccountHistoryByIdRequest, AccountHistoryPage, AccountHistoryRequest,
+    AccountHistorySubscription, DEFAULT_ACCOUNT_HISTORY_LIMIT, DEFAULT_ACCOUNT_HISTORY_OFFSET,
+    HistoryApi, MAX_ACCOUNT_HISTORY_LIMIT,
 };
 
 pub use database_api::{
