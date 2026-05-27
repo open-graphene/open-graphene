@@ -5,10 +5,11 @@ use thiserror::Error;
 
 pub use database_api::{
     AccountBalancesByIdRequest, AccountBalancesRequest, AccountBalancesSubscription,
-    AccountByIdRequest, AccountByNameRequest, AccountSubscription, AccountsRequest,
-    AssetByIdRequest, AssetBySymbolRequest, AssetSubscription, ChainIdRequest,
-    ChainPropertiesRequest, DatabaseApi, DynamicGlobalPropertiesRequest,
-    DynamicGlobalPropertiesSubscription, GlobalPropertiesRequest, IntoStringList,
+    AccountByIdRequest, AccountByNameRequest, AccountOrdersByIdRequest, AccountOrdersRequest,
+    AccountOrdersSubscription, AccountSubscription, AccountsRequest, AssetByIdRequest,
+    AssetBySymbolRequest, AssetSubscription, ChainIdRequest, ChainPropertiesRequest, DatabaseApi,
+    DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription, GlobalPropertiesRequest,
+    IntoStringList,
 };
 
 pub const SWAPLOCK_CHAIN_ID: &str =

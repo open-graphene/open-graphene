@@ -29,6 +29,14 @@ name = "swaplock_database_account_balances_subscribe"
 path = "examples/swaplock/database_account_balances_subscribe.rs"
 
 [[example]]
+name = "swaplock_database_account_orders_get"
+path = "examples/swaplock/database_account_orders_get.rs"
+
+[[example]]
+name = "swaplock_database_account_orders_subscribe"
+path = "examples/swaplock/database_account_orders_subscribe.rs"
+
+[[example]]
 name = "swaplock_database_asset_get"
 path = "examples/swaplock/database_asset_get.rs"
 
