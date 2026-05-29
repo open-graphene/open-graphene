@@ -151,6 +151,8 @@ let notice_payload = subscription.next_timeout(Duration::from_secs(10))?;
 
 Once the dispatcher starts, it owns the WebSocket reader. Do not continue using the consumed blocking session or transport on that connection. The dispatcher is intentionally transport-only: it routes raw JSON-RPC responses and Graphene callback notices by id, but it does not parse chain objects, reconnect, resubscribe, or maintain an object cache.
 
+Multiple `LiveSubscription`s may listen to the same callback id. The dispatcher multicasts each subscription notice payload to every active subscriber for that id and prunes closed subscription channels without blocking the remaining subscribers. Pending one-shot callback notices, such as `network_broadcast.broadcast_transaction_with_callback`, still take precedence over subscriptions with the same callback id so confirmations cannot be consumed by long-lived subscribers.
+
 For a live smoke test against Swaplock:
 
 ```bash

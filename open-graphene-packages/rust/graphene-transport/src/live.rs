@@ -327,22 +327,14 @@ fn run_dispatcher(mut transport: WebSocketTransport, commands: Receiver<LiveComm
                     notices,
                     response,
                 } => {
-                    subscriptions
-                        .entry(callback_id)
-                        .or_default()
-                        .push((subscription_id, notices));
+                    add_subscription(&mut subscriptions, callback_id, subscription_id, notices);
                     let _ = response.send(Ok(()));
                 }
                 LiveCommand::UnsubscribeCallback {
                     callback_id,
                     subscription_id,
                 } => {
-                    if let Some(callback_subscriptions) = subscriptions.get_mut(&callback_id) {
-                        callback_subscriptions.retain(|(id, _)| *id != subscription_id);
-                        if callback_subscriptions.is_empty() {
-                            subscriptions.remove(&callback_id);
-                        }
-                    }
+                    remove_subscription(&mut subscriptions, callback_id, subscription_id);
                 }
                 LiveCommand::Shutdown => return,
             }
@@ -354,7 +346,7 @@ fn run_dispatcher(mut transport: WebSocketTransport, commands: Receiver<LiveComm
                     inbound,
                     &mut pending_calls,
                     &mut pending_callbacks,
-                    &subscriptions,
+                    &mut subscriptions,
                 );
             }
             Ok(None) => {}
@@ -366,11 +358,36 @@ fn run_dispatcher(mut transport: WebSocketTransport, commands: Receiver<LiveComm
     }
 }
 
+fn add_subscription(
+    subscriptions: &mut HashMap<CallbackId, Vec<(u64, Sender<Value>)>>,
+    callback_id: CallbackId,
+    subscription_id: u64,
+    notices: Sender<Value>,
+) {
+    subscriptions
+        .entry(callback_id)
+        .or_default()
+        .push((subscription_id, notices));
+}
+
+fn remove_subscription(
+    subscriptions: &mut HashMap<CallbackId, Vec<(u64, Sender<Value>)>>,
+    callback_id: CallbackId,
+    subscription_id: u64,
+) {
+    if let Some(callback_subscriptions) = subscriptions.get_mut(&callback_id) {
+        callback_subscriptions.retain(|(id, _)| *id != subscription_id);
+        if callback_subscriptions.is_empty() {
+            subscriptions.remove(&callback_id);
+        }
+    }
+}
+
 fn dispatch_inbound(
     inbound: JsonRpcInbound,
     pending_calls: &mut HashMap<u64, PendingCall>,
     pending_callbacks: &mut HashMap<CallbackId, PendingCallback>,
-    subscriptions: &HashMap<CallbackId, Vec<(u64, Sender<Value>)>>,
+    subscriptions: &mut HashMap<CallbackId, Vec<(u64, Sender<Value>)>>,
 ) {
     match inbound {
         JsonRpcInbound::Response { id, result } => {
@@ -399,9 +416,11 @@ fn dispatch_inbound(
         } => {
             if let Some(pending) = pending_callbacks.remove(&callback_id) {
                 let _ = pending.callback.send(Ok(payload));
-            } else if let Some(callback_subscriptions) = subscriptions.get(&callback_id) {
-                for (_, subscription) in callback_subscriptions {
-                    let _ = subscription.send(payload.clone());
+            } else if let Some(callback_subscriptions) = subscriptions.get_mut(&callback_id) {
+                callback_subscriptions
+                    .retain(|(_, subscription)| subscription.send(payload.clone()).is_ok());
+                if callback_subscriptions.is_empty() {
+                    subscriptions.remove(&callback_id);
                 }
             }
         }
@@ -448,7 +467,7 @@ mod tests {
         let (pending_two, receiver_two) = response_pending();
         let mut pending_calls = HashMap::from([(1, pending_one), (2, pending_two)]);
         let mut pending_callbacks = HashMap::new();
-        let subscriptions = HashMap::new();
+        let mut subscriptions = HashMap::new();
 
         dispatch_inbound(
             JsonRpcInbound::Response {
@@ -457,7 +476,7 @@ mod tests {
             },
             &mut pending_calls,
             &mut pending_callbacks,
-            &subscriptions,
+            &mut subscriptions,
         );
 
         assert_eq!(receiver_two.try_recv().unwrap().unwrap(), json!("second"));
@@ -472,7 +491,7 @@ mod tests {
             },
             &mut pending_calls,
             &mut pending_callbacks,
-            &subscriptions,
+            &mut subscriptions,
         );
 
         assert_eq!(receiver_one.try_recv().unwrap().unwrap(), json!("first"));
@@ -488,7 +507,7 @@ mod tests {
         let mut pending_calls = HashMap::new();
         let mut pending_callbacks =
             HashMap::from([(callback_one, pending_one), (callback_two, pending_two)]);
-        let subscriptions = HashMap::new();
+        let mut subscriptions = HashMap::new();
 
         dispatch_inbound(
             JsonRpcInbound::Notice {
@@ -497,7 +516,7 @@ mod tests {
             },
             &mut pending_calls,
             &mut pending_callbacks,
-            &subscriptions,
+            &mut subscriptions,
         );
 
         assert_eq!(
@@ -515,7 +534,7 @@ mod tests {
             },
             &mut pending_calls,
             &mut pending_callbacks,
-            &subscriptions,
+            &mut subscriptions,
         );
 
         assert_eq!(
@@ -531,7 +550,7 @@ mod tests {
         let (subscription_sender, subscription_receiver) = mpsc::channel();
         let mut pending_calls = HashMap::new();
         let mut pending_callbacks = HashMap::new();
-        let subscriptions = HashMap::from([(callback_id, vec![(1, subscription_sender)])]);
+        let mut subscriptions = HashMap::from([(callback_id, vec![(1, subscription_sender)])]);
 
         dispatch_inbound(
             JsonRpcInbound::Notice {
@@ -540,7 +559,7 @@ mod tests {
             },
             &mut pending_calls,
             &mut pending_callbacks,
-            &subscriptions,
+            &mut subscriptions,
         );
 
         assert_eq!(
@@ -556,7 +575,7 @@ mod tests {
         let (subscription_two, receiver_two) = mpsc::channel();
         let mut pending_calls = HashMap::new();
         let mut pending_callbacks = HashMap::new();
-        let subscriptions = HashMap::from([(
+        let mut subscriptions = HashMap::from([(
             callback_id,
             vec![(1, subscription_one), (2, subscription_two)],
         )]);
@@ -568,11 +587,82 @@ mod tests {
             },
             &mut pending_calls,
             &mut pending_callbacks,
-            &subscriptions,
+            &mut subscriptions,
         );
 
         assert_eq!(receiver_one.try_recv().unwrap(), json!([[{"id": "2.1.0"}]]));
         assert_eq!(receiver_two.try_recv().unwrap(), json!([[{"id": "2.1.0"}]]));
+    }
+
+    #[test]
+    fn unsubscribe_removes_only_the_matching_subscription() {
+        let callback_id = CallbackId::new(42);
+        let (subscription_one, receiver_one) = mpsc::channel();
+        let (subscription_two, receiver_two) = mpsc::channel();
+        let mut subscriptions = HashMap::new();
+        add_subscription(&mut subscriptions, callback_id, 1, subscription_one);
+        add_subscription(&mut subscriptions, callback_id, 2, subscription_two);
+
+        remove_subscription(&mut subscriptions, callback_id, 1);
+
+        let mut pending_calls = HashMap::new();
+        let mut pending_callbacks = HashMap::new();
+        dispatch_inbound(
+            JsonRpcInbound::Notice {
+                callback_id,
+                payload: json!("still-subscribed"),
+            },
+            &mut pending_calls,
+            &mut pending_callbacks,
+            &mut subscriptions,
+        );
+
+        assert!(matches!(
+            receiver_one.try_recv(),
+            Err(TryRecvError::Empty | TryRecvError::Disconnected)
+        ));
+        assert_eq!(receiver_two.try_recv().unwrap(), json!("still-subscribed"));
+        assert!(subscriptions.contains_key(&callback_id));
+    }
+
+    #[test]
+    fn unsubscribe_last_subscription_removes_callback_entry() {
+        let callback_id = CallbackId::new(42);
+        let (subscription, _receiver) = mpsc::channel();
+        let mut subscriptions = HashMap::new();
+        add_subscription(&mut subscriptions, callback_id, 1, subscription);
+
+        remove_subscription(&mut subscriptions, callback_id, 1);
+
+        assert!(!subscriptions.contains_key(&callback_id));
+    }
+
+    #[test]
+    fn closed_subscription_channel_does_not_block_other_subscribers() {
+        let callback_id = CallbackId::new(42);
+        let (closed_subscription, closed_receiver) = mpsc::channel();
+        let (active_subscription, active_receiver) = mpsc::channel();
+        drop(closed_receiver);
+        let mut subscriptions = HashMap::from([(
+            callback_id,
+            vec![(1, closed_subscription), (2, active_subscription)],
+        )]);
+        let mut pending_calls = HashMap::new();
+        let mut pending_callbacks = HashMap::new();
+
+        dispatch_inbound(
+            JsonRpcInbound::Notice {
+                callback_id,
+                payload: json!("active-only"),
+            },
+            &mut pending_calls,
+            &mut pending_callbacks,
+            &mut subscriptions,
+        );
+
+        assert_eq!(active_receiver.try_recv().unwrap(), json!("active-only"));
+        assert_eq!(subscriptions.get(&callback_id).unwrap().len(), 1);
+        assert_eq!(subscriptions.get(&callback_id).unwrap()[0].0, 2);
     }
 
     #[test]
@@ -582,7 +672,7 @@ mod tests {
         let (subscription_sender, subscription_receiver) = mpsc::channel();
         let mut pending_calls = HashMap::new();
         let mut pending_callbacks = HashMap::from([(callback_id, pending_callback)]);
-        let subscriptions = HashMap::from([(callback_id, vec![(1, subscription_sender)])]);
+        let mut subscriptions = HashMap::from([(callback_id, vec![(1, subscription_sender)])]);
 
         dispatch_inbound(
             JsonRpcInbound::Notice {
@@ -591,7 +681,7 @@ mod tests {
             },
             &mut pending_calls,
             &mut pending_callbacks,
-            &subscriptions,
+            &mut subscriptions,
         );
 
         assert_eq!(
@@ -613,7 +703,7 @@ mod tests {
             PendingCall::CallbackAck { callback_id },
         )]);
         let mut pending_callbacks = HashMap::from([(callback_id, pending_callback)]);
-        let subscriptions = HashMap::new();
+        let mut subscriptions = HashMap::new();
 
         dispatch_inbound(
             JsonRpcInbound::Error {
@@ -622,7 +712,7 @@ mod tests {
             },
             &mut pending_calls,
             &mut pending_callbacks,
-            &subscriptions,
+            &mut subscriptions,
         );
 
         let error = callback_receiver.try_recv().unwrap().unwrap_err();
@@ -636,7 +726,7 @@ mod tests {
         let (pending, receiver) = response_pending();
         let mut pending_calls = HashMap::from([(1, pending)]);
         let mut pending_callbacks = HashMap::new();
-        let subscriptions = HashMap::new();
+        let mut subscriptions = HashMap::new();
 
         dispatch_inbound(
             JsonRpcInbound::Response {
@@ -645,7 +735,7 @@ mod tests {
             },
             &mut pending_calls,
             &mut pending_callbacks,
-            &subscriptions,
+            &mut subscriptions,
         );
 
         assert!(matches!(receiver.try_recv(), Err(TryRecvError::Empty)));

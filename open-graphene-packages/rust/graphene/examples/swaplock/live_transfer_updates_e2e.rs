@@ -13,6 +13,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let from_account = env::var("SWAPLOCK_ACCOUNT")?;
     let to_account = env::var("SWAPLOCK_TO_ACCOUNT").unwrap_or_else(|_| "1.2.0".to_string());
 
+    println!(
+        "this example broadcasts a real transfer on the configured Swaplock testnet; never use production funds"
+    );
+
     let mut swaplock = Graphene::builder()
         .servers([
             "wss://node01.swaplock.chainpool.online:8090",
