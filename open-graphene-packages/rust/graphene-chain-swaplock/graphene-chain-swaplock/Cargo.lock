@@ -222,8 +222,6 @@ name = "graphene-chain-swaplock-bindings"
 version = "0.1.0"
 dependencies = [
  "open-graphene-fc",
- "open-graphene-sdk-core",
- "open-graphene-sdk-operations",
  "serde",
  "serde_json",
  "thiserror 2.0.18",

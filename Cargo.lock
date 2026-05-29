@@ -341,20 +341,6 @@ name = "graphene-chain-rsquared-bindings"
 version = "0.1.0"
 
 [[package]]
-name = "graphene-chain-swaplock"
-version = "0.1.0"
-dependencies = [
- "graphene-chain-swaplock-bindings",
- "open-graphene-sdk-core",
- "open-graphene-sdk-live",
- "open-graphene-sdk-operations",
- "open-graphene-transport",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
-]
-
-[[package]]
 name = "graphene-chain-swaplock-api"
 version = "0.1.0"
 dependencies = [
@@ -546,17 +532,6 @@ dependencies = [
  "open-graphene-sdk-primitives",
  "thiserror 2.0.18",
  "time",
-]
-
-[[package]]
-name = "open-graphene-sdk-live"
-version = "0.1.0"
-dependencies = [
- "open-graphene-sdk-core",
- "open-graphene-sdk-primitives",
- "open-graphene-transport",
- "serde_json",
- "thiserror 2.0.18",
 ]
 
 [[package]]

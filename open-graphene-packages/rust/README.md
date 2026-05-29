@@ -9,7 +9,8 @@ This directory contains Rust runtime crates, SDK helper crates, and generated ch
 - `graphene-sdk-core` (`open-graphene-sdk-core`): pure SDK helpers such as amount conversion, transaction headers, and balance checks; re-exports SDK primitives for compatibility.
 - `graphene-sdk-operations` (`open-graphene-sdk-operations`): common operation input models, adapter traits, and generic trait-based transaction builders, split one operation per module.
 - `graphene-transport` (`open-graphene-transport`): chain-agnostic Graphene JSON-RPC request, response, error, notice, blocking WebSocket, session bootstrap, and reusable live RPC envelope helpers. See [`graphene-transport`](graphene-transport/README.md) for the live crate API.
-- `graphene-chain-swaplock`: Swaplock-specific SDK operation modules and examples; depends on `graphene-chain-swaplock-bindings` for generated protocol types, while the bindings crate itself contains no high-level SDK operation code. See [`graphene-chain-swaplock`](graphene-chain-swaplock/graphene-chain-swaplock/README.md) for the public helper API boundary and live-operation flow.
+- `graphene-chain-swaplock-api`: current high-level Swaplock API surface used by the top-level `graphene` facade.
+- `graphene-chain-swaplock` (legacy, outside the root workspace): older Swaplock-specific SDK operation modules and live examples kept as a migration reference while missing write flows are moved to `graphene-chain-swaplock-api`.
 
 ## Current boundaries
 
@@ -18,7 +19,7 @@ This directory contains Rust runtime crates, SDK helper crates, and generated ch
 - `graphene-sdk-core` stays pure: no RPC, signing, broadcast, generated bindings, or chain-specific transaction construction.
 - `graphene-sdk-operations` owns shared operation input models, adapter traits, and generic transaction-builder helpers.
 - `graphene-chain-swaplock-api` is the current high-level Swaplock surface used by the top-level `graphene` facade.
-- The older `graphene-chain-swaplock` crate remains only as a legacy live-operation reference while missing write flows are migrated; it is not the public client path.
+- The older `graphene-chain-swaplock` crate remains outside the root workspace only as a legacy live-operation reference while missing write flows are migrated; it is not the public client path.
 - Signing, broadcast, fee policy, and confirmation policy stay explicit at call sites unless a later high-level API deliberately chooses those policies.
 
 Historical spike/design markdowns were removed from this directory once their useful constraints had been folded into code, crate READMEs, and GSD decisions.
