@@ -95,7 +95,7 @@ name = "graphene-chain-bitshares-bindings"
 version = "0.1.0"
 dependencies = [
  "open-graphene-fc",
- "open-graphene-sdk-core",
+ "open-graphene-core",
  "serde",
  "serde_json",
  "thiserror",
@@ -136,7 +136,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "open-graphene-sdk-core"
+name = "open-graphene-core"
 version = "0.1.0"
 dependencies = [
  "open-graphene-primitives",

@@ -328,8 +328,8 @@ version = "0.1.0"
 name = "graphene-chain-bitshares-bindings"
 version = "0.1.0"
 dependencies = [
+ "open-graphene-core",
  "open-graphene-fc",
- "open-graphene-sdk-core",
  "serde",
  "serde_json",
  "thiserror 2.0.18",
@@ -344,7 +344,7 @@ name = "graphene-chain-swaplock-api"
 version = "0.1.0"
 dependencies = [
  "graphene-chain-swaplock-bindings",
- "open-graphene-sdk-core",
+ "open-graphene-core",
  "open-graphene-transport",
  "serde_json",
  "thiserror 2.0.18",
@@ -494,6 +494,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
 
 [[package]]
+name = "open-graphene-core"
+version = "0.1.0"
+dependencies = [
+ "open-graphene-primitives",
+ "thiserror 2.0.18",
+ "time",
+]
+
+[[package]]
 name = "open-graphene-fc"
 version = "0.1.0"
 dependencies = [
@@ -528,15 +537,6 @@ name = "open-graphene-primitives"
 version = "0.1.0"
 dependencies = [
  "thiserror 2.0.18",
-]
-
-[[package]]
-name = "open-graphene-sdk-core"
-version = "0.1.0"
-dependencies = [
- "open-graphene-primitives",
- "thiserror 2.0.18",
- "time",
 ]
 
 [[package]]

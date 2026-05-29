@@ -3,7 +3,7 @@ mod history;
 mod network_broadcast;
 mod operations;
 
-use open_graphene_sdk_core::{AmountError, BalanceError, HeaderError, ObjectIdError};
+use open_graphene_core::{AmountError, BalanceError, HeaderError, ObjectIdError};
 use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
 

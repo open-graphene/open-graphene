@@ -7,7 +7,7 @@ use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId, PUBLI
 use graphene_chain_swaplock_bindings::generated::operations::TransferOperation;
 use graphene_chain_swaplock_bindings::generated::static_variants::Operation;
 use graphene_chain_swaplock_bindings::generated::types::{Asset, SignedTransaction, Transaction};
-use open_graphene_sdk_core::{
+use open_graphene_core::{
     AssetAmount, AssetIdRef, BalanceCheck, HeadBlock, TransactionHeader, decimal_to_raw_amount,
     ensure_sufficient_balance, transaction_header_from_head,
 };

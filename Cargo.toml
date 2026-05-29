@@ -6,7 +6,7 @@ members = [
     "open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-api",
     "open-graphene-packages/rust/graphene-fc",
     "open-graphene-packages/rust/graphene-primitives",
-    "open-graphene-packages/rust/graphene-sdk-core",
+    "open-graphene-packages/rust/graphene-core",
     "open-graphene-packages/rust/graphene-transport",
     "open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-bindings",
     "open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-bindings",
