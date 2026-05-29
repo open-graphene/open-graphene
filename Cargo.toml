@@ -1,9 +1,5 @@
 [workspace]
 resolver = "3"
-exclude = [
-    "open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock",
-    "open-graphene-packages/rust/graphene-sdk-live",
-]
 members = [
     "open-graphene/crates/*",
     "open-graphene-packages/rust/graphene",

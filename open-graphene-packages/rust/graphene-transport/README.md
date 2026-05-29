@@ -2,7 +2,7 @@
 
 `open-graphene-transport` is the chain-agnostic JSON-RPC transport crate for Graphene-family chains.
 
-It owns the reusable wire/session layer that sits below chain SDK crates such as `graphene-chain-swaplock`. It does not import generated chain bindings and does not interpret chain-specific protocol objects.
+It owns the reusable wire/session layer that sits below public chain API crates such as `graphene-chain-swaplock-api`. It does not import generated chain bindings and does not interpret chain-specific protocol objects.
 
 ## What this crate provides
 
@@ -210,4 +210,4 @@ A chain SDK crate should use this crate for transport/session/RPC envelopes, the
 - confirmation matchers;
 - object-specific validation and error messages.
 
-For example, `graphene-chain-swaplock` wraps these helpers behind its existing `GrapheneRpc` facade while retaining Swaplock-specific parsing and live-operation helpers.
+For example, `graphene-chain-swaplock-api` uses these helpers behind its database, history, operations, and broadcast request builders while keeping Swaplock-specific parsing, signing policy, and confirmation matchers in the chain API crate.

@@ -72,10 +72,12 @@ See `SIGNATURE-FORMAT.md` for the local C++/bitsharesjs evidence behind the next
 When changing FC support, run at minimum:
 
 ```bash
-cargo test --manifest-path open-graphene-packages/rust/graphene-fc/Cargo.toml
-cd open-graphene && cargo test -p open-graphene-gen-bindings-rs
-cd open-graphene && cargo test -p open-graphene-spec-gen
-open-graphene-packages/rust/graphene-chain-swaplock/bin/check.sh
+cargo test -p open-graphene-fc
+cargo test -p open-graphene-gen-bindings-rs
+cargo test -p open-graphene-spec-gen
+cargo test -p graphene-chain-swaplock-bindings
+cargo test -p graphene-chain-swaplock-api -p graphene
+cargo check -p graphene --examples
 ```
 
 After verification, remove any generated `target/` directories before committing.
