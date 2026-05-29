@@ -3,19 +3,13 @@ use std::time::Duration;
 use graphene_chain_swaplock_bindings::generated::fc::{
     decode_public_key, is_graphene_canonical_compact_signature, verify_compact_signature_public_key,
 };
-use graphene_chain_swaplock_bindings::generated::ids::{
-    AccountId, AssetId, LimitOrderId, PUBLIC_KEY_PREFIX,
-};
+use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId, PUBLIC_KEY_PREFIX};
 use graphene_chain_swaplock_bindings::generated::operations::TransferOperation;
-use graphene_chain_swaplock_bindings::generated::static_variants::{FutureExtensions, Operation};
+use graphene_chain_swaplock_bindings::generated::static_variants::Operation;
 use graphene_chain_swaplock_bindings::generated::types::{Asset, SignedTransaction, Transaction};
 use open_graphene_sdk_core::{
     AssetAmount, AssetIdRef, BalanceCheck, HeadBlock, TransactionHeader, decimal_to_raw_amount,
     ensure_sufficient_balance, transaction_header_from_head,
-};
-use open_graphene_sdk_operations::{
-    GrapheneOperationBuilderTypes, SignedTransactionJsonParts, TransferChainTypes, TransferInput,
-    build_transfer_transaction_for, signed_transaction_broadcast_json,
 };
 use open_graphene_transport::GrapheneSession;
 use serde_json::{Value, json};
@@ -67,65 +61,6 @@ pub struct SignedTransfer {
     balance_after: i64,
     asset_precision: u8,
     head_block_number: u64,
-}
-
-struct SwaplockOperationBuilderTypes;
-
-impl GrapheneOperationBuilderTypes for SwaplockOperationBuilderTypes {
-    type Transaction = Transaction;
-    type Operation = Operation;
-    type Asset = Asset;
-    type AccountId = AccountId;
-    type AssetId = AssetId;
-    type LimitOrderId = LimitOrderId;
-    type FutureExtensions = Vec<FutureExtensions>;
-
-    fn asset(amount: i64, asset_id: Self::AssetId) -> Self::Asset {
-        Asset::new(amount, asset_id)
-    }
-
-    fn empty_extensions() -> Self::FutureExtensions {
-        vec![]
-    }
-
-    fn transaction(
-        header: TransactionHeader,
-        operations: Vec<Self::Operation>,
-        extensions: Self::FutureExtensions,
-    ) -> Self::Transaction {
-        Transaction {
-            ref_block_num: header.ref_block_num,
-            ref_block_prefix: header.ref_block_prefix,
-            expiration: header.expiration,
-            operations,
-            extensions,
-        }
-    }
-}
-
-impl TransferChainTypes for SwaplockOperationBuilderTypes {
-    type TransferOperation = TransferOperation;
-
-    fn transfer_operation_without_memo(
-        fee: Self::Asset,
-        from: Self::AccountId,
-        to: Self::AccountId,
-        amount: Self::Asset,
-        extensions: Self::FutureExtensions,
-    ) -> Self::TransferOperation {
-        TransferOperation {
-            fee,
-            from,
-            to,
-            amount,
-            memo: None,
-            extensions,
-        }
-    }
-
-    fn operation_transfer(operation: Self::TransferOperation) -> Self::Operation {
-        Operation::transfer(operation)
-    }
 }
 
 impl<'session> TransferRequest<'session> {
@@ -225,16 +160,15 @@ impl<'session> TransferRequest<'session> {
         )?;
         let head_block_number = properties.head_block_number as u64;
 
-        let mut transaction =
-            build_transfer_transaction_for::<SwaplockOperationBuilderTypes>(TransferInput::new(
-                header,
-                from_account.id.0.clone(),
-                to_account.id.0.clone(),
-                amount_raw,
-                asset.id.0.clone(),
-                0,
-                fee_asset.id.0.clone(),
-            ));
+        let mut transaction = build_transfer_transaction(
+            header,
+            from_account.id.0.clone(),
+            to_account.id.0.clone(),
+            amount_raw,
+            asset.id.0.clone(),
+            0,
+            fee_asset.id.0.clone(),
+        );
         let required_fee = required_transfer_fee(database.session, &transaction, &fee_asset.id.0)?;
         if required_fee.amount > max_fee {
             return Err(SwaplockApiError::TransferFeeTooHigh {
@@ -424,6 +358,33 @@ async fn resolve_asset(
     }
 }
 
+fn build_transfer_transaction(
+    header: TransactionHeader,
+    from_id: impl Into<String>,
+    to_id: impl Into<String>,
+    amount: i64,
+    asset_id: impl Into<String>,
+    fee_amount: i64,
+    fee_asset_id: impl Into<String>,
+) -> Transaction {
+    let operation = TransferOperation {
+        fee: Asset::new(fee_amount, AssetId(fee_asset_id.into())),
+        from: AccountId(from_id.into()),
+        to: AccountId(to_id.into()),
+        amount: Asset::new(amount, AssetId(asset_id.into())),
+        memo: None,
+        extensions: vec![],
+    };
+
+    Transaction {
+        ref_block_num: header.ref_block_num,
+        ref_block_prefix: header.ref_block_prefix,
+        expiration: header.expiration,
+        operations: vec![Operation::transfer(operation)],
+        extensions: vec![],
+    }
+}
+
 fn required_transfer_fee(
     session: &mut GrapheneSession,
     transaction: &Transaction,
@@ -530,19 +491,18 @@ fn signed_transfer_json(signed_transaction: &SignedTransaction) -> Result<Value,
         .map(transfer_operation_json)
         .collect::<Result<Vec<_>, _>>()?;
 
-    Ok(signed_transaction_broadcast_json(
-        SignedTransactionJsonParts {
-            ref_block_num: signed_transaction.ref_block_num,
-            ref_block_prefix: signed_transaction.ref_block_prefix,
-            expiration: &signed_transaction.expiration,
-            operations,
-            signatures: signed_transaction
-                .signatures
-                .iter()
-                .map(|signature| signature.0.as_slice())
-                .collect(),
-        },
-    ))
+    Ok(json!({
+        "ref_block_num": signed_transaction.ref_block_num,
+        "ref_block_prefix": signed_transaction.ref_block_prefix,
+        "expiration": signed_transaction.expiration,
+        "operations": operations,
+        "extensions": [],
+        "signatures": signed_transaction
+            .signatures
+            .iter()
+            .map(|signature| hex(&signature.0))
+            .collect::<Vec<_>>(),
+    }))
 }
 
 fn transfer_operation_json(operation: &Operation) -> Result<Value, SwaplockApiError> {
@@ -587,20 +547,19 @@ mod tests {
 
     #[test]
     fn transfer_operation_json_matches_graphene_wire_shape() {
-        let transaction =
-            build_transfer_transaction_for::<SwaplockOperationBuilderTypes>(TransferInput::new(
-                TransactionHeader {
-                    ref_block_num: 2,
-                    ref_block_prefix: 3,
-                    expiration: "2026-05-25T12:01:00".to_string(),
-                },
-                "1.2.100",
-                "1.2.101",
-                100_000,
-                "1.3.0",
-                0,
-                "1.3.0",
-            ));
+        let transaction = build_transfer_transaction(
+            TransactionHeader {
+                ref_block_num: 2,
+                ref_block_prefix: 3,
+                expiration: "2026-05-25T12:01:00".to_string(),
+            },
+            "1.2.100",
+            "1.2.101",
+            100_000,
+            "1.3.0",
+            0,
+            "1.3.0",
+        );
 
         assert_eq!(
             transfer_operation_json(transaction.operations.first().unwrap()).unwrap(),
@@ -713,7 +672,7 @@ mod tests {
     }
 
     fn fixture_transfer_transaction() -> Transaction {
-        build_transfer_transaction_for::<SwaplockOperationBuilderTypes>(TransferInput::new(
+        build_transfer_transaction(
             TransactionHeader {
                 ref_block_num: 2,
                 ref_block_prefix: 3,
@@ -725,6 +684,6 @@ mod tests {
             "1.3.0",
             0,
             "1.3.0",
-        ))
+        )
     }
 }

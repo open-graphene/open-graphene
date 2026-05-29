@@ -346,7 +346,6 @@ version = "0.1.0"
 dependencies = [
  "graphene-chain-swaplock-bindings",
  "open-graphene-sdk-core",
- "open-graphene-sdk-operations",
  "open-graphene-transport",
  "serde_json",
  "thiserror 2.0.18",
