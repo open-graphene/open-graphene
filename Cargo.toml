@@ -9,7 +9,6 @@ members = [
     "open-graphene-packages/rust/graphene-sdk-core",
     "open-graphene-packages/rust/graphene-sdk-operations",
     "open-graphene-packages/rust/graphene-transport",
-    "open-graphene-packages/rust/graphene-sdk-live",
     "open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-bindings",
     "open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock",
     "open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-bindings",
