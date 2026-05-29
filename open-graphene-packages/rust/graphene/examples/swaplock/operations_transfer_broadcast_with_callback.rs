@@ -37,7 +37,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .sign_transfer_with_wif(prepared, &wif)
         .await?;
 
-    println!("submitting signed transfer without callback confirmation");
+    println!("broadcasting signed transfer with callback confirmation");
     println!("from: {}", signed.from_id());
     println!("to: {}", signed.to_id());
     println!("amount: {} {}", signed.amount(), signed.asset_id());
@@ -48,15 +48,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         signed.signed_transaction().signatures.len()
     );
 
-    let receipt = swaplock
+    let confirmation = swaplock
         .network_broadcast()
-        .broadcast_signed_transfer(signed)
+        .broadcast_signed_transfer_with_callback(signed)
         .await?;
 
-    println!("submitted: node accepted broadcast_transaction request");
+    println!("confirmed: block {}", confirmation.block_num());
+    println!("transaction id: {}", confirmation.id());
+    println!("trx_num: {}", confirmation.trx_num());
     println!(
-        "transaction json operations: {}",
-        receipt.transaction()["operations"]
+        "operation results: {}",
+        confirmation.transaction()["operation_results"]
             .as_array()
             .map_or(0, Vec::len)
     );

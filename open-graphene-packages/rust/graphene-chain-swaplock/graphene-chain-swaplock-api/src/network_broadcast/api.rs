@@ -8,6 +8,11 @@ pub struct NetworkBroadcastApi<'session> {
     pub(crate) session: &'session mut GrapheneSession,
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct BroadcastReceipt {
+    transaction: Value,
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct BroadcastConfirmation {
     pub id: Value,
@@ -20,20 +25,42 @@ impl<'session> NetworkBroadcastApi<'session> {
     pub async fn broadcast_signed_transfer(
         self,
         signed: SignedTransfer,
+    ) -> Result<BroadcastReceipt, SwaplockApiError> {
+        self.broadcast_transaction(signed.transaction_json()?).await
+    }
+
+    pub async fn broadcast_signed_transfer_with_callback(
+        self,
+        signed: SignedTransfer,
     ) -> Result<BroadcastConfirmation, SwaplockApiError> {
-        self.broadcast_transaction_json(signed.transaction_json()?)
+        self.broadcast_transaction_with_callback(signed.transaction_json()?)
             .await
     }
 
-    pub async fn broadcast_transaction_json(
+    pub async fn broadcast_transaction(
         self,
-        transaction_json: Value,
+        transaction: Value,
+    ) -> Result<BroadcastReceipt, SwaplockApiError> {
+        self.session
+            .network_broadcast_call("broadcast_transaction", json!([transaction.clone()]))?;
+        Ok(BroadcastReceipt { transaction })
+    }
+
+    pub async fn broadcast_transaction_with_callback(
+        self,
+        transaction: Value,
     ) -> Result<BroadcastConfirmation, SwaplockApiError> {
         let confirmation = self.session.network_broadcast_call_with_callback(
             "broadcast_transaction_with_callback",
-            json!([transaction_json]),
+            json!([transaction]),
         )?;
         parse_broadcast_confirmation(confirmation)
+    }
+}
+
+impl BroadcastReceipt {
+    pub fn transaction(&self) -> &Value {
+        &self.transaction
     }
 }
 
@@ -73,6 +100,20 @@ fn parse_broadcast_confirmation(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn receipt_preserves_submitted_transaction_json() {
+        let transaction = json!({
+            "ref_block_num": 1,
+            "operations": [],
+            "signatures": ["abc"]
+        });
+        let receipt = BroadcastReceipt {
+            transaction: transaction.clone(),
+        };
+
+        assert_eq!(receipt.transaction(), &transaction);
+    }
 
     #[test]
     fn parses_broadcast_confirmation() {

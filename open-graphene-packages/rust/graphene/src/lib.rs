@@ -6,7 +6,7 @@ pub use chain::{Acta, ActaClient, BitShares, BitSharesClient, ChainClientBuilder
 pub use client::{GrapheneClient, GrapheneClientBuilder, GrapheneClientConfig};
 pub use error::{GrapheneConfigError, GrapheneConnectError};
 pub use graphene_chain_swaplock_api::{
-    AccountHistoryPage, AccountHistorySubscription, BroadcastConfirmation,
+    AccountHistoryPage, AccountHistorySubscription, BroadcastConfirmation, BroadcastReceipt,
     DEFAULT_ACCOUNT_HISTORY_LIMIT, DEFAULT_ACCOUNT_HISTORY_OFFSET, MAX_ACCOUNT_HISTORY_LIMIT,
     NetworkBroadcastApi, PreparedTransfer, SWAPLOCK_CHAIN_ID, SignedTransfer, SwaplockApi,
     SwaplockApiError, TransferRequest,
