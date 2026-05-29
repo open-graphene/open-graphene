@@ -1,6 +1,6 @@
 # Open Graphene Rust Packages
 
-This directory contains the active Rust runtime crates, SDK helper crates, generated chain binding crates, and the public `graphene` facade for Open Graphene.
+This directory contains the active Rust runtime crates, pure SDK helper crates, generated chain binding crates, and the public `graphene` facade for Open Graphene.
 
 ## Crates
 
@@ -11,7 +11,6 @@ This directory contains the active Rust runtime crates, SDK helper crates, gener
 - `graphene-fc` (`open-graphene-fc`): FC serialization, signing, digest, and WIF helpers.
 - `graphene-primitives` (`open-graphene-primitives`): stable chain-agnostic SDK value references and validators such as object IDs, account IDs, asset IDs, asset amounts, limit-order IDs, and operation-history IDs.
 - `graphene-sdk-core` (`open-graphene-sdk-core`): pure SDK helpers such as amount conversion, transaction headers, and balance checks; re-exports SDK primitives for compatibility.
-- `graphene-sdk-operations` (`open-graphene-sdk-operations`): common operation input models, adapter traits, and generic trait-based transaction builders, split one operation per module.
 - `graphene-transport` (`open-graphene-transport`): chain-agnostic Graphene JSON-RPC request, response, error, notice, blocking WebSocket, session bootstrap, and reusable live RPC envelope helpers. See [`graphene-transport`](graphene-transport/README.md) for the live crate API.
 
 ## Current boundaries
@@ -19,8 +18,7 @@ This directory contains the active Rust runtime crates, SDK helper crates, gener
 - Generated chain binding crates own raw protocol and wire types.
 - `graphene-transport` is Graphene-generic JSON-RPC transport and does not import generated chain bindings.
 - `graphene-sdk-core` stays pure: no RPC, signing, broadcast, generated bindings, or chain-specific transaction construction.
-- `graphene-sdk-operations` owns shared operation input models, adapter traits, and generic transaction-builder helpers.
 - `graphene-chain-swaplock-api` is the current high-level Swaplock surface used by the top-level `graphene` facade.
 - Signing, broadcast, fee policy, and confirmation policy stay explicit at call sites unless a later high-level API deliberately chooses those policies.
 
-Historical spike/design markdowns and the older Swaplock live SDK stack were removed once their useful constraints had been folded into code, crate READMEs, and GSD decisions.
+Historical spike/design markdowns, the older Swaplock live SDK stack, and unused shared operation-adapter helpers were removed once their useful constraints had been folded into code, crate READMEs, and GSD decisions.

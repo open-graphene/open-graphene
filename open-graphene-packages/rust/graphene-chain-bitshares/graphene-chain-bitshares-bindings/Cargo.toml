@@ -8,7 +8,6 @@ description = "Generated Rust bindings for the BitShares Open Graphene protocol.
 [dependencies]
 open-graphene-fc = { path = "../../graphene-fc" }
 open-graphene-sdk-core = { path = "../../graphene-sdk-core" }
-open-graphene-sdk-operations = { path = "../../graphene-sdk-operations" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
