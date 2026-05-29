@@ -1,10 +1,9 @@
 use open_graphene_transport::GrapheneSession;
 
-use crate::{SwaplockApiError, TransferBroadcastReceipt};
+use crate::SwaplockApiError;
 
 use super::sign_transfer::sign_transfer_with_wif;
 use super::transfer::{PreparedTransfer, SignedTransfer, TransferRequest};
-use super::transfer_confirmation::{TransferConfirmation, wait_for_transfer_confirmation};
 
 pub struct OperationsApi<'session> {
     pub(crate) session: &'session mut GrapheneSession,
@@ -21,12 +20,5 @@ impl<'session> OperationsApi<'session> {
         wif: &str,
     ) -> Result<SignedTransfer, SwaplockApiError> {
         sign_transfer_with_wif(self.session, prepared, wif).await
-    }
-
-    pub async fn wait_for_transfer_confirmation(
-        self,
-        receipt: &TransferBroadcastReceipt,
-    ) -> Result<TransferConfirmation, SwaplockApiError> {
-        wait_for_transfer_confirmation(self.session, receipt).await
     }
 }

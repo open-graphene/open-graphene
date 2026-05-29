@@ -48,31 +48,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         signed.signed_transaction().signatures.len()
     );
 
-    let receipt = swaplock
+    let confirmation = swaplock
         .network_broadcast()
         .broadcast_signed_transfer(signed)
         .await?;
 
-    println!("broadcast: submitted");
+    println!("confirmed: block {}", confirmation.block_num());
+    println!("transaction id: {}", confirmation.id());
+    println!("trx_num: {}", confirmation.trx_num());
     println!(
-        "transaction json operations: {}",
-        receipt.transaction_json()["operations"]
+        "operation results: {}",
+        confirmation.transaction()["operation_results"]
             .as_array()
             .map_or(0, Vec::len)
     );
-
-    let confirmation = swaplock
-        .operations()
-        .wait_for_transfer_confirmation(&receipt)
-        .await?;
-
-    println!(
-        "confirmed: block {}, history {}",
-        confirmation.block_num(),
-        confirmation.id()
-    );
-    println!("confirmation trx_in_block: {}", confirmation.trx_in_block());
-    println!("confirmation op_in_trx: {}", confirmation.op_in_trx());
 
     Ok(())
 }

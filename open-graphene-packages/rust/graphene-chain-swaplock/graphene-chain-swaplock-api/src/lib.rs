@@ -7,10 +7,8 @@ use open_graphene_core::{AmountError, BalanceError, HeaderError, ObjectIdError};
 use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
 
-pub use network_broadcast::{BroadcastReceipt, NetworkBroadcastApi, TransferBroadcastReceipt};
-pub use operations::{
-    OperationsApi, PreparedTransfer, SignedTransfer, TransferConfirmation, TransferRequest,
-};
+pub use network_broadcast::{BroadcastConfirmation, NetworkBroadcastApi};
+pub use operations::{OperationsApi, PreparedTransfer, SignedTransfer, TransferRequest};
 
 pub use history::{
     AccountHistoryByIdRequest, AccountHistoryPage, AccountHistoryRequest,
@@ -81,17 +79,6 @@ pub enum SwaplockApiError {
 
     #[error("required transfer fee {required} exceeds max fee {max}")]
     TransferFeeTooHigh { required: i64, max: i64 },
-
-    #[error(
-        "transfer confirmation not found from {from} to {to} amount {amount} asset {asset} after block {min_block_num}"
-    )]
-    TransferConfirmationNotFound {
-        from: String,
-        to: String,
-        amount: i64,
-        asset: String,
-        min_block_num: u64,
-    },
 
     #[error(transparent)]
     Header(#[from] HeaderError),

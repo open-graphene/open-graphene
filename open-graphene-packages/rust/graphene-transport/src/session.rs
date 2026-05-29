@@ -81,6 +81,21 @@ impl GrapheneSession {
             })?;
         self.transport.call(api_id, method, params)
     }
+
+    pub fn network_broadcast_call_with_callback(
+        &mut self,
+        method: &str,
+        params_after_callback: Value,
+    ) -> Result<Value, TransportError> {
+        let api_id = self
+            .api_ids
+            .network_broadcast
+            .ok_or(TransportError::MissingApi {
+                name: "network_broadcast",
+            })?;
+        self.transport
+            .call_with_callback(api_id, method, params_after_callback)
+    }
 }
 
 fn discover_required_api(

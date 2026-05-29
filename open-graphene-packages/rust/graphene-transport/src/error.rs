@@ -24,6 +24,9 @@ pub enum TransportError {
     #[error("Graphene notice callback id is not an integer")]
     NoticeInvalidCallbackId,
 
+    #[error("Graphene callback params must be an array")]
+    CallbackParamsNotArray,
+
     #[error("unsupported JSON-RPC inbound message")]
     UnsupportedInboundMessage,
 

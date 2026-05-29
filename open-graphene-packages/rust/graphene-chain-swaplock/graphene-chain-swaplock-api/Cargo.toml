@@ -10,5 +10,6 @@ repository = "https://github.com/open-graphene/open-graphene"
 graphene-chain-swaplock-bindings = { path = "../graphene-chain-swaplock-bindings" }
 open-graphene-core = { path = "../../graphene-core" }
 open-graphene-transport = { path = "../../graphene-transport" }
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"

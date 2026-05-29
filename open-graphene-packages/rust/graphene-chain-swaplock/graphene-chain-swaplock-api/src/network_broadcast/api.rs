@@ -1,4 +1,5 @@
 use open_graphene_transport::GrapheneSession;
+use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
 use crate::{SignedTransfer, SwaplockApiError};
@@ -7,115 +8,66 @@ pub struct NetworkBroadcastApi<'session> {
     pub(crate) session: &'session mut GrapheneSession,
 }
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct BroadcastReceipt {
-    transaction_json: Value,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct TransferBroadcastReceipt {
-    transaction_json: Value,
-    from_id: String,
-    to_id: String,
-    asset_id: String,
-    amount: i64,
-    fee_amount: i64,
-    fee_asset_id: String,
-    min_block_num: u64,
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct BroadcastConfirmation {
+    pub id: Value,
+    pub block_num: u32,
+    pub trx_num: u32,
+    pub trx: Value,
 }
 
 impl<'session> NetworkBroadcastApi<'session> {
     pub async fn broadcast_signed_transfer(
         self,
         signed: SignedTransfer,
-    ) -> Result<TransferBroadcastReceipt, SwaplockApiError> {
-        let transaction_json = signed.transaction_json()?;
-        let receipt = TransferBroadcastReceipt {
-            transaction_json: transaction_json.clone(),
-            from_id: signed.from_id().to_string(),
-            to_id: signed.to_id().to_string(),
-            asset_id: signed.asset_id().to_string(),
-            amount: signed.amount(),
-            fee_amount: signed.fee().amount,
-            fee_asset_id: signed.fee().asset_id.0.clone(),
-            min_block_num: signed.head_block_number(),
-        };
-        self.session
-            .network_broadcast_call("broadcast_transaction", json!([transaction_json]))?;
-        Ok(receipt)
+    ) -> Result<BroadcastConfirmation, SwaplockApiError> {
+        self.broadcast_transaction_json(signed.transaction_json()?)
+            .await
     }
 
     pub async fn broadcast_transaction_json(
         self,
         transaction_json: Value,
-    ) -> Result<BroadcastReceipt, SwaplockApiError> {
-        self.session
-            .network_broadcast_call("broadcast_transaction", json!([transaction_json.clone()]))?;
-        Ok(BroadcastReceipt { transaction_json })
+    ) -> Result<BroadcastConfirmation, SwaplockApiError> {
+        let confirmation = self.session.network_broadcast_call_with_callback(
+            "broadcast_transaction_with_callback",
+            json!([transaction_json]),
+        )?;
+        parse_broadcast_confirmation(confirmation)
     }
 }
 
-impl BroadcastReceipt {
-    pub fn transaction_json(&self) -> &Value {
-        &self.transaction_json
+impl BroadcastConfirmation {
+    pub fn id(&self) -> &Value {
+        &self.id
+    }
+
+    pub fn block_num(&self) -> u32 {
+        self.block_num
+    }
+
+    pub fn trx_num(&self) -> u32 {
+        self.trx_num
+    }
+
+    pub fn transaction(&self) -> &Value {
+        &self.trx
     }
 }
 
-impl TransferBroadcastReceipt {
-    pub fn transaction_json(&self) -> &Value {
-        &self.transaction_json
-    }
-
-    #[cfg(test)]
-    pub(crate) fn from_parts_for_tests(
-        transaction_json: Value,
-        from_id: String,
-        to_id: String,
-        asset_id: String,
-        amount: i64,
-        fee_amount: i64,
-        fee_asset_id: String,
-        min_block_num: u64,
-    ) -> Self {
-        Self {
-            transaction_json,
-            from_id,
-            to_id,
-            asset_id,
-            amount,
-            fee_amount,
-            fee_asset_id,
-            min_block_num,
+fn parse_broadcast_confirmation(
+    mut value: Value,
+) -> Result<BroadcastConfirmation, SwaplockApiError> {
+    if let Some(values) = value.as_array_mut() {
+        if values.len() == 1 {
+            value = values.remove(0);
         }
     }
 
-    pub fn from_id(&self) -> &str {
-        &self.from_id
-    }
-
-    pub fn to_id(&self) -> &str {
-        &self.to_id
-    }
-
-    pub fn asset_id(&self) -> &str {
-        &self.asset_id
-    }
-
-    pub fn amount(&self) -> i64 {
-        self.amount
-    }
-
-    pub fn fee_amount(&self) -> i64 {
-        self.fee_amount
-    }
-
-    pub fn fee_asset_id(&self) -> &str {
-        &self.fee_asset_id
-    }
-
-    pub fn min_block_num(&self) -> u64 {
-        self.min_block_num
-    }
+    serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
+        method: "network_broadcast.broadcast_transaction_with_callback",
+        message: error.to_string(),
+    })
 }
 
 #[cfg(test)]
@@ -123,38 +75,53 @@ mod tests {
     use super::*;
 
     #[test]
-    fn receipt_preserves_submitted_transaction_json() {
-        let transaction_json = json!({
-            "ref_block_num": 1,
-            "operations": [],
-            "signatures": ["abc"]
-        });
-        let receipt = BroadcastReceipt {
-            transaction_json: transaction_json.clone(),
-        };
+    fn parses_broadcast_confirmation() {
+        let confirmation = parse_broadcast_confirmation(json!({
+            "id": {"_hash": [1, 2, 3, 4, 5]},
+            "block_num": 123,
+            "trx_num": 4,
+            "trx": {
+                "ref_block_num": 1,
+                "ref_block_prefix": 2,
+                "expiration": "2026-01-01T00:00:00",
+                "operations": [],
+                "extensions": [],
+                "signatures": [],
+                "operation_results": []
+            }
+        }))
+        .unwrap();
 
-        assert_eq!(receipt.transaction_json(), &transaction_json);
+        assert_eq!(confirmation.id(), &json!({"_hash": [1, 2, 3, 4, 5]}));
+        assert_eq!(confirmation.block_num(), 123);
+        assert_eq!(confirmation.trx_num(), 4);
+        assert_eq!(
+            confirmation.transaction()["operations"]
+                .as_array()
+                .unwrap()
+                .len(),
+            0
+        );
     }
 
     #[test]
-    fn transfer_receipt_preserves_confirmation_fields() {
-        let receipt = TransferBroadcastReceipt {
-            transaction_json: json!({"operations": []}),
-            from_id: "1.2.100".to_string(),
-            to_id: "1.2.0".to_string(),
-            asset_id: "1.3.0".to_string(),
-            amount: 1,
-            fee_amount: 200_000,
-            fee_asset_id: "1.3.0".to_string(),
-            min_block_num: 123,
-        };
+    fn parses_single_item_callback_payload() {
+        let confirmation = parse_broadcast_confirmation(json!([{
+            "id": {"_hash": [1, 2, 3, 4, 5]},
+            "block_num": 123,
+            "trx_num": 4,
+            "trx": {
+                "ref_block_num": 1,
+                "ref_block_prefix": 2,
+                "expiration": "2026-01-01T00:00:00",
+                "operations": [],
+                "extensions": [],
+                "signatures": [],
+                "operation_results": []
+            }
+        }]))
+        .unwrap();
 
-        assert_eq!(receipt.from_id(), "1.2.100");
-        assert_eq!(receipt.to_id(), "1.2.0");
-        assert_eq!(receipt.asset_id(), "1.3.0");
-        assert_eq!(receipt.amount(), 1);
-        assert_eq!(receipt.fee_amount(), 200_000);
-        assert_eq!(receipt.fee_asset_id(), "1.3.0");
-        assert_eq!(receipt.min_block_num(), 123);
+        assert_eq!(confirmation.block_num(), 123);
     }
 }

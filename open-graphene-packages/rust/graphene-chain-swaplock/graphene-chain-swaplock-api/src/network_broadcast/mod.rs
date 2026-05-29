@@ -1,3 +1,3 @@
 mod api;
 
-pub use api::{BroadcastReceipt, NetworkBroadcastApi, TransferBroadcastReceipt};
+pub use api::{BroadcastConfirmation, NetworkBroadcastApi};

@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 use std::net::TcpStream;
 
-use serde_json::Value;
+use serde_json::{Value, json};
 use tungstenite::stream::MaybeTlsStream;
 use tungstenite::{Message, WebSocket, connect};
 
@@ -35,26 +35,24 @@ impl WebSocketTransport {
             .send(Message::Text(request.to_value().to_string()))
             .map_err(TransportError::websocket)?;
 
-        loop {
-            match self.read_inbound()? {
-                JsonRpcInbound::Response { id: actual, result } if actual == id => {
-                    return Ok(result);
-                }
-                JsonRpcInbound::Error { id: actual, error } if actual == id => {
-                    return Err(TransportError::RpcError { id: actual, error });
-                }
-                JsonRpcInbound::Response { id: actual, .. }
-                | JsonRpcInbound::Error { id: actual, .. } => {
-                    return Err(TransportError::UnexpectedResponseId {
-                        expected: id,
-                        actual,
-                    });
-                }
-                notice @ JsonRpcInbound::Notice { .. } => {
-                    self.buffered_notices.push_back(notice);
-                }
-            }
-        }
+        self.wait_for_response(id)
+    }
+
+    pub fn call_with_callback(
+        &mut self,
+        api_id: u64,
+        method: &str,
+        params_after_callback: Value,
+    ) -> Result<Value, TransportError> {
+        let id = self.allocate_request_id();
+        let params = params_with_callback_id(id, params_after_callback)?;
+        let request = JsonRpcRequest::graphene_call(id, api_id, method, params);
+        self.socket
+            .send(Message::Text(request.to_value().to_string()))
+            .map_err(TransportError::websocket)?;
+
+        self.wait_for_response(id)?;
+        self.wait_for_notice_payload(id)
     }
 
     pub fn next_buffered_notice(&mut self) -> Option<JsonRpcInbound> {
@@ -86,6 +84,62 @@ impl WebSocketTransport {
         id
     }
 
+    fn wait_for_response(&mut self, id: u64) -> Result<Value, TransportError> {
+        loop {
+            match self.read_inbound()? {
+                JsonRpcInbound::Response { id: actual, result } if actual == id => {
+                    return Ok(result);
+                }
+                JsonRpcInbound::Error { id: actual, error } if actual == id => {
+                    return Err(TransportError::RpcError { id: actual, error });
+                }
+                JsonRpcInbound::Response { id: actual, .. }
+                | JsonRpcInbound::Error { id: actual, .. } => {
+                    return Err(TransportError::UnexpectedResponseId {
+                        expected: id,
+                        actual,
+                    });
+                }
+                notice @ JsonRpcInbound::Notice { .. } => {
+                    self.buffered_notices.push_back(notice);
+                }
+            }
+        }
+    }
+
+    fn wait_for_notice_payload(&mut self, callback_id: u64) -> Result<Value, TransportError> {
+        if let Some(payload) = self.take_buffered_notice_payload(callback_id) {
+            return Ok(payload);
+        }
+
+        loop {
+            match self.read_inbound()? {
+                JsonRpcInbound::Notice {
+                    callback_id: actual,
+                    payload,
+                } if actual == callback_id => return Ok(payload),
+                notice @ JsonRpcInbound::Notice { .. } => {
+                    self.buffered_notices.push_back(notice);
+                }
+                JsonRpcInbound::Response { .. } | JsonRpcInbound::Error { .. } => {
+                    return Err(TransportError::UnsupportedInboundMessage);
+                }
+            }
+        }
+    }
+
+    fn take_buffered_notice_payload(&mut self, callback_id: u64) -> Option<Value> {
+        let position = self
+            .buffered_notices
+            .iter()
+            .position(|notice| matches!(notice, JsonRpcInbound::Notice { callback_id: actual, .. } if *actual == callback_id))?;
+        let Some(JsonRpcInbound::Notice { payload, .. }) = self.buffered_notices.remove(position)
+        else {
+            return None;
+        };
+        Some(payload)
+    }
+
     fn read_inbound(&mut self) -> Result<JsonRpcInbound, TransportError> {
         loop {
             match self.socket.read().map_err(TransportError::websocket)? {
@@ -99,5 +153,38 @@ impl WebSocketTransport {
                 }
             }
         }
+    }
+}
+
+fn params_with_callback_id(
+    callback_id: u64,
+    params_after_callback: Value,
+) -> Result<Value, TransportError> {
+    let mut params = params_after_callback
+        .as_array()
+        .cloned()
+        .ok_or(TransportError::CallbackParamsNotArray)?;
+    params.insert(0, json!(callback_id));
+    Ok(Value::Array(params))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn prepends_graphene_callback_id_to_params_array() {
+        assert_eq!(
+            params_with_callback_id(7, json!([{"trx": true}])).unwrap(),
+            json!([7, {"trx": true}])
+        );
+    }
+
+    #[test]
+    fn rejects_callback_params_that_are_not_an_array() {
+        assert!(matches!(
+            params_with_callback_id(7, json!({"trx": true})),
+            Err(TransportError::CallbackParamsNotArray)
+        ));
     }
 }
