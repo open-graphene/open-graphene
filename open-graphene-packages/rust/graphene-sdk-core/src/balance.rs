@@ -1,5 +1,5 @@
 use crate::AssetAmount;
-use open_graphene_sdk_primitives::AssetIdRef;
+use open_graphene_primitives::AssetIdRef;
 use thiserror::Error;
 
 #[derive(Clone, Debug, PartialEq, Eq)]

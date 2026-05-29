@@ -3,7 +3,7 @@
 version = 4
 
 [[package]]
-name = "open-graphene-sdk-primitives"
+name = "open-graphene-primitives"
 version = "0.1.0"
 dependencies = [
  "thiserror",

@@ -1,4 +1,4 @@
-pub use open_graphene_sdk_primitives::{
+pub use open_graphene_primitives::{
     AccountIdRef, AssetAmount, AssetIdRef, LimitOrderIdRef, ObjectId, ObjectIdError,
     OperationHistoryIdRef,
 };
