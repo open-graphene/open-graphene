@@ -38,6 +38,7 @@ use open_graphene_transport::{
     GrapheneSession,
     JsonRpcInbound,
     JsonRpcRequest,
+    LiveTransport,
     TransportError,
     WebSocketTransport,
 };
@@ -120,7 +121,42 @@ This is only message plumbing: the transport does not know which RPC method regi
 
 The raw transport does not reconnect by itself.
 
-## Graphene session bootstrap
+## Live dispatcher mode
+
+For callers that need multiple in-flight requests and subscription notices on one WebSocket, a bootstrapped `GrapheneSession` can be consumed into a transport-only live dispatcher:
+
+```rust
+use open_graphene_transport::{CallbackId, GrapheneSession};
+use serde_json::json;
+use std::time::Duration;
+
+let session = GrapheneSession::connect("wss://node.example:8090")?;
+let database_api_id = session.api_ids().database;
+let live = session.into_live_transport()?;
+
+let subscription = live.subscribe_callback(CallbackId::new(42_001))?;
+live.call(
+    database_api_id,
+    "set_subscribe_callback",
+    json!([42_001, false]),
+)?.wait_timeout(Duration::from_secs(10))?;
+
+let first = live.call(database_api_id, "get_dynamic_global_properties", json!([]))?;
+let second = live.call(database_api_id, "get_dynamic_global_properties", json!([]))?;
+let first_value = first.wait_timeout(Duration::from_secs(10))?;
+let second_value = second.wait_timeout(Duration::from_secs(10))?;
+let notice_payload = subscription.next_timeout(Duration::from_secs(10))?;
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+Once the dispatcher starts, it owns the WebSocket reader. Do not continue using the consumed blocking session or transport on that connection. The dispatcher is intentionally transport-only: it routes raw JSON-RPC responses and Graphene callback notices by id, but it does not parse chain objects, reconnect, resubscribe, or maintain an object cache.
+
+For a live smoke test against Swaplock:
+
+```bash
+cargo run -p open-graphene-transport --example live_dispatcher_smoke
+```
+
 
 Most callers should start with `GrapheneSession`:
 

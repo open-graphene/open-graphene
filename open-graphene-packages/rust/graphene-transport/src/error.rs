@@ -37,6 +37,12 @@ pub enum TransportError {
         timeout: Duration,
     },
 
+    #[error("timed out waiting for Graphene response after {timeout:?}")]
+    ResponseTimeout { timeout: Duration },
+
+    #[error("Graphene live dispatcher stopped")]
+    DispatcherStopped,
+
     #[error("unsupported JSON-RPC inbound message")]
     UnsupportedInboundMessage,
 

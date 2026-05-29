@@ -96,7 +96,7 @@ pub(super) async fn subscribe_account_by_id(
     })
 }
 
-fn account_from_value(
+pub(crate) fn account_from_value(
     method: &'static str,
     value: serde_json::Value,
     account_id: &str,

@@ -93,7 +93,7 @@ pub(super) async fn subscribe_asset_by_id(
     })
 }
 
-pub(super) fn asset_from_value(
+pub(crate) fn asset_from_value(
     method: &'static str,
     value: serde_json::Value,
     asset_id: &str,

@@ -10,7 +10,7 @@ use super::constants::{
 };
 use super::page::AccountHistoryPage;
 
-pub(super) struct AccountHistorySnapshot {
+pub(crate) struct AccountHistorySnapshot {
     pub(super) page: AccountHistoryPage,
     pub(super) newest_operation_id: Option<String>,
 }
@@ -72,7 +72,7 @@ fn validate_account_history_window(limit: u32, offset: u32) -> Result<(), Swaplo
     Ok(())
 }
 
-fn account_history_params(
+pub(crate) fn account_history_params(
     account_name_or_id: &str,
     limit: u32,
     offset: u32,
@@ -89,7 +89,7 @@ fn account_history_params(
     ]))
 }
 
-fn account_history_items_from_value(
+pub(crate) fn account_history_items_from_value(
     value: Value,
 ) -> Result<Vec<OperationHistoryObject>, SwaplockApiError> {
     serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
@@ -98,7 +98,7 @@ fn account_history_items_from_value(
     })
 }
 
-fn account_history_page_from_items(
+pub(crate) fn account_history_page_from_items(
     raw_items: Vec<OperationHistoryObject>,
     limit: u32,
     offset: u32,

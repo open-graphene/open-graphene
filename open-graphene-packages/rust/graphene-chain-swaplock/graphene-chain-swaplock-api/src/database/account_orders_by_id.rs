@@ -81,7 +81,7 @@ pub(super) async fn subscribe_account_orders_by_id(
     })
 }
 
-fn account_orders_from_full_accounts_value(
+pub(crate) fn account_orders_from_full_accounts_value(
     method: &'static str,
     value: Value,
     account_id: &str,
@@ -130,7 +130,7 @@ fn account_orders_from_full_accounts_value(
     Ok(objects)
 }
 
-fn collect_account_order_objects(
+pub(crate) fn collect_account_order_objects(
     method: &'static str,
     value: &Value,
     account_id: &str,

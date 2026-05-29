@@ -3,6 +3,7 @@ pub mod database_api;
 pub mod error;
 pub mod history_api;
 pub mod json_rpc;
+pub mod live;
 pub mod network_broadcast_api;
 pub mod session;
 pub mod websocket;
@@ -16,6 +17,9 @@ pub use error::TransportError;
 pub use history_api::{AccountHistoryQuery, get_account_history};
 pub use json_rpc::{
     GRAPHENE_CALL_METHOD, JsonRpcInbound, JsonRpcRequest, graphene_call_params, parse_inbound,
+};
+pub use live::{
+    LiveSubscription, LiveTransport, LiveTransportHandle, PendingCallbackNotice, PendingResponse,
 };
 pub use network_broadcast_api::broadcast_transaction;
 pub use session::{ApiIds, GrapheneSession, parse_api_id, parse_chain_id};

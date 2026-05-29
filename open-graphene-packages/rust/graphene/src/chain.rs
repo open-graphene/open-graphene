@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use graphene_chain_swaplock_api::SwaplockApi;
+use graphene_chain_swaplock_api::{SwaplockApi, SwaplockLiveApi};
 
 use crate::client::{GrapheneClientConfig, validate_config};
 use crate::error::{GrapheneConfigError, GrapheneConnectError};
@@ -70,6 +70,10 @@ impl ChainClientBuilder<Swaplock> {
         let servers = self.config.servers;
         let expected_chain_id = self.config.chain_id;
         Ok(SwaplockApi::connect(servers, expected_chain_id.as_deref()).await?)
+    }
+
+    pub async fn connect_live(self) -> Result<SwaplockLiveApi, GrapheneConnectError> {
+        Ok(self.connect().await?.into_live()?)
     }
 }
 

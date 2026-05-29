@@ -143,7 +143,7 @@ impl BroadcastConfirmation {
     }
 }
 
-fn parse_broadcast_confirmation(
+pub(crate) fn parse_broadcast_confirmation(
     mut value: Value,
 ) -> Result<BroadcastConfirmation, SwaplockApiError> {
     if let Some(values) = value.as_array_mut() {

@@ -54,6 +54,10 @@ impl GrapheneSession {
         self.transport
     }
 
+    pub fn into_live_transport(self) -> Result<crate::LiveTransport, TransportError> {
+        self.transport.into_live()
+    }
+
     pub fn database_call(&mut self, method: &str, params: Value) -> Result<Value, TransportError> {
         self.transport.call(self.api_ids.database, method, params)
     }

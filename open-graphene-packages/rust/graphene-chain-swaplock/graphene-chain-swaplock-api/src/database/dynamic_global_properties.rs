@@ -75,7 +75,7 @@ pub(super) async fn get_dynamic_global_properties(
     })
 }
 
-fn dynamic_global_properties_from_value(
+pub(crate) fn dynamic_global_properties_from_value(
     method: &'static str,
     value: Value,
 ) -> Result<DynamicGlobalPropertyObject, SwaplockApiError> {

@@ -90,6 +90,26 @@ name = "swaplock_operations_transfer_callback_stress"
 path = "examples/swaplock/operations_transfer_callback_stress.rs"
 
 [[example]]
+name = "swaplock_live_transfer_callback_stress"
+path = "examples/swaplock/live_transfer_callback_stress.rs"
+
+[[example]]
+name = "swaplock_live_database_object_subscribe"
+path = "examples/swaplock/live_database_object_subscribe.rs"
+
+[[example]]
+name = "swaplock_live_account_activity_subscribe"
+path = "examples/swaplock/live_account_activity_subscribe.rs"
+
+[[example]]
+name = "swaplock_live_history_account_subscribe"
+path = "examples/swaplock/live_history_account_subscribe.rs"
+
+[[example]]
+name = "swaplock_live_transfer_updates_e2e"
+path = "examples/swaplock/live_transfer_updates_e2e.rs"
+
+[[example]]
 name = "swaplock_history_account_get"
 path = "examples/swaplock/history_account_get.rs"
 

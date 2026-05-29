@@ -109,7 +109,7 @@ pub(super) async fn subscribe_account_balances_by_id(
     })
 }
 
-fn account_balances_from_full_accounts_value(
+pub(crate) fn account_balances_from_full_accounts_value(
     method: &'static str,
     value: Value,
     account_id: &str,
@@ -160,7 +160,7 @@ fn account_balances_from_full_accounts_value(
     Ok(objects)
 }
 
-fn collect_account_balance_objects(
+pub(crate) fn collect_account_balance_objects(
     method: &'static str,
     value: &Value,
     account_id: &str,

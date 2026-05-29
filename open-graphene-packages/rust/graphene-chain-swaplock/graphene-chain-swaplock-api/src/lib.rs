@@ -1,5 +1,6 @@
 mod database;
 mod history;
+mod live;
 mod network_broadcast;
 mod operations;
 
@@ -7,6 +8,16 @@ use open_graphene_core::{AmountError, BalanceError, HeaderError, ObjectIdError};
 use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
 
+pub use live::{
+    SwaplockLiveAccountBalancesByIdRequest, SwaplockLiveAccountBalancesSubscription,
+    SwaplockLiveAccountByIdRequest, SwaplockLiveAccountHistoryByIdRequest,
+    SwaplockLiveAccountHistoryRequest, SwaplockLiveAccountHistorySubscription,
+    SwaplockLiveAccountOrdersByIdRequest, SwaplockLiveAccountOrdersSubscription,
+    SwaplockLiveAccountSubscription, SwaplockLiveApi, SwaplockLiveAssetByIdRequest,
+    SwaplockLiveAssetSubscription, SwaplockLiveDatabaseApi,
+    SwaplockLiveDynamicGlobalPropertiesSubscription, SwaplockLiveHistoryApi,
+    SwaplockLiveNetworkBroadcastApi, SwaplockLivePendingBroadcastConfirmation,
+};
 pub use network_broadcast::{
     BroadcastConfirmation, BroadcastReceipt, NetworkBroadcastApi, PendingBroadcastConfirmation,
 };
@@ -167,6 +178,10 @@ impl SwaplockApi {
         NetworkBroadcastApi {
             session: &mut self.session,
         }
+    }
+
+    pub fn into_live(self) -> Result<SwaplockLiveApi, SwaplockApiError> {
+        SwaplockLiveApi::from_session(self.session)
     }
 }
 
