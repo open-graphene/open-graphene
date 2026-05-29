@@ -1,5 +1,5 @@
 use graphene_chain_swaplock_bindings::generated::OperationHistoryObject;
-use open_graphene_transport::{GrapheneSession, JsonRpcInbound};
+use open_graphene_transport::{CallbackId, GrapheneSession, JsonRpcInbound};
 use serde_json::json;
 
 use crate::SwaplockApiError;
@@ -26,7 +26,7 @@ impl AccountHistorySubscription<'_> {
             let JsonRpcInbound::Notice { callback_id, .. } = notice else {
                 continue;
             };
-            if callback_id != ACCOUNT_HISTORY_CALLBACK_ID {
+            if callback_id != CallbackId::new(ACCOUNT_HISTORY_CALLBACK_ID) {
                 continue;
             }
 

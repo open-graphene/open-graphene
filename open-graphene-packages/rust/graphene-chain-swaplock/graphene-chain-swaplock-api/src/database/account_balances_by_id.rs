@@ -1,5 +1,5 @@
 use graphene_chain_swaplock_bindings::generated::{AccountBalanceObject, Asset};
-use open_graphene_transport::{GrapheneSession, JsonRpcInbound};
+use open_graphene_transport::{CallbackId, GrapheneSession, JsonRpcInbound};
 use serde_json::{Value, json};
 
 use crate::SwaplockApiError;
@@ -48,7 +48,7 @@ impl AccountBalancesSubscription<'_> {
             else {
                 continue;
             };
-            if callback_id != ACCOUNT_BALANCES_CALLBACK_ID {
+            if callback_id != CallbackId::new(ACCOUNT_BALANCES_CALLBACK_ID) {
                 continue;
             }
 

@@ -1,6 +1,6 @@
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
-use crate::TransportError;
+use crate::{CallbackId, TransportError};
 
 pub const GRAPHENE_CALL_METHOD: &str = "call";
 
@@ -31,9 +31,18 @@ impl JsonRpcRequest {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum JsonRpcInbound {
-    Response { id: u64, result: Value },
-    Error { id: u64, error: Value },
-    Notice { callback_id: u64, payload: Value },
+    Response {
+        id: u64,
+        result: Value,
+    },
+    Error {
+        id: u64,
+        error: Value,
+    },
+    Notice {
+        callback_id: CallbackId,
+        payload: Value,
+    },
 }
 
 pub fn graphene_call_params(api_id: u64, method: &str, params: Value) -> Value {
@@ -81,7 +90,7 @@ fn parse_notice(value: &Value) -> Result<JsonRpcInbound, TransportError> {
         .as_u64()
         .ok_or(TransportError::NoticeInvalidCallbackId)?;
     Ok(JsonRpcInbound::Notice {
-        callback_id,
+        callback_id: CallbackId::new(callback_id),
         payload: params[1].clone(),
     })
 }
@@ -139,7 +148,7 @@ mod tests {
         assert_eq!(
             parse_inbound(&json!({ "method": "notice", "params": [7, [["update"]]] })).unwrap(),
             JsonRpcInbound::Notice {
-                callback_id: 7,
+                callback_id: CallbackId::new(7),
                 payload: json!([["update"]]),
             }
         );

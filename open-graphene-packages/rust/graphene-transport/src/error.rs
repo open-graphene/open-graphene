@@ -1,5 +1,9 @@
 use serde_json::Value;
+use std::io;
+use std::time::Duration;
 use thiserror::Error;
+
+use crate::CallbackId;
 
 #[derive(Debug, Error)]
 pub enum TransportError {
@@ -27,11 +31,20 @@ pub enum TransportError {
     #[error("Graphene callback params must be an array")]
     CallbackParamsNotArray,
 
+    #[error("timed out waiting for Graphene callback notice {callback_id} after {timeout:?}")]
+    CallbackTimeout {
+        callback_id: CallbackId,
+        timeout: Duration,
+    },
+
     #[error("unsupported JSON-RPC inbound message")]
     UnsupportedInboundMessage,
 
     #[error("websocket error: {0}")]
     WebSocket(String),
+
+    #[error("I/O error: {0}")]
+    Io(#[from] io::Error),
 
     #[error("JSON parse error: {0}")]
     Json(#[from] serde_json::Error),

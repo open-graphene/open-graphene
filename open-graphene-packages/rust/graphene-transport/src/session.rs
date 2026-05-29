@@ -1,6 +1,8 @@
+use std::time::Duration;
+
 use serde_json::{Value, json};
 
-use crate::{JsonRpcInbound, TransportError, WebSocketTransport};
+use crate::{JsonRpcInbound, PendingCallback, TransportError, WebSocketTransport};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ApiIds {
@@ -95,6 +97,46 @@ impl GrapheneSession {
             })?;
         self.transport
             .call_with_callback(api_id, method, params_after_callback)
+    }
+
+    pub fn network_broadcast_call_with_callback_timeout(
+        &mut self,
+        method: &str,
+        params_after_callback: Value,
+        timeout: Duration,
+    ) -> Result<Value, TransportError> {
+        let api_id = self
+            .api_ids
+            .network_broadcast
+            .ok_or(TransportError::MissingApi {
+                name: "network_broadcast",
+            })?;
+        self.transport
+            .call_with_callback_timeout(api_id, method, params_after_callback, timeout)
+    }
+
+    pub fn network_broadcast_send_callback_request(
+        &mut self,
+        method: &str,
+        params_after_callback: Value,
+    ) -> Result<PendingCallback, TransportError> {
+        let api_id = self
+            .api_ids
+            .network_broadcast
+            .ok_or(TransportError::MissingApi {
+                name: "network_broadcast",
+            })?;
+        self.transport
+            .send_callback_request(api_id, method, params_after_callback)
+    }
+
+    pub fn network_broadcast_wait_callback_response_and_notice_timeout(
+        &mut self,
+        pending: PendingCallback,
+        timeout: Duration,
+    ) -> Result<Value, TransportError> {
+        self.transport
+            .wait_for_callback_response_and_notice_timeout(pending, timeout)
     }
 }
 

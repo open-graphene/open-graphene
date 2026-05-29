@@ -1,4 +1,5 @@
 use std::env;
+use std::time::Duration;
 
 use graphene::Graphene;
 
@@ -50,7 +51,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let confirmation = swaplock
         .network_broadcast()
-        .broadcast_signed_transfer_with_callback(signed)
+        .broadcast_signed_transfer_with_callback_timeout(signed, Duration::from_secs(30))
         .await?;
 
     println!("confirmed: block {}", confirmation.block_num());

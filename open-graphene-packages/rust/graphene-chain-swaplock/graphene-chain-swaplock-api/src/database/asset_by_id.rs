@@ -1,5 +1,5 @@
 use graphene_chain_swaplock_bindings::generated::AssetObject;
-use open_graphene_transport::{GrapheneSession, JsonRpcInbound};
+use open_graphene_transport::{CallbackId, GrapheneSession, JsonRpcInbound};
 use serde_json::json;
 
 use crate::SwaplockApiError;
@@ -43,7 +43,7 @@ impl AssetSubscription<'_> {
             else {
                 continue;
             };
-            if callback_id != ASSET_CALLBACK_ID {
+            if callback_id != CallbackId::new(ASSET_CALLBACK_ID) {
                 continue;
             }
 

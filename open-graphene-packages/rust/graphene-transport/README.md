@@ -34,6 +34,7 @@ Those belong in generated binding crates, chain-specific SDK crates, or a future
 ```rust
 use open_graphene_transport::{
     ApiIds,
+    CallbackId,
     GrapheneSession,
     JsonRpcInbound,
     JsonRpcRequest,
@@ -58,7 +59,7 @@ use open_graphene_transport::{
 pub enum JsonRpcInbound {
     Response { id: u64, result: serde_json::Value },
     Error { id: u64, error: serde_json::Value },
-    Notice { callback_id: u64, payload: serde_json::Value },
+    Notice { callback_id: CallbackId, payload: serde_json::Value },
 }
 ```
 
@@ -87,6 +88,33 @@ A caller that has registered a Graphene callback can block until the next notice
 ```rust
 let notice = transport.next_notice()?;
 ```
+
+For Graphene APIs that take a callback id as their first parameter, the transport also exposes callback-aware calls. `call_with_callback(...)` uses the JSON-RPC request id as the Graphene callback id, prepends that id to the method params, waits for the normal RPC response, then waits for the matching `notice` payload:
+
+```rust
+use serde_json::json;
+
+let payload = transport.call_with_callback(
+    network_broadcast_api_id,
+    "broadcast_transaction_with_callback",
+    json!([signed_transaction_json]),
+)?;
+```
+
+Timeout-sensitive callers can use the bounded variant:
+
+```rust
+use std::time::Duration;
+
+let payload = transport.call_with_callback_timeout(
+    network_broadcast_api_id,
+    "broadcast_transaction_with_callback",
+    json!([signed_transaction_json]),
+    Duration::from_secs(30),
+)?;
+```
+
+This is still a blocking, single-session helper rather than a background event loop. Notices for other callback ids are buffered and left for their matching consumer.
 
 This is only message plumbing: the transport does not know which RPC method registered the callback, which object was subscribed, or how to parse the notice payload. Chain-specific API crates own that behavior.
 

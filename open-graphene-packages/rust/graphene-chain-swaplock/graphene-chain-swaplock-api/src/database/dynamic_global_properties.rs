@@ -1,5 +1,5 @@
 use graphene_chain_swaplock_bindings::generated::DynamicGlobalPropertyObject;
-use open_graphene_transport::{GrapheneSession, JsonRpcInbound};
+use open_graphene_transport::{CallbackId, GrapheneSession, JsonRpcInbound};
 use serde_json::{Value, json};
 
 use crate::SwaplockApiError;
@@ -55,7 +55,7 @@ impl DynamicGlobalPropertiesSubscription<'_> {
             else {
                 continue;
             };
-            if callback_id != DYNAMIC_GLOBAL_PROPERTIES_CALLBACK_ID {
+            if callback_id != CallbackId::new(DYNAMIC_GLOBAL_PROPERTIES_CALLBACK_ID) {
                 continue;
             }
             if let Ok(value) = dynamic_global_properties_from_value("notice", payload) {

@@ -86,6 +86,10 @@ name = "swaplock_operations_transfer_broadcast_with_callback"
 path = "examples/swaplock/operations_transfer_broadcast_with_callback.rs"
 
 [[example]]
+name = "swaplock_operations_transfer_callback_stress"
+path = "examples/swaplock/operations_transfer_callback_stress.rs"
+
+[[example]]
 name = "swaplock_history_account_get"
 path = "examples/swaplock/history_account_get.rs"
 

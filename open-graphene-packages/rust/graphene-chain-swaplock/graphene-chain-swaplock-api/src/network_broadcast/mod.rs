@@ -1,3 +1,5 @@
 mod api;
 
-pub use api::{BroadcastConfirmation, BroadcastReceipt, NetworkBroadcastApi};
+pub use api::{
+    BroadcastConfirmation, BroadcastReceipt, NetworkBroadcastApi, PendingBroadcastConfirmation,
+};

@@ -1,4 +1,6 @@
-use open_graphene_transport::GrapheneSession;
+use std::time::Duration;
+
+use open_graphene_transport::{GrapheneSession, PendingCallback};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
@@ -11,6 +13,10 @@ pub struct NetworkBroadcastApi<'session> {
 #[derive(Clone, Debug, PartialEq)]
 pub struct BroadcastReceipt {
     transaction: Value,
+}
+
+pub struct PendingBroadcastConfirmation {
+    pending: PendingCallback,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -37,6 +43,23 @@ impl<'session> NetworkBroadcastApi<'session> {
             .await
     }
 
+    pub async fn broadcast_signed_transfer_with_callback_timeout(
+        self,
+        signed: SignedTransfer,
+        timeout: Duration,
+    ) -> Result<BroadcastConfirmation, SwaplockApiError> {
+        self.broadcast_transaction_with_callback_timeout(signed.transaction_json()?, timeout)
+            .await
+    }
+
+    pub async fn send_signed_transfer_with_callback(
+        self,
+        signed: SignedTransfer,
+    ) -> Result<PendingBroadcastConfirmation, SwaplockApiError> {
+        self.send_transaction_with_callback(signed.transaction_json()?)
+            .await
+    }
+
     pub async fn broadcast_transaction(
         self,
         transaction: Value,
@@ -54,6 +77,44 @@ impl<'session> NetworkBroadcastApi<'session> {
             "broadcast_transaction_with_callback",
             json!([transaction]),
         )?;
+        parse_broadcast_confirmation(confirmation)
+    }
+
+    pub async fn broadcast_transaction_with_callback_timeout(
+        self,
+        transaction: Value,
+        timeout: Duration,
+    ) -> Result<BroadcastConfirmation, SwaplockApiError> {
+        let confirmation = self.session.network_broadcast_call_with_callback_timeout(
+            "broadcast_transaction_with_callback",
+            json!([transaction]),
+            timeout,
+        )?;
+        parse_broadcast_confirmation(confirmation)
+    }
+
+    pub async fn send_transaction_with_callback(
+        self,
+        transaction: Value,
+    ) -> Result<PendingBroadcastConfirmation, SwaplockApiError> {
+        let pending = self.session.network_broadcast_send_callback_request(
+            "broadcast_transaction_with_callback",
+            json!([transaction]),
+        )?;
+        Ok(PendingBroadcastConfirmation { pending })
+    }
+
+    pub async fn wait_for_broadcast_confirmation_timeout(
+        self,
+        pending: PendingBroadcastConfirmation,
+        timeout: Duration,
+    ) -> Result<BroadcastConfirmation, SwaplockApiError> {
+        let confirmation = self
+            .session
+            .network_broadcast_wait_callback_response_and_notice_timeout(
+                pending.pending,
+                timeout,
+            )?;
         parse_broadcast_confirmation(confirmation)
     }
 }

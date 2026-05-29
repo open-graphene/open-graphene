@@ -7,7 +7,9 @@ use open_graphene_core::{AmountError, BalanceError, HeaderError, ObjectIdError};
 use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
 
-pub use network_broadcast::{BroadcastConfirmation, BroadcastReceipt, NetworkBroadcastApi};
+pub use network_broadcast::{
+    BroadcastConfirmation, BroadcastReceipt, NetworkBroadcastApi, PendingBroadcastConfirmation,
+};
 pub use operations::{OperationsApi, PreparedTransfer, SignedTransfer, TransferRequest};
 
 pub use history::{
