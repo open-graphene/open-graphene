@@ -1,3 +1,4 @@
+mod crypto;
 mod database;
 mod history;
 mod live;
@@ -8,6 +9,11 @@ use open_graphene_core::{AmountError, BalanceError, HeaderError, ObjectIdError};
 use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
 
+pub use crypto::{
+    BlindRequest, BlindSumRequest, BlindingFactor, Commitment, CryptoApi, RangeGetInfoRequest,
+    RangeProof, RangeProofInfo, RangeProofSignRequest, VerifyRangeProofRewindRequest,
+    VerifyRangeProofRewindResult, VerifyRangeRequest, VerifyRangeResult, VerifySumRequest,
+};
 pub use live::{
     SwaplockLiveAccountBalancesByIdRequest, SwaplockLiveAccountBalancesSubscription,
     SwaplockLiveAccountByIdRequest, SwaplockLiveAccountHistoryByIdRequest,
@@ -83,6 +89,9 @@ pub enum SwaplockApiError {
         method: &'static str,
         message: String,
     },
+
+    #[error("invalid hex for `{kind}`: {message}")]
+    InvalidHex { kind: &'static str, message: String },
 
     #[error("missing transfer field `{field}`")]
     MissingTransferField { field: &'static str },
@@ -176,6 +185,12 @@ impl SwaplockApi {
 
     pub fn network_broadcast(&mut self) -> NetworkBroadcastApi<'_> {
         NetworkBroadcastApi {
+            session: &mut self.session,
+        }
+    }
+
+    pub fn crypto(&mut self) -> CryptoApi<'_> {
+        CryptoApi {
             session: &mut self.session,
         }
     }

@@ -1,4 +1,5 @@
 pub mod callback;
+pub mod crypto_api;
 pub mod database_api;
 pub mod error;
 pub mod history_api;
@@ -9,6 +10,10 @@ pub mod session;
 pub mod websocket;
 
 pub use callback::CallbackId;
+pub use crypto_api::{
+    blind, blind_sum, range_get_info, range_proof_sign, verify_range, verify_range_proof_rewind,
+    verify_sum,
+};
 pub use database_api::{
     get_account_balances, get_dynamic_global_properties, get_limit_orders, get_objects,
     get_required_fees, lookup_accounts, lookup_asset_symbols,

@@ -116,3 +116,7 @@ path = "examples/swaplock/history_account_get.rs"
 [[example]]
 name = "swaplock_history_account_subscribe"
 path = "examples/swaplock/history_account_subscribe.rs"
+
+[[example]]
+name = "swaplock_crypto_pedersen_commitment"
+path = "examples/swaplock/crypto_pedersen_commitment.rs"

@@ -8,6 +8,7 @@ repository = "https://github.com/open-graphene/open-graphene"
 
 [dependencies]
 graphene-chain-swaplock-bindings = { path = "../graphene-chain-swaplock-bindings" }
+hex = "0.4"
 open-graphene-core = { path = "../../graphene-core" }
 open-graphene-transport = { path = "../../graphene-transport" }
 serde = { version = "1", features = ["derive"] }
