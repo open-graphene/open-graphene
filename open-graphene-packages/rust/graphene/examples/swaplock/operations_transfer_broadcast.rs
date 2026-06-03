@@ -27,7 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .transfer()
         .from(&from_account)
         .to(&to_account)
-        .amount_raw(1, "BTS")
+        .amount_decimal("9".to_string(), "BTS")
         .fee_asset("BTS")
         .max_fee_raw(1_000_000)
         .prepare()
