@@ -3,6 +3,7 @@ mod history;
 mod live;
 mod network_broadcast;
 mod operations;
+mod orders;
 
 use open_graphene_core::{AmountError, BalanceError, HeaderError, ObjectIdError};
 use open_graphene_transport::{GrapheneSession, TransportError};
@@ -22,6 +23,11 @@ pub use network_broadcast::{
     BroadcastConfirmation, BroadcastReceipt, NetworkBroadcastApi, PendingBroadcastConfirmation,
 };
 pub use operations::{OperationsApi, PreparedTransfer, SignedTransfer, TransferRequest};
+
+pub use orders::{
+    DEFAULT_GROUPED_LIMIT_ORDERS_LIMIT, GroupedLimitOrdersRequest, LimitOrderGroup, OrdersApi,
+    TrackedGroupsRequest,
+};
 
 pub use history::{
     AccountHistoryByIdRequest, AccountHistoryPage, AccountHistoryRequest,
@@ -176,6 +182,12 @@ impl SwaplockApi {
 
     pub fn network_broadcast(&mut self) -> NetworkBroadcastApi<'_> {
         NetworkBroadcastApi {
+            session: &mut self.session,
+        }
+    }
+
+    pub fn orders(&mut self) -> OrdersApi<'_> {
+        OrdersApi {
             session: &mut self.session,
         }
     }

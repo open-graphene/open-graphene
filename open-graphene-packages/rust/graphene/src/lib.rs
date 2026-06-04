@@ -7,16 +7,18 @@ pub use client::{GrapheneClient, GrapheneClientBuilder, GrapheneClientConfig};
 pub use error::{GrapheneConfigError, GrapheneConnectError};
 pub use graphene_chain_swaplock_api::{
     AccountHistoryPage, AccountHistorySubscription, BroadcastConfirmation, BroadcastReceipt,
-    DEFAULT_ACCOUNT_HISTORY_LIMIT, DEFAULT_ACCOUNT_HISTORY_OFFSET, MAX_ACCOUNT_HISTORY_LIMIT,
-    NetworkBroadcastApi, PreparedTransfer, SWAPLOCK_CHAIN_ID, SignedTransfer, SwaplockApi,
-    SwaplockApiError, SwaplockLiveAccountBalancesByIdRequest,
+    DEFAULT_ACCOUNT_HISTORY_LIMIT, DEFAULT_ACCOUNT_HISTORY_OFFSET,
+    DEFAULT_GROUPED_LIMIT_ORDERS_LIMIT, GroupedLimitOrdersRequest, LimitOrderGroup,
+    MAX_ACCOUNT_HISTORY_LIMIT, NetworkBroadcastApi, OrdersApi, PreparedTransfer, SWAPLOCK_CHAIN_ID,
+    SignedTransfer, SwaplockApi, SwaplockApiError, SwaplockLiveAccountBalancesByIdRequest,
     SwaplockLiveAccountBalancesSubscription, SwaplockLiveAccountByIdRequest,
     SwaplockLiveAccountHistoryByIdRequest, SwaplockLiveAccountHistoryRequest,
     SwaplockLiveAccountHistorySubscription, SwaplockLiveAccountOrdersByIdRequest,
     SwaplockLiveAccountOrdersSubscription, SwaplockLiveAccountSubscription, SwaplockLiveApi,
     SwaplockLiveAssetByIdRequest, SwaplockLiveAssetSubscription, SwaplockLiveDatabaseApi,
     SwaplockLiveDynamicGlobalPropertiesSubscription, SwaplockLiveHistoryApi,
-    SwaplockLiveNetworkBroadcastApi, SwaplockLivePendingBroadcastConfirmation, TransferRequest,
+    SwaplockLiveNetworkBroadcastApi, SwaplockLivePendingBroadcastConfirmation,
+    TrackedGroupsRequest, TransferRequest,
 };
 
 pub struct Graphene;

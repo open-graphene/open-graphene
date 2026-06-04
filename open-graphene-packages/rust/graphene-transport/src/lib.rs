@@ -5,6 +5,7 @@ pub mod history_api;
 pub mod json_rpc;
 pub mod live;
 pub mod network_broadcast_api;
+pub mod orders_api;
 pub mod session;
 pub mod websocket;
 
@@ -22,5 +23,6 @@ pub use live::{
     LiveSubscription, LiveTransport, LiveTransportHandle, PendingCallbackNotice, PendingResponse,
 };
 pub use network_broadcast_api::broadcast_transaction;
+pub use orders_api::{get_grouped_limit_orders, get_tracked_groups};
 pub use session::{ApiIds, GrapheneSession, parse_api_id, parse_chain_id};
 pub use websocket::{PendingCallback, WebSocketTransport};
