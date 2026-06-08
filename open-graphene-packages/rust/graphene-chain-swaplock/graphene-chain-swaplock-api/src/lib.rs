@@ -1,12 +1,17 @@
+mod connection;
 mod database;
 mod history;
 mod live;
 mod network_broadcast;
 mod operations;
 
+use std::time::Duration;
+
 use open_graphene_core::{AmountError, BalanceError, HeaderError, ObjectIdError};
 use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
+
+pub use connection::{ConnectionStrategy, ServerLatency};
 
 pub use live::{
     SwaplockLiveAccountBalancesByIdRequest, SwaplockLiveAccountBalancesSubscription,
@@ -114,9 +119,33 @@ pub struct SwaplockApi {
 }
 
 impl SwaplockApi {
+    /// Connect to the first server that answers, in the order given.
+    ///
+    /// Equivalent to [`connect_with_strategy`](Self::connect_with_strategy) with
+    /// [`ConnectionStrategy::FirstAvailable`].
     pub async fn connect<I, S>(
         servers: I,
         expected_chain_id: Option<&str>,
+    ) -> Result<Self, SwaplockApiError>
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        Self::connect_with_strategy(servers, expected_chain_id, ConnectionStrategy::FirstAvailable)
+            .await
+    }
+
+    /// Connect to one of `servers`, choosing which according to `strategy`.
+    ///
+    /// - [`ConnectionStrategy::FirstAvailable`] returns as soon as a server answers.
+    /// - [`ConnectionStrategy::LowestLatency`] probes every server and keeps the fastest session.
+    ///
+    /// Unreachable servers are collected and, if none succeed, reported as
+    /// [`SwaplockApiError::AllServersFailed`]. A chain-id mismatch aborts immediately.
+    pub async fn connect_with_strategy<I, S>(
+        servers: I,
+        expected_chain_id: Option<&str>,
+        strategy: ConnectionStrategy,
     ) -> Result<Self, SwaplockApiError>
     where
         I: IntoIterator<Item = S>,
@@ -127,33 +156,58 @@ impl SwaplockApi {
             return Err(SwaplockApiError::MissingServers);
         }
 
-        let expected_chain_id = expected_chain_id.map(str::to_string);
         let mut attempts = Vec::new();
+        let mut best: Option<(Duration, GrapheneSession)> = None;
         for server in servers {
-            match GrapheneSession::connect(&server) {
-                Ok(session) => {
-                    if let Some(expected) = expected_chain_id.as_deref() {
-                        let actual = session.chain_id();
-                        if actual != expected {
-                            return Err(SwaplockApiError::ChainIdMismatch {
-                                mismatch: ChainIdMismatch {
-                                    server,
-                                    expected: expected.to_string(),
-                                    actual: actual.to_string(),
-                                },
-                            });
+            match connection::probe_server(&server, expected_chain_id)? {
+                connection::ProbeOutcome::Connected { session, latency } => match strategy {
+                    ConnectionStrategy::FirstAvailable => return Ok(Self { session }),
+                    ConnectionStrategy::LowestLatency => {
+                        if best.as_ref().is_none_or(|(best, _)| latency < *best) {
+                            best = Some((latency, session));
                         }
                     }
-                    return Ok(Self { session });
-                }
-                Err(error) => attempts.push(ServerConnectFailure {
-                    server,
-                    error: error.to_string(),
-                }),
+                },
+                connection::ProbeOutcome::Failed(failure) => attempts.push(failure),
             }
         }
 
-        Err(SwaplockApiError::AllServersFailed { attempts })
+        match best {
+            Some((_, session)) => Ok(Self { session }),
+            None => Err(SwaplockApiError::AllServersFailed { attempts }),
+        }
+    }
+
+    /// Measure connect latency for every server and return it sorted fastest-first.
+    ///
+    /// Probes are sequential. Unreachable servers are omitted from the report; a chain-id
+    /// mismatch aborts immediately. Each probe opens and then closes a session, so this is a
+    /// health check, not a connection — follow it with [`connect_with_strategy`](Self::connect_with_strategy).
+    pub async fn probe_latencies<I, S>(
+        servers: I,
+        expected_chain_id: Option<&str>,
+    ) -> Result<Vec<ServerLatency>, SwaplockApiError>
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        let servers = servers.into_iter().map(Into::into).collect::<Vec<_>>();
+        if servers.is_empty() {
+            return Err(SwaplockApiError::MissingServers);
+        }
+
+        let mut latencies = Vec::new();
+        for server in servers {
+            if let connection::ProbeOutcome::Connected { session, latency } =
+                connection::probe_server(&server, expected_chain_id)?
+            {
+                drop(session);
+                latencies.push(ServerLatency { server, latency });
+            }
+        }
+
+        latencies.sort_by_key(|entry| entry.latency);
+        Ok(latencies)
     }
 
     pub fn database(&mut self) -> DatabaseApi<'_> {
