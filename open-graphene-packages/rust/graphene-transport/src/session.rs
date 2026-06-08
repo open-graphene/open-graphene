@@ -9,6 +9,8 @@ pub struct ApiIds {
     pub database: u64,
     pub history: Option<u64>,
     pub network_broadcast: Option<u64>,
+    pub crypto: Option<u64>,
+    pub orders: Option<u64>,
 }
 
 pub struct GrapheneSession {
@@ -29,6 +31,8 @@ impl GrapheneSession {
         let database = discover_required_api(&mut transport, "database")?;
         let history = discover_optional_api(&mut transport, "history")?;
         let network_broadcast = discover_optional_api(&mut transport, "network_broadcast")?;
+        let crypto = discover_optional_api(&mut transport, "crypto")?;
+        let orders = discover_optional_api(&mut transport, "orders")?;
         let chain_id = parse_chain_id(transport.call(database, "get_chain_id", json!([]))?)?;
 
         Ok(Self {
@@ -37,6 +41,8 @@ impl GrapheneSession {
                 database,
                 history,
                 network_broadcast,
+                crypto,
+                orders,
             },
             chain_id,
         })
@@ -71,6 +77,22 @@ impl GrapheneSession {
             .api_ids
             .history
             .ok_or(TransportError::MissingApi { name: "history" })?;
+        self.transport.call(api_id, method, params)
+    }
+
+    pub fn crypto_call(&mut self, method: &str, params: Value) -> Result<Value, TransportError> {
+        let api_id = self
+            .api_ids
+            .crypto
+            .ok_or(TransportError::MissingApi { name: "crypto" })?;
+        self.transport.call(api_id, method, params)
+    }
+
+    pub fn orders_call(&mut self, method: &str, params: Value) -> Result<Value, TransportError> {
+        let api_id = self
+            .api_ids
+            .orders
+            .ok_or(TransportError::MissingApi { name: "orders" })?;
         self.transport.call(api_id, method, params)
     }
 

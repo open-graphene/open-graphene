@@ -11,7 +11,11 @@ graphene-chain-swaplock-api = { path = "../graphene-chain-swaplock/graphene-chai
 
 [dev-dependencies]
 dotenvy = "0.15"
-tokio = { version = "1", features = ["macros", "rt"] }
+tokio = { version = "1", features = ["full"] }
+
+[[example]]
+name = "swaplock_connection_lowest_latency"
+path = "examples/swaplock/connection_lowest_latency.rs"
 
 [[example]]
 name = "swaplock_database_account_get"
@@ -116,3 +120,11 @@ path = "examples/swaplock/history_account_get.rs"
 [[example]]
 name = "swaplock_history_account_subscribe"
 path = "examples/swaplock/history_account_subscribe.rs"
+
+[[example]]
+name = "swaplock_crypto_pedersen_commitment"
+path = "examples/swaplock/crypto_pedersen_commitment.rs"
+
+[[example]]
+name = "swaplock_orders_grouped_limit_orders"
+path = "examples/swaplock/orders_grouped_limit_orders.rs"

@@ -2,8 +2,10 @@ use std::env;
 
 use graphene::Graphene;
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    dotenvy::dotenv().ok();
+
     let wif = env::var("SWAPLOCK_ACTIVE_WIF")?;
     let from_account = env::var("SWAPLOCK_ACCOUNT")?;
 

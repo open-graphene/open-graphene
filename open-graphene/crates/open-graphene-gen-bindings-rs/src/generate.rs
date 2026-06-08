@@ -209,60 +209,18 @@ fn render_string_id_conversions(out: &mut String, id_name: &str) {
 fn render_types(protocol: &Protocol) -> Result<String> {
     let mut out = generated_header(protocol, "raw structs and enums");
     out.push_str("use serde::{Deserialize, Serialize};\n\n");
-    out.push_str("pub(crate) fn deserialize_i64_from_number_or_decimal_string<'de, D>(deserializer: D) -> Result<i64, D::Error>\n");
-    out.push_str("where\n");
-    out.push_str("    D: serde::Deserializer<'de>,\n");
-    out.push_str("{\n");
-    out.push_str("    let value = serde_json::Value::deserialize(deserializer)?;\n");
-    out.push_str("    match value {\n");
-    out.push_str("        serde_json::Value::Number(number) => number.as_i64().ok_or_else(|| serde::de::Error::custom(format!(\"expected signed 64-bit integer, got {number}\"))),\n");
-    out.push_str("        serde_json::Value::String(value) => value.parse::<i64>().map_err(serde::de::Error::custom),\n");
-    out.push_str("        other => Err(serde::de::Error::custom(format!(\"expected signed 64-bit integer number or decimal string, got {other}\"))),\n");
-    out.push_str("    }\n");
-    out.push_str("}\n\n");
+    // `share_type` (i64-as-number-or-decimal-string) is decoded the same way on every
+    // chain, so the helper lives in graphene-core and is re-exported here rather than
+    // re-emitted per chain.
+    out.push_str(
+        "pub(crate) use open_graphene_core::deserialize_i64_from_number_or_decimal_string;\n\n",
+    );
     if protocol_uses_fixed_bytes(protocol) {
-        out.push_str("fn deserialize_fixed_bytes_from_hex_string_or_byte_array<'de, D>(deserializer: D, expected_len: usize) -> Result<Vec<u8>, D::Error>\n");
-        out.push_str("where\n");
-        out.push_str("    D: serde::Deserializer<'de>,\n");
-        out.push_str("{\n");
-        out.push_str("    let value = serde_json::Value::deserialize(deserializer)?;\n");
-        out.push_str("    let bytes = match value {\n");
-        out.push_str("        serde_json::Value::String(value) => decode_hex_bytes(&value).map_err(serde::de::Error::custom)?,\n");
-        out.push_str("        serde_json::Value::Array(values) => values\n");
-        out.push_str("            .into_iter()\n");
-        out.push_str("            .map(|value| match value {\n");
-        out.push_str("                serde_json::Value::Number(number) => number\n");
-        out.push_str("                    .as_u64()\n");
-        out.push_str("                    .and_then(|value| u8::try_from(value).ok())\n");
-        out.push_str("                    .ok_or_else(|| serde::de::Error::custom(format!(\"expected byte value 0..255, got {number}\"))),\n");
-        out.push_str("                other => Err(serde::de::Error::custom(format!(\"expected byte value, got {other}\"))),\n");
-        out.push_str("            })\n");
-        out.push_str("            .collect::<Result<Vec<u8>, D::Error>>()?,\n");
-        out.push_str("        other => {\n");
-        out.push_str("            return Err(serde::de::Error::custom(format!(\n");
+        // The generic hex-or-byte-array decoder is shared typing; it lives in graphene-core.
+        // Only the per-length wrappers below (which lengths a chain uses) stay generated.
         out.push_str(
-            "                \"expected fixed bytes as hex string or byte array, got {other}\"\n",
+            "use open_graphene_core::deserialize_fixed_bytes_from_hex_string_or_byte_array;\n\n",
         );
-        out.push_str("            )))\n");
-        out.push_str("        }\n");
-        out.push_str("    };\n");
-        out.push_str("    if bytes.len() != expected_len {\n");
-        out.push_str("        return Err(serde::de::Error::custom(format!(\n");
-        out.push_str("            \"expected {expected_len} fixed bytes, got {}\",\n");
-        out.push_str("            bytes.len()\n");
-        out.push_str("        )));\n");
-        out.push_str("    }\n");
-        out.push_str("    Ok(bytes)\n");
-        out.push_str("}\n\n");
-        out.push_str("fn decode_hex_bytes(value: &str) -> Result<Vec<u8>, String> {\n");
-        out.push_str("    if !value.len().is_multiple_of(2) {\n");
-        out.push_str("        return Err(\"hex string has odd length\".to_string());\n");
-        out.push_str("    }\n");
-        out.push_str("    (0..value.len())\n");
-        out.push_str("        .step_by(2)\n");
-        out.push_str("        .map(|index| u8::from_str_radix(&value[index..index + 2], 16).map_err(|error| error.to_string()))\n");
-        out.push_str("        .collect()\n");
-        out.push_str("}\n\n");
         for len in fixed_byte_lengths(protocol) {
             out.push_str(&format!(
                 "pub(crate) fn deserialize_fixed_bytes_{len}_from_hex_string_or_byte_array<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>\n"
