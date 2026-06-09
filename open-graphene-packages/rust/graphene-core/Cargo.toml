@@ -7,5 +7,7 @@ repository = "https://github.com/open-graphene/open-graphene"
 
 [dependencies]
 open-graphene-primitives = { path = "../graphene-primitives" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 thiserror = "2"
 time = { version = "0.3", features = ["formatting", "parsing"] }

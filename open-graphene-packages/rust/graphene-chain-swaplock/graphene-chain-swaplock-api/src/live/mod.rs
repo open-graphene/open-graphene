@@ -120,6 +120,8 @@ mod tests {
             database: 0,
             history: None,
             network_broadcast: Some(2),
+            crypto: None,
+            orders: None,
         };
 
         let error = history_api_id(&api_ids).unwrap_err();
@@ -137,6 +139,8 @@ mod tests {
             database: 0,
             history: Some(1),
             network_broadcast: Some(2),
+            crypto: None,
+            orders: None,
         };
 
         assert_eq!(history_api_id(&api_ids).unwrap(), 1);
@@ -148,6 +152,8 @@ mod tests {
             database: 0,
             history: None,
             network_broadcast: None,
+            crypto: None,
+            orders: None,
         };
 
         let error = network_broadcast_api_id(&api_ids).unwrap_err();
@@ -162,6 +168,8 @@ mod tests {
             database: 0,
             history: None,
             network_broadcast: Some(4),
+            crypto: None,
+            orders: None,
         };
 
         assert_eq!(network_broadcast_api_id(&api_ids).unwrap(), 4);

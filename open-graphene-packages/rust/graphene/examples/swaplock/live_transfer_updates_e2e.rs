@@ -5,7 +5,7 @@ use graphene::Graphene;
 
 const WAIT_TIMEOUT: Duration = Duration::from_secs(30);
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenvy::dotenv().ok();
 

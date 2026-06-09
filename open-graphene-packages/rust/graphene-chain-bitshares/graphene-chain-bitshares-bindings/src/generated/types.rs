@@ -4,59 +4,9 @@
 
 use serde::{Deserialize, Serialize};
 
-pub(crate) fn deserialize_i64_from_number_or_decimal_string<'de, D>(deserializer: D) -> Result<i64, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    let value = serde_json::Value::deserialize(deserializer)?;
-    match value {
-        serde_json::Value::Number(number) => number.as_i64().ok_or_else(|| serde::de::Error::custom(format!("expected signed 64-bit integer, got {number}"))),
-        serde_json::Value::String(value) => value.parse::<i64>().map_err(serde::de::Error::custom),
-        other => Err(serde::de::Error::custom(format!("expected signed 64-bit integer number or decimal string, got {other}"))),
-    }
-}
+pub(crate) use open_graphene_core::deserialize_i64_from_number_or_decimal_string;
 
-fn deserialize_fixed_bytes_from_hex_string_or_byte_array<'de, D>(deserializer: D, expected_len: usize) -> Result<Vec<u8>, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    let value = serde_json::Value::deserialize(deserializer)?;
-    let bytes = match value {
-        serde_json::Value::String(value) => decode_hex_bytes(&value).map_err(serde::de::Error::custom)?,
-        serde_json::Value::Array(values) => values
-            .into_iter()
-            .map(|value| match value {
-                serde_json::Value::Number(number) => number
-                    .as_u64()
-                    .and_then(|value| u8::try_from(value).ok())
-                    .ok_or_else(|| serde::de::Error::custom(format!("expected byte value 0..255, got {number}"))),
-                other => Err(serde::de::Error::custom(format!("expected byte value, got {other}"))),
-            })
-            .collect::<Result<Vec<u8>, D::Error>>()?,
-        other => {
-            return Err(serde::de::Error::custom(format!(
-                "expected fixed bytes as hex string or byte array, got {other}"
-            )))
-        }
-    };
-    if bytes.len() != expected_len {
-        return Err(serde::de::Error::custom(format!(
-            "expected {expected_len} fixed bytes, got {}",
-            bytes.len()
-        )));
-    }
-    Ok(bytes)
-}
-
-fn decode_hex_bytes(value: &str) -> Result<Vec<u8>, String> {
-    if !value.len().is_multiple_of(2) {
-        return Err("hex string has odd length".to_string());
-    }
-    (0..value.len())
-        .step_by(2)
-        .map(|index| u8::from_str_radix(&value[index..index + 2], 16).map_err(|error| error.to_string()))
-        .collect()
-}
+use open_graphene_core::deserialize_fixed_bytes_from_hex_string_or_byte_array;
 
 pub(crate) fn deserialize_fixed_bytes_20_from_hex_string_or_byte_array<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
 where

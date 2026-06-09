@@ -1,3 +1,5 @@
+use graphene_chain_swaplock_api::ConnectionStrategy;
+
 use crate::chain::{Acta, BitShares, ChainClientBuilder, Swaplock};
 use crate::error::GrapheneConfigError;
 
@@ -6,6 +8,7 @@ pub struct GrapheneClientConfig {
     pub(crate) servers: Vec<String>,
     pub(crate) chain_id: Option<String>,
     pub(crate) prefix: Option<String>,
+    pub(crate) strategy: ConnectionStrategy,
 }
 
 impl GrapheneClientConfig {
@@ -20,6 +23,10 @@ impl GrapheneClientConfig {
     pub fn prefix(&self) -> Option<&str> {
         self.prefix.as_deref()
     }
+
+    pub fn strategy(&self) -> ConnectionStrategy {
+        self.strategy
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -27,6 +34,7 @@ pub struct GrapheneClientBuilder {
     servers: Vec<String>,
     chain_id: Option<String>,
     prefix: Option<String>,
+    strategy: ConnectionStrategy,
 }
 
 impl GrapheneClientBuilder {
@@ -58,11 +66,21 @@ impl GrapheneClientBuilder {
         self
     }
 
+    pub fn strategy(mut self, strategy: ConnectionStrategy) -> Self {
+        self.strategy = strategy;
+        self
+    }
+
+    pub fn lowest_latency(self) -> Self {
+        self.strategy(ConnectionStrategy::LowestLatency)
+    }
+
     pub fn build(self) -> Result<GrapheneClient, GrapheneConfigError> {
         let config = GrapheneClientConfig {
             servers: self.servers,
             chain_id: self.chain_id,
             prefix: self.prefix,
+            strategy: self.strategy,
         };
         validate_config(&config)?;
         Ok(GrapheneClient { config })

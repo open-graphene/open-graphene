@@ -72,6 +72,17 @@ pub enum TransportError {
 
     #[error("database.get_chain_id returned non-string value: {value}")]
     InvalidChainId { value: Value },
+
+    #[error("at least one RPC server is required")]
+    MissingServers,
+
+    #[error("all RPC servers failed: {attempts:?}")]
+    AllServersFailed {
+        attempts: Vec<crate::ServerConnectFailure>,
+    },
+
+    #[error("connected RPC server returned unexpected chain id: {mismatch:?}")]
+    ChainIdMismatch { mismatch: crate::ChainIdMismatch },
 }
 
 impl TransportError {
