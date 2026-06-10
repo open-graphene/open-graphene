@@ -50,8 +50,8 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 | `hash` (sha256/sha512/sha1/ripemd160/hmac) | ✅ | ⚠️ | `fc::sha` + `ripemd` dep; not full hash module |
 | `Address` (key → address string) | ✅ | ❌ | only address-auth *serialization* exists, no `Address` type |
 | `Aes` — memo encrypt/decrypt | ✅ | ❌ | transfer carries `encrypted_memo: Vec<u8>` but **nothing encrypts it** |
-| `BrainKey` (generate / derive) | ✅ | ❌ | none |
-| `KeyUtils` (random key, normalize/suggest brainkey) | ✅ | ❌ | none |
+| `BrainKey` (generate / derive) | ✅ | ⚠️ 🥸 | **derive DONE** (branch `feature/brainkey`): `fc::BrainKey` — `new` (normalise) + `private_key(sequence)` = `sha256(sha512(words + " " + seq))`, verbatim bitsharesjs; words redacted in `Debug`. Remaining: random **generation** (dictionary picker) |
+| `KeyUtils` (random key, normalize/suggest brainkey) | ✅ | ⚠️ 🥸 | normalise done (`BrainKey::new`); `suggest_brain_key` (49744-word dictionary + RNG) still missing |
 | `AccountLogin` (`Login` — keys from account+password+roles) | ✅ | ❌ | none |
 
 ---
@@ -116,7 +116,7 @@ Bindings serialize **all 81** operations. The ergonomic builder API exposes **1*
 2. **`Aes` memo encrypt/decrypt** — transfers already carry `encrypted_memo`; without Aes that field is unusable.
 3. **`PrivateKey`/`PublicKey` types** — slice 1 ✅ done (branch `feature/keys`): `from_wif`/`from_seed`/`to_wif`/`to_public_key`/`sign`, `from_string`/`to_prefixed_string`/`verify`/`recover`. Remaining: **`Address` strings, shared secret (ECDH), child derivation** — unblocks `Aes` (#2) and `AccountLogin` (#5).
 4. **`ConnectionManager`** — failover + latency sort ✅ done (branch `feature/sdk-apis`); **auto-reconnect/backoff + `urlChangeCallback` still missing** (row "Auto-reconnect (`ChainWebSocket`)" ❌), so the entity is ⚠️ partial.
-5. **`BrainKey` + `AccountLogin`** — wallet/account onboarding flows.
+5. **`BrainKey` + `AccountLogin`** — brain-key *derivation* ✅ done (branch `feature/brainkey`); remaining: random brain-key **generation** (dictionary) and `AccountLogin` (keys from account+password+roles).
 6. **`ChainStore` / `FetchChain`** — object cache + reactive fetch.
 7. ~~**`crypto_api`**~~ ✅ done · ~~**`orders_api`** (grouped order book)~~ ✅ done — both on branch `feature/sdk-apis`. (A raw `get_limit_orders` market call is still only on the database API.)
 8. **`ChainValidation`** — account-name validation helpers.
