@@ -3,6 +3,9 @@ use secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
 use secp256k1::{Message, Secp256k1, SecretKey};
 use sha2::Sha256;
 
+pub mod keys;
+pub use keys::{PrivateKey, PublicKey};
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FcSerializeError {
     InvalidProtocolObjectId {

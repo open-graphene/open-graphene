@@ -9,9 +9,10 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 
 > **Headline:** the binding layer can *serialize* all 81 operation types, and the builder/connection
 > ergonomics are excellent. The high-level SDK now wires up `transfer`, the **`crypto`** and grouped
-> **`orders`** APIs end-to-end, plus **latency-sorted connection** (failover + `ConnectionStrategy`).
-> Still missing: a **multi-op `TransactionBuilder`**, the **ECC layer** (memo Aes, brain keys, Address,
-> account login), object cache, and auto-reconnect/backoff.
+> **`orders`** APIs end-to-end, **latency-sorted connection** (failover + `ConnectionStrategy`), and
+> the **`PrivateKey`/`PublicKey`** foundation (WIF, derive, sign, verify, recover). Still missing: a
+> **multi-op `TransactionBuilder`**, the rest of the **ECC layer** (memo Aes, `Address`, brain keys,
+> account login, shared secret), object cache, and auto-reconnect/backoff.
 
 
 ---
@@ -42,8 +43,8 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 
 | Feature | JS | open-graphene-rs | Notes |
 |---|:--:|:--:|---|
-| `PrivateKey` from WIF | ✅ | ⚠️ | `fc::decode_wif_private_key` — no full struct (no `fromSeed`, `toWif`, `toPublicKey`, child derive, `get_shared_secret`) |
-| `PublicKey` parse/encode | ✅ | ⚠️ | `fc::decode_public_key` / `write_public_key` — no `toAddressString`, child, `add` |
+| `PrivateKey` from WIF | ✅ | ✅ 🥸 | **DONE** (branch `feature/keys`): `fc::PrivateKey` type — `from_wif`/`from_seed`/`from_bytes`/`to_wif`/`to_public_key`/`sign`/`as_bytes`, secret redacted in `Debug`. Remaining: `get_shared_secret` (ECDH) + child derivation (next slice) |
+| `PublicKey` parse/encode | ✅ | ✅ 🥸 | **DONE** (branch `feature/keys`): `fc::PublicKey` type — `from_string`/`from_bytes`/`to_prefixed_string`/`verify`/`recover`/`as_bytes`. Remaining: `Address` string, child, `add` (next slice) |
 | `Signature` (sign / verify / recover) | ✅ | ⚠️ | `sign_digest_compact[_with_wif]`, `verify_*`, `recover_*` — free fns, no `Signature` type API |
 | Canonical signature enforcement | ✅ | ✅ | `is_graphene_canonical_compact_signature` |
 | `hash` (sha256/sha512/sha1/ripemd160/hmac) | ✅ | ⚠️ | `fc::sha` + `ripemd` dep; not full hash module |
@@ -113,7 +114,7 @@ Bindings serialize **all 81** operations. The ergonomic builder API exposes **1*
 
 1. **Generic `TransactionBuilder`** — expose the 81 already-serializable ops through one builder (biggest leverage; the hard part is done).
 2. **`Aes` memo encrypt/decrypt** — transfers already carry `encrypted_memo`; without Aes that field is unusable.
-3. **Full `PrivateKey`/`PublicKey`/`Address` types** — `fromSeed`, `toWif`, `toPublicKey`, address strings, shared secret.
+3. **`PrivateKey`/`PublicKey` types** — slice 1 ✅ done (branch `feature/keys`): `from_wif`/`from_seed`/`to_wif`/`to_public_key`/`sign`, `from_string`/`to_prefixed_string`/`verify`/`recover`. Remaining: **`Address` strings, shared secret (ECDH), child derivation** — unblocks `Aes` (#2) and `AccountLogin` (#5).
 4. **`ConnectionManager`** — failover + latency sort ✅ done (branch `feature/sdk-apis`); **auto-reconnect/backoff + `urlChangeCallback` still missing** (row "Auto-reconnect (`ChainWebSocket`)" ❌), so the entity is ⚠️ partial.
 5. **`BrainKey` + `AccountLogin`** — wallet/account onboarding flows.
 6. **`ChainStore` / `FetchChain`** — object cache + reactive fetch.

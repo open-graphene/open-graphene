@@ -317,6 +317,7 @@ version = "0.1.0"
 dependencies = [
  "dotenvy",
  "graphene-chain-swaplock-api",
+ "open-graphene-fc",
  "tokio",
 ]
 
