@@ -5,7 +5,8 @@
 //! of free functions.
 
 use ripemd::{Digest, Ripemd160};
-use secp256k1::{PublicKey as Secp256k1PublicKey, Secp256k1, SecretKey};
+use secp256k1::{PublicKey as Secp256k1PublicKey, Scalar, Secp256k1, SecretKey};
+use sha2::Sha512;
 
 use crate::{
     FcSerializeError, Result, decode_public_key, decode_wif_private_key,
@@ -56,6 +57,20 @@ impl PrivateKey {
     /// Sign a 32-byte digest, producing a canonical 65-byte compact signature.
     pub fn sign(&self, digest: [u8; 32]) -> Result<[u8; 65]> {
         sign_digest_compact(digest, self.0)
+    }
+
+    /// Diffie-Hellman shared secret with `other`, the way Graphene keys it: `sha512` of the
+    /// 32-byte X coordinate of `self * other`. Symmetric, so both parties derive the same value.
+    /// This is the seed behind memo encryption (see [`crate::encrypt_with_checksum`]).
+    pub fn get_shared_secret(&self, other: &PublicKey) -> [u8; 64] {
+        let scalar = Scalar::from_be_bytes(self.0).expect("private key validated on construction");
+        let point = Secp256k1PublicKey::from_slice(&other.0).expect("public key validated");
+        let shared = point
+            .mul_tweak(&Secp256k1::new(), &scalar)
+            .expect("shared point is never the identity for distinct valid keys");
+        let mut out = [0u8; 64];
+        out.copy_from_slice(&Sha512::digest(&shared.serialize_uncompressed()[1..33]));
+        out
     }
 
     /// The raw 32 key bytes, for callers that need the scalar directly.
@@ -165,6 +180,17 @@ mod tests {
     #[test]
     fn debug_does_not_leak_the_secret() {
         assert_eq!(format!("{:?}", sample_key()), "PrivateKey(***)");
+    }
+
+    #[test]
+    fn matches_bitsharesjs_known_vector() {
+        // bitsharesjs test/ecc/Crypto.js: PrivateKey.fromSeed("1").toPublicKey().toString()
+        // under prefix "CBA". Proves from_seed + derive + public-key-string are byte-identical.
+        let public = PrivateKey::from_seed(b"1").unwrap().to_public_key();
+        assert_eq!(
+            public.to_prefixed_string("CBA"),
+            "CBA8m5UgaFAAYQRuaNejYdS8FVLVp9Ss3K1qAVk5de6F8s3HnVbvA"
+        );
     }
 
     #[test]

@@ -10,9 +10,9 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 > **Headline:** the binding layer can *serialize* all 81 operation types, and the builder/connection
 > ergonomics are excellent. The high-level SDK now wires up `transfer`, the **`crypto`** and grouped
 > **`orders`** APIs end-to-end, **latency-sorted connection** (failover + `ConnectionStrategy`), and
-> the **`PrivateKey`/`PublicKey`** foundation (WIF, derive, sign, verify, recover). Still missing: a
-> **multi-op `TransactionBuilder`**, the rest of the **ECC layer** (memo Aes, `Address`, brain keys,
-> account login, shared secret), object cache, and auto-reconnect/backoff.
+> the **`PrivateKey`/`PublicKey`** foundation (WIF, derive, sign, verify, recover, shared secret) and
+> **`Aes` memo encrypt/decrypt**. Still missing: a **multi-op `TransactionBuilder`**, the rest of the
+> **ECC layer** (`Address`, brain keys, account login), object cache, and auto-reconnect/backoff.
 
 
 ---
@@ -43,13 +43,13 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 
 | Feature | JS | open-graphene-rs | Notes |
 |---|:--:|:--:|---|
-| `PrivateKey` from WIF | ✅ | ✅ 🥸 | **DONE** (branch `feature/keys`): `fc::PrivateKey` type — `from_wif`/`from_seed`/`from_bytes`/`to_wif`/`to_public_key`/`sign`/`as_bytes`, secret redacted in `Debug`. Remaining: `get_shared_secret` (ECDH) + child derivation (next slice) |
+| `PrivateKey` from WIF | ✅ | ✅ 🥸 | **DONE** (branches `feature/keys` + `feature/aes-memo`): `fc::PrivateKey` — `from_wif`/`from_seed`/`from_bytes`/`to_wif`/`to_public_key`/`sign`/`get_shared_secret`/`as_bytes`, secret redacted in `Debug`. Remaining: child derivation |
 | `PublicKey` parse/encode | ✅ | ✅ 🥸 | **DONE** (branch `feature/keys`): `fc::PublicKey` type — `from_string`/`from_bytes`/`to_prefixed_string`/`verify`/`recover`/`as_bytes`. Remaining: `Address` string, child, `add` (next slice) |
 | `Signature` (sign / verify / recover) | ✅ | ⚠️ | `sign_digest_compact[_with_wif]`, `verify_*`, `recover_*` — free fns, no `Signature` type API |
 | Canonical signature enforcement | ✅ | ✅ | `is_graphene_canonical_compact_signature` |
 | `hash` (sha256/sha512/sha1/ripemd160/hmac) | ✅ | ⚠️ | `fc::sha` + `ripemd` dep; not full hash module |
 | `Address` (key → address string) | ✅ | ❌ | only address-auth *serialization* exists, no `Address` type |
-| `Aes` — memo encrypt/decrypt | ✅ | ❌ | transfer carries `encrypted_memo: Vec<u8>` but **nothing encrypts it** |
+| `Aes` — memo encrypt/decrypt | ✅ | ✅ 🥸 | **DONE** (branch `feature/aes-memo`): `fc::{encrypt_with_checksum,decrypt_with_checksum}` + `PrivateKey::get_shared_secret` (ECDH). Verbatim port of bitsharesjs `Aes` (AES-256-CBC/PKCS7, sha512 key/iv seed, sha256 checksum). Keys cross-checked against a bitsharesjs known-answer vector. Note: on swaplock the transfer memo is a *blind* memo; this `encrypted_memo` Aes feeds `StealthConfirmation` / the standard memo format |
 | `BrainKey` (generate / derive) | ✅ | ⚠️ 🥸 | **derive DONE** (branch `feature/brainkey`): `fc::BrainKey` — `new` (normalise) + `private_key(sequence)` = `sha256(sha512(words + " " + seq))`, verbatim bitsharesjs; words redacted in `Debug`. Remaining: random **generation** (dictionary picker) |
 | `KeyUtils` (random key, normalize/suggest brainkey) | ✅ | ⚠️ 🥸 | normalise done (`BrainKey::new`); `suggest_brain_key` (49744-word dictionary + RNG) still missing |
 | `AccountLogin` (`Login` — keys from account+password+roles) | ✅ | ❌ | none |
@@ -113,8 +113,8 @@ Bindings serialize **all 81** operations. The ergonomic builder API exposes **1*
 ## Priority gaps (to reach JS parity)
 
 1. **Generic `TransactionBuilder`** — expose the 81 already-serializable ops through one builder (biggest leverage; the hard part is done).
-2. **`Aes` memo encrypt/decrypt** — transfers already carry `encrypted_memo`; without Aes that field is unusable.
-3. **`PrivateKey`/`PublicKey` types** — slice 1 ✅ done (branch `feature/keys`): `from_wif`/`from_seed`/`to_wif`/`to_public_key`/`sign`, `from_string`/`to_prefixed_string`/`verify`/`recover`. Remaining: **`Address` strings, shared secret (ECDH), child derivation** — unblocks `Aes` (#2) and `AccountLogin` (#5).
+2. ~~**`Aes` memo encrypt/decrypt**~~ ✅ done (branch `feature/aes-memo`): `encrypt_with_checksum`/`decrypt_with_checksum` + `get_shared_secret`, verbatim bitsharesjs port.
+3. **`PrivateKey`/`PublicKey` types** — ✅ done (branches `feature/keys`, `feature/aes-memo`): WIF/seed/derive/sign/verify/recover/public-key-string + `get_shared_secret`. Remaining: **`Address` strings, child derivation** (unblocks `AccountLogin` #5).
 4. **`ConnectionManager`** — failover + latency sort ✅ done (branch `feature/sdk-apis`); **auto-reconnect/backoff + `urlChangeCallback` still missing** (row "Auto-reconnect (`ChainWebSocket`)" ❌), so the entity is ⚠️ partial.
 5. **`BrainKey` + `AccountLogin`** — brain-key *derivation* ✅ done (branch `feature/brainkey`); remaining: random brain-key **generation** (dictionary) and `AccountLogin` (keys from account+password+roles).
 6. **`ChainStore` / `FetchChain`** — object cache + reactive fetch.

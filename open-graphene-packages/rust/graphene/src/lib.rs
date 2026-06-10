@@ -24,7 +24,9 @@ pub use graphene_chain_swaplock_api::{
     TrackedGroupsRequest, TransferRequest, VerifyRangeProofRewindRequest,
     VerifyRangeProofRewindResult, VerifyRangeRequest, VerifyRangeResult, VerifySumRequest,
 };
-pub use open_graphene_fc::{BrainKey, PrivateKey, PublicKey};
+pub use open_graphene_fc::{
+    BrainKey, PrivateKey, PublicKey, decrypt_with_checksum, encrypt_with_checksum,
+};
 
 pub struct Graphene;
 
