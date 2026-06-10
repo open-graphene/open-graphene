@@ -3,7 +3,9 @@ use secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
 use secp256k1::{Message, Secp256k1, SecretKey};
 use sha2::Sha256;
 
+pub mod brainkey;
 pub mod keys;
+pub use brainkey::BrainKey;
 pub use keys::{PrivateKey, PublicKey};
 
 #[derive(Debug, Clone, PartialEq, Eq)]

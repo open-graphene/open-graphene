@@ -23,6 +23,10 @@ name = "swaplock_keys_sign_verify"
 path = "examples/swaplock/keys_sign_verify.rs"
 
 [[example]]
+name = "swaplock_brainkey_derive"
+path = "examples/swaplock/brainkey_derive.rs"
+
+[[example]]
 name = "swaplock_database_account_get"
 path = "examples/swaplock/database_account_get.rs"
 
