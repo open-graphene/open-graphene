@@ -5,8 +5,10 @@ use sha2::Sha256;
 
 pub mod brainkey;
 pub mod keys;
+pub mod memo;
 pub use brainkey::BrainKey;
 pub use keys::{PrivateKey, PublicKey};
+pub use memo::{decrypt_with_checksum, encrypt_with_checksum};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FcSerializeError {
@@ -41,6 +43,9 @@ pub enum FcSerializeError {
         reason: &'static str,
     },
     SigningFailed {
+        reason: &'static str,
+    },
+    MemoDecryptFailed {
         reason: &'static str,
     },
     UnsupportedVariant {
@@ -90,6 +95,7 @@ impl std::fmt::Display for FcSerializeError {
             }
             Self::InvalidPrivateKey { reason } => write!(f, "invalid private key: {reason}"),
             Self::SigningFailed { reason } => write!(f, "signing failed: {reason}"),
+            Self::MemoDecryptFailed { reason } => write!(f, "memo decrypt failed: {reason}"),
             Self::UnsupportedVariant { variant } => {
                 write!(
                     f,
