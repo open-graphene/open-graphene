@@ -27,6 +27,10 @@ name = "swaplock_brainkey_derive"
 path = "examples/swaplock/brainkey_derive.rs"
 
 [[example]]
+name = "swaplock_account_login"
+path = "examples/swaplock/account_login.rs"
+
+[[example]]
 name = "swaplock_memo_encrypt_decrypt"
 path = "examples/swaplock/memo_encrypt_decrypt.rs"
 

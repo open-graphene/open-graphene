@@ -10,9 +10,10 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 > **Headline:** the binding layer can *serialize* all 81 operation types, and the builder/connection
 > ergonomics are excellent. The high-level SDK now wires up `transfer`, the **`crypto`** and grouped
 > **`orders`** APIs end-to-end, **latency-sorted connection** (failover + `ConnectionStrategy`), and
-> the **`PrivateKey`/`PublicKey`** foundation (WIF, derive, sign, verify, recover, shared secret) and
-> **`Aes` memo encrypt/decrypt**. Still missing: a **multi-op `TransactionBuilder`**, the rest of the
-> **ECC layer** (`Address`, brain keys, account login), object cache, and auto-reconnect/backoff.
+> the **`PrivateKey`/`PublicKey`** foundation (WIF, derive, sign, verify, recover, shared secret),
+> **`Aes` memo encrypt/decrypt**, **brain keys** and **account login** (password to keys). Still
+> missing: a **multi-op `TransactionBuilder`**, the rest of the **ECC layer** (`Address`, random
+> brain-key generation), object cache, and auto-reconnect/backoff.
 
 
 ---
@@ -52,7 +53,7 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 | `Aes` — memo encrypt/decrypt | ✅ | ✅ 🥸 | **DONE** (branch `feature/aes-memo`): `fc::{encrypt_with_checksum,decrypt_with_checksum}` + `PrivateKey::get_shared_secret` (ECDH). Verbatim port of bitsharesjs `Aes` (AES-256-CBC/PKCS7, sha512 key/iv seed, sha256 checksum). Keys cross-checked against a bitsharesjs known-answer vector. Note: on swaplock the transfer memo is a *blind* memo; this `encrypted_memo` Aes feeds `StealthConfirmation` / the standard memo format |
 | `BrainKey` (generate / derive) | ✅ | ⚠️ 🥸 | **derive DONE** (branch `feature/brainkey`): `fc::BrainKey` — `new` (normalise) + `private_key(sequence)` = `sha256(sha512(words + " " + seq))`, verbatim bitsharesjs; words redacted in `Debug`. Remaining: random **generation** (dictionary picker) |
 | `KeyUtils` (random key, normalize/suggest brainkey) | ✅ | ⚠️ 🥸 | normalise done (`BrainKey::new`); `suggest_brain_key` (49744-word dictionary + RNG) still missing |
-| `AccountLogin` (`Login` — keys from account+password+roles) | ✅ | ❌ | none |
+| `AccountLogin` (`Login` — keys from account+password+roles) | ✅ | ✅ 🥸 | **DONE** (branch `feature/account-login`): `fc::AccountKeys::derive(account, password)` → owner/active/memo + `account_role_key` for custom roles. `sha256(normalize(account + role + password))`, verbatim bitsharesjs. **Cross-checked against the bitsharesjs `Login` test vector** (byte-identical active public key) |
 
 ---
 
@@ -116,7 +117,7 @@ Bindings serialize **all 81** operations. The ergonomic builder API exposes **1*
 2. ~~**`Aes` memo encrypt/decrypt**~~ ✅ done (branch `feature/aes-memo`): `encrypt_with_checksum`/`decrypt_with_checksum` + `get_shared_secret`, verbatim bitsharesjs port.
 3. **`PrivateKey`/`PublicKey` types** — ✅ done (branches `feature/keys`, `feature/aes-memo`): WIF/seed/derive/sign/verify/recover/public-key-string + `get_shared_secret`. Remaining: **`Address` strings, child derivation** (unblocks `AccountLogin` #5).
 4. **`ConnectionManager`** — failover + latency sort ✅ done (branch `feature/sdk-apis`); **auto-reconnect/backoff + `urlChangeCallback` still missing** (row "Auto-reconnect (`ChainWebSocket`)" ❌), so the entity is ⚠️ partial.
-5. **`BrainKey` + `AccountLogin`** — brain-key *derivation* ✅ done (branch `feature/brainkey`); remaining: random brain-key **generation** (dictionary) and `AccountLogin` (keys from account+password+roles).
+5. **`BrainKey` + `AccountLogin`** — brain-key *derivation* ✅ (branch `feature/brainkey`) and `AccountLogin` ✅ (branch `feature/account-login`, golden-vector matched). Remaining: random brain-key **generation** (dictionary picker).
 6. **`ChainStore` / `FetchChain`** — object cache + reactive fetch.
 7. ~~**`crypto_api`**~~ ✅ done · ~~**`orders_api`** (grouped order book)~~ ✅ done — both on branch `feature/sdk-apis`. (A raw `get_limit_orders` market call is still only on the database API.)
 8. **`ChainValidation`** — account-name validation helpers.
