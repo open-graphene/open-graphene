@@ -35,8 +35,9 @@ pub use network_broadcast::{
     BroadcastConfirmation, BroadcastReceipt, NetworkBroadcastApi, PendingBroadcastConfirmation,
 };
 pub use operations::{
-    OperationsApi, PreparedTransaction, PreparedTransfer, SignedTransactionEnvelope,
-    SignedTransfer, TransactionBuilder, TransferRequest,
+    LimitOrderCancelRequest, LimitOrderCreateRequest, OperationsApi, PreparedTransaction,
+    PreparedTransfer, SignedTransactionEnvelope, SignedTransfer, TransactionBuilder,
+    TransferRequest,
 };
 
 // Binding types callers need to construct operations for `OperationsApi::transaction()`.

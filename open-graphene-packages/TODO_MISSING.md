@@ -100,7 +100,7 @@ Bindings serialize **all 81** operations. The ergonomic builder API exposes **1*
 | Transfer | ✅ | ✅ |
 | Account (create/update/upgrade/whitelist/transfer) | ✅ (5) | ❌ |
 | Asset (create/update/issue/reserve/settle/publish_feed/…) | ✅ (~18) | ❌ |
-| Markets (limit_order create/cancel/update, call_order_update) | ✅ (4) | ❌ |
+| Markets (limit_order create/cancel/update, call_order_update) | ✅ (4) | ⚠️ 🥸 | `limit_order_create` + `limit_order_cancel` have ergonomic builders (`OperationsApi::limit_order_*`), **live-tested create→cancel** (branch `feature/limit-orders`); `update` + `call_order_update` still binding-only |
 | Liquidity pools (create/delete/deposit/withdraw/exchange/update) | ✅ (6) | ❌ |
 | HTLC (create/redeem/extend/refund) | ✅ (4) | ❌ |
 | Credit offers / deals | ✅ (7) | ❌ |
