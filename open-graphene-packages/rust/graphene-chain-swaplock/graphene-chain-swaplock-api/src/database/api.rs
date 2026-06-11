@@ -22,6 +22,8 @@ use super::dynamic_global_properties::{
     get_dynamic_global_properties,
 };
 use super::global_properties::{GlobalPropertiesRequest, get_global_properties};
+use super::list_assets::{DEFAULT_LIST_ASSETS_LIMIT, ListAssetsRequest};
+use super::lookup_accounts::{DEFAULT_LOOKUP_ACCOUNTS_LIMIT, LookupAccountsRequest};
 use super::string_list::IntoStringList;
 
 pub struct DatabaseApi<'session> {
@@ -153,6 +155,30 @@ impl<'session> DatabaseApi<'session> {
     pub fn global_properties(self) -> GlobalPropertiesRequest<'session> {
         GlobalPropertiesRequest {
             session: self.session,
+        }
+    }
+
+    /// List assets in symbol order, starting from `lower_bound` (`""` for the start).
+    pub fn list_assets<S>(self, lower_bound: S) -> ListAssetsRequest<'session>
+    where
+        S: Into<String>,
+    {
+        ListAssetsRequest {
+            session: self.session,
+            lower_bound: lower_bound.into(),
+            limit: DEFAULT_LIST_ASSETS_LIMIT,
+        }
+    }
+
+    /// Look up account `(name, id)` pairs in name order, starting from `lower_bound`.
+    pub fn lookup_accounts<S>(self, lower_bound: S) -> LookupAccountsRequest<'session>
+    where
+        S: Into<String>,
+    {
+        LookupAccountsRequest {
+            session: self.session,
+            lower_bound: lower_bound.into(),
+            limit: DEFAULT_LOOKUP_ACCOUNTS_LIMIT,
         }
     }
 

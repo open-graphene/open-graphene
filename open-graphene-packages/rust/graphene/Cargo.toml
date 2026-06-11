@@ -79,6 +79,10 @@ name = "swaplock_database_chain_id_get"
 path = "examples/swaplock/database_chain_id_get.rs"
 
 [[example]]
+name = "swaplock_database_list_assets_accounts"
+path = "examples/swaplock/database_list_assets_accounts.rs"
+
+[[example]]
 name = "swaplock_database_chain_properties_get"
 path = "examples/swaplock/database_chain_properties_get.rs"
 

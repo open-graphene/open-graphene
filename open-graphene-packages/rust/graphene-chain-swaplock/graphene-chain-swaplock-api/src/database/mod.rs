@@ -14,6 +14,8 @@ mod constants;
 mod dynamic_global_properties;
 mod error;
 mod global_properties;
+mod list_assets;
+mod lookup_accounts;
 mod objects;
 mod string_list;
 
@@ -33,6 +35,8 @@ pub use dynamic_global_properties::{
     DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription,
 };
 pub use global_properties::GlobalPropertiesRequest;
+pub use list_assets::{DEFAULT_LIST_ASSETS_LIMIT, ListAssetsRequest};
+pub use lookup_accounts::{DEFAULT_LOOKUP_ACCOUNTS_LIMIT, LookupAccountsRequest};
 pub use string_list::IntoStringList;
 
 pub(crate) use account_balances_by_id::{
