@@ -3,6 +3,7 @@ use open_graphene_transport::GrapheneSession;
 use crate::SwaplockApiError;
 
 use super::sign_transfer::sign_transfer_with_wif;
+use super::transaction::TransactionBuilder;
 use super::transfer::{PreparedTransfer, SignedTransfer, TransferRequest};
 
 pub struct OperationsApi<'session> {
@@ -12,6 +13,11 @@ pub struct OperationsApi<'session> {
 impl<'session> OperationsApi<'session> {
     pub fn transfer(self) -> TransferRequest<'session> {
         TransferRequest::new(self.session)
+    }
+
+    /// Build a signed transaction carrying any supported operation (priced, signed, ready to broadcast).
+    pub fn transaction(self) -> TransactionBuilder<'session> {
+        TransactionBuilder::new(self.session)
     }
 
     pub async fn sign_transfer_with_wif(

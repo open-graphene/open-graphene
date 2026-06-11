@@ -6,13 +6,14 @@ pub use chain::{Acta, ActaClient, BitShares, BitSharesClient, ChainClientBuilder
 pub use client::{GrapheneClient, GrapheneClientBuilder, GrapheneClientConfig};
 pub use error::{GrapheneConfigError, GrapheneConnectError};
 pub use graphene_chain_swaplock_api::{
-    AccountHistoryPage, AccountHistorySubscription, BlindRequest, BlindSumRequest, BlindingFactor,
-    BroadcastConfirmation, BroadcastReceipt, Commitment, ConnectionStrategy, CryptoApi,
-    DEFAULT_ACCOUNT_HISTORY_LIMIT, DEFAULT_ACCOUNT_HISTORY_OFFSET,
-    DEFAULT_GROUPED_LIMIT_ORDERS_LIMIT, GroupedLimitOrdersRequest, LimitOrderGroup,
-    MAX_ACCOUNT_HISTORY_LIMIT, NetworkBroadcastApi, OrdersApi, PreparedTransfer,
+    AccountHistoryPage, AccountHistorySubscription, AccountId, Asset, AssetId, BlindRequest,
+    BlindSumRequest, BlindingFactor, BroadcastConfirmation, BroadcastReceipt, Commitment,
+    ConnectionStrategy, CryptoApi, DEFAULT_ACCOUNT_HISTORY_LIMIT, DEFAULT_ACCOUNT_HISTORY_OFFSET,
+    DEFAULT_GROUPED_LIMIT_ORDERS_LIMIT, GroupedLimitOrdersRequest, LimitOrderCancelOperation,
+    LimitOrderCreateOperation, LimitOrderGroup, LimitOrderId, MAX_ACCOUNT_HISTORY_LIMIT,
+    NetworkBroadcastApi, Operation, OrdersApi, PreparedTransaction, PreparedTransfer,
     RangeGetInfoRequest, RangeProof, RangeProofInfo, RangeProofSignRequest, SWAPLOCK_CHAIN_ID,
-    ServerLatency, SignedTransfer, SwaplockApi, SwaplockApiError,
+    ServerLatency, SignedTransactionEnvelope, SignedTransfer, SwaplockApi, SwaplockApiError,
     SwaplockLiveAccountBalancesByIdRequest, SwaplockLiveAccountBalancesSubscription,
     SwaplockLiveAccountByIdRequest, SwaplockLiveAccountHistoryByIdRequest,
     SwaplockLiveAccountHistoryRequest, SwaplockLiveAccountHistorySubscription,
@@ -21,8 +22,9 @@ pub use graphene_chain_swaplock_api::{
     SwaplockLiveAssetSubscription, SwaplockLiveDatabaseApi,
     SwaplockLiveDynamicGlobalPropertiesSubscription, SwaplockLiveHistoryApi,
     SwaplockLiveNetworkBroadcastApi, SwaplockLivePendingBroadcastConfirmation,
-    TrackedGroupsRequest, TransferRequest, VerifyRangeProofRewindRequest,
-    VerifyRangeProofRewindResult, VerifyRangeRequest, VerifyRangeResult, VerifySumRequest,
+    TrackedGroupsRequest, TransactionBuilder, TransferOperation, TransferRequest,
+    VerifyRangeProofRewindRequest, VerifyRangeProofRewindResult, VerifyRangeRequest,
+    VerifyRangeResult, VerifySumRequest,
 };
 pub use open_graphene_fc::{
     AccountKeys, BrainKey, PrivateKey, PublicKey, account_role_key, decrypt_with_checksum,

@@ -12,8 +12,8 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 > **`orders`** APIs end-to-end, **latency-sorted connection** (failover + `ConnectionStrategy`), and
 > the **`PrivateKey`/`PublicKey`** foundation (WIF, derive, sign, verify, recover, shared secret),
 > **`Aes` memo encrypt/decrypt**, **brain keys** and **account login** (password to keys). Still
-> missing: a **multi-op `TransactionBuilder`**, the rest of the **ECC layer** (`Address`, random
-> brain-key generation), object cache, and auto-reconnect/backoff.
+> missing: ergonomic per-op request builders on top of the generic `TransactionBuilder`, the rest
+> of the **ECC layer** (`Address`, random brain-key generation), object cache, and auto-reconnect/backoff.
 
 
 ---
@@ -76,10 +76,10 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 
 | Feature | JS | open-graphene-rs | Notes |
 |---|:--:|:--:|---|
-| `TransactionBuilder` — **any** operation | ✅ | ❌ | only `OperationsApi::transfer` prepare/sign/broadcast |
-| `add_operation` for all 81 op types | ✅ | ❌ | bindings can serialize all 81; **none but transfer is exposed via API** |
+| `TransactionBuilder` — **any** operation | ✅ | ✅ 🥸 | **DONE** (branch `feature/transaction-builder`): `OperationsApi::transaction()` → `add_operation(Operation)` → `prepare()` (DGP header + `get_required_fees`) → `sign_with_wif` → broadcast JSON. Op JSON from serde (`[op_id, body]`). **Live-tested** (transfer accepted by the node) |
+| `add_operation` for all 81 op types | ✅ | ⚠️ 🥸 | generic `add_operation(Operation)` takes any of the 81; fee write-back wired for `transfer`, `limit_order_create`, `limit_order_cancel` — each new op is one `set_operation_fee` arm |
 | `set_required_fees` (auto fee lookup) | ✅ | ⚠️ | transfer supports `fee` / `max_fee`; no generic fee resolver |
-| Sign + broadcast pipeline | ✅ | ✅ | transfer-only: `prepare → sign_with_wif → broadcast` |
+| Sign + broadcast pipeline | ✅ | ✅ 🥸 | generic via `TransactionBuilder`: `prepare → sign_with_wif → broadcast` for any supported op (plus the transfer-specific helper) |
 | `propose` / proposal wrapping | ✅ | ❌ | `ProposalCreateOperation` serializable, not wired |
 | `ChainStore` — object cache + reactive updates | ✅ | ❌ | none |
 | `FetchChain` / `FetchChainObjects` | ✅ | ❌ | direct getters only (`get_account_by_name`, etc.) |
@@ -113,7 +113,7 @@ Bindings serialize **all 81** operations. The ergonomic builder API exposes **1*
 
 ## Priority gaps (to reach JS parity)
 
-1. **Generic `TransactionBuilder`** — expose the 81 already-serializable ops through one builder (biggest leverage; the hard part is done).
+1. **Generic `TransactionBuilder`** ✅ done (branch `feature/transaction-builder`, live-tested). Remaining: add a `set_operation_fee` arm per operation as they're needed (3 wired so far) and ergonomic per-op request builders if wanted.
 2. ~~**`Aes` memo encrypt/decrypt**~~ ✅ done (branch `feature/aes-memo`): `encrypt_with_checksum`/`decrypt_with_checksum` + `get_shared_secret`, verbatim bitsharesjs port.
 3. **`PrivateKey`/`PublicKey` types** — ✅ done (branches `feature/keys`, `feature/aes-memo`): WIF/seed/derive/sign/verify/recover/public-key-string + `get_shared_secret`. Remaining: **`Address` strings, child derivation** (unblocks `AccountLogin` #5).
 4. **`ConnectionManager`** — failover + latency sort ✅ done (branch `feature/sdk-apis`); **auto-reconnect/backoff + `urlChangeCallback` still missing** (row "Auto-reconnect (`ChainWebSocket`)" ❌), so the entity is ⚠️ partial.
