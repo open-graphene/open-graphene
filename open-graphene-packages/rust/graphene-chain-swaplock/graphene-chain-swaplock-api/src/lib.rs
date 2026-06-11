@@ -34,7 +34,18 @@ pub use live::{
 pub use network_broadcast::{
     BroadcastConfirmation, BroadcastReceipt, NetworkBroadcastApi, PendingBroadcastConfirmation,
 };
-pub use operations::{OperationsApi, PreparedTransfer, SignedTransfer, TransferRequest};
+pub use operations::{
+    OperationsApi, PreparedTransaction, PreparedTransfer, SignedTransactionEnvelope,
+    SignedTransfer, TransactionBuilder, TransferRequest,
+};
+
+// Binding types callers need to construct operations for `OperationsApi::transaction()`.
+pub use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId, LimitOrderId};
+pub use graphene_chain_swaplock_bindings::generated::operations::{
+    LimitOrderCancelOperation, LimitOrderCreateOperation, TransferOperation,
+};
+pub use graphene_chain_swaplock_bindings::generated::static_variants::Operation;
+pub use graphene_chain_swaplock_bindings::generated::types::Asset;
 
 pub use orders::{
     DEFAULT_GROUPED_LIMIT_ORDERS_LIMIT, GroupedLimitOrdersRequest, LimitOrderGroup, OrdersApi,
