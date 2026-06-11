@@ -16,7 +16,7 @@ impl BrainKey {
     /// Take a raw passphrase and normalise it: trim, then collapse every run of whitespace to a
     /// single space (matching bitsharesjs), so casual spacing differences still derive the same keys.
     pub fn new(passphrase: &str) -> Self {
-        Self(normalize(passphrase))
+        Self(normalize_brain_key(passphrase))
     }
 
     /// The normalised words, e.g. to show the owner for safekeeping.
@@ -42,8 +42,9 @@ impl std::fmt::Debug for BrainKey {
 }
 
 /// Trim and collapse runs of ASCII whitespace (`\t \n \v \f \r` and space) to single spaces, the
-/// same set bitsharesjs normalises on, so derivation is stable across formatting.
-fn normalize(passphrase: &str) -> String {
+/// same set bitsharesjs `normalize_brainKey` uses. Shared with account-login key derivation so both
+/// stay byte-identical to JS.
+pub(crate) fn normalize_brain_key(passphrase: &str) -> String {
     passphrase
         .split([' ', '\t', '\n', '\u{0b}', '\u{0c}', '\r'])
         .filter(|piece| !piece.is_empty())
