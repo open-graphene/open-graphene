@@ -13,6 +13,7 @@ mod chain_properties;
 mod constants;
 mod dynamic_global_properties;
 mod error;
+mod get_limit_orders;
 mod global_properties;
 mod list_assets;
 mod lookup_accounts;
@@ -34,6 +35,7 @@ pub use chain_properties::ChainPropertiesRequest;
 pub use dynamic_global_properties::{
     DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription,
 };
+pub use get_limit_orders::{DEFAULT_GET_LIMIT_ORDERS_LIMIT, GetLimitOrdersRequest};
 pub use global_properties::GlobalPropertiesRequest;
 pub use list_assets::{DEFAULT_LIST_ASSETS_LIMIT, ListAssetsRequest};
 pub use lookup_accounts::{DEFAULT_LOOKUP_ACCOUNTS_LIMIT, LookupAccountsRequest};

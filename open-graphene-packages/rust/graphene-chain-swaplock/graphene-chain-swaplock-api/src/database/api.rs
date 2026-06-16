@@ -21,6 +21,7 @@ use super::dynamic_global_properties::{
     DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription,
     get_dynamic_global_properties,
 };
+use super::get_limit_orders::{DEFAULT_GET_LIMIT_ORDERS_LIMIT, GetLimitOrdersRequest};
 use super::global_properties::{GlobalPropertiesRequest, get_global_properties};
 use super::list_assets::{DEFAULT_LIST_ASSETS_LIMIT, ListAssetsRequest};
 use super::lookup_accounts::{DEFAULT_LOOKUP_ACCOUNTS_LIMIT, LookupAccountsRequest};
@@ -182,6 +183,20 @@ impl<'session> DatabaseApi<'session> {
         }
     }
 
+    /// The raw order book for the `base`/`quote` market (asset ids like `1.3.0`).
+    pub fn limit_orders<B, Q>(self, base: B, quote: Q) -> GetLimitOrdersRequest<'session>
+    where
+        B: Into<String>,
+        Q: Into<String>,
+    {
+        GetLimitOrdersRequest {
+            session: self.session,
+            base: base.into(),
+            quote: quote.into(),
+            limit: DEFAULT_GET_LIMIT_ORDERS_LIMIT,
+        }
+    }
+
     pub async fn get_account_balances<L>(
         &mut self,
         account_name: &str,
@@ -223,6 +238,21 @@ impl<'session> DatabaseApi<'session> {
         account_id: &str,
     ) -> Result<Vec<LimitOrderObject>, SwaplockApiError> {
         get_account_orders_by_id(self.session, account_id).await
+    }
+
+    pub async fn get_limit_orders(
+        &mut self,
+        base: &str,
+        quote: &str,
+    ) -> Result<Vec<LimitOrderObject>, SwaplockApiError> {
+        GetLimitOrdersRequest {
+            session: &mut *self.session,
+            base: base.to_string(),
+            quote: quote.to_string(),
+            limit: DEFAULT_GET_LIMIT_ORDERS_LIMIT,
+        }
+        .get()
+        .await
     }
 
     pub async fn get_account_by_name(

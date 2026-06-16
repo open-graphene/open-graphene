@@ -36,7 +36,7 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 | Auto-reconnect (`ChainWebSocket`) | ✅ | ❌ | no reconnect/retry/backoff logic |
 | Connection pool / `closeCb` lifecycle | ✅ | ⚠️ | basic session lifecycle only |
 
-\* `orders_api` now exposes the **grouped** market order book (`grouped_limit_orders`); per-account orders also remain available via `database.get_account_orders`. A raw full order book (`get_limit_orders`) still lives only on the database API.
+\* `orders_api` now exposes the **grouped** market order book (`grouped_limit_orders`); per-account orders also remain available via `database.get_account_orders`. The raw full order book (`get_limit_orders`) has an ergonomic builder on the database API too — `DatabaseApi::limit_orders(base, quote).limit(..).get()`, **live-tested** (branch `feature/get-limit-orders`).
 
 ---
 
@@ -119,5 +119,5 @@ Bindings serialize **all 81** operations. The ergonomic builder API exposes **1*
 4. **`ConnectionManager`** — failover + latency sort ✅ done (branch `feature/sdk-apis`); **auto-reconnect/backoff + `urlChangeCallback` still missing** (row "Auto-reconnect (`ChainWebSocket`)" ❌), so the entity is ⚠️ partial.
 5. **`BrainKey` + `AccountLogin`** — brain-key *derivation* ✅ (branch `feature/brainkey`) and `AccountLogin` ✅ (branch `feature/account-login`, golden-vector matched). Remaining: random brain-key **generation** (dictionary picker).
 6. **`ChainStore` / `FetchChain`** — object cache + reactive fetch.
-7. ~~**`crypto_api`**~~ ✅ done · ~~**`orders_api`** (grouped order book)~~ ✅ done — both on branch `feature/sdk-apis`. (A raw `get_limit_orders` market call is still only on the database API.)
+7. ~~**`crypto_api`**~~ ✅ done · ~~**`orders_api`** (grouped order book)~~ ✅ done — both on branch `feature/sdk-apis`. ~~Raw `get_limit_orders`~~ ✅ done (branch `feature/get-limit-orders`): ergonomic builder `DatabaseApi::limit_orders(base, quote)`, live-tested.
 8. **`ChainValidation`** — account-name validation helpers.

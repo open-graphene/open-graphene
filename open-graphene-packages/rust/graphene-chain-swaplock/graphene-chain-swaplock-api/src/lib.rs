@@ -64,9 +64,10 @@ pub use database::{
     AccountByIdRequest, AccountByNameRequest, AccountOrdersByIdRequest, AccountOrdersRequest,
     AccountOrdersSubscription, AccountSubscription, AccountsRequest, AssetByIdRequest,
     AssetBySymbolRequest, AssetSubscription, ChainIdRequest, ChainPropertiesRequest,
-    DEFAULT_LIST_ASSETS_LIMIT, DEFAULT_LOOKUP_ACCOUNTS_LIMIT, DatabaseApi,
-    DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription, GlobalPropertiesRequest,
-    IntoStringList, ListAssetsRequest, LookupAccountsRequest,
+    DEFAULT_GET_LIMIT_ORDERS_LIMIT, DEFAULT_LIST_ASSETS_LIMIT, DEFAULT_LOOKUP_ACCOUNTS_LIMIT,
+    DatabaseApi, DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription,
+    GetLimitOrdersRequest, GlobalPropertiesRequest, IntoStringList, ListAssetsRequest,
+    LookupAccountsRequest,
 };
 
 pub const SWAPLOCK_CHAIN_ID: &str =
