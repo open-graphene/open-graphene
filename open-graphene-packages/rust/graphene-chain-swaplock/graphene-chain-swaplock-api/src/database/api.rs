@@ -3,6 +3,7 @@ use graphene_chain_swaplock_bindings::generated::{
     GlobalPropertyObject, LimitOrderObject,
 };
 use open_graphene_transport::GrapheneSession;
+use serde_json::Value;
 
 use crate::SwaplockApiError;
 
@@ -22,6 +23,7 @@ use super::dynamic_global_properties::{
     get_dynamic_global_properties,
 };
 use super::get_limit_orders::{DEFAULT_GET_LIMIT_ORDERS_LIMIT, GetLimitOrdersRequest};
+use super::get_objects::{GetObjectsRequest, get_objects_request};
 use super::global_properties::{GlobalPropertiesRequest, get_global_properties};
 use super::list_assets::{DEFAULT_LIST_ASSETS_LIMIT, ListAssetsRequest};
 use super::lookup_accounts::{DEFAULT_LOOKUP_ACCOUNTS_LIMIT, LookupAccountsRequest};
@@ -197,6 +199,15 @@ impl<'session> DatabaseApi<'session> {
         }
     }
 
+    /// Fetch any chain objects by id as raw JSON, e.g. `["2.1.0", "1.3.0"]`. The generic getter
+    /// behind the typed ones; results keep the id order and unknown ids come back as `null`.
+    pub fn objects<L>(self, ids: L) -> GetObjectsRequest<'session>
+    where
+        L: IntoStringList,
+    {
+        get_objects_request(self.session, ids)
+    }
+
     pub async fn get_account_balances<L>(
         &mut self,
         account_name: &str,
@@ -253,6 +264,13 @@ impl<'session> DatabaseApi<'session> {
         }
         .get()
         .await
+    }
+
+    pub async fn get_objects<L>(&mut self, ids: L) -> Result<Vec<Value>, SwaplockApiError>
+    where
+        L: IntoStringList,
+    {
+        get_objects_request(self.session, ids).get().await
     }
 
     pub async fn get_account_by_name(

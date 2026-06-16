@@ -39,6 +39,10 @@ name = "swaplock_get_limit_orders"
 path = "examples/swaplock/get_limit_orders.rs"
 
 [[example]]
+name = "swaplock_get_objects"
+path = "examples/swaplock/get_objects.rs"
+
+[[example]]
 name = "swaplock_brainkey_derive"
 path = "examples/swaplock/brainkey_derive.rs"
 
