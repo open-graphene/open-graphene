@@ -153,7 +153,7 @@ impl<'session> TransferRequest<'session> {
         let header = transaction_header_from_head(
             &HeadBlock {
                 number: properties.head_block_number as u64,
-                id: hex(&properties.head_block_id),
+                id: hex::encode(&properties.head_block_id),
                 time: properties.time.clone(),
             },
             self.expiration,
@@ -500,7 +500,7 @@ fn signed_transfer_json(signed_transaction: &SignedTransaction) -> Result<Value,
         "signatures": signed_transaction
             .signatures
             .iter()
-            .map(|signature| hex(&signature.0))
+            .map(|signature| hex::encode(&signature.0))
             .collect::<Vec<_>>(),
     }))
 }
@@ -530,10 +530,6 @@ fn asset_json(asset: &Asset) -> Value {
         "amount": asset.amount,
         "asset_id": asset.asset_id.0,
     })
-}
-
-fn hex(bytes: &[u8]) -> String {
-    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
 }
 
 #[cfg(test)]
