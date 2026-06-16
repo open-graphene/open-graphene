@@ -23,6 +23,7 @@ use super::dynamic_global_properties::{
     get_dynamic_global_properties,
 };
 use super::get_block::GetBlockRequest;
+use super::get_key_references::{GetKeyReferencesRequest, get_key_references_request};
 use super::get_limit_orders::{DEFAULT_GET_LIMIT_ORDERS_LIMIT, GetLimitOrdersRequest};
 use super::get_objects::{GetObjectsRequest, get_objects_request};
 use super::global_properties::{GlobalPropertiesRequest, get_global_properties};
@@ -208,6 +209,14 @@ impl<'session> DatabaseApi<'session> {
         }
     }
 
+    /// Which accounts reference each public key in their authorities; one id list per key, in order.
+    pub fn key_references<L>(self, keys: L) -> GetKeyReferencesRequest<'session>
+    where
+        L: IntoStringList,
+    {
+        get_key_references_request(self.session, keys)
+    }
+
     /// Fetch any chain objects by id as raw JSON, e.g. `["2.1.0", "1.3.0"]`. The generic getter
     /// behind the typed ones; results keep the id order and unknown ids come back as `null`.
     pub fn objects<L>(self, ids: L) -> GetObjectsRequest<'session>
@@ -289,6 +298,16 @@ impl<'session> DatabaseApi<'session> {
         L: IntoStringList,
     {
         get_objects_request(self.session, ids).get().await
+    }
+
+    pub async fn get_key_references<L>(
+        &mut self,
+        keys: L,
+    ) -> Result<Vec<Vec<String>>, SwaplockApiError>
+    where
+        L: IntoStringList,
+    {
+        get_key_references_request(self.session, keys).get().await
     }
 
     pub async fn get_account_by_name(
