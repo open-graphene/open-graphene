@@ -31,6 +31,10 @@ name = "swaplock_limit_order_create_cancel"
 path = "examples/swaplock/limit_order_create_cancel.rs"
 
 [[example]]
+name = "swaplock_limit_order_update"
+path = "examples/swaplock/limit_order_update.rs"
+
+[[example]]
 name = "swaplock_brainkey_derive"
 path = "examples/swaplock/brainkey_derive.rs"
 
