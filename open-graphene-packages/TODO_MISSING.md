@@ -82,7 +82,7 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 | Sign + broadcast pipeline | ✅ | ✅ 🥸 | generic via `TransactionBuilder`: `prepare → sign_with_wif → broadcast` for any supported op (plus the transfer-specific helper) |
 | `propose` / proposal wrapping | ✅ | ❌ | `ProposalCreateOperation` serializable, not wired |
 | `ChainStore` — object cache + reactive updates | ✅ | ❌ | none |
-| `FetchChain` / `FetchChainObjects` | ✅ | ❌ | direct getters only (`get_account_by_name`, etc.) |
+| `FetchChain` / `FetchChainObjects` | ✅ | ⚠️ 🥸 | typed direct getters (`get_account_by_name`, etc.) plus the generic **`get_objects`** escape hatch — `DatabaseApi::objects(ids).get()` / `get_objects(ids)` returns raw JSON for any object ids, **live-tested** (branch `feature/get-objects`). Missing: the reactive `ChainStore` cache (next row) |
 | `ChainValidation` (`is_account_name`, `is_cheap_name`) | ✅ | ❌ | none |
 | `ObjectId` helpers | ✅ | ✅ | via `fc` |
 | `NumberUtils` | ✅ | ⚠️ | amount helpers only |
