@@ -10,7 +10,7 @@ pub use graphene_chain_swaplock_api::{
     BlindSumRequest, BlindingFactor, BroadcastConfirmation, BroadcastReceipt, Commitment,
     ConnectionStrategy, CryptoApi, DEFAULT_ACCOUNT_HISTORY_LIMIT, DEFAULT_ACCOUNT_HISTORY_OFFSET,
     DEFAULT_GET_LIMIT_ORDERS_LIMIT, DEFAULT_GROUPED_LIMIT_ORDERS_LIMIT, DEFAULT_LIST_ASSETS_LIMIT,
-    DEFAULT_LOOKUP_ACCOUNTS_LIMIT, GetLimitOrdersRequest, GetObjectsRequest,
+    DEFAULT_LOOKUP_ACCOUNTS_LIMIT, GetBlockRequest, GetLimitOrdersRequest, GetObjectsRequest,
     GroupedLimitOrdersRequest, LimitOrderCancelOperation, LimitOrderCancelRequest,
     LimitOrderCreateOperation, LimitOrderCreateRequest, LimitOrderGroup, LimitOrderId,
     LimitOrderUpdateOperation, LimitOrderUpdateRequest, ListAssetsRequest, LookupAccountsRequest,
