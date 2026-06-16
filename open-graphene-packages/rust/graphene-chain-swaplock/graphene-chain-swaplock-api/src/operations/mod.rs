@@ -5,6 +5,6 @@ mod transaction;
 mod transfer;
 
 pub use api::OperationsApi;
-pub use limit_order::{LimitOrderCancelRequest, LimitOrderCreateRequest};
+pub use limit_order::{LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest};
 pub use transaction::{PreparedTransaction, SignedTransactionEnvelope, TransactionBuilder};
 pub use transfer::{PreparedTransfer, SignedTransfer, TransferRequest};

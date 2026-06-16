@@ -2,7 +2,9 @@ use open_graphene_transport::GrapheneSession;
 
 use crate::SwaplockApiError;
 
-use super::limit_order::{LimitOrderCancelRequest, LimitOrderCreateRequest};
+use super::limit_order::{
+    LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
+};
 use super::sign_transfer::sign_transfer_with_wif;
 use super::transaction::TransactionBuilder;
 use super::transfer::{PreparedTransfer, SignedTransfer, TransferRequest};
@@ -27,6 +29,16 @@ impl<'session> OperationsApi<'session> {
         seller: impl Into<String>,
     ) -> LimitOrderCreateRequest<'session> {
         LimitOrderCreateRequest::new(self.session, seller)
+    }
+
+    /// Change a resting limit order in place: `seller` owns it, `order` is its id. Set the moves
+    /// you want with the builder (reprice, resize, extend) before `.prepare()`.
+    pub fn limit_order_update(
+        self,
+        seller: impl Into<String>,
+        order: impl Into<String>,
+    ) -> LimitOrderUpdateRequest<'session> {
+        LimitOrderUpdateRequest::new(self.session, seller, order)
     }
 
     /// Cancel a resting limit order by its id, paid for by `fee_paying_account`.
