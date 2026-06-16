@@ -83,7 +83,7 @@ impl<'session> LimitOrderCreateRequest<'session> {
         let expiration = transaction_header_from_head(
             &HeadBlock {
                 number: properties.head_block_number as u64,
-                id: hex(&properties.head_block_id),
+                id: hex::encode(&properties.head_block_id),
                 time: properties.time.clone(),
             },
             self.order_duration,
@@ -228,7 +228,7 @@ impl<'session> LimitOrderUpdateRequest<'session> {
                     transaction_header_from_head(
                         &HeadBlock {
                             number: properties.head_block_number as u64,
-                            id: hex(&properties.head_block_id),
+                            id: hex::encode(&properties.head_block_id),
                             time: properties.time.clone(),
                         },
                         duration,
@@ -254,8 +254,4 @@ impl<'session> LimitOrderUpdateRequest<'session> {
             .prepare()
             .await
     }
-}
-
-fn hex(bytes: &[u8]) -> String {
-    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
 }
