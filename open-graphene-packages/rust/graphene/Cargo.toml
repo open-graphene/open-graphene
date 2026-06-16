@@ -43,6 +43,10 @@ name = "swaplock_get_objects"
 path = "examples/swaplock/get_objects.rs"
 
 [[example]]
+name = "swaplock_get_block"
+path = "examples/swaplock/get_block.rs"
+
+[[example]]
 name = "swaplock_brainkey_derive"
 path = "examples/swaplock/brainkey_derive.rs"
 

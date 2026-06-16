@@ -22,6 +22,7 @@ use super::dynamic_global_properties::{
     DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription,
     get_dynamic_global_properties,
 };
+use super::get_block::GetBlockRequest;
 use super::get_limit_orders::{DEFAULT_GET_LIMIT_ORDERS_LIMIT, GetLimitOrdersRequest};
 use super::get_objects::{GetObjectsRequest, get_objects_request};
 use super::global_properties::{GlobalPropertiesRequest, get_global_properties};
@@ -199,6 +200,14 @@ impl<'session> DatabaseApi<'session> {
         }
     }
 
+    /// Fetch a produced block by height (`None` if the chain has not reached it yet).
+    pub fn block(self, block_num: u32) -> GetBlockRequest<'session> {
+        GetBlockRequest {
+            session: self.session,
+            block_num,
+        }
+    }
+
     /// Fetch any chain objects by id as raw JSON, e.g. `["2.1.0", "1.3.0"]`. The generic getter
     /// behind the typed ones; results keep the id order and unknown ids come back as `null`.
     pub fn objects<L>(self, ids: L) -> GetObjectsRequest<'session>
@@ -261,6 +270,15 @@ impl<'session> DatabaseApi<'session> {
             base: base.to_string(),
             quote: quote.to_string(),
             limit: DEFAULT_GET_LIMIT_ORDERS_LIMIT,
+        }
+        .get()
+        .await
+    }
+
+    pub async fn get_block(&mut self, block_num: u32) -> Result<Option<Value>, SwaplockApiError> {
+        GetBlockRequest {
+            session: &mut *self.session,
+            block_num,
         }
         .get()
         .await

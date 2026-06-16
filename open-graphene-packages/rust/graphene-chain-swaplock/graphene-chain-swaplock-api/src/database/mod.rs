@@ -13,6 +13,7 @@ mod chain_properties;
 mod constants;
 mod dynamic_global_properties;
 mod error;
+mod get_block;
 mod get_limit_orders;
 mod get_objects;
 mod global_properties;
@@ -36,6 +37,7 @@ pub use chain_properties::ChainPropertiesRequest;
 pub use dynamic_global_properties::{
     DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription,
 };
+pub use get_block::GetBlockRequest;
 pub use get_limit_orders::{DEFAULT_GET_LIMIT_ORDERS_LIMIT, GetLimitOrdersRequest};
 pub use get_objects::GetObjectsRequest;
 pub use global_properties::GlobalPropertiesRequest;
