@@ -16,7 +16,10 @@ pub use asset::{AssetIssueRequest, AssetReserveRequest, AssetUpdateRequest};
 pub use call_order::CallOrderUpdateRequest;
 pub use htlc::{HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest};
 pub use limit_order::{LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest};
-pub use liquidity_pool::{LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest};
+pub use liquidity_pool::{
+    LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest,
+    LiquidityPoolExchangeRequest, LiquidityPoolUpdateRequest, LiquidityPoolWithdrawRequest,
+};
 pub use proposal::ProposalCreateRequest;
 pub use transaction::{PreparedTransaction, SignedTransactionEnvelope, TransactionBuilder};
 pub use transfer::{PreparedTransfer, SignedTransfer, TransferRequest};
