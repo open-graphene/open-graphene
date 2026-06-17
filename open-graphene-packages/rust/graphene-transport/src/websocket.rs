@@ -26,6 +26,7 @@ impl PendingCallback {
 
 pub struct WebSocketTransport {
     socket: WebSocket<MaybeTlsStream<TcpStream>>,
+    url: String,
     next_id: u64,
     buffered_notices: VecDeque<JsonRpcInbound>,
     buffered_responses: VecDeque<JsonRpcInbound>,
@@ -36,10 +37,16 @@ impl WebSocketTransport {
         let (socket, _) = connect(url).map_err(TransportError::websocket)?;
         Ok(Self {
             socket,
+            url: url.to_string(),
             next_id: 1,
             buffered_notices: VecDeque::new(),
             buffered_responses: VecDeque::new(),
         })
+    }
+
+    /// The node URL this transport dialed, so a session can reconnect to the same node.
+    pub fn url(&self) -> &str {
+        &self.url
     }
 
     pub fn call(

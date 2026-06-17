@@ -2,7 +2,10 @@ use std::time::Duration;
 
 use serde_json::{Value, json};
 
-use crate::{JsonRpcInbound, PendingCallback, TransportError, WebSocketTransport};
+use crate::{
+    ChainIdMismatch, JsonRpcInbound, PendingCallback, ReconnectPolicy, TransportError,
+    WebSocketTransport, is_connection_error,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ApiIds {
@@ -17,6 +20,7 @@ pub struct GrapheneSession {
     transport: WebSocketTransport,
     api_ids: ApiIds,
     chain_id: String,
+    reconnect_policy: ReconnectPolicy,
 }
 
 impl GrapheneSession {
@@ -26,26 +30,63 @@ impl GrapheneSession {
     }
 
     pub fn from_transport(mut transport: WebSocketTransport) -> Result<Self, TransportError> {
-        transport.call(1, "login", json!(["", ""]))?;
-
-        let database = discover_required_api(&mut transport, "database")?;
-        let history = discover_optional_api(&mut transport, "history")?;
-        let network_broadcast = discover_optional_api(&mut transport, "network_broadcast")?;
-        let crypto = discover_optional_api(&mut transport, "crypto")?;
-        let orders = discover_optional_api(&mut transport, "orders")?;
-        let chain_id = parse_chain_id(transport.call(database, "get_chain_id", json!([]))?)?;
-
+        let (api_ids, chain_id) = establish(&mut transport, None)?;
         Ok(Self {
             transport,
-            api_ids: ApiIds {
-                database,
-                history,
-                network_broadcast,
-                crypto,
-                orders,
-            },
+            api_ids,
             chain_id,
+            reconnect_policy: ReconnectPolicy::default(),
         })
+    }
+
+    /// How this session reconnects after a dropped connection (default: a few retries with backoff).
+    pub fn reconnect_policy(&self) -> ReconnectPolicy {
+        self.reconnect_policy
+    }
+
+    /// Set the reconnect policy; pass [`ReconnectPolicy::disabled`] to turn auto-reconnect off.
+    pub fn set_reconnect_policy(&mut self, policy: ReconnectPolicy) {
+        self.reconnect_policy = policy;
+    }
+
+    /// Re-dial the same node and re-establish the API ids, in place.
+    ///
+    /// Refuses to reconnect if the node now reports a different chain id. Note that live
+    /// subscriptions are not resumed: re-subscribe after a reconnect if you need them.
+    pub fn reconnect(&mut self) -> Result<(), TransportError> {
+        let url = self.transport.url().to_string();
+        let mut transport = WebSocketTransport::connect(&url)?;
+        let (api_ids, _) = establish(&mut transport, Some(&self.chain_id))?;
+        self.transport = transport;
+        self.api_ids = api_ids;
+        Ok(())
+    }
+
+    /// Run an idempotent call, reconnecting and retrying on a dropped connection per the policy.
+    ///
+    /// The API id is resolved fresh on each attempt, since a reconnect rediscovers it.
+    fn call_with_reconnect(
+        &mut self,
+        select: impl Fn(&ApiIds) -> Result<u64, TransportError>,
+        method: &str,
+        params: Value,
+    ) -> Result<Value, TransportError> {
+        let mut attempt = 0;
+        loop {
+            let api_id = select(&self.api_ids)?;
+            match self.transport.call(api_id, method, params.clone()) {
+                Ok(value) => return Ok(value),
+                Err(error)
+                    if is_connection_error(&error)
+                        && attempt < self.reconnect_policy.max_retries =>
+                {
+                    attempt += 1;
+                    std::thread::sleep(self.reconnect_policy.backoff_delay(attempt));
+                    self.reconnect()?;
+                }
+                Err(error) => return Err(error),
+            }
+        }
     }
 
     pub fn chain_id(&self) -> &str {
@@ -65,7 +106,7 @@ impl GrapheneSession {
     }
 
     pub fn database_call(&mut self, method: &str, params: Value) -> Result<Value, TransportError> {
-        self.transport.call(self.api_ids.database, method, params)
+        self.call_with_reconnect(|ids| Ok(ids.database), method, params)
     }
 
     pub fn next_notice(&mut self) -> Result<JsonRpcInbound, TransportError> {
@@ -73,27 +114,36 @@ impl GrapheneSession {
     }
 
     pub fn history_call(&mut self, method: &str, params: Value) -> Result<Value, TransportError> {
-        let api_id = self
-            .api_ids
-            .history
-            .ok_or(TransportError::MissingApi { name: "history" })?;
-        self.transport.call(api_id, method, params)
+        self.call_with_reconnect(
+            |ids| {
+                ids.history
+                    .ok_or(TransportError::MissingApi { name: "history" })
+            },
+            method,
+            params,
+        )
     }
 
     pub fn crypto_call(&mut self, method: &str, params: Value) -> Result<Value, TransportError> {
-        let api_id = self
-            .api_ids
-            .crypto
-            .ok_or(TransportError::MissingApi { name: "crypto" })?;
-        self.transport.call(api_id, method, params)
+        self.call_with_reconnect(
+            |ids| {
+                ids.crypto
+                    .ok_or(TransportError::MissingApi { name: "crypto" })
+            },
+            method,
+            params,
+        )
     }
 
     pub fn orders_call(&mut self, method: &str, params: Value) -> Result<Value, TransportError> {
-        let api_id = self
-            .api_ids
-            .orders
-            .ok_or(TransportError::MissingApi { name: "orders" })?;
-        self.transport.call(api_id, method, params)
+        self.call_with_reconnect(
+            |ids| {
+                ids.orders
+                    .ok_or(TransportError::MissingApi { name: "orders" })
+            },
+            method,
+            params,
+        )
     }
 
     pub fn network_broadcast_call(
@@ -164,6 +214,47 @@ impl GrapheneSession {
         self.transport
             .wait_for_callback_response_and_notice_timeout(pending, timeout)
     }
+}
+
+/// Log in, discover the API ids and read the chain id on a fresh transport.
+///
+/// When `expected_chain_id` is set, a mismatch is rejected so a reconnect never silently lands on
+/// a different chain.
+fn establish(
+    transport: &mut WebSocketTransport,
+    expected_chain_id: Option<&str>,
+) -> Result<(ApiIds, String), TransportError> {
+    transport.call(1, "login", json!(["", ""]))?;
+
+    let database = discover_required_api(transport, "database")?;
+    let history = discover_optional_api(transport, "history")?;
+    let network_broadcast = discover_optional_api(transport, "network_broadcast")?;
+    let crypto = discover_optional_api(transport, "crypto")?;
+    let orders = discover_optional_api(transport, "orders")?;
+    let chain_id = parse_chain_id(transport.call(database, "get_chain_id", json!([]))?)?;
+
+    if let Some(expected) = expected_chain_id
+        && expected != chain_id
+    {
+        return Err(TransportError::ChainIdMismatch {
+            mismatch: ChainIdMismatch {
+                server: transport.url().to_string(),
+                expected: expected.to_string(),
+                actual: chain_id,
+            },
+        });
+    }
+
+    Ok((
+        ApiIds {
+            database,
+            history,
+            network_broadcast,
+            crypto,
+            orders,
+        },
+        chain_id,
+    ))
 }
 
 fn discover_required_api(

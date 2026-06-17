@@ -7,7 +7,10 @@ pub mod session;
 pub mod websocket;
 
 pub use callback::CallbackId;
-pub use connection::{ChainIdMismatch, ConnectionStrategy, ServerConnectFailure, ServerLatency};
+pub use connection::{
+    ChainIdMismatch, ConnectionStrategy, ReconnectPolicy, ServerConnectFailure, ServerLatency,
+    is_connection_error,
+};
 pub use error::TransportError;
 pub use json_rpc::{
     GRAPHENE_CALL_METHOD, JsonRpcInbound, JsonRpcRequest, graphene_call_params, parse_inbound,
