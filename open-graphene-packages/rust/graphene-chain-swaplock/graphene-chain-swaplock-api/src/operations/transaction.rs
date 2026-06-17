@@ -163,6 +163,8 @@ fn set_operation_fee(operation: &mut Operation, fee: Asset) -> Result<(), Swaplo
         Operation::AssetReserveOperation(operation) => operation.fee = fee,
         Operation::AssetUpdateOperation(operation) => operation.fee = fee,
         Operation::AccountUpdateOperation(operation) => operation.fee = fee,
+        Operation::HtlcCreateOperation(operation) => operation.fee = fee,
+        Operation::HtlcRedeemOperation(operation) => operation.fee = fee,
         other => {
             return Err(SwaplockApiError::InvalidTransfer {
                 message: format!(
@@ -185,6 +187,8 @@ fn operation_name(operation: &Operation) -> &'static str {
         Operation::AssetReserveOperation(_) => "asset_reserve",
         Operation::AssetUpdateOperation(_) => "asset_update",
         Operation::AccountUpdateOperation(_) => "account_update",
+        Operation::HtlcCreateOperation(_) => "htlc_create",
+        Operation::HtlcRedeemOperation(_) => "htlc_redeem",
         _ => "unknown",
     }
 }

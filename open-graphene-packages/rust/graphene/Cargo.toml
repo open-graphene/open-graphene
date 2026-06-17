@@ -47,6 +47,10 @@ name = "swaplock_account_update"
 path = "examples/swaplock/account_update.rs"
 
 [[example]]
+name = "swaplock_htlc_create_redeem"
+path = "examples/swaplock/htlc_create_redeem.rs"
+
+[[example]]
 name = "swaplock_get_limit_orders"
 path = "examples/swaplock/get_limit_orders.rs"
 
