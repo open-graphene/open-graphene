@@ -1,10 +1,12 @@
 mod api;
+mod asset;
 mod limit_order;
 mod sign_transfer;
 mod transaction;
 mod transfer;
 
 pub use api::OperationsApi;
+pub use asset::{AssetIssueRequest, AssetReserveRequest};
 pub use limit_order::{LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest};
 pub use transaction::{PreparedTransaction, SignedTransactionEnvelope, TransactionBuilder};
 pub use transfer::{PreparedTransfer, SignedTransfer, TransferRequest};

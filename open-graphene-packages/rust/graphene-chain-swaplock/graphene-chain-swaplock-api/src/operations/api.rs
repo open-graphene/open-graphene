@@ -2,6 +2,7 @@ use open_graphene_transport::GrapheneSession;
 
 use crate::SwaplockApiError;
 
+use super::asset::{AssetIssueRequest, AssetReserveRequest};
 use super::limit_order::{
     LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
 };
@@ -48,6 +49,17 @@ impl<'session> OperationsApi<'session> {
         order: impl Into<String>,
     ) -> LimitOrderCancelRequest<'session> {
         LimitOrderCancelRequest::new(self.session, fee_paying_account, order)
+    }
+
+    /// Mint units of a user asset you issue and send them to an account: `issuer` is you, then
+    /// `.issue(amount, asset_id).to(account)`.
+    pub fn asset_issue(self, issuer: impl Into<String>) -> AssetIssueRequest<'session> {
+        AssetIssueRequest::new(self.session, issuer)
+    }
+
+    /// Burn units you hold back out of the supply: `payer` is the holder, then `.amount(..)`.
+    pub fn asset_reserve(self, payer: impl Into<String>) -> AssetReserveRequest<'session> {
+        AssetReserveRequest::new(self.session, payer)
     }
 
     pub async fn sign_transfer_with_wif(
