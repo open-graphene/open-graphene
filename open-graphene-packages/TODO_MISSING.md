@@ -98,7 +98,7 @@ Bindings serialize **all 81** operations. The ergonomic builder API exposes **1*
 | Group | Serializable (bindings) | Exposed via SDK API |
 |---|:--:|:--:|
 | Transfer | ✅ | ✅ |
-| Account (create/update/upgrade/whitelist/transfer) | ✅ (5) | ❌ |
+| Account (create/update/upgrade/whitelist/transfer) | ✅ (5) | ❌ 🥸 | `account_update` builder is written (branch `feature/account-update`, parked) but **blocked**: the generated `fc_serialize` for `account_update`'s `extension<>` struct (`AccountUpdateOperationExt`) writes three option bytes instead of the single varint-zero an empty graphene extension needs, so the signed digest mismatches the node's and the signature recovers to the wrong key (`tx_missing_active_auth`). Needs a generator fix (emit `extension<>` count-prefixed) before any op carrying a struct-extension can be signed. See `DLAKACPRA_DOCS/account-update-blocked.md` |
 | Asset (create/update/issue/reserve/settle/publish_feed/…) | ✅ (~18) | ⚠️ 🥸 | `asset_issue` + `asset_reserve` have ergonomic builders (`OperationsApi::asset_issue(issuer).issue(amt, id).to(acc)`, `asset_reserve(payer).amount(amt, id)`), **live-tested issue→reserve round-trip** (branch `feature/asset-issue-reserve`); the other ~16 asset ops stay binding-only |
 | Markets (limit_order create/cancel/update, call_order_update) | ✅ (4) | ⚠️ 🥸 | `limit_order_create` + `limit_order_cancel` + `limit_order_update` have ergonomic builders (`OperationsApi::limit_order_*`), **live-tested create→update→cancel** (branches `feature/limit-orders`, `feature/limit-order-update`); `call_order_update` still binding-only |
 | Liquidity pools (create/delete/deposit/withdraw/exchange/update) | ✅ (6) | ❌ |
