@@ -1,6 +1,7 @@
 mod account;
 mod api;
 mod asset;
+mod asset_admin;
 mod call_order;
 mod htlc;
 mod limit_order;
@@ -16,6 +17,11 @@ pub use account::{
 };
 pub use api::OperationsApi;
 pub use asset::{AssetIssueRequest, AssetReserveRequest, AssetUpdateRequest};
+pub use asset_admin::{
+    AssetClaimFeesRequest, AssetClaimPoolRequest, AssetCreateRequest, AssetFundFeePoolRequest,
+    AssetGlobalSettleRequest, AssetPublishFeedRequest, AssetSettleRequest,
+    AssetUpdateBitassetRequest, AssetUpdateFeedProducersRequest, AssetUpdateIssuerRequest,
+};
 pub use call_order::CallOrderUpdateRequest;
 pub use htlc::{HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest};
 pub use limit_order::{LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest};

@@ -8,8 +8,11 @@ pub use error::{GrapheneConfigError, GrapheneConnectError};
 pub use graphene_chain_swaplock_api::{
     AccountCreateRequest, AccountHistoryPage, AccountHistorySubscription, AccountId,
     AccountTransferRequest, AccountUpdateRequest, AccountUpgradeRequest, AccountWhitelistRequest,
-    Asset, AssetId, AssetIssueOperation, AssetIssueRequest, AssetReserveOperation,
-    AssetReserveRequest, AssetUpdateRequest, BlindRequest, BlindSumRequest, BlindingFactor,
+    Asset, AssetClaimFeesRequest, AssetClaimPoolRequest, AssetCreateRequest,
+    AssetFundFeePoolRequest, AssetGlobalSettleRequest, AssetId, AssetIssueOperation,
+    AssetIssueRequest, AssetPublishFeedRequest, AssetReserveOperation, AssetReserveRequest,
+    AssetSettleRequest, AssetUpdateBitassetRequest, AssetUpdateFeedProducersRequest,
+    AssetUpdateIssuerRequest, AssetUpdateRequest, BlindRequest, BlindSumRequest, BlindingFactor,
     BroadcastConfirmation, BroadcastReceipt, CallOrderUpdateRequest, ChainStore, Commitment,
     ConnectionStrategy, CryptoApi, DEFAULT_ACCOUNT_HISTORY_LIMIT, DEFAULT_ACCOUNT_HISTORY_OFFSET,
     DEFAULT_GET_LIMIT_ORDERS_LIMIT, DEFAULT_GROUPED_LIMIT_ORDERS_LIMIT, DEFAULT_LIST_ASSETS_LIMIT,
