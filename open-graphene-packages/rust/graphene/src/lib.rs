@@ -37,11 +37,13 @@ pub use graphene_chain_swaplock_api::{
     SwaplockLiveAccountOrdersSubscription, SwaplockLiveAccountSubscription, SwaplockLiveApi,
     SwaplockLiveAssetByIdRequest, SwaplockLiveAssetSubscription, SwaplockLiveDatabaseApi,
     SwaplockLiveDynamicGlobalPropertiesSubscription, SwaplockLiveHistoryApi,
-    SwaplockLiveNetworkBroadcastApi, SwaplockLivePendingBroadcastConfirmation,
-    TrackedGroupsRequest, TransactionBuilder, TransferOperation, TransferRequest,
-    VerifyRangeProofRewindRequest, VerifyRangeProofRewindResult, VerifyRangeRequest,
-    VerifyRangeResult, VerifySumRequest, is_account_name, is_account_name_allow_short,
-    is_cheap_name,
+    SwaplockLiveNetworkBroadcastApi, SwaplockLivePendingBroadcastConfirmation, TicketCreateRequest,
+    TicketUpdateRequest, TrackedGroupsRequest, TransactionBuilder, TransferOperation,
+    TransferRequest, VerifyRangeProofRewindRequest, VerifyRangeProofRewindResult,
+    VerifyRangeRequest, VerifyRangeResult, VerifySumRequest, VestingBalanceCreateRequest,
+    VestingBalanceWithdrawRequest, WithdrawPermissionClaimRequest, WithdrawPermissionCreateRequest,
+    WithdrawPermissionDeleteRequest, WithdrawPermissionUpdateRequest, is_account_name,
+    is_account_name_allow_short, is_cheap_name,
 };
 pub use open_graphene_fc::{
     AccountKeys, BrainKey, PrivateKey, PublicKey, account_role_key, decrypt_with_checksum,

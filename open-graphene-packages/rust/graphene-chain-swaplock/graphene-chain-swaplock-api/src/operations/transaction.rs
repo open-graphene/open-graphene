@@ -202,6 +202,14 @@ pub(super) fn set_operation_fee(
         Operation::SametFundDeleteOperation(operation) => operation.fee = fee,
         Operation::SametFundBorrowOperation(operation) => operation.fee = fee,
         Operation::SametFundRepayOperation(operation) => operation.fee = fee,
+        Operation::WithdrawPermissionCreateOperation(operation) => operation.fee = fee,
+        Operation::WithdrawPermissionUpdateOperation(operation) => operation.fee = fee,
+        Operation::WithdrawPermissionClaimOperation(operation) => operation.fee = fee,
+        Operation::WithdrawPermissionDeleteOperation(operation) => operation.fee = fee,
+        Operation::VestingBalanceCreateOperation(operation) => operation.fee = fee,
+        Operation::VestingBalanceWithdrawOperation(operation) => operation.fee = fee,
+        Operation::TicketCreateOperation(operation) => operation.fee = fee,
+        Operation::TicketUpdateOperation(operation) => operation.fee = fee,
         other => {
             return Err(SwaplockApiError::InvalidTransfer {
                 message: format!(
@@ -260,6 +268,14 @@ fn operation_name(operation: &Operation) -> &'static str {
         Operation::SametFundDeleteOperation(_) => "samet_fund_delete",
         Operation::SametFundBorrowOperation(_) => "samet_fund_borrow",
         Operation::SametFundRepayOperation(_) => "samet_fund_repay",
+        Operation::WithdrawPermissionCreateOperation(_) => "withdraw_permission_create",
+        Operation::WithdrawPermissionUpdateOperation(_) => "withdraw_permission_update",
+        Operation::WithdrawPermissionClaimOperation(_) => "withdraw_permission_claim",
+        Operation::WithdrawPermissionDeleteOperation(_) => "withdraw_permission_delete",
+        Operation::VestingBalanceCreateOperation(_) => "vesting_balance_create",
+        Operation::VestingBalanceWithdrawOperation(_) => "vesting_balance_withdraw",
+        Operation::TicketCreateOperation(_) => "ticket_create",
+        Operation::TicketUpdateOperation(_) => "ticket_update",
         _ => "unknown",
     }
 }
