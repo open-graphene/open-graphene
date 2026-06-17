@@ -8,7 +8,7 @@ mod transfer;
 
 pub use account::AccountUpdateRequest;
 pub use api::OperationsApi;
-pub use asset::{AssetIssueRequest, AssetReserveRequest};
+pub use asset::{AssetIssueRequest, AssetReserveRequest, AssetUpdateRequest};
 pub use limit_order::{LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest};
 pub use transaction::{PreparedTransaction, SignedTransactionEnvelope, TransactionBuilder};
 pub use transfer::{PreparedTransfer, SignedTransfer, TransferRequest};
