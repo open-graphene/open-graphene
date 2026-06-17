@@ -77,6 +77,64 @@ where
     Ok(bytes)
 }
 
+/// Deserialize variable-length bytes that arrive either as a hex string or a JSON byte array.
+///
+/// Like [`deserialize_fixed_bytes_from_hex_string_or_byte_array`] but without a length check, for
+/// `bytes`/`vector<char>` fields (HTLC preimages, memo messages, custom data).
+pub fn deserialize_bytes_from_hex_string_or_byte_array<'de, D>(
+    deserializer: D,
+) -> Result<Vec<u8>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let value = serde_json::Value::deserialize(deserializer)?;
+    match value {
+        serde_json::Value::String(value) => {
+            decode_hex_bytes(&value).map_err(serde::de::Error::custom)
+        }
+        serde_json::Value::Array(values) => values
+            .into_iter()
+            .map(|value| match value {
+                serde_json::Value::Number(number) => number
+                    .as_u64()
+                    .and_then(|value| u8::try_from(value).ok())
+                    .ok_or_else(|| {
+                        serde::de::Error::custom(format!(
+                            "expected byte value 0..255, got {number}"
+                        ))
+                    }),
+                other => Err(serde::de::Error::custom(format!(
+                    "expected byte value, got {other}"
+                ))),
+            })
+            .collect::<Result<Vec<u8>, D::Error>>(),
+        other => Err(serde::de::Error::custom(format!(
+            "expected bytes as hex string or byte array, got {other}"
+        ))),
+    }
+}
+
+/// Serialize bytes as the lowercase hex string Graphene expects on the wire.
+///
+/// The serialize counterpart to the hex byte decoders; the generated bindings use it for
+/// `bytes`/`fixed_bytes` fields and hash payloads so broadcasts match the node's JSON.
+pub fn serialize_bytes_as_hex<S>(bytes: &[u8], serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    serializer.serialize_str(&bytes_to_hex(bytes))
+}
+
+/// Lowercase hex encoding of `bytes`.
+pub fn bytes_to_hex(bytes: &[u8]) -> String {
+    use std::fmt::Write;
+    let mut hex = String::with_capacity(bytes.len() * 2);
+    for byte in bytes {
+        let _ = write!(hex, "{byte:02x}");
+    }
+    hex
+}
+
 fn decode_hex_bytes(value: &str) -> Result<Vec<u8>, String> {
     if !value.len().is_multiple_of(2) {
         return Err("hex string has odd length".to_string());
@@ -116,5 +174,22 @@ mod tests {
     fn rejects_non_numeric_string() {
         let result: Result<Wrapper, _> = serde_json::from_str(r#"{"value": "nope"}"#);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn encodes_bytes_as_lowercase_hex() {
+        assert_eq!(bytes_to_hex(&[0x00, 0x0a, 0xff]), "000aff");
+        assert_eq!(bytes_to_hex(&[]), "");
+    }
+
+    #[test]
+    fn decodes_variable_bytes_from_hex_or_array() {
+        let from_hex: Vec<u8> =
+            deserialize_bytes_from_hex_string_or_byte_array(serde_json::json!("000aff")).unwrap();
+        assert_eq!(from_hex, vec![0x00, 0x0a, 0xff]);
+        let from_array: Vec<u8> =
+            deserialize_bytes_from_hex_string_or_byte_array(serde_json::json!([0, 10, 255]))
+                .unwrap();
+        assert_eq!(from_array, vec![0x00, 0x0a, 0xff]);
     }
 }

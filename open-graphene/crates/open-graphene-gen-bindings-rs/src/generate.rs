@@ -424,10 +424,16 @@ fn render_fields(out: &mut String, protocol: &Protocol, fields: &[FieldDef]) -> 
                 "    #[serde(deserialize_with = \"crate::generated::types::deserialize_i64_from_number_or_decimal_string\")]\n",
             );
         }
+        // Byte fields are hex strings on the Graphene wire: decode hex-or-array, encode as hex.
         if let TypeRef::FixedBytes { bytes } = field.ty {
             out.push_str(&format!(
-                "    #[serde(deserialize_with = \"crate::generated::types::deserialize_fixed_bytes_{bytes}_from_hex_string_or_byte_array\")]\n"
+                "    #[serde(serialize_with = \"open_graphene_core::serialize_bytes_as_hex\", deserialize_with = \"crate::generated::types::deserialize_fixed_bytes_{bytes}_from_hex_string_or_byte_array\")]\n"
             ));
+        }
+        if matches!(field.ty, TypeRef::Bytes) {
+            out.push_str(
+                "    #[serde(serialize_with = \"open_graphene_core::serialize_bytes_as_hex\", deserialize_with = \"open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array\")]\n",
+            );
         }
         out.push_str(&format!("    pub {field_name}: {ty},\n"));
     }
@@ -1699,9 +1705,15 @@ fn render_static_variant_serialize_impl(
     out.push_str("        use serde::ser::SerializeSeq;\n");
     out.push_str("        let mut seq = serializer.serialize_seq(Some(2))?;\n");
     out.push_str("        match self {\n");
-    for (tag, variant_name, _, _) in arms {
+    for (tag, variant_name, ty, _) in arms {
+        // Byte payloads (hashes etc.) are hex strings on the wire, not JSON number arrays.
+        let value_element = if ty == "Vec<u8>" {
+            "seq.serialize_element(&open_graphene_core::bytes_to_hex(value.as_ref()))?;"
+        } else {
+            "seq.serialize_element(value.as_ref())?;"
+        };
         out.push_str(&format!(
-            "            Self::{variant_name}(value) => {{\n                seq.serialize_element(&{tag}u32)?;\n                seq.serialize_element(value.as_ref())?;\n            }}\n"
+            "            Self::{variant_name}(value) => {{\n                seq.serialize_element(&{tag}u32)?;\n                {value_element}\n            }}\n"
         ));
     }
     out.push_str("        }\n");
@@ -1739,9 +1751,16 @@ fn render_static_variant_deserialize_impl(
     ));
     out.push_str("        match tag {\n");
     for (tag, variant_name, ty, _) in arms {
-        out.push_str(&format!(
-            "            {tag} => serde_json::from_value::<{ty}>(payload)\n                .map(|value| Self::{variant_name}(Box::new(value)))\n                .map_err(serde::de::Error::custom),\n"
-        ));
+        // Byte payloads arrive as hex strings (or arrays); decode both.
+        if ty == "Vec<u8>" {
+            out.push_str(&format!(
+                "            {tag} => open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array(payload)\n                .map(|value| Self::{variant_name}(Box::new(value)))\n                .map_err(serde::de::Error::custom),\n"
+            ));
+        } else {
+            out.push_str(&format!(
+                "            {tag} => serde_json::from_value::<{ty}>(payload)\n                .map(|value| Self::{variant_name}(Box::new(value)))\n                .map_err(serde::de::Error::custom),\n"
+            ));
+        }
     }
     out.push_str(&format!(
         "            other => Err(serde::de::Error::custom(format!(\"unknown static variant {enum_name} tag {{other}}\"))),\n"

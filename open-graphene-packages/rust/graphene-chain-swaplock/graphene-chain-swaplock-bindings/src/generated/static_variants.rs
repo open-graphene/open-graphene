@@ -85,7 +85,7 @@ impl serde::Serialize for ArgumentType {
             }
             Self::FcSha256(value) => {
                 seq.serialize_element(&6u32)?;
-                seq.serialize_element(value.as_ref())?;
+                seq.serialize_element(&open_graphene_core::bytes_to_hex(value.as_ref()))?;
             }
             Self::AccountIdType(value) => {
                 seq.serialize_element(&7u32)?;
@@ -265,7 +265,7 @@ impl<'de> serde::Deserialize<'de> for ArgumentType {
             5 => serde_json::from_value::<String>(payload)
                 .map(|value| Self::PublicKeyType(Box::new(value)))
                 .map_err(serde::de::Error::custom),
-            6 => serde_json::from_value::<Vec<u8>>(payload)
+            6 => open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array(payload)
                 .map(|value| Self::FcSha256(Box::new(value)))
                 .map_err(serde::de::Error::custom),
             7 => serde_json::from_value::<crate::generated::ids::AccountId>(payload)
@@ -1111,19 +1111,19 @@ impl serde::Serialize for HtlcHash {
         match self {
             Self::HtlcAlgoRipemd160(value) => {
                 seq.serialize_element(&0u32)?;
-                seq.serialize_element(value.as_ref())?;
+                seq.serialize_element(&open_graphene_core::bytes_to_hex(value.as_ref()))?;
             }
             Self::HtlcAlgoSha1(value) => {
                 seq.serialize_element(&1u32)?;
-                seq.serialize_element(value.as_ref())?;
+                seq.serialize_element(&open_graphene_core::bytes_to_hex(value.as_ref()))?;
             }
             Self::HtlcAlgoSha256(value) => {
                 seq.serialize_element(&2u32)?;
-                seq.serialize_element(value.as_ref())?;
+                seq.serialize_element(&open_graphene_core::bytes_to_hex(value.as_ref()))?;
             }
             Self::HtlcAlgoHash160(value) => {
                 seq.serialize_element(&3u32)?;
-                seq.serialize_element(value.as_ref())?;
+                seq.serialize_element(&open_graphene_core::bytes_to_hex(value.as_ref()))?;
             }
         }
         seq.end()
@@ -1145,16 +1145,16 @@ impl<'de> serde::Deserialize<'de> for HtlcHash {
             .as_u64()
             .ok_or_else(|| serde::de::Error::custom("expected numeric tag for static variant HtlcHash"))? as u32;
         match tag {
-            0 => serde_json::from_value::<Vec<u8>>(payload)
+            0 => open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array(payload)
                 .map(|value| Self::HtlcAlgoRipemd160(Box::new(value)))
                 .map_err(serde::de::Error::custom),
-            1 => serde_json::from_value::<Vec<u8>>(payload)
+            1 => open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array(payload)
                 .map(|value| Self::HtlcAlgoSha1(Box::new(value)))
                 .map_err(serde::de::Error::custom),
-            2 => serde_json::from_value::<Vec<u8>>(payload)
+            2 => open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array(payload)
                 .map(|value| Self::HtlcAlgoSha256(Box::new(value)))
                 .map_err(serde::de::Error::custom),
-            3 => serde_json::from_value::<Vec<u8>>(payload)
+            3 => open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array(payload)
                 .map(|value| Self::HtlcAlgoHash160(Box::new(value)))
                 .map_err(serde::de::Error::custom),
             other => Err(serde::de::Error::custom(format!("unknown static variant HtlcHash tag {other}"))),
