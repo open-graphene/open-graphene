@@ -51,6 +51,10 @@ name = "swaplock_get_block_header"
 path = "examples/swaplock/get_block_header.rs"
 
 [[example]]
+name = "swaplock_get_config"
+path = "examples/swaplock/get_config.rs"
+
+[[example]]
 name = "swaplock_get_key_references"
 path = "examples/swaplock/get_key_references.rs"
 

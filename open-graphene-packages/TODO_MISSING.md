@@ -31,7 +31,7 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 | Subscriptions / `set_subscribe_callback` | ✅ | ✅ | `live.rs` + `subscribe_*` methods |
 | Broadcast-with-callback (confirmation) | ✅ | ✅ | `broadcast_*_with_callback[_timeout]` |
 | API id discovery / login | ✅ | ✅ | `discover_required_api` / `api_ids` |
-| `ChainConfig` (chain id, address prefix) | ✅ | ⚠️ | chain_id + prefix in builder config; no global mutable config object (by design — JS singleton is anti-idiomatic; `prefix` stays unused until `Address`/`PublicKey` serialization lands) |
+| `ChainConfig` (chain id, address prefix) | ✅ | ⚠️ 🥸 | chain_id + prefix in builder config; no global mutable config object (by design — JS singleton is anti-idiomatic; `prefix` stays unused until `Address`/`PublicKey` serialization lands). The node-side constants are now readable via `DatabaseApi::config().get()` / `get_config()` (`get_config` RPC), **live-tested** (branch `feature/get-config`) |
 | `ConnectionManager` — multi-node failover, latency sort | ✅ | ⚠️ 🥸 | **PARTIAL** (branch `feature/sdk-apis`): failover + latency sort done — `ConnectionStrategy::{FirstAvailable,LowestLatency}`, `SwaplockApi::connect_with_strategy`, `probe_latencies` (sorted fastest-first), builder `.strategy()`/`.lowest_latency()`/`.probe_latencies()`, `connection_lowest_latency` example. **Missing** for full parity: auto-reconnect/backoff (see row below) and `urlChangeCallback` |
 | Auto-reconnect (`ChainWebSocket`) | ✅ | ❌ | no reconnect/retry/backoff logic |
 | Connection pool / `closeCb` lifecycle | ✅ | ⚠️ | basic session lifecycle only |
