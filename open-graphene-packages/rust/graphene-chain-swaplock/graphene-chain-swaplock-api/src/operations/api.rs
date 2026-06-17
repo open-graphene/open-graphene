@@ -5,7 +5,7 @@ use crate::SwaplockApiError;
 use super::account::AccountUpdateRequest;
 use super::asset::{AssetIssueRequest, AssetReserveRequest, AssetUpdateRequest};
 use super::call_order::CallOrderUpdateRequest;
-use super::htlc::{HtlcCreateRequest, HtlcRedeemRequest};
+use super::htlc::{HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest};
 use super::limit_order::{
     LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
 };
@@ -127,6 +127,15 @@ impl<'session> OperationsApi<'session> {
         pool: impl Into<String>,
     ) -> LiquidityPoolDeleteRequest<'session> {
         LiquidityPoolDeleteRequest::new(self.session, account, pool)
+    }
+
+    /// Extend a hashed time-locked contract's deadline: `update_issuer` adds time via `.add(..)`.
+    pub fn htlc_extend(
+        self,
+        htlc: impl Into<String>,
+        update_issuer: impl Into<String>,
+    ) -> HtlcExtendRequest<'session> {
+        HtlcExtendRequest::new(self.session, htlc, update_issuer)
     }
 
     /// Wrap operations in a proposal paid for by `fee_paying_account`: add them with `.propose(..)`,

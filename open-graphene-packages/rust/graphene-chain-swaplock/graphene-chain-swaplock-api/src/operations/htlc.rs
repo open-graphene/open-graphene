@@ -9,7 +9,7 @@ use std::time::Duration;
 
 use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId, HtlcId};
 use graphene_chain_swaplock_bindings::generated::operations::{
-    HtlcCreateOperation, HtlcRedeemOperation,
+    HtlcCreateOperation, HtlcExtendOperation, HtlcRedeemOperation,
 };
 use graphene_chain_swaplock_bindings::generated::static_variants::{HtlcHash, Operation};
 use graphene_chain_swaplock_bindings::generated::types::{
@@ -135,6 +135,49 @@ impl<'session> HtlcRedeemRequest<'session> {
             htlc_id: HtlcId(self.htlc),
             redeemer: AccountId(self.redeemer),
             preimage,
+            extensions: vec![],
+        });
+        TransactionBuilder::new(self.session)
+            .add_operation(operation)
+            .prepare()
+            .await
+    }
+}
+
+/// Builder for `htlc_extend`: push an existing contract's deadline further out.
+pub struct HtlcExtendRequest<'session> {
+    session: &'session mut GrapheneSession,
+    htlc: String,
+    update_issuer: String,
+    seconds_to_add: u32,
+}
+
+impl<'session> HtlcExtendRequest<'session> {
+    pub(super) fn new(
+        session: &'session mut GrapheneSession,
+        htlc: impl Into<String>,
+        update_issuer: impl Into<String>,
+    ) -> Self {
+        Self {
+            session,
+            htlc: htlc.into(),
+            update_issuer: update_issuer.into(),
+            seconds_to_add: 0,
+        }
+    }
+
+    /// How much longer the contract stays claimable, added to its current deadline.
+    pub fn add(mut self, duration: Duration) -> Self {
+        self.seconds_to_add = duration.as_secs() as u32;
+        self
+    }
+
+    pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
+        let operation = Operation::htlc_extend(HtlcExtendOperation {
+            fee: Asset::new(0, AssetId("1.3.0".to_string())),
+            htlc_id: HtlcId(self.htlc),
+            update_issuer: AccountId(self.update_issuer),
+            seconds_to_add: self.seconds_to_add,
             extensions: vec![],
         });
         TransactionBuilder::new(self.session)
