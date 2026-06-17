@@ -31,8 +31,14 @@ use super::samet_fund::{
     SametFundUpdateRequest,
 };
 use super::sign_transfer::sign_transfer_with_wif;
+use super::ticket::{TicketCreateRequest, TicketUpdateRequest};
 use super::transaction::TransactionBuilder;
 use super::transfer::{PreparedTransfer, SignedTransfer, TransferRequest};
+use super::vesting::{VestingBalanceCreateRequest, VestingBalanceWithdrawRequest};
+use super::withdraw_permission::{
+    WithdrawPermissionClaimRequest, WithdrawPermissionCreateRequest,
+    WithdrawPermissionDeleteRequest, WithdrawPermissionUpdateRequest,
+};
 
 pub struct OperationsApi<'session> {
     pub(crate) session: &'session mut GrapheneSession,
@@ -351,6 +357,96 @@ impl<'session> OperationsApi<'session> {
         fund_id: impl Into<String>,
     ) -> SametFundRepayRequest<'session> {
         SametFundRepayRequest::new(self.session, account, fund_id)
+    }
+
+    /// Authorise `authorized_account` to pull recurring withdrawals from `withdraw_from`; set the
+    /// per-period `.limit(..)` and schedule, then `.prepare()`.
+    pub fn withdraw_permission_create(
+        self,
+        withdraw_from: impl Into<String>,
+        authorized_account: impl Into<String>,
+    ) -> WithdrawPermissionCreateRequest<'session> {
+        WithdrawPermissionCreateRequest::new(self.session, withdraw_from, authorized_account)
+    }
+
+    /// Change a live withdraw permission in place: `withdraw_from`, `authorized_account`, the
+    /// `permission` id, then the new `.limit(..)` and schedule.
+    pub fn withdraw_permission_update(
+        self,
+        withdraw_from: impl Into<String>,
+        authorized_account: impl Into<String>,
+        permission: impl Into<String>,
+    ) -> WithdrawPermissionUpdateRequest<'session> {
+        WithdrawPermissionUpdateRequest::new(
+            self.session,
+            withdraw_from,
+            authorized_account,
+            permission,
+        )
+    }
+
+    /// Pull funds against a permission: the `permission` id, the `withdraw_from` and `withdraw_to`
+    /// accounts, then `.amount(..)`.
+    pub fn withdraw_permission_claim(
+        self,
+        permission: impl Into<String>,
+        withdraw_from: impl Into<String>,
+        withdraw_to: impl Into<String>,
+    ) -> WithdrawPermissionClaimRequest<'session> {
+        WithdrawPermissionClaimRequest::new(self.session, permission, withdraw_from, withdraw_to)
+    }
+
+    /// Revoke a withdraw permission: `withdraw_from`, `authorized_account`, the `permission` id.
+    pub fn withdraw_permission_delete(
+        self,
+        withdraw_from: impl Into<String>,
+        authorized_account: impl Into<String>,
+        permission: impl Into<String>,
+    ) -> WithdrawPermissionDeleteRequest<'session> {
+        WithdrawPermissionDeleteRequest::new(
+            self.session,
+            withdraw_from,
+            authorized_account,
+            permission,
+        )
+    }
+
+    /// Lock funds under a vesting policy: `creator`, `owner`, then `.amount(..)` and an optional
+    /// `.linear(..)`/`.cdd(..)` policy (defaults to instant).
+    pub fn vesting_balance_create(
+        self,
+        creator: impl Into<String>,
+        owner: impl Into<String>,
+    ) -> VestingBalanceCreateRequest<'session> {
+        VestingBalanceCreateRequest::new(self.session, creator, owner)
+    }
+
+    /// Withdraw vested funds: the `vesting_balance` id, the `owner`, then `.amount(..)`.
+    pub fn vesting_balance_withdraw(
+        self,
+        vesting_balance: impl Into<String>,
+        owner: impl Into<String>,
+    ) -> VestingBalanceWithdrawRequest<'session> {
+        VestingBalanceWithdrawRequest::new(self.session, vesting_balance, owner)
+    }
+
+    /// Lock funds into a stake ticket tier: `account`, the `target_type` tier, then `.amount(..)`.
+    pub fn ticket_create(
+        self,
+        account: impl Into<String>,
+        target_type: u32,
+    ) -> TicketCreateRequest<'session> {
+        TicketCreateRequest::new(self.session, account, target_type)
+    }
+
+    /// Move a stake ticket to a different tier: the `ticket` id, the `account`, the new `target_type`.
+    pub fn ticket_update(
+        self,
+        ticket: impl Into<String>,
+        account: impl Into<String>,
+        target_type: u32,
+    ) -> TicketUpdateRequest<'session> {
+        TicketUpdateRequest::new(self.session, ticket, account, target_type)
     }
 
     /// Open a liquidity pool for an asset pair: `account` owns it, then `.assets(a, b)` and

@@ -10,8 +10,11 @@ mod liquidity_pool;
 mod proposal;
 mod samet_fund;
 mod sign_transfer;
+mod ticket;
 mod transaction;
 mod transfer;
+mod vesting;
+mod withdraw_permission;
 
 pub use account::{
     AccountCreateRequest, AccountTransferRequest, AccountUpdateRequest, AccountUpgradeRequest,
@@ -40,5 +43,11 @@ pub use samet_fund::{
     SametFundBorrowRequest, SametFundCreateRequest, SametFundDeleteRequest, SametFundRepayRequest,
     SametFundUpdateRequest,
 };
+pub use ticket::{TicketCreateRequest, TicketUpdateRequest};
 pub use transaction::{PreparedTransaction, SignedTransactionEnvelope, TransactionBuilder};
 pub use transfer::{PreparedTransfer, SignedTransfer, TransferRequest};
+pub use vesting::{VestingBalanceCreateRequest, VestingBalanceWithdrawRequest};
+pub use withdraw_permission::{
+    WithdrawPermissionClaimRequest, WithdrawPermissionCreateRequest,
+    WithdrawPermissionDeleteRequest, WithdrawPermissionUpdateRequest,
+};
