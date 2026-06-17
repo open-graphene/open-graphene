@@ -82,10 +82,10 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 | Feature | JS | open-graphene-rs | Notes |
 |---|:--:|:--:|---|
 | `TransactionBuilder` — **any** operation | ✅ | ✅ 🥸 | **DONE** (branch `feature/transaction-builder`): `OperationsApi::transaction()` → `add_operation(Operation)` → `prepare()` (DGP header + `get_required_fees`) → `sign_with_wif` → broadcast JSON. Op JSON from serde (`[op_id, body]`). **Live-tested** (transfer accepted by the node) |
-| `add_operation` for all 81 op types | ✅ | ⚠️ 🥸 | generic `add_operation(Operation)` takes any of the 81; fee write-back wired for `transfer`, `limit_order_create`, `limit_order_cancel`, `limit_order_update`, `asset_issue`, `asset_reserve`, `asset_update`, `account_update`, `htlc_create`, `htlc_redeem` — each new op is one `set_operation_fee` arm |
-| `set_required_fees` (auto fee lookup) | ✅ | ⚠️ | transfer supports `fee` / `max_fee`; no generic fee resolver |
+| `add_operation` for all 81 op types | ✅ | ⚠️ 🥸 | generic `add_operation(Operation)` takes any of the 81; fee write-back wired for `transfer`, `limit_order_create`, `limit_order_cancel`, `limit_order_update`, `asset_issue`, `asset_reserve`, `asset_update`, `account_update`, `htlc_create`, `htlc_redeem`, `proposal_create` — each new op is one `set_operation_fee` arm |
+| `set_required_fees` (auto fee lookup) | ✅ | ✅ 🥸 | `TransactionBuilder::prepare` resolves fees for every op via `get_required_fees`, including the nested `[base_fee, [sub_fees]]` form for `proposal_create`; transfer also supports explicit `fee`/`max_fee` |
 | Sign + broadcast pipeline | ✅ | ✅ 🥸 | generic via `TransactionBuilder`: `prepare → sign_with_wif → broadcast` for any supported op (plus the transfer-specific helper) |
-| `propose` / proposal wrapping | ✅ | ❌ | `ProposalCreateOperation` serializable, not wired |
+| `propose` / proposal wrapping | ✅ | ✅ 🥸 | **DONE** (branch `feature/proposal-create`): `OperationsApi::proposal_create(payer).propose(op).expiration(..).review_period(..)` wraps any operations in a proposal, pricing each wrapped op. **Live-tested** (created proposal `1.10.0` wrapping a transfer). `proposal_update`/`proposal_delete` still binding-only |
 | `ChainStore` — object cache + reactive updates | ✅ | ✅ 🥸 | **DONE** (branch `feature/chain-store`): `ChainStore` seeds from `get_objects` then a background worker applies subscription pushes to a shared id→object map; `get(id)`/`snapshot()`/`len()` read the live state. Built via `live().database().chain_store(ids)`. **Live-tested** — cached `2.1.0` head advanced on its own. Scoped to explicit object ids (not the whole-chain reactive graph) |
 | `FetchChain` / `FetchChainObjects` | ✅ | ⚠️ 🥸 | typed direct getters (`get_account_by_name`, etc.) plus the generic **`get_objects`** escape hatch — `DatabaseApi::objects(ids).get()` / `get_objects(ids)` returns raw JSON for any object ids, **live-tested** (branch `feature/get-objects`); plus `DatabaseApi::block(num).get()` / `get_block(num)` returns a block (raw JSON, `None` past the head), **live-tested** (branch `feature/get-block`), with `block_header(num)` / `get_block_header(num)` for the header alone (branch `feature/get-block-header`); plus `DatabaseApi::key_references(keys).get()` / `get_key_references(keys)` maps public keys to the accounts that reference them, **live-tested** (branch `feature/get-key-references`). Missing: the reactive `ChainStore` cache (next row) |
 | `ChainValidation` (`is_account_name`, `is_cheap_name`) | ✅ | ✅ 🥸 | **DONE** (branch `feature/chain-validation`): `core::validation::{is_account_name, is_account_name_allow_short, is_cheap_name}`, verbatim bitsharesjs rules (3–63 chars, dotted labels, no `--`; `y` is a vowel), unit-tested. Chain-agnostic so it lives in core; re-exported through the SDK surface |
@@ -111,14 +111,14 @@ Bindings serialize **all 81** operations. The ergonomic builder API exposes **1*
 | Credit offers / deals | ✅ (7) | ❌ |
 | SameT funds | ✅ (5) | ❌ |
 | Vesting / withdraw permissions / tickets | ✅ (~9) | ❌ |
-| Governance (committee/witness/worker/proposal/custom) | ✅ (~11) | ❌ |
+| Governance (committee/witness/worker/proposal/custom) | ✅ (~11) | ⚠️ 🥸 | `proposal_create` has an ergonomic builder (wraps + prices any ops), **live-tested** (branch `feature/proposal-create`); the rest of governance stays binding-only |
 | Blind transfers | ✅ (3) | ❌ |
 
 ---
 
 ## Priority gaps (to reach JS parity)
 
-1. **Generic `TransactionBuilder`** ✅ done (branch `feature/transaction-builder`, live-tested). Remaining: add a `set_operation_fee` arm per operation as they're needed (10 wired so far) and ergonomic per-op request builders if wanted.
+1. **Generic `TransactionBuilder`** ✅ done (branch `feature/transaction-builder`, live-tested). Remaining: add a `set_operation_fee` arm per operation as they're needed (11 wired so far) and ergonomic per-op request builders if wanted.
 2. ~~**`Aes` memo encrypt/decrypt**~~ ✅ done (branch `feature/aes-memo`): `encrypt_with_checksum`/`decrypt_with_checksum` + `get_shared_secret`, verbatim bitsharesjs port.
 3. **`PrivateKey`/`PublicKey` types** — ✅ done (branches `feature/keys`, `feature/aes-memo`): WIF/seed/derive/sign/verify/recover/public-key-string + `get_shared_secret`. Remaining: **`Address` strings, child derivation** (unblocks `AccountLogin` #5).
 4. **`ConnectionManager`** — failover + latency sort ✅ (branch `feature/sdk-apis`); **auto-reconnect + backoff ✅** for read calls (branch `feature/auto-reconnect`, live-tested). Remaining: re-subscribe live subscriptions across a reconnect, and `urlChangeCallback`.

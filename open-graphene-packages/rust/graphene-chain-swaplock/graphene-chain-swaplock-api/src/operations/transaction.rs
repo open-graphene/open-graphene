@@ -153,7 +153,10 @@ impl SignedTransactionEnvelope {
 }
 
 /// Write the node-supplied `fee` into an operation. Add a match arm here to support a new operation.
-fn set_operation_fee(operation: &mut Operation, fee: Asset) -> Result<(), SwaplockApiError> {
+pub(super) fn set_operation_fee(
+    operation: &mut Operation,
+    fee: Asset,
+) -> Result<(), SwaplockApiError> {
     match operation {
         Operation::TransferOperation(operation) => operation.fee = fee,
         Operation::LimitOrderCreateOperation(operation) => operation.fee = fee,
@@ -165,6 +168,7 @@ fn set_operation_fee(operation: &mut Operation, fee: Asset) -> Result<(), Swaplo
         Operation::AccountUpdateOperation(operation) => operation.fee = fee,
         Operation::HtlcCreateOperation(operation) => operation.fee = fee,
         Operation::HtlcRedeemOperation(operation) => operation.fee = fee,
+        Operation::ProposalCreateOperation(operation) => operation.fee = fee,
         other => {
             return Err(SwaplockApiError::InvalidTransfer {
                 message: format!(
@@ -189,6 +193,7 @@ fn operation_name(operation: &Operation) -> &'static str {
         Operation::AccountUpdateOperation(_) => "account_update",
         Operation::HtlcCreateOperation(_) => "htlc_create",
         Operation::HtlcRedeemOperation(_) => "htlc_redeem",
+        Operation::ProposalCreateOperation(_) => "proposal_create",
         _ => "unknown",
     }
 }
@@ -206,7 +211,7 @@ fn operations_json(operations: &[Operation]) -> Result<Vec<Value>, SwaplockApiEr
         .collect()
 }
 
-fn required_fees(
+pub(super) fn required_fees(
     session: &mut GrapheneSession,
     operations: &[Operation],
     fee_asset_id: &str,
@@ -214,10 +219,31 @@ fn required_fees(
     let operations_json = operations_json(operations)?;
     let value =
         session.database_call("get_required_fees", json!([operations_json, fee_asset_id]))?;
-    serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
-        method: "get_required_fees",
-        message: error.to_string(),
-    })
+    // The node returns one fee per operation, but for ops with sub-operations (proposal_create)
+    // it returns a `[base_fee, [sub_fees...]]` pair instead of a bare asset. The op itself pays the
+    // base fee, so take the first element when an entry is the pair form.
+    let raw: Vec<Value> =
+        serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
+            method: "get_required_fees",
+            message: error.to_string(),
+        })?;
+    raw.into_iter()
+        .map(|entry| {
+            let fee = match entry {
+                Value::Array(items) => items.into_iter().next().ok_or_else(|| {
+                    SwaplockApiError::UnexpectedResponse {
+                        method: "get_required_fees",
+                        message: "empty fee pair".to_string(),
+                    }
+                })?,
+                other => other,
+            };
+            serde_json::from_value(fee).map_err(|error| SwaplockApiError::UnexpectedResponse {
+                method: "get_required_fees",
+                message: error.to_string(),
+            })
+        })
+        .collect()
 }
 
 fn sign_checked(

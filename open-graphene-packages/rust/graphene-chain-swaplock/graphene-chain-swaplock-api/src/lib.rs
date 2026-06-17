@@ -42,7 +42,8 @@ pub use operations::{
     AccountUpdateRequest, AssetIssueRequest, AssetReserveRequest, AssetUpdateRequest,
     HtlcCreateRequest, HtlcRedeemRequest, LimitOrderCancelRequest, LimitOrderCreateRequest,
     LimitOrderUpdateRequest, OperationsApi, PreparedTransaction, PreparedTransfer,
-    SignedTransactionEnvelope, SignedTransfer, TransactionBuilder, TransferRequest,
+    ProposalCreateRequest, SignedTransactionEnvelope, SignedTransfer, TransactionBuilder,
+    TransferRequest,
 };
 
 // Binding types callers need to construct operations for `OperationsApi::transaction()`.
