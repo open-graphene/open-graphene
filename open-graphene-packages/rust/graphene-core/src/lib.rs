@@ -8,6 +8,7 @@ pub mod balance;
 pub mod header;
 pub mod id;
 pub mod serde_helpers;
+pub mod validation;
 
 pub use amount::{AmountError, decimal_to_raw_amount, format_raw_amount};
 pub use balance::{BalanceCheck, BalanceError, ensure_sufficient_balance};
@@ -16,3 +17,4 @@ pub use serde_helpers::{
     deserialize_fixed_bytes_from_hex_string_or_byte_array,
     deserialize_i64_from_number_or_decimal_string,
 };
+pub use validation::{is_account_name, is_account_name_allow_short, is_cheap_name};
