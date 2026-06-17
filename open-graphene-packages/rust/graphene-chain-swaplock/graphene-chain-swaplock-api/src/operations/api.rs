@@ -2,6 +2,7 @@ use open_graphene_transport::GrapheneSession;
 
 use crate::SwaplockApiError;
 
+use super::account::AccountUpdateRequest;
 use super::asset::{AssetIssueRequest, AssetReserveRequest};
 use super::limit_order::{
     LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
@@ -49,6 +50,12 @@ impl<'session> OperationsApi<'session> {
         order: impl Into<String>,
     ) -> LimitOrderCancelRequest<'session> {
         LimitOrderCancelRequest::new(self.session, fee_paying_account, order)
+    }
+
+    /// Update an account's voting options in place: `account` is the id, then set the fields to
+    /// change (memo key, voting proxy, witness/committee counts, votes) before `.prepare()`.
+    pub fn account_update(self, account: impl Into<String>) -> AccountUpdateRequest<'session> {
+        AccountUpdateRequest::new(self.session, account)
     }
 
     /// Mint units of a user asset you issue and send them to an account: `issuer` is you, then
