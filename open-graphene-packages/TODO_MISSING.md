@@ -11,9 +11,10 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 > ergonomics are excellent. The high-level SDK now wires up `transfer`, the **`crypto`** and grouped
 > **`orders`** APIs end-to-end, **latency-sorted connection** (failover + `ConnectionStrategy`), and
 > the **`PrivateKey`/`PublicKey`** foundation (WIF, derive, sign, verify, recover, shared secret),
-> **`Aes` memo encrypt/decrypt**, **brain keys** and **account login** (password to keys). Still
-> missing: ergonomic per-op request builders on top of the generic `TransactionBuilder`, the rest
-> of the **ECC layer** (`Address`, random brain-key generation), object cache, and auto-reconnect/backoff.
+> **`Aes` memo encrypt/decrypt**, **brain keys**, **account login** (password to keys),
+> **account-name validation**, and **auto-reconnect/backoff** for read calls. Still
+> missing: ergonomic per-op request builders for more of the 81 ops, the rest
+> of the **ECC layer** (`Address`, random brain-key generation), and the object cache (`ChainStore`).
 
 
 ---
@@ -33,7 +34,7 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 | API id discovery / login | ✅ | ✅ | `discover_required_api` / `api_ids` |
 | `ChainConfig` (chain id, address prefix) | ✅ | ⚠️ 🥸 | chain_id + prefix in builder config; no global mutable config object (by design — JS singleton is anti-idiomatic; `prefix` stays unused until `Address`/`PublicKey` serialization lands). The node-side constants are now readable via `DatabaseApi::config().get()` / `get_config()` (`get_config` RPC), **live-tested** (branch `feature/get-config`) |
 | `ConnectionManager` — multi-node failover, latency sort | ✅ | ⚠️ 🥸 | **PARTIAL** (branch `feature/sdk-apis`): failover + latency sort done — `ConnectionStrategy::{FirstAvailable,LowestLatency}`, `SwaplockApi::connect_with_strategy`, `probe_latencies` (sorted fastest-first), builder `.strategy()`/`.lowest_latency()`/`.probe_latencies()`, `connection_lowest_latency` example. **Missing** for full parity: auto-reconnect/backoff (see row below) and `urlChangeCallback` |
-| Auto-reconnect (`ChainWebSocket`) | ✅ | ❌ | no reconnect/retry/backoff logic |
+| Auto-reconnect (`ChainWebSocket`) | ✅ | ⚠️ 🥸 | **DONE for reads** (branch `feature/auto-reconnect`): `ReconnectPolicy` (max retries + exponential backoff, capped), `GrapheneSession::reconnect()` (re-dials same node, rediscovers api ids, refuses a different chain id), and read calls (database/history/crypto/orders) auto-reconnect-and-retry on a dropped connection. **Live-tested** reconnect on the node. Mutating broadcasts are deliberately **not** auto-retried (a resend could double-submit); live subscriptions are **not** auto-resumed yet |
 | Connection pool / `closeCb` lifecycle | ✅ | ⚠️ | basic session lifecycle only |
 
 \* `orders_api` now exposes the **grouped** market order book (`grouped_limit_orders`); per-account orders also remain available via `database.get_account_orders`. The raw full order book (`get_limit_orders`) has an ergonomic builder on the database API too — `DatabaseApi::limit_orders(base, quote).limit(..).get()`, **live-tested** (branch `feature/get-limit-orders`).
@@ -116,7 +117,7 @@ Bindings serialize **all 81** operations. The ergonomic builder API exposes **1*
 1. **Generic `TransactionBuilder`** ✅ done (branch `feature/transaction-builder`, live-tested). Remaining: add a `set_operation_fee` arm per operation as they're needed (8 wired so far) and ergonomic per-op request builders if wanted.
 2. ~~**`Aes` memo encrypt/decrypt**~~ ✅ done (branch `feature/aes-memo`): `encrypt_with_checksum`/`decrypt_with_checksum` + `get_shared_secret`, verbatim bitsharesjs port.
 3. **`PrivateKey`/`PublicKey` types** — ✅ done (branches `feature/keys`, `feature/aes-memo`): WIF/seed/derive/sign/verify/recover/public-key-string + `get_shared_secret`. Remaining: **`Address` strings, child derivation** (unblocks `AccountLogin` #5).
-4. **`ConnectionManager`** — failover + latency sort ✅ done (branch `feature/sdk-apis`); **auto-reconnect/backoff + `urlChangeCallback` still missing** (row "Auto-reconnect (`ChainWebSocket`)" ❌), so the entity is ⚠️ partial.
+4. **`ConnectionManager`** — failover + latency sort ✅ (branch `feature/sdk-apis`); **auto-reconnect + backoff ✅** for read calls (branch `feature/auto-reconnect`, live-tested). Remaining: re-subscribe live subscriptions across a reconnect, and `urlChangeCallback`.
 5. **`BrainKey` + `AccountLogin`** — brain-key *derivation* ✅ (branch `feature/brainkey`) and `AccountLogin` ✅ (branch `feature/account-login`, golden-vector matched). Remaining: random brain-key **generation** (dictionary picker).
 6. **`ChainStore` / `FetchChain`** — object cache + reactive fetch.
 7. ~~**`crypto_api`**~~ ✅ done · ~~**`orders_api`** (grouped order book)~~ ✅ done — both on branch `feature/sdk-apis`. ~~Raw `get_limit_orders`~~ ✅ done (branch `feature/get-limit-orders`): ergonomic builder `DatabaseApi::limit_orders(base, quote)`, live-tested.

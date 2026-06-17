@@ -16,7 +16,7 @@ use thiserror::Error;
 pub use open_graphene_core::{is_account_name, is_account_name_allow_short, is_cheap_name};
 
 pub use open_graphene_transport::{
-    ChainIdMismatch, ConnectionStrategy, ServerConnectFailure, ServerLatency,
+    ChainIdMismatch, ConnectionStrategy, ReconnectPolicy, ServerConnectFailure, ServerLatency,
 };
 
 pub use crypto::{
@@ -188,6 +188,21 @@ impl SwaplockApi {
             servers,
             expected_chain_id,
         )?)
+    }
+
+    /// Re-dial the same node and re-establish the API ids in place (refuses a different chain id).
+    ///
+    /// Read calls already reconnect themselves per the [`ReconnectPolicy`]; call this to force a
+    /// reconnect, e.g. before resubscribing. Live subscriptions are not resumed automatically.
+    pub fn reconnect(&mut self) -> Result<(), SwaplockApiError> {
+        self.session.reconnect()?;
+        Ok(())
+    }
+
+    /// Tune how read calls reconnect after a dropped connection
+    /// (pass [`ReconnectPolicy::disabled`] to turn it off).
+    pub fn set_reconnect_policy(&mut self, policy: ReconnectPolicy) {
+        self.session.set_reconnect_policy(policy);
     }
 
     pub fn database(&mut self) -> DatabaseApi<'_> {

@@ -75,6 +75,10 @@ name = "swaplock_chain_validation"
 path = "examples/swaplock/chain_validation.rs"
 
 [[example]]
+name = "swaplock_reconnect"
+path = "examples/swaplock/reconnect.rs"
+
+[[example]]
 name = "swaplock_brainkey_derive"
 path = "examples/swaplock/brainkey_derive.rs"
 

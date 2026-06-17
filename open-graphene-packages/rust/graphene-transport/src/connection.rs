@@ -17,6 +17,57 @@ pub enum ConnectionStrategy {
     LowestLatency,
 }
 
+/// How a session retries an idempotent call after the connection drops.
+///
+/// Applied only to read calls (database/history/crypto/orders), which are safe to repeat.
+/// Mutating broadcasts are never retried automatically, since a resend could double-submit.
+/// Set `max_retries` to 0 to disable auto-reconnect.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ReconnectPolicy {
+    /// How many times to reconnect-and-retry before giving up.
+    pub max_retries: u32,
+    /// Delay before the first retry; it doubles each attempt up to `backoff_max`.
+    pub backoff_base: Duration,
+    /// Ceiling on the per-attempt backoff delay.
+    pub backoff_max: Duration,
+}
+
+impl Default for ReconnectPolicy {
+    fn default() -> Self {
+        Self {
+            max_retries: 3,
+            backoff_base: Duration::from_millis(200),
+            backoff_max: Duration::from_secs(5),
+        }
+    }
+}
+
+impl ReconnectPolicy {
+    /// Auto-reconnect turned off: calls fail on the first connection error.
+    pub fn disabled() -> Self {
+        Self {
+            max_retries: 0,
+            ..Self::default()
+        }
+    }
+
+    /// Backoff delay before retry `attempt` (1-based): `backoff_base * 2^(attempt-1)`, capped.
+    pub fn backoff_delay(&self, attempt: u32) -> Duration {
+        let shift = attempt.saturating_sub(1).min(31);
+        let scaled = self.backoff_base.saturating_mul(1u32 << shift);
+        scaled.min(self.backoff_max)
+    }
+}
+
+/// Whether `error` is a dropped/broken connection (worth reconnecting) rather than an application
+/// or protocol error (which a reconnect would not fix).
+pub fn is_connection_error(error: &TransportError) -> bool {
+    matches!(
+        error,
+        TransportError::WebSocket(_) | TransportError::Io(_) | TransportError::ConnectionClosed
+    )
+}
+
 /// Measured connect latency for a single RPC server.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ServerLatency {
@@ -166,6 +217,40 @@ impl GrapheneSession {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn backoff_doubles_and_caps() {
+        let policy = ReconnectPolicy {
+            max_retries: 10,
+            backoff_base: Duration::from_millis(100),
+            backoff_max: Duration::from_millis(500),
+        };
+        assert_eq!(policy.backoff_delay(1), Duration::from_millis(100));
+        assert_eq!(policy.backoff_delay(2), Duration::from_millis(200));
+        assert_eq!(policy.backoff_delay(3), Duration::from_millis(400));
+        assert_eq!(policy.backoff_delay(4), Duration::from_millis(500)); // capped
+        assert_eq!(policy.backoff_delay(99), Duration::from_millis(500)); // no overflow
+    }
+
+    #[test]
+    fn disabled_policy_does_not_retry() {
+        assert_eq!(ReconnectPolicy::disabled().max_retries, 0);
+    }
+
+    #[test]
+    fn only_connection_errors_trigger_reconnect() {
+        assert!(is_connection_error(&TransportError::ConnectionClosed));
+        assert!(is_connection_error(&TransportError::WebSocket(
+            "boom".into()
+        )));
+        assert!(!is_connection_error(&TransportError::RpcError {
+            id: 1,
+            error: serde_json::json!({}),
+        }));
+        assert!(!is_connection_error(&TransportError::MissingApi {
+            name: "history"
+        }));
+    }
 
     #[test]
     fn first_available_is_the_default_strategy() {
