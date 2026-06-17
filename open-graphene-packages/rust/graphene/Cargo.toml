@@ -35,6 +35,10 @@ name = "swaplock_limit_order_update"
 path = "examples/swaplock/limit_order_update.rs"
 
 [[example]]
+name = "swaplock_asset_issue_reserve"
+path = "examples/swaplock/asset_issue_reserve.rs"
+
+[[example]]
 name = "swaplock_get_limit_orders"
 path = "examples/swaplock/get_limit_orders.rs"
 

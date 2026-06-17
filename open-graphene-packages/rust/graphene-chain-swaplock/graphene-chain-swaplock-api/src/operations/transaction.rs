@@ -159,6 +159,8 @@ fn set_operation_fee(operation: &mut Operation, fee: Asset) -> Result<(), Swaplo
         Operation::LimitOrderCreateOperation(operation) => operation.fee = fee,
         Operation::LimitOrderCancelOperation(operation) => operation.fee = fee,
         Operation::LimitOrderUpdateOperation(operation) => operation.fee = fee,
+        Operation::AssetIssueOperation(operation) => operation.fee = fee,
+        Operation::AssetReserveOperation(operation) => operation.fee = fee,
         other => {
             return Err(SwaplockApiError::InvalidTransfer {
                 message: format!(
@@ -177,6 +179,8 @@ fn operation_name(operation: &Operation) -> &'static str {
         Operation::LimitOrderCreateOperation(_) => "limit_order_create",
         Operation::LimitOrderCancelOperation(_) => "limit_order_cancel",
         Operation::LimitOrderUpdateOperation(_) => "limit_order_update",
+        Operation::AssetIssueOperation(_) => "asset_issue",
+        Operation::AssetReserveOperation(_) => "asset_reserve",
         _ => "unknown",
     }
 }
