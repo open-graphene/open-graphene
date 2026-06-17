@@ -23,6 +23,7 @@ use super::dynamic_global_properties::{
     get_dynamic_global_properties,
 };
 use super::get_block::GetBlockRequest;
+use super::get_block_header::GetBlockHeaderRequest;
 use super::get_key_references::{GetKeyReferencesRequest, get_key_references_request};
 use super::get_limit_orders::{DEFAULT_GET_LIMIT_ORDERS_LIMIT, GetLimitOrdersRequest};
 use super::get_objects::{GetObjectsRequest, get_objects_request};
@@ -209,6 +210,14 @@ impl<'session> DatabaseApi<'session> {
         }
     }
 
+    /// Fetch just a block's header by height, without its transactions.
+    pub fn block_header(self, block_num: u32) -> GetBlockHeaderRequest<'session> {
+        GetBlockHeaderRequest {
+            session: self.session,
+            block_num,
+        }
+    }
+
     /// Which accounts reference each public key in their authorities; one id list per key, in order.
     pub fn key_references<L>(self, keys: L) -> GetKeyReferencesRequest<'session>
     where
@@ -286,6 +295,18 @@ impl<'session> DatabaseApi<'session> {
 
     pub async fn get_block(&mut self, block_num: u32) -> Result<Option<Value>, SwaplockApiError> {
         GetBlockRequest {
+            session: &mut *self.session,
+            block_num,
+        }
+        .get()
+        .await
+    }
+
+    pub async fn get_block_header(
+        &mut self,
+        block_num: u32,
+    ) -> Result<Option<Value>, SwaplockApiError> {
+        GetBlockHeaderRequest {
             session: &mut *self.session,
             block_num,
         }
