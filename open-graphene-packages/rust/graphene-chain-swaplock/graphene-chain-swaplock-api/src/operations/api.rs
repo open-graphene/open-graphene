@@ -12,6 +12,7 @@ use super::asset_admin::{
     AssetGlobalSettleRequest, AssetPublishFeedRequest, AssetSettleRequest,
     AssetUpdateBitassetRequest, AssetUpdateFeedProducersRequest, AssetUpdateIssuerRequest,
 };
+use super::blind::{BlindTransferRequest, TransferFromBlindRequest, TransferToBlindRequest};
 use super::call_order::CallOrderUpdateRequest;
 use super::credit_offer::{
     CreditDealRepayRequest, CreditDealUpdateRequest, CreditOfferAcceptRequest,
@@ -592,6 +593,35 @@ impl<'session> OperationsApi<'session> {
     /// Post a custom-payload operation: `payer`, then `.data(..)`, `.require_auth(..)`, `.id(..)`.
     pub fn custom(self, payer: impl Into<String>) -> CustomRequest<'session> {
         CustomRequest::new(self.session, payer)
+    }
+
+    /// Move a public `amount` from `from` into blind outputs. Build the commitments, range proofs and
+    /// blinding factor yourself (via [`CryptoApi`](crate::CryptoApi)); set `.blinding_factor(..)` and
+    /// add `.output(..)`s so they balance the amount.
+    pub fn transfer_to_blind(
+        self,
+        from: impl Into<String>,
+        amount: i64,
+        asset: impl Into<String>,
+    ) -> TransferToBlindRequest<'session> {
+        TransferToBlindRequest::new(self.session, from, amount, asset)
+    }
+
+    /// Move funds between blind commitments: add `.input(..)`s and `.output(..)`s that balance
+    /// (inputs plus fee equal outputs).
+    pub fn blind_transfer(self) -> BlindTransferRequest<'session> {
+        BlindTransferRequest::new(self.session)
+    }
+
+    /// Move a public `amount` out of blind inputs to `to`. Set `.blinding_factor(..)` and add the
+    /// `.input(..)`s that balance the amount plus fee.
+    pub fn transfer_from_blind(
+        self,
+        to: impl Into<String>,
+        amount: i64,
+        asset: impl Into<String>,
+    ) -> TransferFromBlindRequest<'session> {
+        TransferFromBlindRequest::new(self.session, to, amount, asset)
     }
 
     pub async fn sign_transfer_with_wif(

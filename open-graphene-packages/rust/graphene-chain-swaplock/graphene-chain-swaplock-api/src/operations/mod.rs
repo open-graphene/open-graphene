@@ -2,6 +2,7 @@ mod account;
 mod api;
 mod asset;
 mod asset_admin;
+mod blind;
 mod call_order;
 mod credit_offer;
 mod governance;
@@ -28,6 +29,7 @@ pub use asset_admin::{
     AssetGlobalSettleRequest, AssetPublishFeedRequest, AssetSettleRequest,
     AssetUpdateBitassetRequest, AssetUpdateFeedProducersRequest, AssetUpdateIssuerRequest,
 };
+pub use blind::{BlindTransferRequest, TransferFromBlindRequest, TransferToBlindRequest};
 pub use call_order::CallOrderUpdateRequest;
 pub use credit_offer::{
     CreditDealRepayRequest, CreditDealUpdateRequest, CreditOfferAcceptRequest,

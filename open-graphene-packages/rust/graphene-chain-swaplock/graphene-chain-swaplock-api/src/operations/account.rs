@@ -124,8 +124,9 @@ impl<'session> AccountUpdateRequest<'session> {
     }
 }
 
-/// Build a single-key authority (one key, weight 1, threshold 1) for account creation.
-fn single_key_authority(key: String) -> Authority {
+/// Build a single-key authority (one key, weight 1, threshold 1). Used for account creation and for
+/// the owner of a blind output/input.
+pub(super) fn single_key_authority(key: String) -> Authority {
     Authority {
         weight_threshold: 1,
         account_auths: vec![],
