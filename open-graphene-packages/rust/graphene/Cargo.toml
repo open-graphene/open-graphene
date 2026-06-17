@@ -47,6 +47,10 @@ name = "swaplock_asset_update"
 path = "examples/swaplock/asset_update.rs"
 
 [[example]]
+name = "swaplock_asset_admin_ops"
+path = "examples/swaplock/asset_admin_ops.rs"
+
+[[example]]
 name = "swaplock_account_update"
 path = "examples/swaplock/account_update.rs"
 

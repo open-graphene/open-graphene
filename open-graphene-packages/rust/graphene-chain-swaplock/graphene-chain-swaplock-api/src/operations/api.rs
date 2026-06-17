@@ -7,6 +7,11 @@ use super::account::{
     AccountWhitelistRequest,
 };
 use super::asset::{AssetIssueRequest, AssetReserveRequest, AssetUpdateRequest};
+use super::asset_admin::{
+    AssetClaimFeesRequest, AssetClaimPoolRequest, AssetCreateRequest, AssetFundFeePoolRequest,
+    AssetGlobalSettleRequest, AssetPublishFeedRequest, AssetSettleRequest,
+    AssetUpdateBitassetRequest, AssetUpdateFeedProducersRequest, AssetUpdateIssuerRequest,
+};
 use super::call_order::CallOrderUpdateRequest;
 use super::htlc::{HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest};
 use super::limit_order::{
@@ -119,6 +124,93 @@ impl<'session> OperationsApi<'session> {
         asset: impl Into<String>,
     ) -> AssetUpdateRequest<'session> {
         AssetUpdateRequest::new(self.session, issuer, asset)
+    }
+
+    /// Create a new user-issued asset: `issuer`, `symbol`, `precision`, then optional setters.
+    pub fn asset_create(
+        self,
+        issuer: impl Into<String>,
+        symbol: impl Into<String>,
+        precision: u8,
+    ) -> AssetCreateRequest<'session> {
+        AssetCreateRequest::new(self.session, issuer, symbol, precision)
+    }
+
+    /// Hand a user asset to a new issuer.
+    pub fn asset_update_issuer(
+        self,
+        issuer: impl Into<String>,
+        asset: impl Into<String>,
+        new_issuer: impl Into<String>,
+    ) -> AssetUpdateIssuerRequest<'session> {
+        AssetUpdateIssuerRequest::new(self.session, issuer, asset, new_issuer)
+    }
+
+    /// Top up an asset's fee pool with `amount` of core asset.
+    pub fn asset_fund_fee_pool(
+        self,
+        from_account: impl Into<String>,
+        asset: impl Into<String>,
+        amount: i64,
+    ) -> AssetFundFeePoolRequest<'session> {
+        AssetFundFeePoolRequest::new(self.session, from_account, asset, amount)
+    }
+
+    /// Reclaim `amount` of core asset from an asset's fee pool.
+    pub fn asset_claim_pool(
+        self,
+        issuer: impl Into<String>,
+        asset: impl Into<String>,
+        amount: i64,
+    ) -> AssetClaimPoolRequest<'session> {
+        AssetClaimPoolRequest::new(self.session, issuer, asset, amount)
+    }
+
+    /// Collect accumulated market fees: `issuer`, then `.amount(..)`.
+    pub fn asset_claim_fees(self, issuer: impl Into<String>) -> AssetClaimFeesRequest<'session> {
+        AssetClaimFeesRequest::new(self.session, issuer)
+    }
+
+    /// Settle a market-pegged asset for collateral: `account`, then `.amount(..)`.
+    pub fn asset_settle(self, account: impl Into<String>) -> AssetSettleRequest<'session> {
+        AssetSettleRequest::new(self.session, account)
+    }
+
+    /// Globally settle a market-pegged asset: `issuer`, `asset`, then `.settle_price(..)`.
+    pub fn asset_global_settle(
+        self,
+        issuer: impl Into<String>,
+        asset: impl Into<String>,
+    ) -> AssetGlobalSettleRequest<'session> {
+        AssetGlobalSettleRequest::new(self.session, issuer, asset)
+    }
+
+    /// Set the feed producers for a market-pegged asset: `issuer`, `asset`, then `.producers(..)`.
+    pub fn asset_update_feed_producers(
+        self,
+        issuer: impl Into<String>,
+        asset: impl Into<String>,
+    ) -> AssetUpdateFeedProducersRequest<'session> {
+        AssetUpdateFeedProducersRequest::new(self.session, issuer, asset)
+    }
+
+    /// Publish a price feed: `publisher`, `asset`, then `.settlement_price(..)`/`.core_exchange_rate(..)`.
+    pub fn asset_publish_feed(
+        self,
+        publisher: impl Into<String>,
+        asset: impl Into<String>,
+    ) -> AssetPublishFeedRequest<'session> {
+        AssetPublishFeedRequest::new(self.session, publisher, asset)
+    }
+
+    /// Change a market-pegged asset's bitasset options: `issuer`, `asset`, `short_backing_asset`.
+    pub fn asset_update_bitasset(
+        self,
+        issuer: impl Into<String>,
+        asset: impl Into<String>,
+        short_backing_asset: impl Into<String>,
+    ) -> AssetUpdateBitassetRequest<'session> {
+        AssetUpdateBitassetRequest::new(self.session, issuer, asset, short_backing_asset)
     }
 
     /// Lock funds in a hashed time-locked contract from `from` to `to`; set `.amount(..)` and

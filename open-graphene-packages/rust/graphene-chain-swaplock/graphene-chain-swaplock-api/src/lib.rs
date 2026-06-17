@@ -40,7 +40,10 @@ pub use network_broadcast::{
 };
 pub use operations::{
     AccountCreateRequest, AccountTransferRequest, AccountUpdateRequest, AccountUpgradeRequest,
-    AccountWhitelistRequest, AssetIssueRequest, AssetReserveRequest, AssetUpdateRequest,
+    AccountWhitelistRequest, AssetClaimFeesRequest, AssetClaimPoolRequest, AssetCreateRequest,
+    AssetFundFeePoolRequest, AssetGlobalSettleRequest, AssetIssueRequest, AssetPublishFeedRequest,
+    AssetReserveRequest, AssetSettleRequest, AssetUpdateBitassetRequest,
+    AssetUpdateFeedProducersRequest, AssetUpdateIssuerRequest, AssetUpdateRequest,
     CallOrderUpdateRequest, HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest,
     LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
     LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest,
