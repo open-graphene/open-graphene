@@ -251,5 +251,9 @@ name = "swaplock_crypto_pedersen_commitment"
 path = "examples/swaplock/crypto_pedersen_commitment.rs"
 
 [[example]]
+name = "swaplock_blind_transfer_ops"
+path = "examples/swaplock/blind_transfer_ops.rs"
+
+[[example]]
 name = "swaplock_orders_grouped_limit_orders"
 path = "examples/swaplock/orders_grouped_limit_orders.rs"

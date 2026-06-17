@@ -218,6 +218,9 @@ pub(super) fn set_operation_fee(
         Operation::WitnessUpdateOperation(operation) => operation.fee = fee,
         Operation::WorkerCreateOperation(operation) => operation.fee = fee,
         Operation::CustomOperation(operation) => operation.fee = fee,
+        Operation::TransferToBlindOperation(operation) => operation.fee = fee,
+        Operation::BlindTransferOperation(operation) => operation.fee = fee,
+        Operation::TransferFromBlindOperation(operation) => operation.fee = fee,
         other => {
             return Err(SwaplockApiError::InvalidTransfer {
                 message: format!(
@@ -292,6 +295,9 @@ fn operation_name(operation: &Operation) -> &'static str {
         Operation::WitnessUpdateOperation(_) => "witness_update",
         Operation::WorkerCreateOperation(_) => "worker_create",
         Operation::CustomOperation(_) => "custom",
+        Operation::TransferToBlindOperation(_) => "transfer_to_blind",
+        Operation::BlindTransferOperation(_) => "blind_transfer",
+        Operation::TransferFromBlindOperation(_) => "transfer_from_blind",
         _ => "unknown",
     }
 }
