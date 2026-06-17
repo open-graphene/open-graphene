@@ -14,6 +14,8 @@ pub use graphene_chain_swaplock_api::{
     AssetSettleRequest, AssetUpdateBitassetRequest, AssetUpdateFeedProducersRequest,
     AssetUpdateIssuerRequest, AssetUpdateRequest, BlindRequest, BlindSumRequest, BlindingFactor,
     BroadcastConfirmation, BroadcastReceipt, CallOrderUpdateRequest, ChainStore, Commitment,
+    CreditDealRepayRequest, CreditDealUpdateRequest, CreditOfferAcceptRequest,
+    CreditOfferCreateRequest, CreditOfferDeleteRequest, CreditOfferUpdateRequest,
     ConnectionStrategy, CryptoApi, DEFAULT_ACCOUNT_HISTORY_LIMIT, DEFAULT_ACCOUNT_HISTORY_OFFSET,
     DEFAULT_GET_LIMIT_ORDERS_LIMIT, DEFAULT_GROUPED_LIMIT_ORDERS_LIMIT, DEFAULT_LIST_ASSETS_LIMIT,
     DEFAULT_LOOKUP_ACCOUNTS_LIMIT, GetBlockHeaderRequest, GetBlockRequest, GetConfigRequest,

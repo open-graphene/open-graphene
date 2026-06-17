@@ -13,6 +13,10 @@ use super::asset_admin::{
     AssetUpdateBitassetRequest, AssetUpdateFeedProducersRequest, AssetUpdateIssuerRequest,
 };
 use super::call_order::CallOrderUpdateRequest;
+use super::credit_offer::{
+    CreditDealRepayRequest, CreditDealUpdateRequest, CreditOfferAcceptRequest,
+    CreditOfferCreateRequest, CreditOfferDeleteRequest, CreditOfferUpdateRequest,
+};
 use super::htlc::{HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest};
 use super::limit_order::{
     LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
@@ -239,6 +243,63 @@ impl<'session> OperationsApi<'session> {
         funding_account: impl Into<String>,
     ) -> CallOrderUpdateRequest<'session> {
         CallOrderUpdateRequest::new(self.session, funding_account)
+    }
+
+    /// Post a credit offer to lend: `owner_account` commits `balance` of `asset_type`, then add at
+    /// least one `.accept_collateral(..)` before `.prepare()`.
+    pub fn credit_offer_create(
+        self,
+        owner_account: impl Into<String>,
+        asset_type: impl Into<String>,
+        balance: i64,
+    ) -> CreditOfferCreateRequest<'session> {
+        CreditOfferCreateRequest::new(self.session, owner_account, asset_type, balance)
+    }
+
+    /// Change a live credit offer in place: `owner_account`, the `offer_id`, then partial setters.
+    pub fn credit_offer_update(
+        self,
+        owner_account: impl Into<String>,
+        offer_id: impl Into<String>,
+    ) -> CreditOfferUpdateRequest<'session> {
+        CreditOfferUpdateRequest::new(self.session, owner_account, offer_id)
+    }
+
+    /// Withdraw a credit offer you own, reclaiming its remaining balance.
+    pub fn credit_offer_delete(
+        self,
+        owner_account: impl Into<String>,
+        offer_id: impl Into<String>,
+    ) -> CreditOfferDeleteRequest<'session> {
+        CreditOfferDeleteRequest::new(self.session, owner_account, offer_id)
+    }
+
+    /// Borrow against an offer: `borrower`, the `offer_id`, then `.borrow(..)` and `.collateral(..)`.
+    pub fn credit_offer_accept(
+        self,
+        borrower: impl Into<String>,
+        offer_id: impl Into<String>,
+    ) -> CreditOfferAcceptRequest<'session> {
+        CreditOfferAcceptRequest::new(self.session, borrower, offer_id)
+    }
+
+    /// Repay a credit deal: `account`, the `deal_id`, then `.repay(..)` and `.credit_fee(..)`.
+    pub fn credit_deal_repay(
+        self,
+        account: impl Into<String>,
+        deal_id: impl Into<String>,
+    ) -> CreditDealRepayRequest<'session> {
+        CreditDealRepayRequest::new(self.session, account, deal_id)
+    }
+
+    /// Change a credit deal's auto-repay mode (0 disabled, 1 from balance, 2 from collateral).
+    pub fn credit_deal_update(
+        self,
+        account: impl Into<String>,
+        deal_id: impl Into<String>,
+        auto_repay: u8,
+    ) -> CreditDealUpdateRequest<'session> {
+        CreditDealUpdateRequest::new(self.session, account, deal_id, auto_repay)
     }
 
     /// Open a liquidity pool for an asset pair: `account` owns it, then `.assets(a, b)` and
