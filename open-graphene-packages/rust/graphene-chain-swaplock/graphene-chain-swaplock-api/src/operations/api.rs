@@ -4,6 +4,7 @@ use crate::SwaplockApiError;
 
 use super::account::AccountUpdateRequest;
 use super::asset::{AssetIssueRequest, AssetReserveRequest, AssetUpdateRequest};
+use super::call_order::CallOrderUpdateRequest;
 use super::htlc::{HtlcCreateRequest, HtlcRedeemRequest};
 use super::limit_order::{
     LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
@@ -99,6 +100,15 @@ impl<'session> OperationsApi<'session> {
         redeemer: impl Into<String>,
     ) -> HtlcRedeemRequest<'session> {
         HtlcRedeemRequest::new(self.session, htlc, redeemer)
+    }
+
+    /// Adjust a margin position: `funding_account` sets `.delta_collateral(..)` and
+    /// `.delta_debt(..)` (negative to withdraw/repay) before `.prepare()`.
+    pub fn call_order_update(
+        self,
+        funding_account: impl Into<String>,
+    ) -> CallOrderUpdateRequest<'session> {
+        CallOrderUpdateRequest::new(self.session, funding_account)
     }
 
     /// Open a liquidity pool for an asset pair: `account` owns it, then `.assets(a, b)` and

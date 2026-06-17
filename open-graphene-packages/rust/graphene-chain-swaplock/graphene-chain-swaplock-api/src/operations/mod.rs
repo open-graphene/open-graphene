@@ -1,6 +1,7 @@
 mod account;
 mod api;
 mod asset;
+mod call_order;
 mod htlc;
 mod limit_order;
 mod liquidity_pool;
@@ -12,6 +13,7 @@ mod transfer;
 pub use account::AccountUpdateRequest;
 pub use api::OperationsApi;
 pub use asset::{AssetIssueRequest, AssetReserveRequest, AssetUpdateRequest};
+pub use call_order::CallOrderUpdateRequest;
 pub use htlc::{HtlcCreateRequest, HtlcRedeemRequest};
 pub use limit_order::{LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest};
 pub use liquidity_pool::{LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest};

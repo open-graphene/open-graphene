@@ -171,6 +171,7 @@ pub(super) fn set_operation_fee(
         Operation::ProposalCreateOperation(operation) => operation.fee = fee,
         Operation::LiquidityPoolCreateOperation(operation) => operation.fee = fee,
         Operation::LiquidityPoolDeleteOperation(operation) => operation.fee = fee,
+        Operation::CallOrderUpdateOperation(operation) => operation.fee = fee,
         other => {
             return Err(SwaplockApiError::InvalidTransfer {
                 message: format!(
@@ -198,6 +199,7 @@ fn operation_name(operation: &Operation) -> &'static str {
         Operation::ProposalCreateOperation(_) => "proposal_create",
         Operation::LiquidityPoolCreateOperation(_) => "liquidity_pool_create",
         Operation::LiquidityPoolDeleteOperation(_) => "liquidity_pool_delete",
+        Operation::CallOrderUpdateOperation(_) => "call_order_update",
         _ => "unknown",
     }
 }
