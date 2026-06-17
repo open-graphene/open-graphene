@@ -11,7 +11,7 @@ use graphene_chain_swaplock_bindings::generated::operations::{
     AssetClaimFeesOperation, AssetClaimPoolOperation, AssetCreateOperation,
     AssetFundFeePoolOperation, AssetGlobalSettleOperation, AssetPublishFeedOperation,
     AssetSettleOperation, AssetUpdateBitassetOperation, AssetUpdateFeedProducersOperation,
-    AssetUpdateIssuerOperation,
+    AssetUpdateIssuerOperation, OverrideTransferOperation,
 };
 use graphene_chain_swaplock_bindings::generated::static_variants::Operation;
 use graphene_chain_swaplock_bindings::generated::types::{
@@ -601,6 +601,60 @@ impl<'session> AssetUpdateBitassetRequest<'session> {
                     initial_collateral_ratio: None,
                 },
             },
+            extensions: vec![],
+        });
+        TransactionBuilder::new(self.session)
+            .add_operation(operation)
+            .prepare()
+            .await
+    }
+}
+
+/// Builder for `override_transfer`: the issuer of a user asset forcibly moves it between accounts.
+///
+/// Required: the `issuer`, the `from` holder, the `to` recipient, and the `.amount(..)`. Only works
+/// for an asset whose `override_authority` permission is enabled (the issuer can claw back units).
+pub struct OverrideTransferRequest<'session> {
+    session: &'session mut GrapheneSession,
+    issuer: String,
+    from: String,
+    to: String,
+    amount: Option<(i64, String)>,
+}
+
+impl<'session> OverrideTransferRequest<'session> {
+    pub(super) fn new(
+        session: &'session mut GrapheneSession,
+        issuer: impl Into<String>,
+        from: impl Into<String>,
+        to: impl Into<String>,
+    ) -> Self {
+        Self {
+            session,
+            issuer: issuer.into(),
+            from: from.into(),
+            to: to.into(),
+            amount: None,
+        }
+    }
+
+    /// How much to move, in raw units of `asset` (the asset the issuer controls).
+    pub fn amount(mut self, amount: i64, asset: impl Into<String>) -> Self {
+        self.amount = Some((amount, asset.into()));
+        self
+    }
+
+    pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
+        let (amount, asset) = self
+            .amount
+            .ok_or(SwaplockApiError::MissingTransferField { field: "amount" })?;
+        let operation = Operation::override_transfer(OverrideTransferOperation {
+            fee: core_fee(),
+            issuer: AccountId(self.issuer),
+            from: AccountId(self.from),
+            to: AccountId(self.to),
+            amount: Asset::new(amount, AssetId(asset)),
+            memo: None,
             extensions: vec![],
         });
         TransactionBuilder::new(self.session)

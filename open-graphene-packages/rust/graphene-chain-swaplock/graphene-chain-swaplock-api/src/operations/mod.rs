@@ -28,6 +28,7 @@ pub use asset_admin::{
     AssetClaimFeesRequest, AssetClaimPoolRequest, AssetCreateRequest, AssetFundFeePoolRequest,
     AssetGlobalSettleRequest, AssetPublishFeedRequest, AssetSettleRequest,
     AssetUpdateBitassetRequest, AssetUpdateFeedProducersRequest, AssetUpdateIssuerRequest,
+    OverrideTransferRequest,
 };
 pub use blind::{BlindTransferRequest, TransferFromBlindRequest, TransferToBlindRequest};
 pub use call_order::CallOrderUpdateRequest;
