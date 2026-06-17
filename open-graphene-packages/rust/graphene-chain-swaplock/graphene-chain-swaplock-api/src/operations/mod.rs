@@ -3,6 +3,7 @@ mod api;
 mod asset;
 mod asset_admin;
 mod call_order;
+mod credit_offer;
 mod htlc;
 mod limit_order;
 mod liquidity_pool;
@@ -23,6 +24,10 @@ pub use asset_admin::{
     AssetUpdateBitassetRequest, AssetUpdateFeedProducersRequest, AssetUpdateIssuerRequest,
 };
 pub use call_order::CallOrderUpdateRequest;
+pub use credit_offer::{
+    CreditDealRepayRequest, CreditDealUpdateRequest, CreditOfferAcceptRequest,
+    CreditOfferCreateRequest, CreditOfferDeleteRequest, CreditOfferUpdateRequest,
+};
 pub use htlc::{HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest};
 pub use limit_order::{LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest};
 pub use liquidity_pool::{

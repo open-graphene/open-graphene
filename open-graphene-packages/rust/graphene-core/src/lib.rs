@@ -12,7 +12,10 @@ pub mod validation;
 
 pub use amount::{AmountError, decimal_to_raw_amount, format_raw_amount};
 pub use balance::{BalanceCheck, BalanceError, ensure_sufficient_balance};
-pub use header::{HeadBlock, HeaderError, TransactionHeader, transaction_header_from_head};
+pub use header::{
+    HeadBlock, HeaderError, TransactionHeader, expiration_from_head_time,
+    transaction_header_from_head,
+};
 pub use serde_helpers::{
     bytes_to_hex, deserialize_bytes_from_hex_string_or_byte_array,
     deserialize_fixed_bytes_from_hex_string_or_byte_array,
