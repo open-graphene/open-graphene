@@ -4,6 +4,7 @@ use crate::SwaplockApiError;
 
 use super::account::AccountUpdateRequest;
 use super::asset::{AssetIssueRequest, AssetReserveRequest, AssetUpdateRequest};
+use super::htlc::{HtlcCreateRequest, HtlcRedeemRequest};
 use super::limit_order::{
     LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
 };
@@ -77,6 +78,25 @@ impl<'session> OperationsApi<'session> {
         asset: impl Into<String>,
     ) -> AssetUpdateRequest<'session> {
         AssetUpdateRequest::new(self.session, issuer, asset)
+    }
+
+    /// Lock funds in a hashed time-locked contract from `from` to `to`; set `.amount(..)` and
+    /// `.lock_sha256(secret)`, optionally `.claim_period(..)`, then `.prepare()`.
+    pub fn htlc_create(
+        self,
+        from: impl Into<String>,
+        to: impl Into<String>,
+    ) -> HtlcCreateRequest<'session> {
+        HtlcCreateRequest::new(self.session, from, to)
+    }
+
+    /// Claim a hashed time-locked contract by its id, revealing the `.preimage(..)`.
+    pub fn htlc_redeem(
+        self,
+        htlc: impl Into<String>,
+        redeemer: impl Into<String>,
+    ) -> HtlcRedeemRequest<'session> {
+        HtlcRedeemRequest::new(self.session, htlc, redeemer)
     }
 
     pub async fn sign_transfer_with_wif(
