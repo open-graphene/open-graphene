@@ -51,7 +51,9 @@ pub use operations::{
     LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest,
     LiquidityPoolExchangeRequest, LiquidityPoolUpdateRequest, LiquidityPoolWithdrawRequest,
     OperationsApi, PreparedTransaction, PreparedTransfer, ProposalCreateRequest,
-    SignedTransactionEnvelope, SignedTransfer, TransactionBuilder, TransferRequest,
+    SametFundBorrowRequest, SametFundCreateRequest, SametFundDeleteRequest, SametFundRepayRequest,
+    SametFundUpdateRequest, SignedTransactionEnvelope, SignedTransfer, TransactionBuilder,
+    TransferRequest,
 };
 
 // Binding types callers need to construct operations for `OperationsApi::transaction()`.

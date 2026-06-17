@@ -8,6 +8,7 @@ mod htlc;
 mod limit_order;
 mod liquidity_pool;
 mod proposal;
+mod samet_fund;
 mod sign_transfer;
 mod transaction;
 mod transfer;
@@ -35,5 +36,9 @@ pub use liquidity_pool::{
     LiquidityPoolExchangeRequest, LiquidityPoolUpdateRequest, LiquidityPoolWithdrawRequest,
 };
 pub use proposal::ProposalCreateRequest;
+pub use samet_fund::{
+    SametFundBorrowRequest, SametFundCreateRequest, SametFundDeleteRequest, SametFundRepayRequest,
+    SametFundUpdateRequest,
+};
 pub use transaction::{PreparedTransaction, SignedTransactionEnvelope, TransactionBuilder};
 pub use transfer::{PreparedTransfer, SignedTransfer, TransferRequest};
