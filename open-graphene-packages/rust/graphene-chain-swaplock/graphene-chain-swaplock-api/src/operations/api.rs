@@ -9,7 +9,10 @@ use super::htlc::{HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest};
 use super::limit_order::{
     LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
 };
-use super::liquidity_pool::{LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest};
+use super::liquidity_pool::{
+    LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest,
+    LiquidityPoolExchangeRequest, LiquidityPoolUpdateRequest, LiquidityPoolWithdrawRequest,
+};
 use super::proposal::ProposalCreateRequest;
 use super::sign_transfer::sign_transfer_with_wif;
 use super::transaction::TransactionBuilder;
@@ -127,6 +130,42 @@ impl<'session> OperationsApi<'session> {
         pool: impl Into<String>,
     ) -> LiquidityPoolDeleteRequest<'session> {
         LiquidityPoolDeleteRequest::new(self.session, account, pool)
+    }
+
+    /// Add both assets to a pool and receive shares: `.amount_a(..)` and `.amount_b(..)`.
+    pub fn liquidity_pool_deposit(
+        self,
+        account: impl Into<String>,
+        pool: impl Into<String>,
+    ) -> LiquidityPoolDepositRequest<'session> {
+        LiquidityPoolDepositRequest::new(self.session, account, pool)
+    }
+
+    /// Burn pool shares to get both assets back: `.share_amount(..)`.
+    pub fn liquidity_pool_withdraw(
+        self,
+        account: impl Into<String>,
+        pool: impl Into<String>,
+    ) -> LiquidityPoolWithdrawRequest<'session> {
+        LiquidityPoolWithdrawRequest::new(self.session, account, pool)
+    }
+
+    /// Trade against a pool: `.sell(..)` for at least `.min_to_receive(..)`.
+    pub fn liquidity_pool_exchange(
+        self,
+        account: impl Into<String>,
+        pool: impl Into<String>,
+    ) -> LiquidityPoolExchangeRequest<'session> {
+        LiquidityPoolExchangeRequest::new(self.session, account, pool)
+    }
+
+    /// Change a pool's fees: `.taker_fee_percent(..)` / `.withdrawal_fee_percent(..)`.
+    pub fn liquidity_pool_update(
+        self,
+        account: impl Into<String>,
+        pool: impl Into<String>,
+    ) -> LiquidityPoolUpdateRequest<'session> {
+        LiquidityPoolUpdateRequest::new(self.session, account, pool)
     }
 
     /// Extend a hashed time-locked contract's deadline: `update_issuer` adds time via `.add(..)`.

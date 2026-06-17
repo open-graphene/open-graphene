@@ -63,6 +63,10 @@ name = "swaplock_liquidity_pool_create_delete"
 path = "examples/swaplock/liquidity_pool_create_delete.rs"
 
 [[example]]
+name = "swaplock_liquidity_pool_flow"
+path = "examples/swaplock/liquidity_pool_flow.rs"
+
+[[example]]
 name = "swaplock_get_limit_orders"
 path = "examples/swaplock/get_limit_orders.rs"
 

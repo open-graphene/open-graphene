@@ -172,6 +172,10 @@ pub(super) fn set_operation_fee(
         Operation::ProposalCreateOperation(operation) => operation.fee = fee,
         Operation::LiquidityPoolCreateOperation(operation) => operation.fee = fee,
         Operation::LiquidityPoolDeleteOperation(operation) => operation.fee = fee,
+        Operation::LiquidityPoolDepositOperation(operation) => operation.fee = fee,
+        Operation::LiquidityPoolWithdrawOperation(operation) => operation.fee = fee,
+        Operation::LiquidityPoolExchangeOperation(operation) => operation.fee = fee,
+        Operation::LiquidityPoolUpdateOperation(operation) => operation.fee = fee,
         Operation::CallOrderUpdateOperation(operation) => operation.fee = fee,
         other => {
             return Err(SwaplockApiError::InvalidTransfer {
@@ -201,6 +205,10 @@ fn operation_name(operation: &Operation) -> &'static str {
         Operation::ProposalCreateOperation(_) => "proposal_create",
         Operation::LiquidityPoolCreateOperation(_) => "liquidity_pool_create",
         Operation::LiquidityPoolDeleteOperation(_) => "liquidity_pool_delete",
+        Operation::LiquidityPoolDepositOperation(_) => "liquidity_pool_deposit",
+        Operation::LiquidityPoolWithdrawOperation(_) => "liquidity_pool_withdraw",
+        Operation::LiquidityPoolExchangeOperation(_) => "liquidity_pool_exchange",
+        Operation::LiquidityPoolUpdateOperation(_) => "liquidity_pool_update",
         Operation::CallOrderUpdateOperation(_) => "call_order_update",
         _ => "unknown",
     }

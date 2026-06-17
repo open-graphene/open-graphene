@@ -42,9 +42,10 @@ pub use operations::{
     AccountUpdateRequest, AssetIssueRequest, AssetReserveRequest, AssetUpdateRequest,
     CallOrderUpdateRequest, HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest,
     LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
-    LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, OperationsApi, PreparedTransaction,
-    PreparedTransfer, ProposalCreateRequest, SignedTransactionEnvelope, SignedTransfer,
-    TransactionBuilder, TransferRequest,
+    LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest,
+    LiquidityPoolExchangeRequest, LiquidityPoolUpdateRequest, LiquidityPoolWithdrawRequest,
+    OperationsApi, PreparedTransaction, PreparedTransfer, ProposalCreateRequest,
+    SignedTransactionEnvelope, SignedTransfer, TransactionBuilder, TransferRequest,
 };
 
 // Binding types callers need to construct operations for `OperationsApi::transaction()`.
