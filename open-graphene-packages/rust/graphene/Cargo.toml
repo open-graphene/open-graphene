@@ -51,6 +51,10 @@ name = "swaplock_htlc_create_redeem"
 path = "examples/swaplock/htlc_create_redeem.rs"
 
 [[example]]
+name = "swaplock_proposal_create"
+path = "examples/swaplock/proposal_create.rs"
+
+[[example]]
 name = "swaplock_get_limit_orders"
 path = "examples/swaplock/get_limit_orders.rs"
 

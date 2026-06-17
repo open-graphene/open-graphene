@@ -8,6 +8,7 @@ use super::htlc::{HtlcCreateRequest, HtlcRedeemRequest};
 use super::limit_order::{
     LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
 };
+use super::proposal::ProposalCreateRequest;
 use super::sign_transfer::sign_transfer_with_wif;
 use super::transaction::TransactionBuilder;
 use super::transfer::{PreparedTransfer, SignedTransfer, TransferRequest};
@@ -97,6 +98,15 @@ impl<'session> OperationsApi<'session> {
         redeemer: impl Into<String>,
     ) -> HtlcRedeemRequest<'session> {
         HtlcRedeemRequest::new(self.session, htlc, redeemer)
+    }
+
+    /// Wrap operations in a proposal paid for by `fee_paying_account`: add them with `.propose(..)`,
+    /// set `.expiration(..)`/`.review_period(..)`, then `.prepare()`. The wrapped ops are priced.
+    pub fn proposal_create(
+        self,
+        fee_paying_account: impl Into<String>,
+    ) -> ProposalCreateRequest<'session> {
+        ProposalCreateRequest::new(self.session, fee_paying_account)
     }
 
     pub async fn sign_transfer_with_wif(
