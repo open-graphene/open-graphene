@@ -13,7 +13,7 @@ use crate::database::{
     collect_account_order_objects, dynamic_global_properties_from_value,
 };
 
-use super::{LIVE_DATABASE_CALLBACK_ID, remaining_or_callback_timeout};
+use super::{ChainStore, LIVE_DATABASE_CALLBACK_ID, remaining_or_callback_timeout};
 
 pub struct SwaplockLiveDatabaseApi {
     pub(crate) live: LiveTransportHandle,
@@ -125,6 +125,24 @@ impl SwaplockLiveDatabaseApi {
             database_api_id: self.database_api_id,
             account_id: account_id.into(),
         }
+    }
+
+    /// Open a reactive cache of the given object ids: seeded now, then kept current by a worker
+    /// that applies subscription updates. Read it with [`ChainStore::get`]/[`ChainStore::snapshot`].
+    pub fn chain_store(
+        self,
+        ids: impl IntoIterator<Item = impl Into<String>>,
+    ) -> Result<ChainStore, SwaplockApiError> {
+        self.chain_store_timeout(ids, Duration::from_secs(10))
+    }
+
+    pub fn chain_store_timeout(
+        self,
+        ids: impl IntoIterator<Item = impl Into<String>>,
+        timeout: Duration,
+    ) -> Result<ChainStore, SwaplockApiError> {
+        let ids = ids.into_iter().map(Into::into).collect();
+        ChainStore::start(self.live, self.database_api_id, ids, timeout)
     }
 }
 

@@ -14,7 +14,10 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 > **`Aes` memo encrypt/decrypt**, **brain keys**, **account login** (password to keys),
 > **account-name validation**, and **auto-reconnect/backoff** for read calls. Still
 > missing: ergonomic per-op request builders for more of the 81 ops, the rest
-> of the **ECC layer** (`Address`, random brain-key generation), and the object cache (`ChainStore`).
+> of the **ECC layer** (`Address`, random brain-key generation). The reactive object cache
+> (`ChainStore`) is now in place. The engine (connection, RPC, serializer, signing, reconnect,
+> validation, cache) is essentially complete; the main remaining work is ergonomic builders for
+> more of the 81 operations.
 
 
 ---
@@ -82,7 +85,7 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 | `set_required_fees` (auto fee lookup) | ✅ | ⚠️ | transfer supports `fee` / `max_fee`; no generic fee resolver |
 | Sign + broadcast pipeline | ✅ | ✅ 🥸 | generic via `TransactionBuilder`: `prepare → sign_with_wif → broadcast` for any supported op (plus the transfer-specific helper) |
 | `propose` / proposal wrapping | ✅ | ❌ | `ProposalCreateOperation` serializable, not wired |
-| `ChainStore` — object cache + reactive updates | ✅ | ❌ | none |
+| `ChainStore` — object cache + reactive updates | ✅ | ✅ 🥸 | **DONE** (branch `feature/chain-store`): `ChainStore` seeds from `get_objects` then a background worker applies subscription pushes to a shared id→object map; `get(id)`/`snapshot()`/`len()` read the live state. Built via `live().database().chain_store(ids)`. **Live-tested** — cached `2.1.0` head advanced on its own. Scoped to explicit object ids (not the whole-chain reactive graph) |
 | `FetchChain` / `FetchChainObjects` | ✅ | ⚠️ 🥸 | typed direct getters (`get_account_by_name`, etc.) plus the generic **`get_objects`** escape hatch — `DatabaseApi::objects(ids).get()` / `get_objects(ids)` returns raw JSON for any object ids, **live-tested** (branch `feature/get-objects`); plus `DatabaseApi::block(num).get()` / `get_block(num)` returns a block (raw JSON, `None` past the head), **live-tested** (branch `feature/get-block`), with `block_header(num)` / `get_block_header(num)` for the header alone (branch `feature/get-block-header`); plus `DatabaseApi::key_references(keys).get()` / `get_key_references(keys)` maps public keys to the accounts that reference them, **live-tested** (branch `feature/get-key-references`). Missing: the reactive `ChainStore` cache (next row) |
 | `ChainValidation` (`is_account_name`, `is_cheap_name`) | ✅ | ✅ 🥸 | **DONE** (branch `feature/chain-validation`): `core::validation::{is_account_name, is_account_name_allow_short, is_cheap_name}`, verbatim bitsharesjs rules (3–63 chars, dotted labels, no `--`; `y` is a vowel), unit-tested. Chain-agnostic so it lives in core; re-exported through the SDK surface |
 | `ObjectId` helpers | ✅ | ✅ | via `fc` |
@@ -119,6 +122,6 @@ Bindings serialize **all 81** operations. The ergonomic builder API exposes **1*
 3. **`PrivateKey`/`PublicKey` types** — ✅ done (branches `feature/keys`, `feature/aes-memo`): WIF/seed/derive/sign/verify/recover/public-key-string + `get_shared_secret`. Remaining: **`Address` strings, child derivation** (unblocks `AccountLogin` #5).
 4. **`ConnectionManager`** — failover + latency sort ✅ (branch `feature/sdk-apis`); **auto-reconnect + backoff ✅** for read calls (branch `feature/auto-reconnect`, live-tested). Remaining: re-subscribe live subscriptions across a reconnect, and `urlChangeCallback`.
 5. **`BrainKey` + `AccountLogin`** — brain-key *derivation* ✅ (branch `feature/brainkey`) and `AccountLogin` ✅ (branch `feature/account-login`, golden-vector matched). Remaining: random brain-key **generation** (dictionary picker).
-6. **`ChainStore` / `FetchChain`** — object cache + reactive fetch.
+6. ~~**`ChainStore` / `FetchChain`**~~ ✅ done (branch `feature/chain-store`): reactive `ChainStore` (subscription-fed object cache) + `get_objects`/`get_block` fetch helpers. Remaining nicety: whole-chain reactive graph rather than explicit-id scope.
 7. ~~**`crypto_api`**~~ ✅ done · ~~**`orders_api`** (grouped order book)~~ ✅ done — both on branch `feature/sdk-apis`. ~~Raw `get_limit_orders`~~ ✅ done (branch `feature/get-limit-orders`): ergonomic builder `DatabaseApi::limit_orders(base, quote)`, live-tested.
 8. ~~**`ChainValidation`**~~ ✅ done (branch `feature/chain-validation`): `is_account_name` / `is_account_name_allow_short` / `is_cheap_name` in core, verbatim bitsharesjs.
