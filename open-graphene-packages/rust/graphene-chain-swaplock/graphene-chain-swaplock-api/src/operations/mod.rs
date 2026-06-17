@@ -10,7 +10,10 @@ mod sign_transfer;
 mod transaction;
 mod transfer;
 
-pub use account::AccountUpdateRequest;
+pub use account::{
+    AccountCreateRequest, AccountTransferRequest, AccountUpdateRequest, AccountUpgradeRequest,
+    AccountWhitelistRequest,
+};
 pub use api::OperationsApi;
 pub use asset::{AssetIssueRequest, AssetReserveRequest, AssetUpdateRequest};
 pub use call_order::CallOrderUpdateRequest;
