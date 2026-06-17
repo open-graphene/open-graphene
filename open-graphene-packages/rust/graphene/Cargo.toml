@@ -55,6 +55,10 @@ name = "swaplock_credit_offer_ops"
 path = "examples/swaplock/credit_offer_ops.rs"
 
 [[example]]
+name = "swaplock_samet_fund_ops"
+path = "examples/swaplock/samet_fund_ops.rs"
+
+[[example]]
 name = "swaplock_account_update"
 path = "examples/swaplock/account_update.rs"
 

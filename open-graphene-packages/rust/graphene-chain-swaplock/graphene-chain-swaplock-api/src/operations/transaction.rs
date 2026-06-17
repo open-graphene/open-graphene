@@ -197,6 +197,11 @@ pub(super) fn set_operation_fee(
         Operation::CreditOfferAcceptOperation(operation) => operation.fee = fee,
         Operation::CreditDealRepayOperation(operation) => operation.fee = fee,
         Operation::CreditDealUpdateOperation(operation) => operation.fee = fee,
+        Operation::SametFundCreateOperation(operation) => operation.fee = fee,
+        Operation::SametFundUpdateOperation(operation) => operation.fee = fee,
+        Operation::SametFundDeleteOperation(operation) => operation.fee = fee,
+        Operation::SametFundBorrowOperation(operation) => operation.fee = fee,
+        Operation::SametFundRepayOperation(operation) => operation.fee = fee,
         other => {
             return Err(SwaplockApiError::InvalidTransfer {
                 message: format!(
@@ -250,6 +255,11 @@ fn operation_name(operation: &Operation) -> &'static str {
         Operation::CreditOfferAcceptOperation(_) => "credit_offer_accept",
         Operation::CreditDealRepayOperation(_) => "credit_deal_repay",
         Operation::CreditDealUpdateOperation(_) => "credit_deal_update",
+        Operation::SametFundCreateOperation(_) => "samet_fund_create",
+        Operation::SametFundUpdateOperation(_) => "samet_fund_update",
+        Operation::SametFundDeleteOperation(_) => "samet_fund_delete",
+        Operation::SametFundBorrowOperation(_) => "samet_fund_borrow",
+        Operation::SametFundRepayOperation(_) => "samet_fund_repay",
         _ => "unknown",
     }
 }

@@ -26,6 +26,10 @@ use super::liquidity_pool::{
     LiquidityPoolExchangeRequest, LiquidityPoolUpdateRequest, LiquidityPoolWithdrawRequest,
 };
 use super::proposal::ProposalCreateRequest;
+use super::samet_fund::{
+    SametFundBorrowRequest, SametFundCreateRequest, SametFundDeleteRequest, SametFundRepayRequest,
+    SametFundUpdateRequest,
+};
 use super::sign_transfer::sign_transfer_with_wif;
 use super::transaction::TransactionBuilder;
 use super::transfer::{PreparedTransfer, SignedTransfer, TransferRequest};
@@ -300,6 +304,53 @@ impl<'session> OperationsApi<'session> {
         auto_repay: u8,
     ) -> CreditDealUpdateRequest<'session> {
         CreditDealUpdateRequest::new(self.session, account, deal_id, auto_repay)
+    }
+
+    /// Post a SameT fund for flash-loan borrowing: `owner_account` commits `balance` of `asset_type`.
+    pub fn samet_fund_create(
+        self,
+        owner_account: impl Into<String>,
+        asset_type: impl Into<String>,
+        balance: i64,
+    ) -> SametFundCreateRequest<'session> {
+        SametFundCreateRequest::new(self.session, owner_account, asset_type, balance)
+    }
+
+    /// Change a live SameT fund in place: `owner_account`, the `fund_id`, then partial setters.
+    pub fn samet_fund_update(
+        self,
+        owner_account: impl Into<String>,
+        fund_id: impl Into<String>,
+    ) -> SametFundUpdateRequest<'session> {
+        SametFundUpdateRequest::new(self.session, owner_account, fund_id)
+    }
+
+    /// Withdraw a SameT fund you own, reclaiming its balance.
+    pub fn samet_fund_delete(
+        self,
+        owner_account: impl Into<String>,
+        fund_id: impl Into<String>,
+    ) -> SametFundDeleteRequest<'session> {
+        SametFundDeleteRequest::new(self.session, owner_account, fund_id)
+    }
+
+    /// Take a flash loan from a fund: `borrower`, the `fund_id`, then `.amount(..)`. Pair with
+    /// `samet_fund_repay` in the same transaction.
+    pub fn samet_fund_borrow(
+        self,
+        borrower: impl Into<String>,
+        fund_id: impl Into<String>,
+    ) -> SametFundBorrowRequest<'session> {
+        SametFundBorrowRequest::new(self.session, borrower, fund_id)
+    }
+
+    /// Repay a flash loan: `account`, the `fund_id`, then `.repay(..)` and `.fund_fee(..)`.
+    pub fn samet_fund_repay(
+        self,
+        account: impl Into<String>,
+        fund_id: impl Into<String>,
+    ) -> SametFundRepayRequest<'session> {
+        SametFundRepayRequest::new(self.session, account, fund_id)
     }
 
     /// Open a liquidity pool for an asset pair: `account` owns it, then `.assets(a, b)` and
