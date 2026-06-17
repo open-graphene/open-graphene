@@ -11,6 +11,10 @@ use open_graphene_core::{AmountError, BalanceError, HeaderError, ObjectIdError};
 use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
 
+// Chain-agnostic account-name validation lives in core; re-exported here so it sits on the SDK
+// surface next to the calls that take account names.
+pub use open_graphene_core::{is_account_name, is_account_name_allow_short, is_cheap_name};
+
 pub use open_graphene_transport::{
     ChainIdMismatch, ConnectionStrategy, ServerConnectFailure, ServerLatency,
 };

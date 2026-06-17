@@ -83,7 +83,7 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 | `propose` / proposal wrapping | ✅ | ❌ | `ProposalCreateOperation` serializable, not wired |
 | `ChainStore` — object cache + reactive updates | ✅ | ❌ | none |
 | `FetchChain` / `FetchChainObjects` | ✅ | ⚠️ 🥸 | typed direct getters (`get_account_by_name`, etc.) plus the generic **`get_objects`** escape hatch — `DatabaseApi::objects(ids).get()` / `get_objects(ids)` returns raw JSON for any object ids, **live-tested** (branch `feature/get-objects`); plus `DatabaseApi::block(num).get()` / `get_block(num)` returns a block (raw JSON, `None` past the head), **live-tested** (branch `feature/get-block`), with `block_header(num)` / `get_block_header(num)` for the header alone (branch `feature/get-block-header`); plus `DatabaseApi::key_references(keys).get()` / `get_key_references(keys)` maps public keys to the accounts that reference them, **live-tested** (branch `feature/get-key-references`). Missing: the reactive `ChainStore` cache (next row) |
-| `ChainValidation` (`is_account_name`, `is_cheap_name`) | ✅ | ❌ | none |
+| `ChainValidation` (`is_account_name`, `is_cheap_name`) | ✅ | ✅ 🥸 | **DONE** (branch `feature/chain-validation`): `core::validation::{is_account_name, is_account_name_allow_short, is_cheap_name}`, verbatim bitsharesjs rules (3–63 chars, dotted labels, no `--`; `y` is a vowel), unit-tested. Chain-agnostic so it lives in core; re-exported through the SDK surface |
 | `ObjectId` helpers | ✅ | ✅ | via `fc` |
 | `NumberUtils` | ✅ | ⚠️ | amount helpers only |
 | `TransactionHelper` | ✅ | ⚠️ | covered implicitly by transfer prepare |
@@ -120,4 +120,4 @@ Bindings serialize **all 81** operations. The ergonomic builder API exposes **1*
 5. **`BrainKey` + `AccountLogin`** — brain-key *derivation* ✅ (branch `feature/brainkey`) and `AccountLogin` ✅ (branch `feature/account-login`, golden-vector matched). Remaining: random brain-key **generation** (dictionary picker).
 6. **`ChainStore` / `FetchChain`** — object cache + reactive fetch.
 7. ~~**`crypto_api`**~~ ✅ done · ~~**`orders_api`** (grouped order book)~~ ✅ done — both on branch `feature/sdk-apis`. ~~Raw `get_limit_orders`~~ ✅ done (branch `feature/get-limit-orders`): ergonomic builder `DatabaseApi::limit_orders(base, quote)`, live-tested.
-8. **`ChainValidation`** — account-name validation helpers.
+8. ~~**`ChainValidation`**~~ ✅ done (branch `feature/chain-validation`): `is_account_name` / `is_account_name_allow_short` / `is_cheap_name` in core, verbatim bitsharesjs.
