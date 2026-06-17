@@ -26,7 +26,7 @@ pub use crypto::{
 };
 
 pub use live::{
-    SwaplockLiveAccountBalancesByIdRequest, SwaplockLiveAccountBalancesSubscription,
+    ChainStore, SwaplockLiveAccountBalancesByIdRequest, SwaplockLiveAccountBalancesSubscription,
     SwaplockLiveAccountByIdRequest, SwaplockLiveAccountHistoryByIdRequest,
     SwaplockLiveAccountHistoryRequest, SwaplockLiveAccountHistorySubscription,
     SwaplockLiveAccountOrdersByIdRequest, SwaplockLiveAccountOrdersSubscription,

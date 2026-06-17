@@ -1,3 +1,4 @@
+mod chain_store;
 mod database;
 mod history;
 mod network_broadcast;
@@ -8,6 +9,7 @@ use open_graphene_transport::{ApiIds, CallbackId, GrapheneSession, LiveTransport
 
 use crate::SwaplockApiError;
 
+pub use chain_store::ChainStore;
 pub use database::{
     SwaplockLiveAccountBalancesByIdRequest, SwaplockLiveAccountBalancesSubscription,
     SwaplockLiveAccountByIdRequest, SwaplockLiveAccountOrdersByIdRequest,
