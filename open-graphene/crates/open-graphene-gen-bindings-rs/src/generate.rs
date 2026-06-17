@@ -646,18 +646,17 @@ fn render_fc_transaction_helpers(out: &mut String, protocol: &Protocol) {
 
 fn render_fc_struct_impls(out: &mut String, protocol: &Protocol) -> Result<BTreeSet<String>> {
     let supported_structs = fc_supported_struct_names(protocol);
+    let extension_structs = extension_struct_names(protocol);
 
     for struct_def in sorted_structs(&protocol.structs) {
         if !supported_structs.contains(&struct_def.name) {
             continue;
         }
 
-        if struct_def.name == "account_create_operation_ext" {
-            render_fc_account_create_operation_ext_impl(out);
-            continue;
-        }
-        if struct_def.name == "additional_asset_options" {
-            render_fc_additional_asset_options_impl(out);
+        // A struct standing in for a graphene `extension<T>` serializes count-prefixed (a varint
+        // of how many members are set), not as a plain run of optionals. Empty is a single `0`.
+        if extension_structs.contains(&struct_def.name) {
+            render_fc_extension_struct_impl(out, &struct_def);
             continue;
         }
 
@@ -682,32 +681,64 @@ fn render_fc_struct_impls(out: &mut String, protocol: &Protocol) -> Result<BTree
     Ok(supported_structs)
 }
 
-fn render_fc_account_create_operation_ext_impl(out: &mut String) {
-    out.push_str("impl FcSerialize for crate::generated::types::AccountCreateOperationExt {\n");
-    out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
-    out.push_str("        if self.null_ext.is_none() && self.owner_special_authority.is_none() && self.active_special_authority.is_none() {\n");
-    out.push_str("            write_varint(0u64, out);\n");
-    out.push_str("            return Ok(());\n");
-    out.push_str("        }\n");
-    out.push_str("        Err(FcSerializeError::UnsupportedValue {\n");
-    out.push_str("            type_name: \"account_create_operation_ext\",\n");
-    out.push_str("            reason: \"non-empty account_create operation extensions are not supported by FC serialization yet\",\n");
-    out.push_str("        })\n");
-    out.push_str("    }\n");
-    out.push_str("}\n\n");
+/// Struct names that stand in for a graphene `extension<T>`: anything referenced as the type of an
+/// `extensions` field (the `flat_set<future_extension>` variant is an array, not a struct ref, so
+/// it never lands here).
+fn extension_struct_names(protocol: &Protocol) -> BTreeSet<String> {
+    let mut names = BTreeSet::new();
+    let mut collect = |fields: &[FieldDef]| {
+        for field in fields {
+            if field.name == "extensions"
+                && let TypeRef::Ref { name } = &field.ty
+            {
+                names.insert(name.clone());
+            }
+        }
+    };
+    for struct_def in &protocol.structs {
+        collect(&struct_def.fields);
+    }
+    for operation in &protocol.operations {
+        collect(&operation.fields);
+    }
+    names
 }
 
-fn render_fc_additional_asset_options_impl(out: &mut String) {
-    out.push_str("impl FcSerialize for crate::generated::types::AdditionalAssetOptions {\n");
+/// FC encoding for a `extension<T>` struct: a varint count of set members followed by each set
+/// member. An empty set (the common case) is a single `0`. Setting members is rejected for now,
+/// the same stance the hand-written impls took, until per-member encoding is wired up.
+fn render_fc_extension_struct_impl(out: &mut String, struct_def: &StructDef) {
+    let struct_name = rust_type_name(&struct_def.name);
+    out.push_str(&format!(
+        "impl FcSerialize for crate::generated::types::{struct_name} {{\n"
+    ));
     out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
-    out.push_str("        if self.reward_percent.is_none() && self.whitelist_market_fee_sharing.is_none() && self.taker_fee_percent.is_none() {\n");
-    out.push_str("            write_varint(0u64, out);\n");
-    out.push_str("            return Ok(());\n");
-    out.push_str("        }\n");
-    out.push_str("        Err(FcSerializeError::UnsupportedValue {\n");
-    out.push_str("            type_name: \"additional_asset_options\",\n");
-    out.push_str("            reason: \"non-empty additional asset options are not supported by FC serialization yet\",\n");
-    out.push_str("        })\n");
+
+    let mut fields = struct_def.fields.clone();
+    fields.sort_by_key(|field| field.index);
+
+    if fields.is_empty() {
+        out.push_str("        write_varint(0u64, out);\n");
+        out.push_str("        Ok(())\n");
+    } else {
+        let empty_check = fields
+            .iter()
+            .map(|field| format!("self.{}.is_none()", rust_field_name(&field.name)))
+            .collect::<Vec<_>>()
+            .join(" && ");
+        out.push_str(&format!("        if {empty_check} {{\n"));
+        out.push_str("            write_varint(0u64, out);\n");
+        out.push_str("            return Ok(());\n");
+        out.push_str("        }\n");
+        out.push_str("        Err(FcSerializeError::UnsupportedValue {\n");
+        out.push_str(&format!(
+            "            type_name: \"{}\",\n",
+            struct_def.name
+        ));
+        out.push_str("            reason: \"non-empty graphene extension set is not supported by FC serialization yet\",\n");
+        out.push_str("        })\n");
+    }
+
     out.push_str("    }\n");
     out.push_str("}\n\n");
 }
