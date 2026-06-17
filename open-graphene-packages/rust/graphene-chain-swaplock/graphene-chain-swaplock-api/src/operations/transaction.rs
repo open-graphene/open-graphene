@@ -221,6 +221,7 @@ pub(super) fn set_operation_fee(
         Operation::TransferToBlindOperation(operation) => operation.fee = fee,
         Operation::BlindTransferOperation(operation) => operation.fee = fee,
         Operation::TransferFromBlindOperation(operation) => operation.fee = fee,
+        Operation::OverrideTransferOperation(operation) => operation.fee = fee,
         other => {
             return Err(SwaplockApiError::InvalidTransfer {
                 message: format!(
@@ -298,6 +299,7 @@ fn operation_name(operation: &Operation) -> &'static str {
         Operation::TransferToBlindOperation(_) => "transfer_to_blind",
         Operation::BlindTransferOperation(_) => "blind_transfer",
         Operation::TransferFromBlindOperation(_) => "transfer_from_blind",
+        Operation::OverrideTransferOperation(_) => "override_transfer",
         _ => "unknown",
     }
 }

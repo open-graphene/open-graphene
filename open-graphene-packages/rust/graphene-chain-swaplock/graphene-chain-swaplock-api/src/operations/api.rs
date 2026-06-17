@@ -11,6 +11,7 @@ use super::asset_admin::{
     AssetClaimFeesRequest, AssetClaimPoolRequest, AssetCreateRequest, AssetFundFeePoolRequest,
     AssetGlobalSettleRequest, AssetPublishFeedRequest, AssetSettleRequest,
     AssetUpdateBitassetRequest, AssetUpdateFeedProducersRequest, AssetUpdateIssuerRequest,
+    OverrideTransferRequest,
 };
 use super::blind::{BlindTransferRequest, TransferFromBlindRequest, TransferToBlindRequest};
 use super::call_order::CallOrderUpdateRequest;
@@ -220,6 +221,17 @@ impl<'session> OperationsApi<'session> {
         asset: impl Into<String>,
     ) -> AssetPublishFeedRequest<'session> {
         AssetPublishFeedRequest::new(self.session, publisher, asset)
+    }
+
+    /// As the asset's issuer, forcibly move it from `from` to `to` (asset must allow override): then
+    /// `.amount(..)` and `.prepare()`.
+    pub fn override_transfer(
+        self,
+        issuer: impl Into<String>,
+        from: impl Into<String>,
+        to: impl Into<String>,
+    ) -> OverrideTransferRequest<'session> {
+        OverrideTransferRequest::new(self.session, issuer, from, to)
     }
 
     /// Change a market-pegged asset's bitasset options: `issuer`, `asset`, `short_backing_asset`.
