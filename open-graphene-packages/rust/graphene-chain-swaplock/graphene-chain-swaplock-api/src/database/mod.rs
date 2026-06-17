@@ -15,6 +15,7 @@ mod dynamic_global_properties;
 mod error;
 mod get_block;
 mod get_block_header;
+mod get_config;
 mod get_key_references;
 mod get_limit_orders;
 mod get_objects;
@@ -41,6 +42,7 @@ pub use dynamic_global_properties::{
 };
 pub use get_block::GetBlockRequest;
 pub use get_block_header::GetBlockHeaderRequest;
+pub use get_config::GetConfigRequest;
 pub use get_key_references::GetKeyReferencesRequest;
 pub use get_limit_orders::{DEFAULT_GET_LIMIT_ORDERS_LIMIT, GetLimitOrdersRequest};
 pub use get_objects::GetObjectsRequest;

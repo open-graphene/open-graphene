@@ -24,6 +24,7 @@ use super::dynamic_global_properties::{
 };
 use super::get_block::GetBlockRequest;
 use super::get_block_header::GetBlockHeaderRequest;
+use super::get_config::GetConfigRequest;
 use super::get_key_references::{GetKeyReferencesRequest, get_key_references_request};
 use super::get_limit_orders::{DEFAULT_GET_LIMIT_ORDERS_LIMIT, GetLimitOrdersRequest};
 use super::get_objects::{GetObjectsRequest, get_objects_request};
@@ -218,6 +219,13 @@ impl<'session> DatabaseApi<'session> {
         }
     }
 
+    /// Fetch the chain's compile-time constants (the `GRAPHENE_*` config parameters).
+    pub fn config(self) -> GetConfigRequest<'session> {
+        GetConfigRequest {
+            session: self.session,
+        }
+    }
+
     /// Which accounts reference each public key in their authorities; one id list per key, in order.
     pub fn key_references<L>(self, keys: L) -> GetKeyReferencesRequest<'session>
     where
@@ -309,6 +317,14 @@ impl<'session> DatabaseApi<'session> {
         GetBlockHeaderRequest {
             session: &mut *self.session,
             block_num,
+        }
+        .get()
+        .await
+    }
+
+    pub async fn get_config(&mut self) -> Result<Value, SwaplockApiError> {
+        GetConfigRequest {
+            session: &mut *self.session,
         }
         .get()
         .await
