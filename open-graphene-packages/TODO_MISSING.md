@@ -77,7 +77,7 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 | Feature | JS | open-graphene-rs | Notes |
 |---|:--:|:--:|---|
 | `TransactionBuilder` — **any** operation | ✅ | ✅ 🥸 | **DONE** (branch `feature/transaction-builder`): `OperationsApi::transaction()` → `add_operation(Operation)` → `prepare()` (DGP header + `get_required_fees`) → `sign_with_wif` → broadcast JSON. Op JSON from serde (`[op_id, body]`). **Live-tested** (transfer accepted by the node) |
-| `add_operation` for all 81 op types | ✅ | ⚠️ 🥸 | generic `add_operation(Operation)` takes any of the 81; fee write-back wired for `transfer`, `limit_order_create`, `limit_order_cancel`, `limit_order_update`, `asset_issue`, `asset_reserve` — each new op is one `set_operation_fee` arm |
+| `add_operation` for all 81 op types | ✅ | ⚠️ 🥸 | generic `add_operation(Operation)` takes any of the 81; fee write-back wired for `transfer`, `limit_order_create`, `limit_order_cancel`, `limit_order_update`, `asset_issue`, `asset_reserve`, `asset_update`, `account_update` — each new op is one `set_operation_fee` arm |
 | `set_required_fees` (auto fee lookup) | ✅ | ⚠️ | transfer supports `fee` / `max_fee`; no generic fee resolver |
 | Sign + broadcast pipeline | ✅ | ✅ 🥸 | generic via `TransactionBuilder`: `prepare → sign_with_wif → broadcast` for any supported op (plus the transfer-specific helper) |
 | `propose` / proposal wrapping | ✅ | ❌ | `ProposalCreateOperation` serializable, not wired |
@@ -99,7 +99,7 @@ Bindings serialize **all 81** operations. The ergonomic builder API exposes **1*
 |---|:--:|:--:|
 | Transfer | ✅ | ✅ |
 | Account (create/update/upgrade/whitelist/transfer) | ✅ (5) | ⚠️ 🥸 | `account_update` has an ergonomic partial-update builder (`OperationsApi::account_update(id).memo_key(..)/.voting_account(..)/.num_witness(..)/.num_committee(..)/.votes(..)`), fetching current options and applying only what you set, **live-tested memo_key change→revert** (branch `feature/account-update`). Unblocked by the `extension<>` encoding fix in the binding generator (branch `fix/generator-extension-encoding`); owner/active authority changes are still out of scope. The other 4 account ops stay binding-only |
-| Asset (create/update/issue/reserve/settle/publish_feed/…) | ✅ (~18) | ⚠️ 🥸 | `asset_issue` + `asset_reserve` have ergonomic builders (`OperationsApi::asset_issue(issuer).issue(amt, id).to(acc)`, `asset_reserve(payer).amount(amt, id)`), **live-tested issue→reserve round-trip** (branch `feature/asset-issue-reserve`); the other ~16 asset ops stay binding-only |
+| Asset (create/update/issue/reserve/settle/publish_feed/…) | ✅ (~18) | ⚠️ 🥸 | `asset_issue` + `asset_reserve` (`OperationsApi::asset_issue(issuer).issue(amt, id).to(acc)`, `asset_reserve(payer).amount(amt, id)`), **live-tested issue→reserve round-trip** (branch `feature/asset-issue-reserve`), plus `asset_update` partial-update builder (`asset_update(issuer, asset).description(..)/.max_supply(..)/.market_fee_percent(..)/.max_market_fee(..)/.flags(..)/.new_issuer(..)`), **live-tested description change→revert** (branch `feature/asset-update`); the other ~15 asset ops stay binding-only |
 | Markets (limit_order create/cancel/update, call_order_update) | ✅ (4) | ⚠️ 🥸 | `limit_order_create` + `limit_order_cancel` + `limit_order_update` have ergonomic builders (`OperationsApi::limit_order_*`), **live-tested create→update→cancel** (branches `feature/limit-orders`, `feature/limit-order-update`); `call_order_update` still binding-only |
 | Liquidity pools (create/delete/deposit/withdraw/exchange/update) | ✅ (6) | ❌ |
 | HTLC (create/redeem/extend/refund) | ✅ (4) | ❌ |
@@ -113,7 +113,7 @@ Bindings serialize **all 81** operations. The ergonomic builder API exposes **1*
 
 ## Priority gaps (to reach JS parity)
 
-1. **Generic `TransactionBuilder`** ✅ done (branch `feature/transaction-builder`, live-tested). Remaining: add a `set_operation_fee` arm per operation as they're needed (6 wired so far) and ergonomic per-op request builders if wanted.
+1. **Generic `TransactionBuilder`** ✅ done (branch `feature/transaction-builder`, live-tested). Remaining: add a `set_operation_fee` arm per operation as they're needed (8 wired so far) and ergonomic per-op request builders if wanted.
 2. ~~**`Aes` memo encrypt/decrypt**~~ ✅ done (branch `feature/aes-memo`): `encrypt_with_checksum`/`decrypt_with_checksum` + `get_shared_secret`, verbatim bitsharesjs port.
 3. **`PrivateKey`/`PublicKey` types** — ✅ done (branches `feature/keys`, `feature/aes-memo`): WIF/seed/derive/sign/verify/recover/public-key-string + `get_shared_secret`. Remaining: **`Address` strings, child derivation** (unblocks `AccountLogin` #5).
 4. **`ConnectionManager`** — failover + latency sort ✅ done (branch `feature/sdk-apis`); **auto-reconnect/backoff + `urlChangeCallback` still missing** (row "Auto-reconnect (`ChainWebSocket`)" ❌), so the entity is ⚠️ partial.

@@ -161,6 +161,7 @@ fn set_operation_fee(operation: &mut Operation, fee: Asset) -> Result<(), Swaplo
         Operation::LimitOrderUpdateOperation(operation) => operation.fee = fee,
         Operation::AssetIssueOperation(operation) => operation.fee = fee,
         Operation::AssetReserveOperation(operation) => operation.fee = fee,
+        Operation::AssetUpdateOperation(operation) => operation.fee = fee,
         Operation::AccountUpdateOperation(operation) => operation.fee = fee,
         other => {
             return Err(SwaplockApiError::InvalidTransfer {
@@ -182,6 +183,7 @@ fn operation_name(operation: &Operation) -> &'static str {
         Operation::LimitOrderUpdateOperation(_) => "limit_order_update",
         Operation::AssetIssueOperation(_) => "asset_issue",
         Operation::AssetReserveOperation(_) => "asset_reserve",
+        Operation::AssetUpdateOperation(_) => "asset_update",
         Operation::AccountUpdateOperation(_) => "account_update",
         _ => "unknown",
     }
