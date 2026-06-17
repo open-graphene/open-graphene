@@ -17,6 +17,10 @@ use super::credit_offer::{
     CreditDealRepayRequest, CreditDealUpdateRequest, CreditOfferAcceptRequest,
     CreditOfferCreateRequest, CreditOfferDeleteRequest, CreditOfferUpdateRequest,
 };
+use super::governance::{
+    CommitteeMemberCreateRequest, CommitteeMemberUpdateRequest, CustomRequest,
+    WitnessCreateRequest, WitnessUpdateRequest, WorkerCreateRequest,
+};
 use super::htlc::{HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest};
 use super::limit_order::{
     LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
@@ -25,7 +29,7 @@ use super::liquidity_pool::{
     LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest,
     LiquidityPoolExchangeRequest, LiquidityPoolUpdateRequest, LiquidityPoolWithdrawRequest,
 };
-use super::proposal::ProposalCreateRequest;
+use super::proposal::{ProposalCreateRequest, ProposalDeleteRequest, ProposalUpdateRequest};
 use super::samet_fund::{
     SametFundBorrowRequest, SametFundCreateRequest, SametFundDeleteRequest, SametFundRepayRequest,
     SametFundUpdateRequest,
@@ -519,6 +523,75 @@ impl<'session> OperationsApi<'session> {
         fee_paying_account: impl Into<String>,
     ) -> ProposalCreateRequest<'session> {
         ProposalCreateRequest::new(self.session, fee_paying_account)
+    }
+
+    /// Approve or reject a live proposal: `fee_paying_account`, the `proposal` id, then the
+    /// `.approve_*`/`.unapprove_*` setters. This is how a multisig party signs off.
+    pub fn proposal_update(
+        self,
+        fee_paying_account: impl Into<String>,
+        proposal: impl Into<String>,
+    ) -> ProposalUpdateRequest<'session> {
+        ProposalUpdateRequest::new(self.session, fee_paying_account, proposal)
+    }
+
+    /// Drop a proposal before it executes: `fee_paying_account`, the `proposal` id.
+    pub fn proposal_delete(
+        self,
+        fee_paying_account: impl Into<String>,
+        proposal: impl Into<String>,
+    ) -> ProposalDeleteRequest<'session> {
+        ProposalDeleteRequest::new(self.session, fee_paying_account, proposal)
+    }
+
+    /// Register `account` as a committee member; add a page with `.url(..)`.
+    pub fn committee_member_create(
+        self,
+        account: impl Into<String>,
+    ) -> CommitteeMemberCreateRequest<'session> {
+        CommitteeMemberCreateRequest::new(self.session, account)
+    }
+
+    /// Change a committee member's page: the `committee_member` id, its `account`, then `.url(..)`.
+    pub fn committee_member_update(
+        self,
+        committee_member: impl Into<String>,
+        account: impl Into<String>,
+    ) -> CommitteeMemberUpdateRequest<'session> {
+        CommitteeMemberUpdateRequest::new(self.session, committee_member, account)
+    }
+
+    /// Register `account` as a witness with a `block_signing_key`; add a page with `.url(..)`.
+    pub fn witness_create(
+        self,
+        account: impl Into<String>,
+        block_signing_key: impl Into<String>,
+    ) -> WitnessCreateRequest<'session> {
+        WitnessCreateRequest::new(self.session, account, block_signing_key)
+    }
+
+    /// Change a witness's page or signing key: the `witness` id, its `account`, then the setters.
+    pub fn witness_update(
+        self,
+        witness: impl Into<String>,
+        account: impl Into<String>,
+    ) -> WitnessUpdateRequest<'session> {
+        WitnessUpdateRequest::new(self.session, witness, account)
+    }
+
+    /// File a worker proposal: `owner`, a `name`, then `.daily_pay(..)`, `.work_period(..)` and an
+    /// optional payout policy (`.vesting(..)`/`.burn()`, defaults to refund).
+    pub fn worker_create(
+        self,
+        owner: impl Into<String>,
+        name: impl Into<String>,
+    ) -> WorkerCreateRequest<'session> {
+        WorkerCreateRequest::new(self.session, owner, name)
+    }
+
+    /// Post a custom-payload operation: `payer`, then `.data(..)`, `.require_auth(..)`, `.id(..)`.
+    pub fn custom(self, payer: impl Into<String>) -> CustomRequest<'session> {
+        CustomRequest::new(self.session, payer)
     }
 
     pub async fn sign_transfer_with_wif(

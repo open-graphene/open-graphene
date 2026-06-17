@@ -4,6 +4,7 @@ mod asset;
 mod asset_admin;
 mod call_order;
 mod credit_offer;
+mod governance;
 mod htlc;
 mod limit_order;
 mod liquidity_pool;
@@ -32,13 +33,17 @@ pub use credit_offer::{
     CreditDealRepayRequest, CreditDealUpdateRequest, CreditOfferAcceptRequest,
     CreditOfferCreateRequest, CreditOfferDeleteRequest, CreditOfferUpdateRequest,
 };
+pub use governance::{
+    CommitteeMemberCreateRequest, CommitteeMemberUpdateRequest, CustomRequest,
+    WitnessCreateRequest, WitnessUpdateRequest, WorkerCreateRequest,
+};
 pub use htlc::{HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest};
 pub use limit_order::{LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest};
 pub use liquidity_pool::{
     LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest,
     LiquidityPoolExchangeRequest, LiquidityPoolUpdateRequest, LiquidityPoolWithdrawRequest,
 };
-pub use proposal::ProposalCreateRequest;
+pub use proposal::{ProposalCreateRequest, ProposalDeleteRequest, ProposalUpdateRequest};
 pub use samet_fund::{
     SametFundBorrowRequest, SametFundCreateRequest, SametFundDeleteRequest, SametFundRepayRequest,
     SametFundUpdateRequest,

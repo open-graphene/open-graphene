@@ -210,6 +210,14 @@ pub(super) fn set_operation_fee(
         Operation::VestingBalanceWithdrawOperation(operation) => operation.fee = fee,
         Operation::TicketCreateOperation(operation) => operation.fee = fee,
         Operation::TicketUpdateOperation(operation) => operation.fee = fee,
+        Operation::ProposalUpdateOperation(operation) => operation.fee = fee,
+        Operation::ProposalDeleteOperation(operation) => operation.fee = fee,
+        Operation::CommitteeMemberCreateOperation(operation) => operation.fee = fee,
+        Operation::CommitteeMemberUpdateOperation(operation) => operation.fee = fee,
+        Operation::WitnessCreateOperation(operation) => operation.fee = fee,
+        Operation::WitnessUpdateOperation(operation) => operation.fee = fee,
+        Operation::WorkerCreateOperation(operation) => operation.fee = fee,
+        Operation::CustomOperation(operation) => operation.fee = fee,
         other => {
             return Err(SwaplockApiError::InvalidTransfer {
                 message: format!(
@@ -276,6 +284,14 @@ fn operation_name(operation: &Operation) -> &'static str {
         Operation::VestingBalanceWithdrawOperation(_) => "vesting_balance_withdraw",
         Operation::TicketCreateOperation(_) => "ticket_create",
         Operation::TicketUpdateOperation(_) => "ticket_update",
+        Operation::ProposalUpdateOperation(_) => "proposal_update",
+        Operation::ProposalDeleteOperation(_) => "proposal_delete",
+        Operation::CommitteeMemberCreateOperation(_) => "committee_member_create",
+        Operation::CommitteeMemberUpdateOperation(_) => "committee_member_update",
+        Operation::WitnessCreateOperation(_) => "witness_create",
+        Operation::WitnessUpdateOperation(_) => "witness_update",
+        Operation::WorkerCreateOperation(_) => "worker_create",
+        Operation::CustomOperation(_) => "custom",
         _ => "unknown",
     }
 }
