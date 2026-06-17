@@ -8,6 +8,7 @@ use super::htlc::{HtlcCreateRequest, HtlcRedeemRequest};
 use super::limit_order::{
     LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
 };
+use super::liquidity_pool::{LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest};
 use super::proposal::ProposalCreateRequest;
 use super::sign_transfer::sign_transfer_with_wif;
 use super::transaction::TransactionBuilder;
@@ -98,6 +99,24 @@ impl<'session> OperationsApi<'session> {
         redeemer: impl Into<String>,
     ) -> HtlcRedeemRequest<'session> {
         HtlcRedeemRequest::new(self.session, htlc, redeemer)
+    }
+
+    /// Open a liquidity pool for an asset pair: `account` owns it, then `.assets(a, b)` and
+    /// `.share_asset(id)` (an empty user asset you issue), optional fees, then `.prepare()`.
+    pub fn liquidity_pool_create(
+        self,
+        account: impl Into<String>,
+    ) -> LiquidityPoolCreateRequest<'session> {
+        LiquidityPoolCreateRequest::new(self.session, account)
+    }
+
+    /// Close an empty liquidity pool you own, by its id.
+    pub fn liquidity_pool_delete(
+        self,
+        account: impl Into<String>,
+        pool: impl Into<String>,
+    ) -> LiquidityPoolDeleteRequest<'session> {
+        LiquidityPoolDeleteRequest::new(self.session, account, pool)
     }
 
     /// Wrap operations in a proposal paid for by `fee_paying_account`: add them with `.propose(..)`,
