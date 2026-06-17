@@ -40,11 +40,11 @@ pub use network_broadcast::{
 };
 pub use operations::{
     AccountUpdateRequest, AssetIssueRequest, AssetReserveRequest, AssetUpdateRequest,
-    CallOrderUpdateRequest, HtlcCreateRequest, HtlcRedeemRequest, LimitOrderCancelRequest,
-    LimitOrderCreateRequest, LimitOrderUpdateRequest, LiquidityPoolCreateRequest,
-    LiquidityPoolDeleteRequest, OperationsApi, PreparedTransaction, PreparedTransfer,
-    ProposalCreateRequest, SignedTransactionEnvelope, SignedTransfer, TransactionBuilder,
-    TransferRequest,
+    CallOrderUpdateRequest, HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest,
+    LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
+    LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, OperationsApi, PreparedTransaction,
+    PreparedTransfer, ProposalCreateRequest, SignedTransactionEnvelope, SignedTransfer,
+    TransactionBuilder, TransferRequest,
 };
 
 // Binding types callers need to construct operations for `OperationsApi::transaction()`.
