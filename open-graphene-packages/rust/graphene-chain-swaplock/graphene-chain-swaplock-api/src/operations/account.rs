@@ -6,9 +6,14 @@
 //! are deliberately out of scope here (build those by hand to avoid locking yourself out).
 
 use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId, VoteId};
-use graphene_chain_swaplock_bindings::generated::operations::AccountUpdateOperation;
+use graphene_chain_swaplock_bindings::generated::operations::{
+    AccountCreateOperation, AccountTransferOperation, AccountUpdateOperation,
+    AccountUpgradeOperation, AccountWhitelistOperation,
+};
 use graphene_chain_swaplock_bindings::generated::static_variants::Operation;
-use graphene_chain_swaplock_bindings::generated::types::{AccountUpdateOperationExt, Asset};
+use graphene_chain_swaplock_bindings::generated::types::{
+    AccountCreateOperationExt, AccountOptions, AccountUpdateOperationExt, Asset, Authority,
+};
 use open_graphene_transport::GrapheneSession;
 
 use crate::{DatabaseApi, SwaplockApiError};
@@ -111,6 +116,252 @@ impl<'session> AccountUpdateRequest<'session> {
                 owner_special_authority: None,
                 active_special_authority: None,
             },
+        });
+        TransactionBuilder::new(self.session)
+            .add_operation(operation)
+            .prepare()
+            .await
+    }
+}
+
+/// Build a single-key authority (one key, weight 1, threshold 1) for account creation.
+fn single_key_authority(key: String) -> Authority {
+    Authority {
+        weight_threshold: 1,
+        account_auths: vec![],
+        key_auths: vec![(key, 1)],
+        address_auths: vec![],
+    }
+}
+
+/// Builder for `account_create`: register a new account with single-key owner/active authorities.
+///
+/// `.keys(k)` sets owner, active and memo to the one public key; override any with the matching
+/// setter. The new account votes for nobody and follows the default proxy.
+pub struct AccountCreateRequest<'session> {
+    session: &'session mut GrapheneSession,
+    registrar: String,
+    name: String,
+    owner_key: Option<String>,
+    active_key: Option<String>,
+    memo_key: Option<String>,
+    referrer: Option<String>,
+    referrer_percent: u16,
+}
+
+impl<'session> AccountCreateRequest<'session> {
+    pub(super) fn new(
+        session: &'session mut GrapheneSession,
+        registrar: impl Into<String>,
+        name: impl Into<String>,
+    ) -> Self {
+        Self {
+            session,
+            registrar: registrar.into(),
+            name: name.into(),
+            owner_key: None,
+            active_key: None,
+            memo_key: None,
+            referrer: None,
+            referrer_percent: 0,
+        }
+    }
+
+    /// Set owner and active (and, unless overridden, memo) to this one public key.
+    pub fn keys(mut self, key: impl Into<String>) -> Self {
+        let key = key.into();
+        self.owner_key = Some(key.clone());
+        self.active_key = Some(key);
+        self
+    }
+
+    /// Override the owner key.
+    pub fn owner_key(mut self, key: impl Into<String>) -> Self {
+        self.owner_key = Some(key.into());
+        self
+    }
+
+    /// Override the active key.
+    pub fn active_key(mut self, key: impl Into<String>) -> Self {
+        self.active_key = Some(key.into());
+        self
+    }
+
+    /// Override the memo key (defaults to the active key).
+    pub fn memo_key(mut self, key: impl Into<String>) -> Self {
+        self.memo_key = Some(key.into());
+        self
+    }
+
+    /// The referring account and its cut in hundredths of a percent (defaults to the registrar, 0%).
+    pub fn referrer(mut self, referrer: impl Into<String>, percent: u16) -> Self {
+        self.referrer = Some(referrer.into());
+        self.referrer_percent = percent;
+        self
+    }
+
+    pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
+        let owner_key = self
+            .owner_key
+            .ok_or(SwaplockApiError::MissingTransferField { field: "owner_key" })?;
+        let active_key = self
+            .active_key
+            .ok_or(SwaplockApiError::MissingTransferField {
+                field: "active_key",
+            })?;
+        let memo_key = self.memo_key.unwrap_or_else(|| active_key.clone());
+        let referrer = self.referrer.unwrap_or_else(|| self.registrar.clone());
+
+        let operation = Operation::account_create(AccountCreateOperation {
+            fee: Asset::new(0, AssetId("1.3.0".to_string())),
+            registrar: AccountId(self.registrar),
+            referrer: AccountId(referrer),
+            referrer_percent: self.referrer_percent,
+            name: self.name,
+            owner: single_key_authority(owner_key),
+            active: single_key_authority(active_key),
+            options: AccountOptions {
+                memo_key,
+                voting_account: AccountId("1.2.5".to_string()),
+                num_witness: 0,
+                num_committee: 0,
+                votes: vec![],
+                extensions: vec![],
+            },
+            extensions: AccountCreateOperationExt {
+                null_ext: None,
+                owner_special_authority: None,
+                active_special_authority: None,
+            },
+        });
+        TransactionBuilder::new(self.session)
+            .add_operation(operation)
+            .prepare()
+            .await
+    }
+}
+
+/// Builder for `account_upgrade`: turn an account into a lifetime member.
+pub struct AccountUpgradeRequest<'session> {
+    session: &'session mut GrapheneSession,
+    account: String,
+    upgrade_to_lifetime_member: bool,
+}
+
+impl<'session> AccountUpgradeRequest<'session> {
+    pub(super) fn new(session: &'session mut GrapheneSession, account: impl Into<String>) -> Self {
+        Self {
+            session,
+            account: account.into(),
+            upgrade_to_lifetime_member: true,
+        }
+    }
+
+    /// Whether to upgrade to lifetime membership (default true).
+    pub fn lifetime_member(mut self, upgrade: bool) -> Self {
+        self.upgrade_to_lifetime_member = upgrade;
+        self
+    }
+
+    pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
+        let operation = Operation::account_upgrade(AccountUpgradeOperation {
+            fee: Asset::new(0, AssetId("1.3.0".to_string())),
+            account_to_upgrade: AccountId(self.account),
+            upgrade_to_lifetime_member: self.upgrade_to_lifetime_member,
+            extensions: vec![],
+        });
+        TransactionBuilder::new(self.session)
+            .add_operation(operation)
+            .prepare()
+            .await
+    }
+}
+
+/// Builder for `account_whitelist`: `authorizing_account` lists `account_to_list`.
+///
+/// The listing flag is a bitfield: `0` no listing, `1` white-listed, `2` black-listed.
+pub struct AccountWhitelistRequest<'session> {
+    session: &'session mut GrapheneSession,
+    authorizing_account: String,
+    account_to_list: String,
+    new_listing: u8,
+}
+
+impl<'session> AccountWhitelistRequest<'session> {
+    pub(super) fn new(
+        session: &'session mut GrapheneSession,
+        authorizing_account: impl Into<String>,
+        account_to_list: impl Into<String>,
+    ) -> Self {
+        Self {
+            session,
+            authorizing_account: authorizing_account.into(),
+            account_to_list: account_to_list.into(),
+            new_listing: 0,
+        }
+    }
+
+    /// Set the raw listing bitfield (0 none, 1 white, 2 black).
+    pub fn listing(mut self, new_listing: u8) -> Self {
+        self.new_listing = new_listing;
+        self
+    }
+
+    /// White-list the account.
+    pub fn white_listed(mut self) -> Self {
+        self.new_listing = 1;
+        self
+    }
+
+    /// Black-list the account.
+    pub fn black_listed(mut self) -> Self {
+        self.new_listing = 2;
+        self
+    }
+
+    pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
+        let operation = Operation::account_whitelist(AccountWhitelistOperation {
+            fee: Asset::new(0, AssetId("1.3.0".to_string())),
+            authorizing_account: AccountId(self.authorizing_account),
+            account_to_list: AccountId(self.account_to_list),
+            new_listing: self.new_listing,
+            extensions: vec![],
+        });
+        TransactionBuilder::new(self.session)
+            .add_operation(operation)
+            .prepare()
+            .await
+    }
+}
+
+/// Builder for `account_transfer`: hand an account over to a new owner account.
+///
+/// This gives away control of the account; use with care.
+pub struct AccountTransferRequest<'session> {
+    session: &'session mut GrapheneSession,
+    account: String,
+    new_owner: String,
+}
+
+impl<'session> AccountTransferRequest<'session> {
+    pub(super) fn new(
+        session: &'session mut GrapheneSession,
+        account: impl Into<String>,
+        new_owner: impl Into<String>,
+    ) -> Self {
+        Self {
+            session,
+            account: account.into(),
+            new_owner: new_owner.into(),
+        }
+    }
+
+    pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
+        let operation = Operation::account_transfer(AccountTransferOperation {
+            fee: Asset::new(0, AssetId("1.3.0".to_string())),
+            account_id: AccountId(self.account),
+            new_owner: AccountId(self.new_owner),
+            extensions: vec![],
         });
         TransactionBuilder::new(self.session)
             .add_operation(operation)

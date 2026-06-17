@@ -39,7 +39,8 @@ pub use network_broadcast::{
     BroadcastConfirmation, BroadcastReceipt, NetworkBroadcastApi, PendingBroadcastConfirmation,
 };
 pub use operations::{
-    AccountUpdateRequest, AssetIssueRequest, AssetReserveRequest, AssetUpdateRequest,
+    AccountCreateRequest, AccountTransferRequest, AccountUpdateRequest, AccountUpgradeRequest,
+    AccountWhitelistRequest, AssetIssueRequest, AssetReserveRequest, AssetUpdateRequest,
     CallOrderUpdateRequest, HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest,
     LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
     LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest,

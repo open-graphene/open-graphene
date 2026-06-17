@@ -2,7 +2,10 @@ use open_graphene_transport::GrapheneSession;
 
 use crate::SwaplockApiError;
 
-use super::account::AccountUpdateRequest;
+use super::account::{
+    AccountCreateRequest, AccountTransferRequest, AccountUpdateRequest, AccountUpgradeRequest,
+    AccountWhitelistRequest,
+};
 use super::asset::{AssetIssueRequest, AssetReserveRequest, AssetUpdateRequest};
 use super::call_order::CallOrderUpdateRequest;
 use super::htlc::{HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest};
@@ -63,6 +66,38 @@ impl<'session> OperationsApi<'session> {
     /// change (memo key, voting proxy, witness/committee counts, votes) before `.prepare()`.
     pub fn account_update(self, account: impl Into<String>) -> AccountUpdateRequest<'session> {
         AccountUpdateRequest::new(self.session, account)
+    }
+
+    /// Register a new account: `registrar` pays, `name` is the new account, then `.keys(pubkey)`.
+    pub fn account_create(
+        self,
+        registrar: impl Into<String>,
+        name: impl Into<String>,
+    ) -> AccountCreateRequest<'session> {
+        AccountCreateRequest::new(self.session, registrar, name)
+    }
+
+    /// Upgrade an account to lifetime membership.
+    pub fn account_upgrade(self, account: impl Into<String>) -> AccountUpgradeRequest<'session> {
+        AccountUpgradeRequest::new(self.session, account)
+    }
+
+    /// White/black-list an account: `authorizing_account` lists `account_to_list`.
+    pub fn account_whitelist(
+        self,
+        authorizing_account: impl Into<String>,
+        account_to_list: impl Into<String>,
+    ) -> AccountWhitelistRequest<'session> {
+        AccountWhitelistRequest::new(self.session, authorizing_account, account_to_list)
+    }
+
+    /// Hand an account over to a new owner account (gives away control).
+    pub fn account_transfer(
+        self,
+        account: impl Into<String>,
+        new_owner: impl Into<String>,
+    ) -> AccountTransferRequest<'session> {
+        AccountTransferRequest::new(self.session, account, new_owner)
     }
 
     /// Mint units of a user asset you issue and send them to an account: `issuer` is you, then
