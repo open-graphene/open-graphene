@@ -299,7 +299,7 @@ impl FcSerialize for crate::generated::types::AccountCreateOperationExt {
         }
         Err(FcSerializeError::UnsupportedValue {
             type_name: "account_create_operation_ext",
-            reason: "non-empty account_create operation extensions are not supported by FC serialization yet",
+            reason: "non-empty graphene extension set is not supported by FC serialization yet",
         })
     }
 }
@@ -352,10 +352,14 @@ impl FcSerialize for crate::generated::types::AccountTransferOperationFeeParamsT
 
 impl FcSerialize for crate::generated::types::AccountUpdateOperationExt {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        self.null_ext.fc_serialize(out)?;
-        self.owner_special_authority.fc_serialize(out)?;
-        self.active_special_authority.fc_serialize(out)?;
-        Ok(())
+        if self.null_ext.is_none() && self.owner_special_authority.is_none() && self.active_special_authority.is_none() {
+            write_varint(0u64, out);
+            return Ok(());
+        }
+        Err(FcSerializeError::UnsupportedValue {
+            type_name: "account_update_operation_ext",
+            reason: "non-empty graphene extension set is not supported by FC serialization yet",
+        })
     }
 }
 
@@ -388,7 +392,7 @@ impl FcSerialize for crate::generated::types::AdditionalAssetOptions {
         }
         Err(FcSerializeError::UnsupportedValue {
             type_name: "additional_asset_options",
-            reason: "non-empty additional asset options are not supported by FC serialization yet",
+            reason: "non-empty graphene extension set is not supported by FC serialization yet",
         })
     }
 }
@@ -410,8 +414,14 @@ impl FcSerialize for crate::generated::types::Asset {
 
 impl FcSerialize for crate::generated::types::AssetClaimFeesOperationAdditionalOptionsType {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        self.claim_from_asset_id.fc_serialize(out)?;
-        Ok(())
+        if self.claim_from_asset_id.is_none() {
+            write_varint(0u64, out);
+            return Ok(());
+        }
+        Err(FcSerializeError::UnsupportedValue {
+            type_name: "asset_claim_fees_operation_additional_options_type",
+            reason: "non-empty graphene extension set is not supported by FC serialization yet",
+        })
     }
 }
 
@@ -542,8 +552,14 @@ impl FcSerialize for crate::generated::types::AssetOptions {
 
 impl FcSerialize for crate::generated::types::AssetPublishFeedOperationExt {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        self.initial_collateral_ratio.fc_serialize(out)?;
-        Ok(())
+        if self.initial_collateral_ratio.is_none() {
+            write_varint(0u64, out);
+            return Ok(());
+        }
+        Err(FcSerializeError::UnsupportedValue {
+            type_name: "asset_publish_feed_operation_ext",
+            reason: "non-empty graphene extension set is not supported by FC serialization yet",
+        })
     }
 }
 
@@ -606,7 +622,7 @@ impl FcSerialize for crate::generated::types::AssetUpdateIssuerOperationFeeParam
 
 impl FcSerialize for crate::generated::types::AssetUpdateOperationExt {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        let _ = out;
+        write_varint(0u64, out);
         Ok(())
     }
 }
@@ -681,8 +697,14 @@ impl FcSerialize for crate::generated::types::BitassetOptions {
 
 impl FcSerialize for crate::generated::types::BitassetOptionsExt {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        self.initial_collateral_ratio.fc_serialize(out)?;
-        Ok(())
+        if self.initial_collateral_ratio.is_none() {
+            write_varint(0u64, out);
+            return Ok(());
+        }
+        Err(FcSerializeError::UnsupportedValue {
+            type_name: "bitasset_options_ext",
+            reason: "non-empty graphene extension set is not supported by FC serialization yet",
+        })
     }
 }
 
@@ -778,11 +800,14 @@ impl FcSerialize for crate::generated::types::ChainParameters {
 
 impl FcSerialize for crate::generated::types::ChainParametersExt {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        self.updatable_htlc_options.fc_serialize(out)?;
-        self.custom_authority_options.fc_serialize(out)?;
-        self.market_fee_network_percent.fc_serialize(out)?;
-        self.maker_fee_discount_percent.fc_serialize(out)?;
-        Ok(())
+        if self.updatable_htlc_options.is_none() && self.custom_authority_options.is_none() && self.market_fee_network_percent.is_none() && self.maker_fee_discount_percent.is_none() {
+            write_varint(0u64, out);
+            return Ok(());
+        }
+        Err(FcSerializeError::UnsupportedValue {
+            type_name: "chain_parameters_ext",
+            reason: "non-empty graphene extension set is not supported by FC serialization yet",
+        })
     }
 }
 
@@ -851,8 +876,14 @@ impl FcSerialize for crate::generated::types::CreditDealUpdateOperationFeeParams
 
 impl FcSerialize for crate::generated::types::CreditOfferAcceptOperationExt {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        self.auto_repay.fc_serialize(out)?;
-        Ok(())
+        if self.auto_repay.is_none() {
+            write_varint(0u64, out);
+            return Ok(());
+        }
+        Err(FcSerializeError::UnsupportedValue {
+            type_name: "credit_offer_accept_operation_ext",
+            reason: "non-empty graphene extension set is not supported by FC serialization yet",
+        })
     }
 }
 
@@ -993,8 +1024,14 @@ impl FcSerialize for crate::generated::types::GlobalPropertyObject {
 
 impl FcSerialize for crate::generated::types::HtlcCreateOperationAdditionalOptionsType {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        self.memo.fc_serialize(out)?;
-        Ok(())
+        if self.memo.is_none() {
+            write_varint(0u64, out);
+            return Ok(());
+        }
+        Err(FcSerializeError::UnsupportedValue {
+            type_name: "htlc_create_operation_additional_options_type",
+            reason: "non-empty graphene extension set is not supported by FC serialization yet",
+        })
     }
 }
 

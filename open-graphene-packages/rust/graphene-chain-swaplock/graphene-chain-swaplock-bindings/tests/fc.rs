@@ -681,8 +681,9 @@ fn expected_fee_schedule_payload() -> Vec<u8> {
 
 fn expected_chain_parameters_payload() -> Vec<u8> {
     let mut bytes = expected_fee_schedule_payload();
-    // remaining scalar chain_parameters fields are zero in sample_chain_parameters.
-    bytes.extend(vec![0; 88]);
+    // remaining scalar chain_parameters fields are zero in sample_chain_parameters, then the empty
+    // chain_parameters_ext extension set is a single varint 0.
+    bytes.extend(vec![0; 85]);
     bytes
 }
 
