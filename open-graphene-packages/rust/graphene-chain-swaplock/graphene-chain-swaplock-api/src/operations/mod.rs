@@ -1,7 +1,9 @@
 mod account;
 mod api;
+mod assert;
 mod asset;
 mod asset_admin;
+mod balance_claim;
 mod blind;
 mod call_order;
 mod credit_offer;
@@ -24,6 +26,7 @@ pub use account::{
     AccountWhitelistRequest,
 };
 pub use api::OperationsApi;
+pub use assert::AssertRequest;
 pub use asset::{AssetIssueRequest, AssetReserveRequest, AssetUpdateRequest};
 pub use asset_admin::{
     AssetClaimFeesRequest, AssetClaimPoolRequest, AssetCreateRequest, AssetFundFeePoolRequest,
@@ -31,6 +34,7 @@ pub use asset_admin::{
     AssetUpdateBitassetRequest, AssetUpdateFeedProducersRequest, AssetUpdateIssuerRequest,
     OverrideTransferRequest,
 };
+pub use balance_claim::BalanceClaimRequest;
 pub use blind::{BlindTransferRequest, TransferFromBlindRequest, TransferToBlindRequest};
 pub use call_order::CallOrderUpdateRequest;
 pub use credit_offer::{
