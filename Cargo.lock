@@ -591,6 +591,7 @@ dependencies = [
  "aes",
  "bs58",
  "cbc",
+ "hex",
  "ripemd",
  "secp256k1",
  "sha2",
