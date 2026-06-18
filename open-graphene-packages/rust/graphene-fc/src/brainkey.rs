@@ -2,11 +2,14 @@
 //!
 //! A brain key is a string of words a person can write down and later recover their whole account
 //! from. Derivation matches `bitsharesjs` exactly, so the same words produce the same keys in any
-//! Graphene wallet. Generating a fresh random brain key (the dictionary picker) is not here yet.
+//! Graphene wallet. [`BrainKey::suggest`] generates a fresh random one from a supplied dictionary.
 
 use sha2::{Digest, Sha256, Sha512};
 
-use crate::PrivateKey;
+use crate::{FcSerializeError, PrivateKey, Result};
+
+/// How many words a suggested brain key has, matching bitsharesjs.
+pub const SUGGESTED_BRAIN_KEY_WORDS: usize = 16;
 
 /// A normalised brain key. Treat the words like a master password: anyone with them owns the account.
 #[derive(Clone, PartialEq, Eq)]
@@ -17,6 +20,32 @@ impl BrainKey {
     /// single space (matching bitsharesjs), so casual spacing differences still derive the same keys.
     pub fn new(passphrase: &str) -> Self {
         Self(normalize_brain_key(passphrase))
+    }
+
+    /// Generate a fresh random brain key by drawing [`SUGGESTED_BRAIN_KEY_WORDS`] words from
+    /// `dictionary`, using the OS cryptographic RNG. The bitsharesjs port: pass the same word list
+    /// the JS wallets ship (a comma- or whitespace-separated string); each word is chosen uniformly
+    /// and independently, so security is `word_count * log2(unique_words)` bits.
+    pub fn suggest(dictionary: &str) -> Result<Self> {
+        Self::suggest_words(dictionary, SUGGESTED_BRAIN_KEY_WORDS)
+    }
+
+    /// Like [`suggest`](Self::suggest) but with a caller-chosen `word_count`.
+    pub fn suggest_words(dictionary: &str, word_count: usize) -> Result<Self> {
+        let words: Vec<&str> = dictionary
+            .split([',', ' ', '\t', '\n', '\u{0b}', '\u{0c}', '\r'])
+            .filter(|piece| !piece.is_empty())
+            .collect();
+        if words.is_empty() {
+            return Err(FcSerializeError::UnsupportedValue {
+                type_name: "BrainKey",
+                reason: "dictionary is empty",
+            });
+        }
+        let chosen = (0..word_count)
+            .map(|_| Ok(words[random_index(words.len())?]))
+            .collect::<Result<Vec<_>>>()?;
+        Ok(Self::new(&chosen.join(" ")))
     }
 
     /// The normalised words, e.g. to show the owner for safekeeping.
@@ -38,6 +67,24 @@ impl std::fmt::Debug for BrainKey {
     /// Redacts the words so the brain key can't leak into logs or panics.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str("BrainKey(***)")
+    }
+}
+
+/// A uniform random index in `0..len` from the OS CSPRNG, using rejection sampling so the result is
+/// unbiased even when `len` does not divide `2^64`.
+fn random_index(len: usize) -> Result<usize> {
+    let len = len as u64;
+    let limit = u64::MAX - (u64::MAX % len);
+    loop {
+        let mut bytes = [0u8; 8];
+        getrandom::getrandom(&mut bytes).map_err(|_| FcSerializeError::UnsupportedValue {
+            type_name: "BrainKey",
+            reason: "the OS random number generator is unavailable",
+        })?;
+        let value = u64::from_le_bytes(bytes);
+        if value < limit {
+            return Ok((value % len) as usize);
+        }
     }
 }
 
@@ -85,5 +132,42 @@ mod tests {
     #[test]
     fn debug_does_not_leak_the_words() {
         assert_eq!(format!("{:?}", BrainKey::new(WORDS)), "BrainKey(***)");
+    }
+
+    const DICTIONARY: &str =
+        "alpha,bravo,charlie,delta,echo,foxtrot,golf,hotel,india,juliet,kilo,lima";
+
+    #[test]
+    fn suggest_draws_the_right_number_of_words_from_the_dictionary() {
+        let allowed: Vec<&str> = DICTIONARY.split(',').collect();
+        let brain = BrainKey::suggest(&DICTIONARY.replace(',', " ")).unwrap();
+        let words: Vec<&str> = brain.as_str().split(' ').collect();
+        assert_eq!(words.len(), SUGGESTED_BRAIN_KEY_WORDS);
+        assert!(words.iter().all(|word| allowed.contains(word)));
+    }
+
+    #[test]
+    fn suggest_words_honours_the_requested_count() {
+        let brain = BrainKey::suggest_words(DICTIONARY, 4).unwrap();
+        assert_eq!(brain.as_str().split(' ').count(), 4);
+    }
+
+    #[test]
+    fn two_suggestions_differ() {
+        // With 16 draws from a 12-word list the odds of an exact match are vanishing.
+        let a = BrainKey::suggest(DICTIONARY).unwrap();
+        let b = BrainKey::suggest(DICTIONARY).unwrap();
+        assert_ne!(a.as_str(), b.as_str());
+    }
+
+    #[test]
+    fn suggest_rejects_an_empty_dictionary() {
+        assert!(BrainKey::suggest("   ").is_err());
+    }
+
+    #[test]
+    fn a_suggested_key_derives_a_usable_private_key() {
+        let brain = BrainKey::suggest(DICTIONARY).unwrap();
+        assert!(!brain.private_key(0).to_wif().is_empty());
     }
 }

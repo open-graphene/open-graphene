@@ -601,6 +601,7 @@ dependencies = [
  "aes",
  "bs58",
  "cbc",
+ "getrandom 0.2.17",
  "hex",
  "hmac",
  "ripemd",
