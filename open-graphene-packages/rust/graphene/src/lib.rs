@@ -52,7 +52,7 @@ pub use graphene_chain_swaplock_api::{
     WorkerCreateRequest, is_account_name, is_account_name_allow_short, is_cheap_name,
 };
 pub use open_graphene_fc::{
-    AccountKeys, BrainKey, PrivateKey, PublicKey, account_role_key, decrypt_with_checksum,
+    AccountKeys, Address, BrainKey, PrivateKey, PublicKey, account_role_key, decrypt_with_checksum,
     encrypt_with_checksum,
 };
 
