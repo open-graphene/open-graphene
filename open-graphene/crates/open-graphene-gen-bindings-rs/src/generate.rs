@@ -139,6 +139,10 @@ fn render_ids(protocol: &Protocol) -> Result<String> {
     out.push_str(
         "#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]\n",
     );
+    out.push_str(&format!(
+        "#[schema(as = {})]\n",
+        openapi_schema_name(protocol, "ObjectId")
+    ));
     out.push_str("#[serde(transparent)]\n");
     out.push_str("pub struct ObjectId(pub String);\n\n");
     render_string_id_conversions(&mut out, "ObjectId");
@@ -169,6 +173,10 @@ fn render_ids(protocol: &Protocol) -> Result<String> {
             object_type_name
         ));
         out.push_str("#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]\n");
+        out.push_str(&format!(
+            "#[schema(as = {})]\n",
+            openapi_schema_name(protocol, &id_name)
+        ));
         out.push_str("#[serde(transparent)]\n");
         out.push_str(&format!("pub struct {id_name}(pub String);\n\n"));
         render_string_id_conversions(&mut out, &id_name);
@@ -238,12 +246,12 @@ fn render_types(protocol: &Protocol) -> Result<String> {
     let mut emitted = BTreeSet::new();
     if protocol_uses_signature(protocol) {
         ensure_unique(&mut emitted, "Signature", "type")?;
-        render_signature_type(&mut out);
+        render_signature_type(&mut out, protocol);
     }
     for enum_def in sorted_enums(&protocol.enums) {
         let name = rust_type_name(&enum_def.name);
         ensure_unique(&mut emitted, &name, "type")?;
-        render_enum(&mut out, &enum_def)?;
+        render_enum(&mut out, protocol, &enum_def)?;
     }
 
     for struct_def in sorted_structs(&protocol.structs) {
@@ -292,26 +300,38 @@ fn render_static_variants(protocol: &Protocol) -> Result<String> {
     Ok(out)
 }
 
-fn render_signature_type(out: &mut String) {
+fn render_signature_type(out: &mut String, protocol: &Protocol) {
     out.push_str("/// Graphene compact recoverable ECDSA signature bytes.\n");
     out.push_str("/// Wire layout: one compact header byte followed by 32-byte r and 32-byte s.\n");
     // The node encodes the signature as a hex string (e.g. in a `signed_block`), so the bytes carry
     // the same hex serde as any other `Bytes` field. Without this the derived `Vec<u8>` (de)serialize
     // would expect a JSON number array and fail to parse the node's hex.
-    out.push_str("#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]\n");
+    out.push_str(
+        "#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]\n",
+    );
+    out.push_str(&format!(
+        "#[schema(as = {})]\n",
+        openapi_schema_name(protocol, "Signature")
+    ));
     out.push_str("pub struct Signature(\n");
     out.push_str("    #[serde(serialize_with = \"open_graphene_core::serialize_bytes_as_hex\", deserialize_with = \"open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array\")]\n");
     out.push_str("    pub Vec<u8>,\n");
     out.push_str(");\n\n");
 }
 
-fn render_enum(out: &mut String, enum_def: &EnumDef) -> Result<()> {
+fn render_enum(out: &mut String, protocol: &Protocol, enum_def: &EnumDef) -> Result<()> {
     let enum_name = rust_type_name(&enum_def.name);
     out.push_str(&format!(
         "/// Raw enum `{}`. Numeric wire serde is not implemented yet.\n",
         enum_def.name
     ));
-    out.push_str("#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]\n");
+    out.push_str(
+        "#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]\n",
+    );
+    out.push_str(&format!(
+        "#[schema(as = {})]\n",
+        openapi_schema_name(protocol, &enum_name)
+    ));
     out.push_str(&format!("pub enum {enum_name} {{\n"));
 
     let mut variants = enum_def.values.clone();
@@ -332,6 +352,10 @@ fn render_struct(out: &mut String, protocol: &Protocol, struct_def: &StructDef) 
     let struct_name = rust_type_name(&struct_def.name);
     out.push_str(&format!("/// Raw protocol struct `{}`.\n", struct_def.name));
     out.push_str("#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]\n");
+    out.push_str(&format!(
+        "#[schema(as = {})]\n",
+        openapi_schema_name(protocol, &struct_name)
+    ));
     out.push_str(&format!("pub struct {struct_name} {{\n"));
     render_fields(out, protocol, &struct_def.fields)?;
     out.push_str("}\n\n");
@@ -409,6 +433,10 @@ fn render_operation_struct(
         operation.name, operation.wire_tag
     ));
     out.push_str("#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]\n");
+    out.push_str(&format!(
+        "#[schema(as = {})]\n",
+        openapi_schema_name(protocol, &struct_name)
+    ));
     out.push_str(&format!("pub struct {struct_name} {{\n"));
     render_fields(out, protocol, &operation.fields)?;
     out.push_str("}\n\n");
@@ -1617,6 +1645,10 @@ fn render_static_variant(
         variant.name
     ));
     out.push_str("#[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]\n");
+    out.push_str(&format!(
+        "#[schema(as = {})]\n",
+        openapi_schema_name(protocol, &enum_name)
+    ));
     out.push_str(&format!("pub enum {enum_name} {{\n"));
 
     let mut variants = variant.variants.clone();
@@ -2150,6 +2182,14 @@ fn ensure_unique(seen: &mut BTreeSet<String>, name: &str, scope: &str) -> Result
 
 fn object_id_type_name(object_type: &str) -> String {
     format!("{}Id", rust_type_name(object_type))
+}
+
+fn openapi_schema_name(protocol: &Protocol, rust_name: &str) -> String {
+    format!(
+        "Graphene{}{}",
+        rust_type_name(&protocol.chain.id),
+        rust_name
+    )
 }
 
 fn rust_type_name(value: &str) -> String {

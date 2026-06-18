@@ -6,6 +6,7 @@
 
 /// Static variant `argument_type` serialized as Graphene `[tag, value]`.
 #[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesArgumentType)]
 pub enum ArgumentType {
     VoidT(Box<()>),
     Bool(Box<bool>),
@@ -380,6 +381,7 @@ impl<'de> serde::Deserialize<'de> for ArgumentType {
 
 /// Static variant `fee_parameters` serialized as Graphene `[tag, value]`.
 #[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesFeeParameters)]
 pub enum FeeParameters {
     TransferOperationFeeParamsT(Box<crate::generated::types::TransferOperationFeeParamsT>),
     LimitOrderCreateOperationFeeParamsT(Box<crate::generated::types::LimitOrderCreateOperationFeeParamsT>),
@@ -1042,6 +1044,7 @@ impl<'de> serde::Deserialize<'de> for FeeParameters {
 
 /// Static variant `future_extensions` serialized as Graphene `[tag, value]`.
 #[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesFutureExtensions)]
 pub enum FutureExtensions {
     VoidT(Box<()>),
 }
@@ -1094,6 +1097,7 @@ impl<'de> serde::Deserialize<'de> for FutureExtensions {
 
 /// Static variant `htlc_hash` serialized as Graphene `[tag, value]`.
 #[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesHtlcHash)]
 pub enum HtlcHash {
     HtlcAlgoRipemd160(Box<Vec<u8>>),
     HtlcAlgoSha1(Box<Vec<u8>>),
@@ -1164,6 +1168,7 @@ impl<'de> serde::Deserialize<'de> for HtlcHash {
 
 /// Static variant `limit_order_auto_action` serialized as Graphene `[tag, value]`.
 #[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesLimitOrderAutoAction)]
 pub enum LimitOrderAutoAction {
     CreateTakeProfitOrderAction(Box<crate::generated::types::CreateTakeProfitOrderAction>),
 }
@@ -1210,6 +1215,7 @@ impl<'de> serde::Deserialize<'de> for LimitOrderAutoAction {
 
 /// Static variant `operation` serialized as Graphene `[tag, value]`.
 #[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesOperation)]
 pub enum Operation {
     TransferOperation(Box<crate::generated::operations::TransferOperation>),
     LimitOrderCreateOperation(Box<crate::generated::operations::LimitOrderCreateOperation>),
@@ -2823,6 +2829,7 @@ impl<'de> serde::Deserialize<'de> for Operation {
 
 /// Static variant `operation_result` serialized as Graphene `[tag, value]`.
 #[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesOperationResult)]
 pub enum OperationResult {
     VoidResult(Box<crate::generated::types::VoidResult>),
     ObjectIdType(Box<crate::generated::ids::ObjectId>),
@@ -2909,6 +2916,7 @@ impl<'de> serde::Deserialize<'de> for OperationResult {
 
 /// Static variant `predicate` serialized as Graphene `[tag, value]`.
 #[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesPredicate)]
 pub enum Predicate {
     AccountNameEqLitPredicate(Box<crate::generated::types::AccountNameEqLitPredicate>),
     AssetSymbolEqLitPredicate(Box<crate::generated::types::AssetSymbolEqLitPredicate>),
@@ -2971,6 +2979,7 @@ impl<'de> serde::Deserialize<'de> for Predicate {
 
 /// Static variant `special_authority` serialized as Graphene `[tag, value]`.
 #[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesSpecialAuthority)]
 pub enum SpecialAuthority {
     NoSpecialAuthority(Box<crate::generated::types::NoSpecialAuthority>),
     TopHoldersSpecialAuthority(Box<crate::generated::types::TopHoldersSpecialAuthority>),
@@ -3025,6 +3034,7 @@ impl<'de> serde::Deserialize<'de> for SpecialAuthority {
 
 /// Static variant `vesting_policy_initializer` serialized as Graphene `[tag, value]`.
 #[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesVestingPolicyInitializer)]
 pub enum VestingPolicyInitializer {
     LinearVestingPolicyInitializer(Box<crate::generated::types::LinearVestingPolicyInitializer>),
     CddVestingPolicyInitializer(Box<crate::generated::types::CddVestingPolicyInitializer>),
@@ -3087,6 +3097,7 @@ impl<'de> serde::Deserialize<'de> for VestingPolicyInitializer {
 
 /// Static variant `worker_initializer` serialized as Graphene `[tag, value]`.
 #[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesWorkerInitializer)]
 pub enum WorkerInitializer {
     RefundWorkerInitializer(Box<crate::generated::types::RefundWorkerInitializer>),
     VestingBalanceWorkerInitializer(Box<crate::generated::types::VestingBalanceWorkerInitializer>),
