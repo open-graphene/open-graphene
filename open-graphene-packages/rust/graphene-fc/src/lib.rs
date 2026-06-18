@@ -8,11 +8,13 @@ pub mod brainkey;
 pub mod keys;
 pub mod login;
 pub mod memo;
+pub mod signature;
 pub use address::Address;
 pub use brainkey::BrainKey;
 pub use keys::{PrivateKey, PublicKey};
 pub use login::{AccountKeys, account_role_key};
 pub use memo::{decrypt_with_checksum, encrypt_with_checksum};
+pub use signature::Signature;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FcSerializeError {
