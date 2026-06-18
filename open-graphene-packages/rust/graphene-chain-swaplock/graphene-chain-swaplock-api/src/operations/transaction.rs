@@ -225,6 +225,8 @@ pub(super) fn set_operation_fee(
         Operation::CustomAuthorityCreateOperation(operation) => operation.fee = fee,
         Operation::CustomAuthorityUpdateOperation(operation) => operation.fee = fee,
         Operation::CustomAuthorityDeleteOperation(operation) => operation.fee = fee,
+        Operation::AssertOperation(operation) => operation.fee = fee,
+        Operation::BalanceClaimOperation(operation) => operation.fee = fee,
         other => {
             return Err(SwaplockApiError::InvalidTransfer {
                 message: format!(
@@ -306,6 +308,8 @@ fn operation_name(operation: &Operation) -> &'static str {
         Operation::CustomAuthorityCreateOperation(_) => "custom_authority_create",
         Operation::CustomAuthorityUpdateOperation(_) => "custom_authority_update",
         Operation::CustomAuthorityDeleteOperation(_) => "custom_authority_delete",
+        Operation::AssertOperation(_) => "assert",
+        Operation::BalanceClaimOperation(_) => "balance_claim",
         _ => "unknown",
     }
 }

@@ -6,6 +6,7 @@ use super::account::{
     AccountCreateRequest, AccountTransferRequest, AccountUpdateRequest, AccountUpgradeRequest,
     AccountWhitelistRequest,
 };
+use super::assert::AssertRequest;
 use super::asset::{AssetIssueRequest, AssetReserveRequest, AssetUpdateRequest};
 use super::asset_admin::{
     AssetClaimFeesRequest, AssetClaimPoolRequest, AssetCreateRequest, AssetFundFeePoolRequest,
@@ -13,6 +14,7 @@ use super::asset_admin::{
     AssetUpdateBitassetRequest, AssetUpdateFeedProducersRequest, AssetUpdateIssuerRequest,
     OverrideTransferRequest,
 };
+use super::balance_claim::BalanceClaimRequest;
 use super::blind::{BlindTransferRequest, TransferFromBlindRequest, TransferToBlindRequest};
 use super::call_order::CallOrderUpdateRequest;
 use super::credit_offer::{
@@ -636,6 +638,23 @@ impl<'session> OperationsApi<'session> {
         authority: impl Into<String>,
     ) -> CustomAuthorityDeleteRequest<'session> {
         CustomAuthorityDeleteRequest::new(self.session, account, authority)
+    }
+
+    /// Assert that on-chain predicates hold for the transaction to apply: `fee_paying_account`, then
+    /// `.assert_*(..)` predicates and optional `.require_auth(..)`.
+    pub fn assert(self, fee_paying_account: impl Into<String>) -> AssertRequest<'session> {
+        AssertRequest::new(self.session, fee_paying_account)
+    }
+
+    /// Claim a genesis/imported balance into `deposit_to`: the `balance` id, the `owner_key`, then
+    /// `.amount(..)`.
+    pub fn balance_claim(
+        self,
+        deposit_to: impl Into<String>,
+        balance: impl Into<String>,
+        owner_key: impl Into<String>,
+    ) -> BalanceClaimRequest<'session> {
+        BalanceClaimRequest::new(self.session, deposit_to, balance, owner_key)
     }
 
     /// Move a public `amount` from `from` into blind outputs. Build the commitments, range proofs and
