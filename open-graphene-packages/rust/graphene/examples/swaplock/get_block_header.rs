@@ -26,9 +26,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match swaplock.database().block_header(head).get().await? {
         Some(header) => {
-            let witness = header["witness"].as_str().unwrap_or("?");
-            let timestamp = header["timestamp"].as_str().unwrap_or("?");
-            println!("block {head} header: witness {witness} at {timestamp}");
+            // Typed MaybeSignedBlockHeader: real fields, no JSON indexing.
+            let signed = if header.witness_signature.is_some() {
+                "signed"
+            } else {
+                "unsigned"
+            };
+            println!(
+                "block {head} header: witness {} at {} ({signed})",
+                header.witness.0, header.timestamp
+            );
         }
         None => println!("block {head} header: not produced yet"),
     }

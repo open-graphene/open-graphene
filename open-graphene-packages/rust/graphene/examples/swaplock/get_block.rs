@@ -27,11 +27,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match swaplock.database().block(head).get().await? {
         Some(block) => {
-            let witness = block["witness"].as_str().unwrap_or("?");
-            let timestamp = block["timestamp"].as_str().unwrap_or("?");
-            let tx_count = block["transactions"].as_array().map_or(0, Vec::len);
+            // Typed SignedBlock: fields are real, no JSON indexing. The witness signature parses
+            // straight from the node's hex into bytes.
             println!(
-                "block {head}: witness {witness}, sealed {tx_count} transaction(s) at {timestamp}"
+                "block {head}: witness {}, sealed {} transaction(s) at {}, signature {} bytes",
+                block.witness.0,
+                block.transactions.len(),
+                block.timestamp,
+                block.witness_signature.0.len()
             );
         }
         None => println!("block {head}: not produced yet"),

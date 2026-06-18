@@ -39,7 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let accounts = references.first().cloned().unwrap_or_default();
     println!("active key {public_key} is referenced by: {accounts:?}");
 
-    if accounts.contains(&account_id) {
+    if accounts.iter().any(|account| account.0 == account_id) {
         println!("our account {account_id} is in there, as expected");
     } else {
         println!("our account {account_id} was not in the references");
