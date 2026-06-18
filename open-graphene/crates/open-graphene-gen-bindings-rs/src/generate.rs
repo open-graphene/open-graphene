@@ -137,7 +137,7 @@ fn render_ids(protocol: &Protocol) -> Result<String> {
     ));
 
     out.push_str(
-        "#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]\n",
+        "#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]\n",
     );
     out.push_str("#[serde(transparent)]\n");
     out.push_str("pub struct ObjectId(pub String);\n\n");
@@ -168,7 +168,7 @@ fn render_ids(protocol: &Protocol) -> Result<String> {
             "/// Object ID for `{}` protocol objects.\n",
             object_type_name
         ));
-        out.push_str("#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]\n");
+        out.push_str("#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]\n");
         out.push_str("#[serde(transparent)]\n");
         out.push_str(&format!("pub struct {id_name}(pub String);\n\n"));
         render_string_id_conversions(&mut out, &id_name);
@@ -298,7 +298,7 @@ fn render_signature_type(out: &mut String) {
     // The node encodes the signature as a hex string (e.g. in a `signed_block`), so the bytes carry
     // the same hex serde as any other `Bytes` field. Without this the derived `Vec<u8>` (de)serialize
     // would expect a JSON number array and fail to parse the node's hex.
-    out.push_str("#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]\n");
+    out.push_str("#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]\n");
     out.push_str("pub struct Signature(\n");
     out.push_str("    #[serde(serialize_with = \"open_graphene_core::serialize_bytes_as_hex\", deserialize_with = \"open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array\")]\n");
     out.push_str("    pub Vec<u8>,\n");
@@ -311,7 +311,7 @@ fn render_enum(out: &mut String, enum_def: &EnumDef) -> Result<()> {
         "/// Raw enum `{}`. Numeric wire serde is not implemented yet.\n",
         enum_def.name
     ));
-    out.push_str("#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]\n");
+    out.push_str("#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]\n");
     out.push_str(&format!("pub enum {enum_name} {{\n"));
 
     let mut variants = enum_def.values.clone();
@@ -331,7 +331,7 @@ fn render_enum(out: &mut String, enum_def: &EnumDef) -> Result<()> {
 fn render_struct(out: &mut String, protocol: &Protocol, struct_def: &StructDef) -> Result<()> {
     let struct_name = rust_type_name(&struct_def.name);
     out.push_str(&format!("/// Raw protocol struct `{}`.\n", struct_def.name));
-    out.push_str("#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]\n");
+    out.push_str("#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]\n");
     out.push_str(&format!("pub struct {struct_name} {{\n"));
     render_fields(out, protocol, &struct_def.fields)?;
     out.push_str("}\n\n");
@@ -408,7 +408,7 @@ fn render_operation_struct(
         "/// Protocol operation `{}` with wire tag {}.\n",
         operation.name, operation.wire_tag
     ));
-    out.push_str("#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]\n");
+    out.push_str("#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]\n");
     out.push_str(&format!("pub struct {struct_name} {{\n"));
     render_fields(out, protocol, &operation.fields)?;
     out.push_str("}\n\n");
@@ -1616,7 +1616,7 @@ fn render_static_variant(
         "/// Static variant `{}` serialized as Graphene `[tag, value]`.\n",
         variant.name
     ));
-    out.push_str("#[derive(Debug, Clone, PartialEq)]\n");
+    out.push_str("#[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]\n");
     out.push_str(&format!("pub enum {enum_name} {{\n"));
 
     let mut variants = variant.variants.clone();
