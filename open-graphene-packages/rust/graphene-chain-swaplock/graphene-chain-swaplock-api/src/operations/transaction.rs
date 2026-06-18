@@ -227,6 +227,8 @@ pub(super) fn set_operation_fee(
         Operation::CustomAuthorityDeleteOperation(operation) => operation.fee = fee,
         Operation::AssertOperation(operation) => operation.fee = fee,
         Operation::BalanceClaimOperation(operation) => operation.fee = fee,
+        Operation::BidCollateralOperation(operation) => operation.fee = fee,
+        Operation::CommitteeMemberUpdateGlobalParametersOperation(operation) => operation.fee = fee,
         other => {
             return Err(SwaplockApiError::InvalidTransfer {
                 message: format!(
@@ -310,6 +312,10 @@ fn operation_name(operation: &Operation) -> &'static str {
         Operation::CustomAuthorityDeleteOperation(_) => "custom_authority_delete",
         Operation::AssertOperation(_) => "assert",
         Operation::BalanceClaimOperation(_) => "balance_claim",
+        Operation::BidCollateralOperation(_) => "bid_collateral",
+        Operation::CommitteeMemberUpdateGlobalParametersOperation(_) => {
+            "committee_member_update_global_parameters"
+        }
         _ => "unknown",
     }
 }
