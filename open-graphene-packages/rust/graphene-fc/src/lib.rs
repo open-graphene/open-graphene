@@ -3,10 +3,12 @@ use secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
 use secp256k1::{Message, Secp256k1, SecretKey};
 use sha2::Sha256;
 
+pub mod address;
 pub mod brainkey;
 pub mod keys;
 pub mod login;
 pub mod memo;
+pub use address::Address;
 pub use brainkey::BrainKey;
 pub use keys::{PrivateKey, PublicKey};
 pub use login::{AccountKeys, account_role_key};
