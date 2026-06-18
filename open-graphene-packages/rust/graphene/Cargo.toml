@@ -87,6 +87,10 @@ name = "swaplock_governance_ops"
 path = "examples/swaplock/governance_ops.rs"
 
 [[example]]
+name = "swaplock_custom_authority_ops"
+path = "examples/swaplock/custom_authority_ops.rs"
+
+[[example]]
 name = "swaplock_liquidity_pool_create_delete"
 path = "examples/swaplock/liquidity_pool_create_delete.rs"
 

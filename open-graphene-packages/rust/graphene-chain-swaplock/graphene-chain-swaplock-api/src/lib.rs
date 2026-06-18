@@ -47,7 +47,8 @@ pub use operations::{
     BlindTransferRequest, CallOrderUpdateRequest, CommitteeMemberCreateRequest,
     CommitteeMemberUpdateRequest, CreditDealRepayRequest, CreditDealUpdateRequest,
     CreditOfferAcceptRequest, CreditOfferCreateRequest, CreditOfferDeleteRequest,
-    CreditOfferUpdateRequest, CustomRequest, HtlcCreateRequest, HtlcExtendRequest,
+    CreditOfferUpdateRequest, CustomAuthorityCreateRequest, CustomAuthorityDeleteRequest,
+    CustomAuthorityUpdateRequest, CustomRequest, HtlcCreateRequest, HtlcExtendRequest,
     HtlcRedeemRequest, LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
     LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest,
     LiquidityPoolExchangeRequest, LiquidityPoolUpdateRequest, LiquidityPoolWithdrawRequest,
@@ -68,8 +69,10 @@ pub use graphene_chain_swaplock_bindings::generated::operations::{
     AssetIssueOperation, AssetReserveOperation, LimitOrderCancelOperation,
     LimitOrderCreateOperation, LimitOrderUpdateOperation, TransferOperation,
 };
-pub use graphene_chain_swaplock_bindings::generated::static_variants::Operation;
-pub use graphene_chain_swaplock_bindings::generated::types::{Asset, Price};
+pub use graphene_chain_swaplock_bindings::generated::static_variants::{ArgumentType, Operation};
+pub use graphene_chain_swaplock_bindings::generated::types::{
+    Asset, Authority, Price, Restriction,
+};
 
 pub use orders::{
     DEFAULT_GROUPED_LIMIT_ORDERS_LIMIT, GroupedLimitOrdersRequest, LimitOrderGroup, OrdersApi,

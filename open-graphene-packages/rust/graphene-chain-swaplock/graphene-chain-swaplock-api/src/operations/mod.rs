@@ -5,6 +5,7 @@ mod asset_admin;
 mod blind;
 mod call_order;
 mod credit_offer;
+mod custom_authority;
 mod governance;
 mod htlc;
 mod limit_order;
@@ -35,6 +36,9 @@ pub use call_order::CallOrderUpdateRequest;
 pub use credit_offer::{
     CreditDealRepayRequest, CreditDealUpdateRequest, CreditOfferAcceptRequest,
     CreditOfferCreateRequest, CreditOfferDeleteRequest, CreditOfferUpdateRequest,
+};
+pub use custom_authority::{
+    CustomAuthorityCreateRequest, CustomAuthorityDeleteRequest, CustomAuthorityUpdateRequest,
 };
 pub use governance::{
     CommitteeMemberCreateRequest, CommitteeMemberUpdateRequest, CustomRequest,

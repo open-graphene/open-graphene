@@ -19,6 +19,9 @@ use super::credit_offer::{
     CreditDealRepayRequest, CreditDealUpdateRequest, CreditOfferAcceptRequest,
     CreditOfferCreateRequest, CreditOfferDeleteRequest, CreditOfferUpdateRequest,
 };
+use super::custom_authority::{
+    CustomAuthorityCreateRequest, CustomAuthorityDeleteRequest, CustomAuthorityUpdateRequest,
+};
 use super::governance::{
     CommitteeMemberCreateRequest, CommitteeMemberUpdateRequest, CustomRequest,
     WitnessCreateRequest, WitnessUpdateRequest, WorkerCreateRequest,
@@ -605,6 +608,34 @@ impl<'session> OperationsApi<'session> {
     /// Post a custom-payload operation: `payer`, then `.data(..)`, `.require_auth(..)`, `.id(..)`.
     pub fn custom(self, payer: impl Into<String>) -> CustomRequest<'session> {
         CustomRequest::new(self.session, payer)
+    }
+
+    /// Delegate signing rights for `operation_type` from `account` to an authority: then
+    /// `.auth_key(..)`, optional validity window and `.restriction(..)`s.
+    pub fn custom_authority_create(
+        self,
+        account: impl Into<String>,
+        operation_type: u32,
+    ) -> CustomAuthorityCreateRequest<'session> {
+        CustomAuthorityCreateRequest::new(self.session, account, operation_type)
+    }
+
+    /// Change a live custom authority in place: `account`, the `authority` id, then partial setters.
+    pub fn custom_authority_update(
+        self,
+        account: impl Into<String>,
+        authority: impl Into<String>,
+    ) -> CustomAuthorityUpdateRequest<'session> {
+        CustomAuthorityUpdateRequest::new(self.session, account, authority)
+    }
+
+    /// Drop a custom authority: `account`, the `authority` id.
+    pub fn custom_authority_delete(
+        self,
+        account: impl Into<String>,
+        authority: impl Into<String>,
+    ) -> CustomAuthorityDeleteRequest<'session> {
+        CustomAuthorityDeleteRequest::new(self.session, account, authority)
     }
 
     /// Move a public `amount` from `from` into blind outputs. Build the commitments, range proofs and
