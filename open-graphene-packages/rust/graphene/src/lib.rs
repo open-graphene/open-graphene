@@ -53,8 +53,8 @@ pub use graphene_chain_swaplock_api::{
 };
 pub use open_graphene_fc::hash;
 pub use open_graphene_fc::{
-    AccountKeys, Address, BrainKey, PrivateKey, PublicKey, Signature, account_role_key,
-    decrypt_with_checksum, encrypt_with_checksum,
+    AccountKeys, Address, BrainKey, PrivateKey, PublicKey, SUGGESTED_BRAIN_KEY_WORDS, Signature,
+    account_role_key, decrypt_with_checksum, encrypt_with_checksum,
 };
 
 pub struct Graphene;
