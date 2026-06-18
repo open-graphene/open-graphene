@@ -1,3 +1,5 @@
+use graphene_chain_swaplock_bindings::generated::ids::AccountId;
+use graphene_chain_swaplock_bindings::generated::types::{MaybeSignedBlockHeader, SignedBlock};
 use graphene_chain_swaplock_bindings::generated::{
     AccountObject, Asset, AssetObject, ChainPropertyObject, DynamicGlobalPropertyObject,
     GlobalPropertyObject, LimitOrderObject,
@@ -301,7 +303,10 @@ impl<'session> DatabaseApi<'session> {
         .await
     }
 
-    pub async fn get_block(&mut self, block_num: u32) -> Result<Option<Value>, SwaplockApiError> {
+    pub async fn get_block(
+        &mut self,
+        block_num: u32,
+    ) -> Result<Option<SignedBlock>, SwaplockApiError> {
         GetBlockRequest {
             session: &mut *self.session,
             block_num,
@@ -313,7 +318,7 @@ impl<'session> DatabaseApi<'session> {
     pub async fn get_block_header(
         &mut self,
         block_num: u32,
-    ) -> Result<Option<Value>, SwaplockApiError> {
+    ) -> Result<Option<MaybeSignedBlockHeader>, SwaplockApiError> {
         GetBlockHeaderRequest {
             session: &mut *self.session,
             block_num,
@@ -340,7 +345,7 @@ impl<'session> DatabaseApi<'session> {
     pub async fn get_key_references<L>(
         &mut self,
         keys: L,
-    ) -> Result<Vec<Vec<String>>, SwaplockApiError>
+    ) -> Result<Vec<Vec<AccountId>>, SwaplockApiError>
     where
         L: IntoStringList,
     {

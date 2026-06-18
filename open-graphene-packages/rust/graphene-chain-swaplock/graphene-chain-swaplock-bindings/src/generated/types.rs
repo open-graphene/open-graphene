@@ -32,7 +32,10 @@ where
 /// Graphene compact recoverable ECDSA signature bytes.
 /// Wire layout: one compact header byte followed by 32-byte r and 32-byte s.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Signature(pub Vec<u8>);
+pub struct Signature(
+    #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array")]
+    pub Vec<u8>,
+);
 
 /// Raw enum `account_listing`. Numeric wire serde is not implemented yet.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

@@ -295,8 +295,14 @@ fn render_static_variants(protocol: &Protocol) -> Result<String> {
 fn render_signature_type(out: &mut String) {
     out.push_str("/// Graphene compact recoverable ECDSA signature bytes.\n");
     out.push_str("/// Wire layout: one compact header byte followed by 32-byte r and 32-byte s.\n");
+    // The node encodes the signature as a hex string (e.g. in a `signed_block`), so the bytes carry
+    // the same hex serde as any other `Bytes` field. Without this the derived `Vec<u8>` (de)serialize
+    // would expect a JSON number array and fail to parse the node's hex.
     out.push_str("#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]\n");
-    out.push_str("pub struct Signature(pub Vec<u8>);\n\n");
+    out.push_str("pub struct Signature(\n");
+    out.push_str("    #[serde(serialize_with = \"open_graphene_core::serialize_bytes_as_hex\", deserialize_with = \"open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array\")]\n");
+    out.push_str("    pub Vec<u8>,\n");
+    out.push_str(");\n\n");
 }
 
 fn render_enum(out: &mut String, enum_def: &EnumDef) -> Result<()> {
@@ -3249,7 +3255,7 @@ mod tests {
                 .contains("pub(crate) fn deserialize_fixed_bytes_20_from_hex_string_or_byte_array")
         );
         assert!(types.contains(
-            "#[serde(deserialize_with = \"crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array\")]"
+            "#[serde(serialize_with = \"open_graphene_core::serialize_bytes_as_hex\", deserialize_with = \"crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array\")]"
         ));
         assert!(types.contains("pub head_block_id: Vec<u8>,"));
     }
@@ -3419,7 +3425,10 @@ mod tests {
         ));
 
         let types = render_types(&protocol).expect("render types");
-        assert!(types.contains("pub struct Signature(pub Vec<u8>);"));
+        assert!(types.contains("pub struct Signature(\n"));
+        assert!(types.contains(
+            "deserialize_with = \"open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array\")]\n    pub Vec<u8>,\n);"
+        ));
         assert!(types.contains("pub struct Transaction"));
         assert!(types.contains("pub ref_block_num: u16,"));
         assert!(types.contains("pub ref_block_prefix: u32,"));
