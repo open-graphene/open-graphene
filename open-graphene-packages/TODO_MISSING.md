@@ -50,7 +50,7 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 |---|:--:|:--:|---|
 | `PrivateKey` from WIF | ✅ | ✅ 🥸 | **DONE** (branches `feature/keys` + `feature/aes-memo`): `fc::PrivateKey` — `from_wif`/`from_seed`/`from_bytes`/`to_wif`/`to_public_key`/`sign`/`get_shared_secret`/`as_bytes`, secret redacted in `Debug`. Remaining: child derivation |
 | `PublicKey` parse/encode | ✅ | ✅ 🥸 | **DONE** (branch `feature/keys`): `fc::PublicKey` type — `from_string`/`from_bytes`/`to_prefixed_string`/`verify`/`recover`/`as_bytes`. Remaining: `Address` string, child, `add` (next slice) |
-| `Signature` (sign / verify / recover) | ✅ | ⚠️ | `sign_digest_compact[_with_wif]`, `verify_*`, `recover_*` — free fns, no `Signature` type API |
+| `Signature` (sign / verify / recover) | ✅ | ✅ 🥸 | **DONE** (branch `feature/signature-type`): `fc::Signature` type wrapping the 65-byte canonical compact signature — `sign`/`verify`/`recover`/`is_canonical`/`from_bytes`/`as_bytes`/`from_hex`/`to_hex`, re-exported through the facade, unit-tested. The free fns (`sign_digest_compact[_with_wif]`, `verify_*`, `recover_*`) remain underneath |
 | Canonical signature enforcement | ✅ | ✅ | `is_graphene_canonical_compact_signature` |
 | `hash` (sha256/sha512/sha1/ripemd160/hmac) | ✅ | ⚠️ | `fc::sha` + `ripemd` dep; not full hash module |
 | `Address` (key → address string) | ✅ | ✅ 🥸 | **DONE** (branch `feature/address-type`): `fc::Address` — `from_public_key` (`RIPEMD160(SHA512(pubkey))`, verbatim bitsharesjs `toAddressString`), `to_prefixed_string`/`from_string` (4-byte RIPEMD160 checksum + prefix), `from_bytes`/`as_bytes`. Re-exported through the facade, unit-tested (round-trip + checksum) |
