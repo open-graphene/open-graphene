@@ -5,6 +5,7 @@ use sha2::Sha256;
 
 pub mod address;
 pub mod brainkey;
+pub mod hash;
 pub mod keys;
 pub mod login;
 pub mod memo;
