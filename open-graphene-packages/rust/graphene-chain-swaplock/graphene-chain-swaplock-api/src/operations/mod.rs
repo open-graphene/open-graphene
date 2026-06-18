@@ -36,7 +36,7 @@ pub use asset_admin::{
 };
 pub use balance_claim::BalanceClaimRequest;
 pub use blind::{BlindTransferRequest, TransferFromBlindRequest, TransferToBlindRequest};
-pub use call_order::CallOrderUpdateRequest;
+pub use call_order::{BidCollateralRequest, CallOrderUpdateRequest};
 pub use credit_offer::{
     CreditDealRepayRequest, CreditDealUpdateRequest, CreditOfferAcceptRequest,
     CreditOfferCreateRequest, CreditOfferDeleteRequest, CreditOfferUpdateRequest,
@@ -45,8 +45,9 @@ pub use custom_authority::{
     CustomAuthorityCreateRequest, CustomAuthorityDeleteRequest, CustomAuthorityUpdateRequest,
 };
 pub use governance::{
-    CommitteeMemberCreateRequest, CommitteeMemberUpdateRequest, CustomRequest,
-    WitnessCreateRequest, WitnessUpdateRequest, WorkerCreateRequest,
+    CommitteeMemberCreateRequest, CommitteeMemberUpdateGlobalParametersRequest,
+    CommitteeMemberUpdateRequest, CustomRequest, WitnessCreateRequest, WitnessUpdateRequest,
+    WorkerCreateRequest,
 };
 pub use htlc::{HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest};
 pub use limit_order::{LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest};

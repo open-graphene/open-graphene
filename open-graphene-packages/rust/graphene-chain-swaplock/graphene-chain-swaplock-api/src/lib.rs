@@ -44,23 +44,24 @@ pub use operations::{
     AssetCreateRequest, AssetFundFeePoolRequest, AssetGlobalSettleRequest, AssetIssueRequest,
     AssetPublishFeedRequest, AssetReserveRequest, AssetSettleRequest, AssetUpdateBitassetRequest,
     AssetUpdateFeedProducersRequest, AssetUpdateIssuerRequest, AssetUpdateRequest,
-    BalanceClaimRequest, BlindTransferRequest, CallOrderUpdateRequest,
-    CommitteeMemberCreateRequest, CommitteeMemberUpdateRequest, CreditDealRepayRequest,
-    CreditDealUpdateRequest, CreditOfferAcceptRequest, CreditOfferCreateRequest,
-    CreditOfferDeleteRequest, CreditOfferUpdateRequest, CustomAuthorityCreateRequest,
-    CustomAuthorityDeleteRequest, CustomAuthorityUpdateRequest, CustomRequest, HtlcCreateRequest,
-    HtlcExtendRequest, HtlcRedeemRequest, LimitOrderCancelRequest, LimitOrderCreateRequest,
-    LimitOrderUpdateRequest, LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest,
-    LiquidityPoolDepositRequest, LiquidityPoolExchangeRequest, LiquidityPoolUpdateRequest,
-    LiquidityPoolWithdrawRequest, OperationsApi, OverrideTransferRequest, PreparedTransaction,
-    PreparedTransfer, ProposalCreateRequest, ProposalDeleteRequest, ProposalUpdateRequest,
-    SametFundBorrowRequest, SametFundCreateRequest, SametFundDeleteRequest, SametFundRepayRequest,
-    SametFundUpdateRequest, SignedTransactionEnvelope, SignedTransfer, TicketCreateRequest,
-    TicketUpdateRequest, TransactionBuilder, TransferFromBlindRequest, TransferRequest,
-    TransferToBlindRequest, VestingBalanceCreateRequest, VestingBalanceWithdrawRequest,
-    WithdrawPermissionClaimRequest, WithdrawPermissionCreateRequest,
-    WithdrawPermissionDeleteRequest, WithdrawPermissionUpdateRequest, WitnessCreateRequest,
-    WitnessUpdateRequest, WorkerCreateRequest,
+    BalanceClaimRequest, BidCollateralRequest, BlindTransferRequest, CallOrderUpdateRequest,
+    CommitteeMemberCreateRequest, CommitteeMemberUpdateGlobalParametersRequest,
+    CommitteeMemberUpdateRequest, CreditDealRepayRequest, CreditDealUpdateRequest,
+    CreditOfferAcceptRequest, CreditOfferCreateRequest, CreditOfferDeleteRequest,
+    CreditOfferUpdateRequest, CustomAuthorityCreateRequest, CustomAuthorityDeleteRequest,
+    CustomAuthorityUpdateRequest, CustomRequest, HtlcCreateRequest, HtlcExtendRequest,
+    HtlcRedeemRequest, LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
+    LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest,
+    LiquidityPoolExchangeRequest, LiquidityPoolUpdateRequest, LiquidityPoolWithdrawRequest,
+    OperationsApi, OverrideTransferRequest, PreparedTransaction, PreparedTransfer,
+    ProposalCreateRequest, ProposalDeleteRequest, ProposalUpdateRequest, SametFundBorrowRequest,
+    SametFundCreateRequest, SametFundDeleteRequest, SametFundRepayRequest, SametFundUpdateRequest,
+    SignedTransactionEnvelope, SignedTransfer, TicketCreateRequest, TicketUpdateRequest,
+    TransactionBuilder, TransferFromBlindRequest, TransferRequest, TransferToBlindRequest,
+    VestingBalanceCreateRequest, VestingBalanceWithdrawRequest, WithdrawPermissionClaimRequest,
+    WithdrawPermissionCreateRequest, WithdrawPermissionDeleteRequest,
+    WithdrawPermissionUpdateRequest, WitnessCreateRequest, WitnessUpdateRequest,
+    WorkerCreateRequest,
 };
 
 // Binding types callers need to construct operations for `OperationsApi::transaction()`.
@@ -71,7 +72,7 @@ pub use graphene_chain_swaplock_bindings::generated::operations::{
 };
 pub use graphene_chain_swaplock_bindings::generated::static_variants::{ArgumentType, Operation};
 pub use graphene_chain_swaplock_bindings::generated::types::{
-    Asset, Authority, Price, Restriction,
+    Asset, Authority, ChainParameters, Price, Restriction,
 };
 
 pub use orders::{

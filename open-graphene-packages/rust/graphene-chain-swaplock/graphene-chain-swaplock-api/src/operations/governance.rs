@@ -9,12 +9,14 @@ use graphene_chain_swaplock_bindings::generated::ids::{
     AccountId, AssetId, CommitteeMemberId, WitnessId,
 };
 use graphene_chain_swaplock_bindings::generated::operations::{
-    CommitteeMemberCreateOperation, CommitteeMemberUpdateOperation, CustomOperation,
-    WitnessCreateOperation, WitnessUpdateOperation, WorkerCreateOperation,
+    CommitteeMemberCreateOperation, CommitteeMemberUpdateGlobalParametersOperation,
+    CommitteeMemberUpdateOperation, CustomOperation, WitnessCreateOperation,
+    WitnessUpdateOperation, WorkerCreateOperation,
 };
 use graphene_chain_swaplock_bindings::generated::static_variants::{Operation, WorkerInitializer};
 use graphene_chain_swaplock_bindings::generated::types::{
-    Asset, BurnWorkerInitializer, RefundWorkerInitializer, VestingBalanceWorkerInitializer,
+    Asset, BurnWorkerInitializer, ChainParameters, RefundWorkerInitializer,
+    VestingBalanceWorkerInitializer,
 };
 use open_graphene_transport::GrapheneSession;
 
@@ -343,6 +345,41 @@ impl<'session> CustomRequest<'session> {
             id: self.id,
             data: self.data,
         });
+        TransactionBuilder::new(self.session)
+            .add_operation(operation)
+            .prepare()
+            .await
+    }
+}
+
+/// Builder for `committee_member_update_global_parameters`: propose new chain-wide parameters.
+///
+/// Council-only and almost always wrapped in a proposal. There are no per-field setters: fetch the
+/// current parameters (e.g. from `DatabaseApi::global_properties()`), change what you need, and pass
+/// the whole [`ChainParameters`] in.
+pub struct CommitteeMemberUpdateGlobalParametersRequest<'session> {
+    session: &'session mut GrapheneSession,
+    new_parameters: ChainParameters,
+}
+
+impl<'session> CommitteeMemberUpdateGlobalParametersRequest<'session> {
+    pub(super) fn new(
+        session: &'session mut GrapheneSession,
+        new_parameters: ChainParameters,
+    ) -> Self {
+        Self {
+            session,
+            new_parameters,
+        }
+    }
+
+    pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
+        let operation = Operation::committee_member_update_global_parameters(
+            CommitteeMemberUpdateGlobalParametersOperation {
+                fee: core_fee(),
+                new_parameters: self.new_parameters,
+            },
+        );
         TransactionBuilder::new(self.session)
             .add_operation(operation)
             .prepare()

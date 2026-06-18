@@ -1,3 +1,4 @@
+use graphene_chain_swaplock_bindings::generated::types::ChainParameters;
 use open_graphene_transport::GrapheneSession;
 
 use crate::SwaplockApiError;
@@ -16,7 +17,7 @@ use super::asset_admin::{
 };
 use super::balance_claim::BalanceClaimRequest;
 use super::blind::{BlindTransferRequest, TransferFromBlindRequest, TransferToBlindRequest};
-use super::call_order::CallOrderUpdateRequest;
+use super::call_order::{BidCollateralRequest, CallOrderUpdateRequest};
 use super::credit_offer::{
     CreditDealRepayRequest, CreditDealUpdateRequest, CreditOfferAcceptRequest,
     CreditOfferCreateRequest, CreditOfferDeleteRequest, CreditOfferUpdateRequest,
@@ -25,8 +26,9 @@ use super::custom_authority::{
     CustomAuthorityCreateRequest, CustomAuthorityDeleteRequest, CustomAuthorityUpdateRequest,
 };
 use super::governance::{
-    CommitteeMemberCreateRequest, CommitteeMemberUpdateRequest, CustomRequest,
-    WitnessCreateRequest, WitnessUpdateRequest, WorkerCreateRequest,
+    CommitteeMemberCreateRequest, CommitteeMemberUpdateGlobalParametersRequest,
+    CommitteeMemberUpdateRequest, CustomRequest, WitnessCreateRequest, WitnessUpdateRequest,
+    WorkerCreateRequest,
 };
 use super::htlc::{HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest};
 use super::limit_order::{
@@ -655,6 +657,21 @@ impl<'session> OperationsApi<'session> {
         owner_key: impl Into<String>,
     ) -> BalanceClaimRequest<'session> {
         BalanceClaimRequest::new(self.session, deposit_to, balance, owner_key)
+    }
+
+    /// Bid on the collateral of a globally-settled market-pegged asset: `bidder`, then
+    /// `.collateral(..)` and `.debt_covered(..)`.
+    pub fn bid_collateral(self, bidder: impl Into<String>) -> BidCollateralRequest<'session> {
+        BidCollateralRequest::new(self.session, bidder)
+    }
+
+    /// Propose new chain-wide parameters (council-only). Pass a full [`ChainParameters`]; fetch the
+    /// current ones, change what you need, and submit (usually wrapped in a proposal).
+    pub fn committee_member_update_global_parameters(
+        self,
+        new_parameters: ChainParameters,
+    ) -> CommitteeMemberUpdateGlobalParametersRequest<'session> {
+        CommitteeMemberUpdateGlobalParametersRequest::new(self.session, new_parameters)
     }
 
     /// Move a public `amount` from `from` into blind outputs. Build the commitments, range proofs and
