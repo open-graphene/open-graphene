@@ -22,7 +22,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
 
     let live = swaplock.into_live()?;
-    let store = live.database().chain_store(["2.1.0"])?;
+    let store = live.database().chain_store(["2.1.0"]).await?;
 
     let head = |label: &str| {
         let value = store.get("2.1.0");

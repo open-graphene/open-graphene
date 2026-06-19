@@ -59,10 +59,12 @@ pub(super) async fn get_grouped_limit_orders(
         Some(price) => encode("get_grouped_limit_orders", &price)?,
         None => Value::Null,
     };
-    let result = session.orders_call(
-        "get_grouped_limit_orders",
-        get_grouped_limit_orders_params(base_asset, quote_asset, group, start, limit),
-    )?;
+    let result = session
+        .orders_call(
+            "get_grouped_limit_orders",
+            get_grouped_limit_orders_params(base_asset, quote_asset, group, start, limit),
+        )
+        .await?;
     decode("get_grouped_limit_orders", result)
 }
 

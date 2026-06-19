@@ -35,7 +35,7 @@ impl AccountSubscription<'_> {
 
     pub async fn next_update(&mut self) -> Result<AccountObject, SwaplockApiError> {
         loop {
-            let notice = self.session.next_notice()?;
+            let notice = self.session.next_notice().await?;
             let JsonRpcInbound::Notice {
                 callback_id,
                 payload,
@@ -58,7 +58,9 @@ pub(super) async fn get_account_by_id(
     session: &mut GrapheneSession,
     account_id: &str,
 ) -> Result<AccountObject, SwaplockApiError> {
-    let value = session.database_call("get_accounts", json!([[account_id], false]))?;
+    let value = session
+        .database_call("get_accounts", json!([[account_id], false]))
+        .await?;
     let accounts = value
         .as_array()
         .ok_or_else(|| SwaplockApiError::UnexpectedResponse {
@@ -82,11 +84,15 @@ pub(super) async fn subscribe_account_by_id(
     session: &mut GrapheneSession,
     account_id: String,
 ) -> Result<AccountSubscription<'_>, SwaplockApiError> {
-    session.database_call(
-        "set_subscribe_callback",
-        json!([ACCOUNT_CALLBACK_ID, false]),
-    )?;
-    let value = session.database_call("get_objects", json!([[account_id], true]))?;
+    session
+        .database_call(
+            "set_subscribe_callback",
+            json!([ACCOUNT_CALLBACK_ID, false]),
+        )
+        .await?;
+    let value = session
+        .database_call("get_objects", json!([[account_id], true]))
+        .await?;
     let initial = account_from_value("get_objects", value, &account_id)?;
 
     Ok(AccountSubscription {

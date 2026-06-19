@@ -62,19 +62,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         live.chain_id()
     );
 
-    let dgp = live
+    let mut dgp = live
         .database()
-        .subscribe_dynamic_global_properties_timeout(WAIT_TIMEOUT)?;
+        .subscribe_dynamic_global_properties_timeout(WAIT_TIMEOUT)
+        .await?;
     println!(
         "initial DGP head block: {} {}",
         dgp.initial().head_block_number,
         dgp.initial().time
     );
 
-    let balances = live
+    let mut balances = live
         .database()
         .account_balances_by_id(&from_id, [&asset_id])
-        .subscribe_timeout(WAIT_TIMEOUT)?;
+        .subscribe_timeout(WAIT_TIMEOUT)
+        .await?;
     let initial_balance = balances
         .initial()
         .iter()
@@ -90,7 +92,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .account_history_by_id(&from_id)
         .limit(5)
         .offset(0)
-        .subscribe_timeout(WAIT_TIMEOUT)?;
+        .subscribe_timeout(WAIT_TIMEOUT)
+        .await?;
     println!(
         "initial account history entries: {}",
         history.initial().items().len()
@@ -98,10 +101,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let pending = live
         .network_broadcast()?
-        .send_signed_transfer_with_callback(signed)?;
+        .send_signed_transfer_with_callback(signed)
+        .await?;
     println!("sent transfer through typed live network_broadcast wrapper");
 
-    let confirmation = pending.wait_timeout(WAIT_TIMEOUT)?;
+    let confirmation = pending.wait_timeout(WAIT_TIMEOUT).await?;
     println!(
         "confirmed transfer: block {} trx_num {} id {}",
         confirmation.block_num(),
@@ -109,13 +113,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         confirmation.id()
     );
 
-    let dgp_update = dgp.next_update_timeout(WAIT_TIMEOUT)?;
+    let dgp_update = dgp.next_update_timeout(WAIT_TIMEOUT).await?;
     println!(
         "DGP update after transfer: head block {} {}",
         dgp_update.head_block_number, dgp_update.time
     );
 
-    let balance_updates = balances.next_update_timeout(WAIT_TIMEOUT)?;
+    let balance_updates = balances.next_update_timeout(WAIT_TIMEOUT).await?;
     println!("balance updates after transfer: {}", balance_updates.len());
     for balance in &balance_updates {
         println!(
@@ -124,7 +128,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
     }
 
-    let history_updates = history.next_update_timeout(WAIT_TIMEOUT)?;
+    let history_updates = history.next_update_timeout(WAIT_TIMEOUT).await?;
     println!("history updates after transfer: {}", history_updates.len());
     for item in &history_updates {
         println!(

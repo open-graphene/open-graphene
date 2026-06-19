@@ -1,11 +1,11 @@
 use std::collections::VecDeque;
-use std::io::ErrorKind;
-use std::net::TcpStream;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
+use futures_util::{SinkExt, StreamExt};
 use serde_json::{Value, json};
-use tungstenite::stream::MaybeTlsStream;
-use tungstenite::{Error as WebSocketError, Message, WebSocket, connect};
+use tokio::net::TcpStream;
+use tokio_tungstenite::tungstenite::Message;
+use tokio_tungstenite::{MaybeTlsStream, WebSocketStream, connect_async};
 
 use crate::{CallbackId, JsonRpcInbound, JsonRpcRequest, TransportError, parse_inbound};
 
@@ -24,8 +24,12 @@ impl PendingCallback {
     }
 }
 
+/// An async Graphene WebSocket connection: send a request, await its response, correlate by id.
+///
+/// One connection serves request/response sequentially (the session holds it `&mut`). Out-of-order
+/// notices and responses that arrive while waiting for a specific id are buffered and matched later.
 pub struct WebSocketTransport {
-    socket: WebSocket<MaybeTlsStream<TcpStream>>,
+    socket: WebSocketStream<MaybeTlsStream<TcpStream>>,
     url: String,
     next_id: u64,
     buffered_notices: VecDeque<JsonRpcInbound>,
@@ -33,8 +37,10 @@ pub struct WebSocketTransport {
 }
 
 impl WebSocketTransport {
-    pub fn connect(url: &str) -> Result<Self, TransportError> {
-        let (socket, _) = connect(url).map_err(TransportError::websocket)?;
+    pub async fn connect(url: &str) -> Result<Self, TransportError> {
+        let (socket, _) = connect_async(url)
+            .await
+            .map_err(TransportError::websocket)?;
         Ok(Self {
             socket,
             url: url.to_string(),
@@ -49,52 +55,57 @@ impl WebSocketTransport {
         &self.url
     }
 
-    pub fn call(
+    pub async fn call(
         &mut self,
         api_id: u64,
         method: &str,
         params: Value,
     ) -> Result<Value, TransportError> {
-        let id = self.send_request(api_id, method, params)?;
-        self.wait_for_response(id)
+        let id = self.send_request(api_id, method, params).await?;
+        self.wait_for_response(id).await
     }
 
     pub fn into_live(self) -> Result<crate::LiveTransport, TransportError> {
         crate::LiveTransport::spawn(self)
     }
 
-    pub fn call_with_callback(
+    pub async fn call_with_callback(
         &mut self,
         api_id: u64,
         method: &str,
         params_after_callback: Value,
     ) -> Result<Value, TransportError> {
-        let pending = self.send_callback_request(api_id, method, params_after_callback)?;
-        self.wait_for_callback_response_and_notice(pending)
+        let pending = self
+            .send_callback_request(api_id, method, params_after_callback)
+            .await?;
+        self.wait_for_callback_response_and_notice(pending).await
     }
 
-    pub fn call_with_callback_timeout(
+    pub async fn call_with_callback_timeout(
         &mut self,
         api_id: u64,
         method: &str,
         params_after_callback: Value,
         timeout: Duration,
     ) -> Result<Value, TransportError> {
-        let pending = self.send_callback_request(api_id, method, params_after_callback)?;
+        let pending = self
+            .send_callback_request(api_id, method, params_after_callback)
+            .await?;
         self.wait_for_callback_response_and_notice_timeout(pending, timeout)
+            .await
     }
 
     pub fn next_buffered_notice(&mut self) -> Option<JsonRpcInbound> {
         self.buffered_notices.pop_front()
     }
 
-    pub fn next_notice(&mut self) -> Result<JsonRpcInbound, TransportError> {
+    pub async fn next_notice(&mut self) -> Result<JsonRpcInbound, TransportError> {
         if let Some(notice) = self.next_buffered_notice() {
             return Ok(notice);
         }
 
         loop {
-            match self.read_inbound()? {
+            match self.read_inbound().await? {
                 notice @ JsonRpcInbound::Notice { .. } => return Ok(notice),
                 response @ (JsonRpcInbound::Response { .. } | JsonRpcInbound::Error { .. }) => {
                     self.buffered_responses.push_back(response);
@@ -107,7 +118,7 @@ impl WebSocketTransport {
         self.buffered_notices.len()
     }
 
-    pub fn send_request(
+    pub async fn send_request(
         &mut self,
         api_id: u64,
         method: &str,
@@ -117,11 +128,12 @@ impl WebSocketTransport {
         let request = JsonRpcRequest::graphene_call(id, api_id, method, params);
         self.socket
             .send(Message::Text(request.to_value().to_string()))
+            .await
             .map_err(TransportError::websocket)?;
         Ok(id)
     }
 
-    pub fn send_callback_request(
+    pub async fn send_callback_request(
         &mut self,
         api_id: u64,
         method: &str,
@@ -132,27 +144,34 @@ impl WebSocketTransport {
         let request = JsonRpcRequest::graphene_call(callback_id.as_u64(), api_id, method, params);
         self.socket
             .send(Message::Text(request.to_value().to_string()))
+            .await
             .map_err(TransportError::websocket)?;
         Ok(PendingCallback::new(callback_id))
     }
 
-    pub fn wait_for_callback_response_and_notice(
+    pub async fn wait_for_callback_response_and_notice(
         &mut self,
         pending: PendingCallback,
     ) -> Result<Value, TransportError> {
         let callback_id = pending.callback_id();
-        self.wait_for_response(callback_id.as_u64())?;
-        self.wait_for_callback_notice(callback_id)
+        self.wait_for_response(callback_id.as_u64()).await?;
+        self.wait_for_callback_notice(callback_id).await
     }
 
-    pub fn wait_for_callback_response_and_notice_timeout(
+    pub async fn wait_for_callback_response_and_notice_timeout(
         &mut self,
         pending: PendingCallback,
         timeout: Duration,
     ) -> Result<Value, TransportError> {
         let callback_id = pending.callback_id();
-        self.wait_for_response(callback_id.as_u64())?;
-        self.wait_for_callback_notice_with_timeout(callback_id, timeout)
+        self.wait_for_response(callback_id.as_u64()).await?;
+        match tokio::time::timeout(timeout, self.wait_for_callback_notice(callback_id)).await {
+            Ok(result) => result,
+            Err(_) => Err(TransportError::CallbackTimeout {
+                callback_id,
+                timeout,
+            }),
+        }
     }
 
     fn allocate_request_id(&mut self) -> u64 {
@@ -161,13 +180,13 @@ impl WebSocketTransport {
         id
     }
 
-    fn wait_for_response(&mut self, id: u64) -> Result<Value, TransportError> {
+    async fn wait_for_response(&mut self, id: u64) -> Result<Value, TransportError> {
         if let Some(response) = self.take_buffered_response(id) {
             return response;
         }
 
         loop {
-            match self.read_inbound()? {
+            match self.read_inbound().await? {
                 JsonRpcInbound::Response { id: actual, result } if actual == id => {
                     return Ok(result);
                 }
@@ -184,7 +203,7 @@ impl WebSocketTransport {
         }
     }
 
-    pub(crate) fn wait_for_callback_notice(
+    pub(crate) async fn wait_for_callback_notice(
         &mut self,
         callback_id: CallbackId,
     ) -> Result<Value, TransportError> {
@@ -193,58 +212,7 @@ impl WebSocketTransport {
         }
 
         loop {
-            match self.read_inbound()? {
-                JsonRpcInbound::Notice {
-                    callback_id: actual,
-                    payload,
-                } if actual == callback_id => return Ok(payload),
-                notice @ JsonRpcInbound::Notice { .. } => {
-                    self.buffered_notices.push_back(notice);
-                }
-                response @ (JsonRpcInbound::Response { .. } | JsonRpcInbound::Error { .. }) => {
-                    self.buffered_responses.push_back(response);
-                }
-            }
-        }
-    }
-
-    pub(crate) fn wait_for_callback_notice_with_timeout(
-        &mut self,
-        callback_id: CallbackId,
-        timeout: Duration,
-    ) -> Result<Value, TransportError> {
-        if let Some(payload) = self.take_buffered_callback_notice(callback_id) {
-            return Ok(payload);
-        }
-
-        let previous_timeout = self.socket_read_timeout()?;
-        let deadline = Instant::now() + timeout;
-        let result = self.wait_for_callback_notice_until_deadline(callback_id, timeout, deadline);
-        let restore_result = self.set_socket_read_timeout(previous_timeout);
-
-        match (result, restore_result) {
-            (Ok(value), Ok(())) => Ok(value),
-            (Err(error), Ok(())) => Err(error),
-            (Ok(_), Err(error)) | (Err(_), Err(error)) => Err(error),
-        }
-    }
-
-    fn wait_for_callback_notice_until_deadline(
-        &mut self,
-        callback_id: CallbackId,
-        timeout: Duration,
-        deadline: Instant,
-    ) -> Result<Value, TransportError> {
-        loop {
-            let Some(remaining) = deadline.checked_duration_since(Instant::now()) else {
-                return Err(TransportError::CallbackTimeout {
-                    callback_id,
-                    timeout,
-                });
-            };
-            self.set_socket_read_timeout(Some(remaining))?;
-
-            match self.read_inbound_for_callback(callback_id, timeout)? {
+            match self.read_inbound().await? {
                 JsonRpcInbound::Notice {
                     callback_id: actual,
                     payload,
@@ -288,101 +256,21 @@ impl WebSocketTransport {
         Some(payload)
     }
 
-    fn read_inbound(&mut self) -> Result<JsonRpcInbound, TransportError> {
+    /// Read the next inbound frame off the wire, skipping non-text control frames. A closed stream
+    /// surfaces as [`TransportError::ConnectionClosed`]. Used by the live dispatcher's `select!`.
+    pub(crate) async fn read_inbound(&mut self) -> Result<JsonRpcInbound, TransportError> {
         loop {
-            match self.socket.read().map_err(TransportError::websocket)? {
-                Message::Text(text) => {
+            match self.socket.next().await {
+                Some(Ok(Message::Text(text))) => {
                     let value = serde_json::from_str(&text).map_err(TransportError::Json)?;
                     return parse_inbound(&value);
                 }
-                Message::Close(_) => return Err(TransportError::ConnectionClosed),
-                Message::Binary(_) | Message::Ping(_) | Message::Pong(_) | Message::Frame(_) => {
-                    continue;
-                }
+                Some(Ok(Message::Close(_))) | None => return Err(TransportError::ConnectionClosed),
+                Some(Ok(
+                    Message::Binary(_) | Message::Ping(_) | Message::Pong(_) | Message::Frame(_),
+                )) => continue,
+                Some(Err(error)) => return Err(TransportError::websocket(error)),
             }
-        }
-    }
-
-    pub(crate) fn read_inbound_timeout(
-        &mut self,
-    ) -> Result<Option<JsonRpcInbound>, TransportError> {
-        loop {
-            match self.socket.read() {
-                Ok(Message::Text(text)) => {
-                    let value = serde_json::from_str(&text).map_err(TransportError::Json)?;
-                    return parse_inbound(&value).map(Some);
-                }
-                Ok(Message::Close(_)) => return Err(TransportError::ConnectionClosed),
-                Ok(Message::Binary(_))
-                | Ok(Message::Ping(_))
-                | Ok(Message::Pong(_))
-                | Ok(Message::Frame(_)) => continue,
-                Err(WebSocketError::Io(error))
-                    if matches!(error.kind(), ErrorKind::TimedOut | ErrorKind::WouldBlock) =>
-                {
-                    return Ok(None);
-                }
-                Err(error) => return Err(TransportError::websocket(error)),
-            }
-        }
-    }
-
-    fn read_inbound_for_callback(
-        &mut self,
-        callback_id: CallbackId,
-        timeout: Duration,
-    ) -> Result<JsonRpcInbound, TransportError> {
-        loop {
-            match self.socket.read() {
-                Ok(Message::Text(text)) => {
-                    let value = serde_json::from_str(&text).map_err(TransportError::Json)?;
-                    return parse_inbound(&value);
-                }
-                Ok(Message::Close(_)) => return Err(TransportError::ConnectionClosed),
-                Ok(Message::Binary(_))
-                | Ok(Message::Ping(_))
-                | Ok(Message::Pong(_))
-                | Ok(Message::Frame(_)) => continue,
-                Err(WebSocketError::Io(error))
-                    if matches!(error.kind(), ErrorKind::TimedOut | ErrorKind::WouldBlock) =>
-                {
-                    return Err(TransportError::CallbackTimeout {
-                        callback_id,
-                        timeout,
-                    });
-                }
-                Err(error) => return Err(TransportError::websocket(error)),
-            }
-        }
-    }
-
-    pub(crate) fn socket_read_timeout(&self) -> Result<Option<Duration>, TransportError> {
-        match self.socket.get_ref() {
-            MaybeTlsStream::Plain(stream) => stream.read_timeout().map_err(TransportError::Io),
-            MaybeTlsStream::NativeTls(stream) => {
-                stream.get_ref().read_timeout().map_err(TransportError::Io)
-            }
-            _ => Err(TransportError::WebSocket(
-                "unsupported websocket stream type for callback timeout".to_string(),
-            )),
-        }
-    }
-
-    pub(crate) fn set_socket_read_timeout(
-        &self,
-        timeout: Option<Duration>,
-    ) -> Result<(), TransportError> {
-        match self.socket.get_ref() {
-            MaybeTlsStream::Plain(stream) => {
-                stream.set_read_timeout(timeout).map_err(TransportError::Io)
-            }
-            MaybeTlsStream::NativeTls(stream) => stream
-                .get_ref()
-                .set_read_timeout(timeout)
-                .map_err(TransportError::Io),
-            _ => Err(TransportError::WebSocket(
-                "unsupported websocket stream type for callback timeout".to_string(),
-            )),
         }
     }
 }

@@ -108,12 +108,12 @@ enum ProbeOutcome {
 ///
 /// A failed connection is returned as [`ProbeOutcome::Failed`] so callers can try the next server.
 /// A chain-id mismatch is a configuration error and is surfaced immediately as `Err`.
-fn probe_server(
+async fn probe_server(
     server: &str,
     expected_chain_id: Option<&str>,
 ) -> Result<ProbeOutcome, TransportError> {
     let started = Instant::now();
-    match GrapheneSession::connect(server) {
+    match GrapheneSession::connect(server).await {
         Ok(session) => {
             let latency = started.elapsed();
             if let Some(expected) = expected_chain_id {
@@ -145,7 +145,7 @@ impl GrapheneSession {
     ///
     /// Unreachable servers are collected and, if none succeed, reported as
     /// [`TransportError::AllServersFailed`]. A chain-id mismatch aborts immediately.
-    pub fn connect_with_strategy<I, S>(
+    pub async fn connect_with_strategy<I, S>(
         servers: I,
         expected_chain_id: Option<&str>,
         strategy: ConnectionStrategy,
@@ -162,7 +162,7 @@ impl GrapheneSession {
         let mut attempts = Vec::new();
         let mut best: Option<(Duration, GrapheneSession)> = None;
         for server in servers {
-            match probe_server(&server, expected_chain_id)? {
+            match probe_server(&server, expected_chain_id).await? {
                 ProbeOutcome::Connected { session, latency } => match strategy {
                     ConnectionStrategy::FirstAvailable => return Ok(session),
                     ConnectionStrategy::LowestLatency => {
@@ -186,7 +186,7 @@ impl GrapheneSession {
     /// A health check, not a live connection: each server is opened and then closed. Probes run
     /// sequentially. Unreachable servers drop out of the report; a wrong chain id aborts at once.
     /// Follow with [`connect_with_strategy`](Self::connect_with_strategy) to actually connect.
-    pub fn probe_latencies<I, S>(
+    pub async fn probe_latencies<I, S>(
         servers: I,
         expected_chain_id: Option<&str>,
     ) -> Result<Vec<ServerLatency>, TransportError>
@@ -202,7 +202,7 @@ impl GrapheneSession {
         let mut latencies = Vec::new();
         for server in servers {
             if let ProbeOutcome::Connected { session, latency } =
-                probe_server(&server, expected_chain_id)?
+                probe_server(&server, expected_chain_id).await?
             {
                 drop(session);
                 latencies.push(ServerLatency { server, latency });

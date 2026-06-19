@@ -20,7 +20,8 @@ impl GetObjectsRequest<'_> {
     pub async fn get(self) -> Result<Vec<Value>, SwaplockApiError> {
         let value = self
             .session
-            .database_call("get_objects", json!([self.ids, false]))?;
+            .database_call("get_objects", json!([self.ids, false]))
+            .await?;
         serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
             method: "get_objects",
             message: error.to_string(),

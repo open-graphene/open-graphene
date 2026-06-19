@@ -21,7 +21,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let balances = live
         .database()
         .account_balances_by_id("1.2.100", ["1.3.0"])
-        .subscribe_timeout(WAIT_TIMEOUT)?;
+        .subscribe_timeout(WAIT_TIMEOUT)
+        .await?;
     if balances.initial().is_empty() {
         println!("live balance subscription initial: none");
     }
@@ -35,7 +36,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let orders = live
         .database()
         .account_orders_by_id("1.2.100")
-        .subscribe_timeout(WAIT_TIMEOUT)?;
+        .subscribe_timeout(WAIT_TIMEOUT)
+        .await?;
     if orders.initial().is_empty() {
         println!("live open orders subscription initial: none");
     }

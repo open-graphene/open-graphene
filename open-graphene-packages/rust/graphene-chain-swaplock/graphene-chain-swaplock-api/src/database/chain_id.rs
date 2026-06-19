@@ -16,6 +16,6 @@ impl ChainIdRequest<'_> {
 pub(super) async fn get_chain_id(
     session: &mut GrapheneSession,
 ) -> Result<String, SwaplockApiError> {
-    let value = session.database_call("get_chain_id", json!([]))?;
+    let value = session.database_call("get_chain_id", json!([])).await?;
     parse_chain_id(value).map_err(Into::into)
 }

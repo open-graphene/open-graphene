@@ -20,7 +20,8 @@ impl GetKeyReferencesRequest<'_> {
     pub async fn get(self) -> Result<Vec<Vec<AccountId>>, SwaplockApiError> {
         let value = self
             .session
-            .database_call("get_key_references", json!([self.keys]))?;
+            .database_call("get_key_references", json!([self.keys]))
+            .await?;
         serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
             method: "get_key_references",
             message: error.to_string(),

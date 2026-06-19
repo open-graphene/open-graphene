@@ -49,18 +49,20 @@ pub(super) async fn range_proof_sign(
     let commit = encode("range_proof_sign", &commit)?;
     let commit_blind = encode("range_proof_sign", &commit_blind)?;
     let nonce = encode("range_proof_sign", &nonce)?;
-    let result = session.crypto_call(
-        "range_proof_sign",
-        range_proof_sign_params(
-            min_value,
-            commit,
-            commit_blind,
-            nonce,
-            base10_exp,
-            min_bits,
-            actual_value,
-        ),
-    )?;
+    let result = session
+        .crypto_call(
+            "range_proof_sign",
+            range_proof_sign_params(
+                min_value,
+                commit,
+                commit_blind,
+                nonce,
+                base10_exp,
+                min_bits,
+                actual_value,
+            ),
+        )
+        .await?;
     decode("range_proof_sign", result)
 }
 

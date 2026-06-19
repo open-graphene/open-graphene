@@ -27,7 +27,9 @@ pub(super) async fn verify_range(
 ) -> Result<VerifyRangeResult, SwaplockApiError> {
     let commit = encode("verify_range", &commit)?;
     let proof = encode("verify_range", &proof)?;
-    let result = session.crypto_call("verify_range", verify_range_params(commit, proof))?;
+    let result = session
+        .crypto_call("verify_range", verify_range_params(commit, proof))
+        .await?;
     decode("verify_range", result)
 }
 

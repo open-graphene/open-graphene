@@ -20,6 +20,6 @@ impl TrackedGroupsRequest<'_> {
 pub(super) async fn get_tracked_groups(
     session: &mut GrapheneSession,
 ) -> Result<Vec<u16>, SwaplockApiError> {
-    let result = session.orders_call("get_tracked_groups", json!([]))?;
+    let result = session.orders_call("get_tracked_groups", json!([])).await?;
     decode("get_tracked_groups", result)
 }

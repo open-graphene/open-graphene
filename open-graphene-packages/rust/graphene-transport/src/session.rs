@@ -24,13 +24,13 @@ pub struct GrapheneSession {
 }
 
 impl GrapheneSession {
-    pub fn connect(url: &str) -> Result<Self, TransportError> {
-        let transport = WebSocketTransport::connect(url)?;
-        Self::from_transport(transport)
+    pub async fn connect(url: &str) -> Result<Self, TransportError> {
+        let transport = WebSocketTransport::connect(url).await?;
+        Self::from_transport(transport).await
     }
 
-    pub fn from_transport(mut transport: WebSocketTransport) -> Result<Self, TransportError> {
-        let (api_ids, chain_id) = establish(&mut transport, None)?;
+    pub async fn from_transport(mut transport: WebSocketTransport) -> Result<Self, TransportError> {
+        let (api_ids, chain_id) = establish(&mut transport, None).await?;
         Ok(Self {
             transport,
             api_ids,
@@ -53,10 +53,10 @@ impl GrapheneSession {
     ///
     /// Refuses to reconnect if the node now reports a different chain id. Note that live
     /// subscriptions are not resumed: re-subscribe after a reconnect if you need them.
-    pub fn reconnect(&mut self) -> Result<(), TransportError> {
+    pub async fn reconnect(&mut self) -> Result<(), TransportError> {
         let url = self.transport.url().to_string();
-        let mut transport = WebSocketTransport::connect(&url)?;
-        let (api_ids, _) = establish(&mut transport, Some(&self.chain_id))?;
+        let mut transport = WebSocketTransport::connect(&url).await?;
+        let (api_ids, _) = establish(&mut transport, Some(&self.chain_id)).await?;
         self.transport = transport;
         self.api_ids = api_ids;
         Ok(())
@@ -65,7 +65,7 @@ impl GrapheneSession {
     /// Run an idempotent call, reconnecting and retrying on a dropped connection per the policy.
     ///
     /// The API id is resolved fresh on each attempt, since a reconnect rediscovers it.
-    fn call_with_reconnect(
+    async fn call_with_reconnect(
         &mut self,
         select: impl Fn(&ApiIds) -> Result<u64, TransportError>,
         method: &str,
@@ -74,15 +74,15 @@ impl GrapheneSession {
         let mut attempt = 0;
         loop {
             let api_id = select(&self.api_ids)?;
-            match self.transport.call(api_id, method, params.clone()) {
+            match self.transport.call(api_id, method, params.clone()).await {
                 Ok(value) => return Ok(value),
                 Err(error)
                     if is_connection_error(&error)
                         && attempt < self.reconnect_policy.max_retries =>
                 {
                     attempt += 1;
-                    std::thread::sleep(self.reconnect_policy.backoff_delay(attempt));
-                    self.reconnect()?;
+                    tokio::time::sleep(self.reconnect_policy.backoff_delay(attempt)).await;
+                    self.reconnect().await?;
                 }
                 Err(error) => return Err(error),
             }
@@ -105,15 +105,24 @@ impl GrapheneSession {
         self.transport.into_live()
     }
 
-    pub fn database_call(&mut self, method: &str, params: Value) -> Result<Value, TransportError> {
+    pub async fn database_call(
+        &mut self,
+        method: &str,
+        params: Value,
+    ) -> Result<Value, TransportError> {
         self.call_with_reconnect(|ids| Ok(ids.database), method, params)
+            .await
     }
 
-    pub fn next_notice(&mut self) -> Result<JsonRpcInbound, TransportError> {
-        self.transport.next_notice()
+    pub async fn next_notice(&mut self) -> Result<JsonRpcInbound, TransportError> {
+        self.transport.next_notice().await
     }
 
-    pub fn history_call(&mut self, method: &str, params: Value) -> Result<Value, TransportError> {
+    pub async fn history_call(
+        &mut self,
+        method: &str,
+        params: Value,
+    ) -> Result<Value, TransportError> {
         self.call_with_reconnect(
             |ids| {
                 ids.history
@@ -122,9 +131,14 @@ impl GrapheneSession {
             method,
             params,
         )
+        .await
     }
 
-    pub fn crypto_call(&mut self, method: &str, params: Value) -> Result<Value, TransportError> {
+    pub async fn crypto_call(
+        &mut self,
+        method: &str,
+        params: Value,
+    ) -> Result<Value, TransportError> {
         self.call_with_reconnect(
             |ids| {
                 ids.crypto
@@ -133,9 +147,14 @@ impl GrapheneSession {
             method,
             params,
         )
+        .await
     }
 
-    pub fn orders_call(&mut self, method: &str, params: Value) -> Result<Value, TransportError> {
+    pub async fn orders_call(
+        &mut self,
+        method: &str,
+        params: Value,
+    ) -> Result<Value, TransportError> {
         self.call_with_reconnect(
             |ids| {
                 ids.orders
@@ -144,9 +163,10 @@ impl GrapheneSession {
             method,
             params,
         )
+        .await
     }
 
-    pub fn network_broadcast_call(
+    pub async fn network_broadcast_call(
         &mut self,
         method: &str,
         params: Value,
@@ -157,10 +177,10 @@ impl GrapheneSession {
             .ok_or(TransportError::MissingApi {
                 name: "network_broadcast",
             })?;
-        self.transport.call(api_id, method, params)
+        self.transport.call(api_id, method, params).await
     }
 
-    pub fn network_broadcast_call_with_callback(
+    pub async fn network_broadcast_call_with_callback(
         &mut self,
         method: &str,
         params_after_callback: Value,
@@ -173,9 +193,10 @@ impl GrapheneSession {
             })?;
         self.transport
             .call_with_callback(api_id, method, params_after_callback)
+            .await
     }
 
-    pub fn network_broadcast_call_with_callback_timeout(
+    pub async fn network_broadcast_call_with_callback_timeout(
         &mut self,
         method: &str,
         params_after_callback: Value,
@@ -189,9 +210,10 @@ impl GrapheneSession {
             })?;
         self.transport
             .call_with_callback_timeout(api_id, method, params_after_callback, timeout)
+            .await
     }
 
-    pub fn network_broadcast_send_callback_request(
+    pub async fn network_broadcast_send_callback_request(
         &mut self,
         method: &str,
         params_after_callback: Value,
@@ -204,15 +226,17 @@ impl GrapheneSession {
             })?;
         self.transport
             .send_callback_request(api_id, method, params_after_callback)
+            .await
     }
 
-    pub fn network_broadcast_wait_callback_response_and_notice_timeout(
+    pub async fn network_broadcast_wait_callback_response_and_notice_timeout(
         &mut self,
         pending: PendingCallback,
         timeout: Duration,
     ) -> Result<Value, TransportError> {
         self.transport
             .wait_for_callback_response_and_notice_timeout(pending, timeout)
+            .await
     }
 }
 
@@ -220,18 +244,18 @@ impl GrapheneSession {
 ///
 /// When `expected_chain_id` is set, a mismatch is rejected so a reconnect never silently lands on
 /// a different chain.
-fn establish(
+async fn establish(
     transport: &mut WebSocketTransport,
     expected_chain_id: Option<&str>,
 ) -> Result<(ApiIds, String), TransportError> {
-    transport.call(1, "login", json!(["", ""]))?;
+    transport.call(1, "login", json!(["", ""])).await?;
 
-    let database = discover_required_api(transport, "database")?;
-    let history = discover_optional_api(transport, "history")?;
-    let network_broadcast = discover_optional_api(transport, "network_broadcast")?;
-    let crypto = discover_optional_api(transport, "crypto")?;
-    let orders = discover_optional_api(transport, "orders")?;
-    let chain_id = parse_chain_id(transport.call(database, "get_chain_id", json!([]))?)?;
+    let database = discover_required_api(transport, "database").await?;
+    let history = discover_optional_api(transport, "history").await?;
+    let network_broadcast = discover_optional_api(transport, "network_broadcast").await?;
+    let crypto = discover_optional_api(transport, "crypto").await?;
+    let orders = discover_optional_api(transport, "orders").await?;
+    let chain_id = parse_chain_id(transport.call(database, "get_chain_id", json!([])).await?)?;
 
     if let Some(expected) = expected_chain_id
         && expected != chain_id
@@ -257,19 +281,19 @@ fn establish(
     ))
 }
 
-fn discover_required_api(
+async fn discover_required_api(
     transport: &mut WebSocketTransport,
     name: &'static str,
 ) -> Result<u64, TransportError> {
-    let value = transport.call(1, name, json!([]))?;
+    let value = transport.call(1, name, json!([])).await?;
     parse_api_id(name, value)
 }
 
-fn discover_optional_api(
+async fn discover_optional_api(
     transport: &mut WebSocketTransport,
     name: &'static str,
 ) -> Result<Option<u64>, TransportError> {
-    match transport.call(1, name, json!([])) {
+    match transport.call(1, name, json!([])).await {
         Ok(value) => parse_api_id(name, value).map(Some),
         Err(TransportError::RpcError { .. }) => Ok(None),
         Err(error) => Err(error),

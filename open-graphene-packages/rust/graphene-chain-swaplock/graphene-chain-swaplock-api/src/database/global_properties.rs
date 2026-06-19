@@ -17,7 +17,9 @@ impl GlobalPropertiesRequest<'_> {
 pub(super) async fn get_global_properties(
     session: &mut GrapheneSession,
 ) -> Result<GlobalPropertyObject, SwaplockApiError> {
-    let value = session.database_call("get_global_properties", json!([]))?;
+    let value = session
+        .database_call("get_global_properties", json!([]))
+        .await?;
     serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
         method: "get_global_properties",
         message: error.to_string(),

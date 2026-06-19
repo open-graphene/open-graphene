@@ -65,7 +65,8 @@ impl<'session> NetworkBroadcastApi<'session> {
         transaction: Value,
     ) -> Result<BroadcastReceipt, SwaplockApiError> {
         self.session
-            .network_broadcast_call("broadcast_transaction", json!([transaction.clone()]))?;
+            .network_broadcast_call("broadcast_transaction", json!([transaction.clone()]))
+            .await?;
         Ok(BroadcastReceipt { transaction })
     }
 
@@ -73,10 +74,13 @@ impl<'session> NetworkBroadcastApi<'session> {
         self,
         transaction: Value,
     ) -> Result<BroadcastConfirmation, SwaplockApiError> {
-        let confirmation = self.session.network_broadcast_call_with_callback(
-            "broadcast_transaction_with_callback",
-            json!([transaction]),
-        )?;
+        let confirmation = self
+            .session
+            .network_broadcast_call_with_callback(
+                "broadcast_transaction_with_callback",
+                json!([transaction]),
+            )
+            .await?;
         parse_broadcast_confirmation(confirmation)
     }
 
@@ -85,11 +89,14 @@ impl<'session> NetworkBroadcastApi<'session> {
         transaction: Value,
         timeout: Duration,
     ) -> Result<BroadcastConfirmation, SwaplockApiError> {
-        let confirmation = self.session.network_broadcast_call_with_callback_timeout(
-            "broadcast_transaction_with_callback",
-            json!([transaction]),
-            timeout,
-        )?;
+        let confirmation = self
+            .session
+            .network_broadcast_call_with_callback_timeout(
+                "broadcast_transaction_with_callback",
+                json!([transaction]),
+                timeout,
+            )
+            .await?;
         parse_broadcast_confirmation(confirmation)
     }
 
@@ -97,10 +104,13 @@ impl<'session> NetworkBroadcastApi<'session> {
         self,
         transaction: Value,
     ) -> Result<PendingBroadcastConfirmation, SwaplockApiError> {
-        let pending = self.session.network_broadcast_send_callback_request(
-            "broadcast_transaction_with_callback",
-            json!([transaction]),
-        )?;
+        let pending = self
+            .session
+            .network_broadcast_send_callback_request(
+                "broadcast_transaction_with_callback",
+                json!([transaction]),
+            )
+            .await?;
         Ok(PendingBroadcastConfirmation { pending })
     }
 
@@ -111,10 +121,8 @@ impl<'session> NetworkBroadcastApi<'session> {
     ) -> Result<BroadcastConfirmation, SwaplockApiError> {
         let confirmation = self
             .session
-            .network_broadcast_wait_callback_response_and_notice_timeout(
-                pending.pending,
-                timeout,
-            )?;
+            .network_broadcast_wait_callback_response_and_notice_timeout(pending.pending, timeout)
+            .await?;
         parse_broadcast_confirmation(confirmation)
     }
 }

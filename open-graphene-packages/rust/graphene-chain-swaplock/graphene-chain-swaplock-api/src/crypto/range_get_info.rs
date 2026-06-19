@@ -24,7 +24,9 @@ pub(super) async fn range_get_info(
     proof: RangeProof,
 ) -> Result<RangeProofInfo, SwaplockApiError> {
     let proof = encode("range_get_info", &proof)?;
-    let result = session.crypto_call("range_get_info", range_get_info_params(proof))?;
+    let result = session
+        .crypto_call("range_get_info", range_get_info_params(proof))
+        .await?;
     decode("range_get_info", result)
 }
 

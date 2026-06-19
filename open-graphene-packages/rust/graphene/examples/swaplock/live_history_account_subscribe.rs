@@ -23,7 +23,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .account_history_by_id("1.2.100")
         .limit(5)
         .offset(0)
-        .subscribe_timeout(WAIT_TIMEOUT)?;
+        .subscribe_timeout(WAIT_TIMEOUT)
+        .await?;
 
     println!(
         "live account history initial page entries: {}",

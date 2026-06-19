@@ -26,7 +26,8 @@ impl LookupAccountsRequest<'_> {
     pub async fn get(self) -> Result<Vec<(String, String)>, SwaplockApiError> {
         let value = self
             .session
-            .database_call("lookup_accounts", json!([self.lower_bound, self.limit]))?;
+            .database_call("lookup_accounts", json!([self.lower_bound, self.limit]))
+            .await?;
         serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
             method: "lookup_accounts",
             message: error.to_string(),

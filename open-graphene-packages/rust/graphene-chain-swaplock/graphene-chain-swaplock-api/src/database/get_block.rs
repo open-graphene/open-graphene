@@ -18,7 +18,8 @@ impl GetBlockRequest<'_> {
     pub async fn get(self) -> Result<Option<SignedBlock>, SwaplockApiError> {
         let value = self
             .session
-            .database_call("get_block", json!([self.block_num]))?;
+            .database_call("get_block", json!([self.block_num]))
+            .await?;
         serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
             method: "get_block",
             message: error.to_string(),

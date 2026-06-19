@@ -40,7 +40,7 @@ impl AccountBalancesSubscription<'_> {
 
     pub async fn next_update(&mut self) -> Result<Vec<AccountBalanceObject>, SwaplockApiError> {
         loop {
-            let notice = self.session.next_notice()?;
+            let notice = self.session.next_notice().await?;
             let JsonRpcInbound::Notice {
                 callback_id,
                 payload,
@@ -73,10 +73,12 @@ pub(super) async fn get_account_balances_by_id<L>(
 where
     L: IntoStringList,
 {
-    let value = session.database_call(
-        "get_account_balances",
-        json!([account_id, asset_ids.into_string_list()]),
-    )?;
+    let value = session
+        .database_call(
+            "get_account_balances",
+            json!([account_id, asset_ids.into_string_list()]),
+        )
+        .await?;
 
     serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
         method: "get_account_balances",
@@ -89,11 +91,15 @@ pub(super) async fn subscribe_account_balances_by_id(
     account_id: String,
     asset_ids: Vec<String>,
 ) -> Result<AccountBalancesSubscription<'_>, SwaplockApiError> {
-    session.database_call(
-        "set_subscribe_callback",
-        json!([ACCOUNT_BALANCES_CALLBACK_ID, false]),
-    )?;
-    let value = session.database_call("get_full_accounts", json!([[account_id], true]))?;
+    session
+        .database_call(
+            "set_subscribe_callback",
+            json!([ACCOUNT_BALANCES_CALLBACK_ID, false]),
+        )
+        .await?;
+    let value = session
+        .database_call("get_full_accounts", json!([[account_id], true]))
+        .await?;
     let initial = account_balances_from_full_accounts_value(
         "get_full_accounts",
         value,

@@ -88,11 +88,13 @@ impl SwaplockLiveAccountHistoryRequest {
         self
     }
 
-    pub fn subscribe(self) -> Result<SwaplockLiveAccountHistorySubscription, SwaplockApiError> {
-        self.subscribe_timeout(Duration::from_secs(10))
+    pub async fn subscribe(
+        self,
+    ) -> Result<SwaplockLiveAccountHistorySubscription, SwaplockApiError> {
+        self.subscribe_timeout(Duration::from_secs(10)).await
     }
 
-    pub fn subscribe_timeout(
+    pub async fn subscribe_timeout(
         self,
         timeout: Duration,
     ) -> Result<SwaplockLiveAccountHistorySubscription, SwaplockApiError> {
@@ -105,6 +107,7 @@ impl SwaplockLiveAccountHistoryRequest {
             self.offset,
             timeout,
         )
+        .await
     }
 }
 
@@ -119,11 +122,13 @@ impl SwaplockLiveAccountHistoryByIdRequest {
         self
     }
 
-    pub fn subscribe(self) -> Result<SwaplockLiveAccountHistorySubscription, SwaplockApiError> {
-        self.subscribe_timeout(Duration::from_secs(10))
+    pub async fn subscribe(
+        self,
+    ) -> Result<SwaplockLiveAccountHistorySubscription, SwaplockApiError> {
+        self.subscribe_timeout(Duration::from_secs(10)).await
     }
 
-    pub fn subscribe_timeout(
+    pub async fn subscribe_timeout(
         self,
         timeout: Duration,
     ) -> Result<SwaplockLiveAccountHistorySubscription, SwaplockApiError> {
@@ -136,6 +141,7 @@ impl SwaplockLiveAccountHistoryByIdRequest {
             self.offset,
             timeout,
         )
+        .await
     }
 }
 
@@ -144,16 +150,17 @@ impl SwaplockLiveAccountHistorySubscription {
         &self.initial
     }
 
-    pub fn next_update(&mut self) -> Result<Vec<OperationHistoryObject>, SwaplockApiError> {
+    pub async fn next_update(&mut self) -> Result<Vec<OperationHistoryObject>, SwaplockApiError> {
         loop {
-            self.subscription.next()?;
+            self.subscription.next().await?;
             let updates = get_recent_live_account_history_since(
                 &self.live,
                 self.history_api_id,
                 &self.account_name_or_id,
                 self.last_seen_operation_id.as_deref(),
                 None,
-            )?;
+            )
+            .await?;
             if !updates.is_empty() {
                 self.last_seen_operation_id = updates.first().map(|item| item.id.0.clone());
                 return Ok(updates);
@@ -161,7 +168,7 @@ impl SwaplockLiveAccountHistorySubscription {
         }
     }
 
-    pub fn next_update_timeout(
+    pub async fn next_update_timeout(
         &mut self,
         timeout: Duration,
     ) -> Result<Vec<OperationHistoryObject>, SwaplockApiError> {
@@ -169,7 +176,7 @@ impl SwaplockLiveAccountHistorySubscription {
         loop {
             let remaining =
                 remaining_or_callback_timeout(deadline, self.subscription.callback_id(), timeout)?;
-            self.subscription.next_timeout(remaining)?;
+            self.subscription.next_timeout(remaining).await?;
             let remaining =
                 remaining_or_callback_timeout(deadline, self.subscription.callback_id(), timeout)?;
             let updates = get_recent_live_account_history_since(
@@ -178,7 +185,8 @@ impl SwaplockLiveAccountHistorySubscription {
                 &self.account_name_or_id,
                 self.last_seen_operation_id.as_deref(),
                 Some(remaining),
-            )?;
+            )
+            .await?;
             if !updates.is_empty() {
                 self.last_seen_operation_id = updates.first().map(|item| item.id.0.clone());
                 return Ok(updates);
@@ -187,7 +195,7 @@ impl SwaplockLiveAccountHistorySubscription {
     }
 }
 
-fn subscribe_live_account_history(
+async fn subscribe_live_account_history(
     live: LiveTransportHandle,
     database_api_id: u64,
     history_api_id: u64,
@@ -197,19 +205,21 @@ fn subscribe_live_account_history(
     timeout: Duration,
 ) -> Result<SwaplockLiveAccountHistorySubscription, SwaplockApiError> {
     let callback_id = CallbackId::new(LIVE_DATABASE_CALLBACK_ID);
-    let subscription = live.subscribe_callback(callback_id)?;
+    let subscription = live.subscribe_callback(callback_id).await?;
     live.call(
         database_api_id,
         "set_subscribe_callback",
         json!([LIVE_DATABASE_CALLBACK_ID, false]),
     )?
-    .wait_timeout(timeout)?;
+    .wait_timeout(timeout)
+    .await?;
     live.call(
         database_api_id,
         "get_full_accounts",
         json!([[account_name_or_id.clone()], true]),
     )?
-    .wait_timeout(timeout)?;
+    .wait_timeout(timeout)
+    .await?;
 
     let initial = get_live_account_history_snapshot(
         &live,
@@ -218,7 +228,8 @@ fn subscribe_live_account_history(
         limit,
         offset,
         Some(timeout),
-    )?;
+    )
+    .await?;
 
     Ok(SwaplockLiveAccountHistorySubscription {
         live,
@@ -230,7 +241,7 @@ fn subscribe_live_account_history(
     })
 }
 
-fn get_live_account_history_snapshot(
+async fn get_live_account_history_snapshot(
     live: &LiveTransportHandle,
     history_api_id: u64,
     account_name_or_id: &str,
@@ -241,8 +252,8 @@ fn get_live_account_history_snapshot(
     let params = account_history_params(account_name_or_id, limit, offset)?;
     let pending = live.call(history_api_id, ACCOUNT_HISTORY_METHOD, params)?;
     let value = match timeout {
-        Some(timeout) => pending.wait_timeout(timeout)?,
-        None => pending.wait()?,
+        Some(timeout) => pending.wait_timeout(timeout).await?,
+        None => pending.wait().await?,
     };
     let raw_items = account_history_items_from_value(value)?;
     let newest_operation_id = raw_items.first().map(|item| item.id.0.clone());
@@ -254,7 +265,7 @@ fn get_live_account_history_snapshot(
     })
 }
 
-fn get_recent_live_account_history_since(
+async fn get_recent_live_account_history_since(
     live: &LiveTransportHandle,
     history_api_id: u64,
     account_name_or_id: &str,
@@ -273,8 +284,8 @@ fn get_recent_live_account_history_since(
         ]),
     )?;
     let value = match timeout {
-        Some(timeout) => pending.wait_timeout(timeout)?,
-        None => pending.wait()?,
+        Some(timeout) => pending.wait_timeout(timeout).await?,
+        None => pending.wait().await?,
     };
     account_history_items_from_value(value)
 }
