@@ -72,9 +72,9 @@ pub use graphene_chain_swaplock_bindings::generated::operations::{
 };
 pub use graphene_chain_swaplock_bindings::generated::static_variants::{ArgumentType, Operation};
 pub use graphene_chain_swaplock_bindings::generated::types::{
-    Asset, Authority, ChainParameters, ChainPropertyObject, DynamicGlobalPropertyObject,
-    GlobalPropertyObject, MaybeSignedBlockHeader, Price, ProcessedTransaction, Restriction,
-    SignedBlock,
+    Asset, AssetObject, Authority, ChainParameters, ChainPropertyObject,
+    DynamicGlobalPropertyObject, GlobalPropertyObject, MaybeSignedBlockHeader, Price,
+    ProcessedTransaction, Restriction, SignedBlock,
 };
 
 pub use orders::{
