@@ -161,6 +161,7 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         | "generic_operation_result"
         | "generic_exchange_operation_result"
         | "htlc_options"
+        | "immutable_chain_parameters"
         | "memo_data"
         | "maybe_signed_block_header"
         | "no_special_authority"
@@ -578,6 +579,12 @@ mod tests {
             resolve_cpp_type("htlc_options"),
             TypeRef::Ref {
                 name: "htlc_options".to_string()
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("immutable_chain_parameters"),
+            TypeRef::Ref {
+                name: "immutable_chain_parameters".to_string()
             }
         );
         assert_eq!(

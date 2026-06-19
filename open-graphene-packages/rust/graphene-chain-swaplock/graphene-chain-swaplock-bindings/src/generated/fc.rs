@@ -811,6 +811,15 @@ impl FcSerialize for crate::generated::types::ChainParametersExt {
     }
 }
 
+impl FcSerialize for crate::generated::types::ChainPropertyObject {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.id.fc_serialize(out)?;
+        self.chain_id.fc_serialize(out)?;
+        self.immutable_parameters.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::CommitteeMemberCreateOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -1074,6 +1083,16 @@ impl FcSerialize for crate::generated::types::HtlcRedeemedOperationFeeParamsT {
 impl FcSerialize for crate::generated::types::HtlcRefundOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::ImmutableChainParameters {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.min_committee_member_count.fc_serialize(out)?;
+        self.min_witness_count.fc_serialize(out)?;
+        self.num_special_accounts.fc_serialize(out)?;
+        self.num_special_assets.fc_serialize(out)?;
         Ok(())
     }
 }

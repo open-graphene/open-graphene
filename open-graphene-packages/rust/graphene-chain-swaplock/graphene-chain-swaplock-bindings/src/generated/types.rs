@@ -711,7 +711,7 @@ pub struct ChainParametersExt {
 pub struct ChainPropertyObject {
     pub id: crate::generated::ids::ChainPropertyId,
     pub chain_id: crate::generated::ids::ChainId,
-    pub immutable_parameters: serde_json::Value,
+    pub immutable_parameters: crate::generated::types::ImmutableChainParameters,
 }
 
 /// Raw protocol struct `committee_member_create_operation_fee_params_t`.
@@ -979,6 +979,16 @@ pub struct HtlcRedeemedOperationFeeParamsT {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockHtlcRefundOperationFeeParamsT)]
 pub struct HtlcRefundOperationFeeParamsT {
+}
+
+/// Raw protocol struct `immutable_chain_parameters`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockImmutableChainParameters)]
+pub struct ImmutableChainParameters {
+    pub min_committee_member_count: u16,
+    pub min_witness_count: u16,
+    pub num_special_accounts: u32,
+    pub num_special_assets: u32,
 }
 
 /// Raw protocol struct `instant_vesting_policy_initializer`.

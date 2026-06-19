@@ -136,6 +136,8 @@ fn build_type_graph(
             resolved_structs.insert(name.clone());
             let def = if let Some(raw) = find_raw_class(facts, &name) {
                 raw_class_to_struct_def(raw, facts)
+            } else if let Some(def) = known_core_struct_def(&name) {
+                def
             } else if let Some(def) = nested_reflect_struct_to_def(facts, &name) {
                 def
             } else {
@@ -617,6 +619,49 @@ fn extension_inner(type_expr: &str) -> Option<&str> {
     let rest = value.strip_prefix("extension<")?;
     let inner = rest.strip_suffix('>')?.trim();
     if inner.is_empty() { None } else { Some(inner) }
+}
+
+fn known_core_struct_def(name: &str) -> Option<StructDef> {
+    if name != "immutable_chain_parameters" {
+        return None;
+    }
+
+    let fields = [
+        ("min_committee_member_count", TypeRef::Uint16),
+        ("min_witness_count", TypeRef::Uint16),
+        ("num_special_accounts", TypeRef::Uint32),
+        ("num_special_assets", TypeRef::Uint32),
+    ]
+    .into_iter()
+    .enumerate()
+    .map(|(index, (name, ty))| FieldDef {
+        index: index as u32,
+        name: name.to_string(),
+        ty,
+        source: None,
+        support: Some(SupportDef {
+            status: SupportStatus::Supported,
+            reason: Some(
+                "known Graphene core struct from immutable_chain_parameters.hpp".to_string(),
+            ),
+        }),
+    })
+    .collect();
+
+    Some(StructDef {
+        name: "immutable_chain_parameters".to_string(),
+        source_name: Some("graphene::chain::immutable_chain_parameters".to_string()),
+        kind: StructKind::Struct,
+        wire_tag: None,
+        fields,
+        support: Some(SupportDef {
+            status: SupportStatus::Supported,
+            reason: Some(
+                "manual core type mapping; header uses FC_REFLECT_TYPENAME without field reflection"
+                    .to_string(),
+            ),
+        }),
+    })
 }
 
 fn nested_reflect_for<'a>(
