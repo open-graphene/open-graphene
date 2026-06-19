@@ -25,7 +25,9 @@ pub(super) async fn blind(
     value: u64,
 ) -> Result<Commitment, SwaplockApiError> {
     let factor = encode("blind", &blinding_factor)?;
-    let result = session.crypto_call("blind", blind_params(factor, value))?;
+    let result = session
+        .crypto_call("blind", blind_params(factor, value))
+        .await?;
     decode("blind", result)
 }
 

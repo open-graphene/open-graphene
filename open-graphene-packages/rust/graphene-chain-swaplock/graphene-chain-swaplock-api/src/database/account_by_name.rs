@@ -26,7 +26,9 @@ pub(super) async fn get_account_by_name(
     session: &mut GrapheneSession,
     account_name: &str,
 ) -> Result<AccountObject, SwaplockApiError> {
-    let value = session.database_call("get_accounts", json!([[account_name], false]))?;
+    let value = session
+        .database_call("get_accounts", json!([[account_name], false]))
+        .await?;
     let accounts = value
         .as_array()
         .ok_or_else(|| SwaplockApiError::UnexpectedResponse {

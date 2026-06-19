@@ -21,7 +21,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let account = live
         .database()
         .account_by_id("1.2.100")
-        .subscribe_timeout(WAIT_TIMEOUT)?;
+        .subscribe_timeout(WAIT_TIMEOUT)
+        .await?;
     println!(
         "live account subscription initial: {} {}",
         account.initial().id.0,
@@ -31,7 +32,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let asset = live
         .database()
         .asset_by_id("1.3.0")
-        .subscribe_timeout(WAIT_TIMEOUT)?;
+        .subscribe_timeout(WAIT_TIMEOUT)
+        .await?;
     println!(
         "live asset subscription initial: {} {} precision {}",
         asset.initial().id.0,

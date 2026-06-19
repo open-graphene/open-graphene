@@ -30,7 +30,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .head_block_number;
     println!("head before reconnect: {before}");
 
-    swaplock.reconnect()?;
+    swaplock.reconnect().await?;
     println!("reconnected");
 
     let after = swaplock

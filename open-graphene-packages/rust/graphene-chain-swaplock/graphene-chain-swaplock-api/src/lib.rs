@@ -190,7 +190,8 @@ impl SwaplockApi {
         I: IntoIterator<Item = S>,
         S: Into<String>,
     {
-        let session = GrapheneSession::connect_with_strategy(servers, expected_chain_id, strategy)?;
+        let session =
+            GrapheneSession::connect_with_strategy(servers, expected_chain_id, strategy).await?;
         Ok(Self { session })
     }
 
@@ -207,18 +208,15 @@ impl SwaplockApi {
         I: IntoIterator<Item = S>,
         S: Into<String>,
     {
-        Ok(GrapheneSession::probe_latencies(
-            servers,
-            expected_chain_id,
-        )?)
+        Ok(GrapheneSession::probe_latencies(servers, expected_chain_id).await?)
     }
 
     /// Re-dial the same node and re-establish the API ids in place (refuses a different chain id).
     ///
     /// Read calls already reconnect themselves per the [`ReconnectPolicy`]; call this to force a
     /// reconnect, e.g. before resubscribing. Live subscriptions are not resumed automatically.
-    pub fn reconnect(&mut self) -> Result<(), SwaplockApiError> {
-        self.session.reconnect()?;
+    pub async fn reconnect(&mut self) -> Result<(), SwaplockApiError> {
+        self.session.reconnect().await?;
         Ok(())
     }
 

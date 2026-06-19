@@ -84,7 +84,7 @@ impl<'session> TransactionBuilder<'session> {
         )?;
 
         let mut operations = self.operations;
-        let fees = required_fees(database.session, &operations, &fee_asset_id)?;
+        let fees = required_fees(database.session, &operations, &fee_asset_id).await?;
         for (operation, fee) in operations.iter_mut().zip(fees) {
             set_operation_fee(operation, fee)?;
         }
@@ -333,14 +333,15 @@ fn operations_json(operations: &[Operation]) -> Result<Vec<Value>, SwaplockApiEr
         .collect()
 }
 
-pub(super) fn required_fees(
+pub(super) async fn required_fees(
     session: &mut GrapheneSession,
     operations: &[Operation],
     fee_asset_id: &str,
 ) -> Result<Vec<Asset>, SwaplockApiError> {
     let operations_json = operations_json(operations)?;
-    let value =
-        session.database_call("get_required_fees", json!([operations_json, fee_asset_id]))?;
+    let value = session
+        .database_call("get_required_fees", json!([operations_json, fee_asset_id]))
+        .await?;
     // The node returns one fee per operation, but for ops with sub-operations (proposal_create)
     // it returns a `[base_fee, [sub_fees...]]` pair instead of a bare asset. The op itself pays the
     // base fee, so take the first element when an entry is the pair form.

@@ -28,10 +28,13 @@ impl GetLimitOrdersRequest<'_> {
     }
 
     pub async fn get(self) -> Result<Vec<LimitOrderObject>, SwaplockApiError> {
-        let value = self.session.database_call(
-            "get_limit_orders",
-            json!([self.base, self.quote, self.limit]),
-        )?;
+        let value = self
+            .session
+            .database_call(
+                "get_limit_orders",
+                json!([self.base, self.quote, self.limit]),
+            )
+            .await?;
         serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
             method: "get_limit_orders",
             message: error.to_string(),

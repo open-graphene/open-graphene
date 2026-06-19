@@ -26,7 +26,9 @@ pub(super) async fn blind_sum(
     non_neg: u32,
 ) -> Result<BlindingFactor, SwaplockApiError> {
     let blinds = encode("blind_sum", &blinds_in)?;
-    let result = session.crypto_call("blind_sum", blind_sum_params(blinds, non_neg))?;
+    let result = session
+        .crypto_call("blind_sum", blind_sum_params(blinds, non_neg))
+        .await?;
     decode("blind_sum", result)
 }
 

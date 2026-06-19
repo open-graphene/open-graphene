@@ -13,7 +13,7 @@ pub struct GetConfigRequest<'session> {
 
 impl GetConfigRequest<'_> {
     pub async fn get(self) -> Result<Value, SwaplockApiError> {
-        let value = self.session.database_call("get_config", json!([]))?;
+        let value = self.session.database_call("get_config", json!([])).await?;
         serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
             method: "get_config",
             message: error.to_string(),

@@ -13,7 +13,8 @@ impl AccountsRequest<'_> {
     pub async fn get(self) -> Result<Vec<Option<AccountObject>>, SwaplockApiError> {
         let value = self
             .session
-            .database_call("get_accounts", json!([self.names_or_ids, false]))?;
+            .database_call("get_accounts", json!([self.names_or_ids, false]))
+            .await?;
         let accounts = value
             .as_array()
             .ok_or_else(|| SwaplockApiError::UnexpectedResponse {

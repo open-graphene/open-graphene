@@ -26,7 +26,9 @@ pub(super) async fn get_asset_by_symbol(
     session: &mut GrapheneSession,
     asset_symbol: &str,
 ) -> Result<AssetObject, SwaplockApiError> {
-    let value = session.database_call("lookup_asset_symbols", json!([[asset_symbol], false]))?;
+    let value = session
+        .database_call("lookup_asset_symbols", json!([[asset_symbol], false]))
+        .await?;
     let assets = value
         .as_array()
         .ok_or_else(|| SwaplockApiError::UnexpectedResponse {

@@ -80,7 +80,7 @@ impl<'session> ProposalCreateRequest<'session> {
 
         // Price the wrapped operations: the proposal carries each op with its own fee set.
         let mut proposed = self.proposed;
-        let fees = required_fees(self.session, &proposed, FEE_ASSET_ID)?;
+        let fees = required_fees(self.session, &proposed, FEE_ASSET_ID).await?;
         for (operation, fee) in proposed.iter_mut().zip(fees) {
             set_operation_fee(operation, fee)?;
         }

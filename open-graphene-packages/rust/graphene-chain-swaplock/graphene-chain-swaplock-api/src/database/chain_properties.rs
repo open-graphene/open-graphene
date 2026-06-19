@@ -17,7 +17,9 @@ impl ChainPropertiesRequest<'_> {
 pub(super) async fn get_chain_properties(
     session: &mut GrapheneSession,
 ) -> Result<ChainPropertyObject, SwaplockApiError> {
-    let value = session.database_call("get_chain_properties", json!([]))?;
+    let value = session
+        .database_call("get_chain_properties", json!([]))
+        .await?;
     serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
         method: "get_chain_properties",
         message: error.to_string(),

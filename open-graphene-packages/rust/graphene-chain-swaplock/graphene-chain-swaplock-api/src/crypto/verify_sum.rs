@@ -35,10 +35,12 @@ pub(super) async fn verify_sum(
 ) -> Result<bool, SwaplockApiError> {
     let commits = encode("verify_sum", &commits_in)?;
     let neg_commits = encode("verify_sum", &neg_commits_in)?;
-    let result = session.crypto_call(
-        "verify_sum",
-        verify_sum_params(commits, neg_commits, excess),
-    )?;
+    let result = session
+        .crypto_call(
+            "verify_sum",
+            verify_sum_params(commits, neg_commits, excess),
+        )
+        .await?;
     decode("verify_sum", result)
 }
 

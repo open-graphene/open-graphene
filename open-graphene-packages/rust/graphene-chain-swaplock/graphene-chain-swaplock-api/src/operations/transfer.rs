@@ -169,7 +169,8 @@ impl<'session> TransferRequest<'session> {
             0,
             fee_asset.id.0.clone(),
         );
-        let required_fee = required_transfer_fee(database.session, &transaction, &fee_asset.id.0)?;
+        let required_fee =
+            required_transfer_fee(database.session, &transaction, &fee_asset.id.0).await?;
         if required_fee.amount > max_fee {
             return Err(SwaplockApiError::TransferFeeTooHigh {
                 required: required_fee.amount,
@@ -385,7 +386,7 @@ fn build_transfer_transaction(
     }
 }
 
-fn required_transfer_fee(
+async fn required_transfer_fee(
     session: &mut GrapheneSession,
     transaction: &Transaction,
     fee_asset_id: &str,
@@ -397,8 +398,9 @@ fn required_transfer_fee(
             message: "transaction contains no operations".to_string(),
         })
         .and_then(transfer_operation_json)?;
-    let value =
-        session.database_call("get_required_fees", json!([[operation_json], fee_asset_id]))?;
+    let value = session
+        .database_call("get_required_fees", json!([[operation_json], fee_asset_id]))
+        .await?;
     let fees = value
         .as_array()
         .ok_or_else(|| SwaplockApiError::UnexpectedResponse {

@@ -30,10 +30,12 @@ pub(super) async fn verify_range_proof_rewind(
     let nonce = encode("verify_range_proof_rewind", &nonce)?;
     let commit = encode("verify_range_proof_rewind", &commit)?;
     let proof = encode("verify_range_proof_rewind", &proof)?;
-    let result = session.crypto_call(
-        "verify_range_proof_rewind",
-        verify_range_proof_rewind_params(nonce, commit, proof),
-    )?;
+    let result = session
+        .crypto_call(
+            "verify_range_proof_rewind",
+            verify_range_proof_rewind_params(nonce, commit, proof),
+        )
+        .await?;
     decode("verify_range_proof_rewind", result)
 }
 

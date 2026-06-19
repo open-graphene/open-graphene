@@ -7,11 +7,11 @@
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
-use std::thread::JoinHandle;
 use std::time::Duration;
 
 use open_graphene_transport::{CallbackId, LiveSubscription, LiveTransportHandle};
 use serde_json::{Value, json};
+use tokio::task::JoinHandle;
 
 use super::LIVE_DATABASE_CALLBACK_ID;
 use crate::SwaplockApiError;
@@ -31,25 +31,27 @@ pub struct ChainStore {
 }
 
 impl ChainStore {
-    pub(super) fn start(
+    pub(super) async fn start(
         live: LiveTransportHandle,
         database_api_id: u64,
         ids: Vec<String>,
         timeout: Duration,
     ) -> Result<Self, SwaplockApiError> {
         let callback_id = CallbackId::new(LIVE_DATABASE_CALLBACK_ID);
-        let subscription = live.subscribe_callback(callback_id)?;
+        let subscription = live.subscribe_callback(callback_id).await?;
         live.call(
             database_api_id,
             "set_subscribe_callback",
             json!([LIVE_DATABASE_CALLBACK_ID, false]),
         )?
-        .wait_timeout(timeout)?;
+        .wait_timeout(timeout)
+        .await?;
 
         // get_objects with subscribe=true seeds the cache and registers us for updates at once.
         let seed = live
             .call(database_api_id, "get_objects", json!([ids, true]))?
-            .wait_timeout(timeout)?;
+            .wait_timeout(timeout)
+            .await?;
 
         let mut objects = HashMap::new();
         apply_notice(&mut objects, &seed);
@@ -93,19 +95,19 @@ impl Drop for ChainStore {
     fn drop(&mut self) {
         self.stop.store(true, Ordering::Relaxed);
         if let Some(worker) = self.worker.take() {
-            let _ = worker.join();
+            worker.abort();
         }
     }
 }
 
 fn spawn_worker(
-    subscription: LiveSubscription,
+    mut subscription: LiveSubscription,
     objects: Arc<Mutex<HashMap<String, Value>>>,
     stop: Arc<AtomicBool>,
 ) -> JoinHandle<()> {
-    std::thread::spawn(move || {
+    tokio::spawn(async move {
         while !stop.load(Ordering::Relaxed) {
-            match subscription.next_timeout(WORKER_TICK) {
+            match subscription.next_timeout(WORKER_TICK).await {
                 Ok(notice) => {
                     let mut guard = objects.lock().expect("chain store mutex");
                     apply_notice(&mut guard, &notice);

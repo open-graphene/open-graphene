@@ -27,7 +27,8 @@ impl ListAssetsRequest<'_> {
     pub async fn get(self) -> Result<Vec<AssetObject>, SwaplockApiError> {
         let value = self
             .session
-            .database_call("list_assets", json!([self.lower_bound, self.limit]))?;
+            .database_call("list_assets", json!([self.lower_bound, self.limit]))
+            .await?;
         serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
             method: "list_assets",
             message: error.to_string(),

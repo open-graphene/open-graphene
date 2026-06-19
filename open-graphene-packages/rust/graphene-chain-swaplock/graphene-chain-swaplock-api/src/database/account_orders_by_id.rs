@@ -35,7 +35,7 @@ impl AccountOrdersSubscription<'_> {
 
     pub async fn next_update(&mut self) -> Result<Vec<LimitOrderObject>, SwaplockApiError> {
         loop {
-            let notice = self.session.next_notice()?;
+            let notice = self.session.next_notice().await?;
             let JsonRpcInbound::Notice {
                 callback_id,
                 payload,
@@ -59,7 +59,9 @@ pub(super) async fn get_account_orders_by_id(
     session: &mut GrapheneSession,
     account_id: &str,
 ) -> Result<Vec<LimitOrderObject>, SwaplockApiError> {
-    let value = session.database_call("get_full_accounts", json!([[account_id], false]))?;
+    let value = session
+        .database_call("get_full_accounts", json!([[account_id], false]))
+        .await?;
     account_orders_from_full_accounts_value("get_full_accounts", value, account_id)
 }
 
@@ -67,11 +69,15 @@ pub(super) async fn subscribe_account_orders_by_id(
     session: &mut GrapheneSession,
     account_id: String,
 ) -> Result<AccountOrdersSubscription<'_>, SwaplockApiError> {
-    session.database_call(
-        "set_subscribe_callback",
-        json!([ACCOUNT_ORDERS_CALLBACK_ID, false]),
-    )?;
-    let value = session.database_call("get_full_accounts", json!([[account_id], true]))?;
+    session
+        .database_call(
+            "set_subscribe_callback",
+            json!([ACCOUNT_ORDERS_CALLBACK_ID, false]),
+        )
+        .await?;
+    let value = session
+        .database_call("get_full_accounts", json!([[account_id], true]))
+        .await?;
     let initial = account_orders_from_full_accounts_value("get_full_accounts", value, &account_id)?;
 
     Ok(AccountOrdersSubscription {
