@@ -32,7 +32,7 @@ where
 /// Graphene compact recoverable ECDSA signature bytes.
 /// Wire layout: one compact header byte followed by 32-byte r and 32-byte s.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
-#[schema(as = GrapheneSwaplockSignature)]
+#[schema(as = GrapheneSwaplockSignature, value_type = String)]
 pub struct Signature(
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array")]
     pub Vec<u8>,
@@ -600,6 +600,7 @@ pub struct BitassetOptionsExt {
 #[schema(as = GrapheneSwaplockBlindInput)]
 pub struct BlindInput {
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub commitment: Vec<u8>,
     pub owner: crate::generated::types::Authority,
 }
@@ -609,8 +610,10 @@ pub struct BlindInput {
 #[schema(as = GrapheneSwaplockBlindOutput)]
 pub struct BlindOutput {
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub commitment: Vec<u8>,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub range_proof: Vec<u8>,
     pub owner: crate::generated::types::Authority,
     pub stealth_memo: Option<crate::generated::types::StealthConfirmation>,
@@ -629,6 +632,7 @@ pub struct BlindTransferOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockBlockIdPredicate)]
 pub struct BlockIdPredicate {
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub id: Vec<u8>,
 }
 
@@ -842,6 +846,7 @@ pub struct DynamicGlobalPropertyObject {
     pub id: crate::generated::ids::DynamicGlobalPropertyId,
     pub head_block_number: u32,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub head_block_id: Vec<u8>,
     pub time: String,
     pub current_witness: crate::generated::ids::WitnessId,
@@ -1075,10 +1080,12 @@ pub struct LiquidityPoolWithdrawOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockMaybeSignedBlockHeader)]
 pub struct MaybeSignedBlockHeader {
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub previous: Vec<u8>,
     pub timestamp: String,
     pub witness: crate::generated::ids::WitnessId,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub transaction_merkle_root: Vec<u8>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
     pub witness_signature: Option<crate::generated::types::Signature>,
@@ -1091,8 +1098,10 @@ pub struct MemoData {
     pub from: Option<String>,
     pub amount: crate::generated::types::Asset,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_32_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub blinding_factor: Vec<u8>,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub commitment: Vec<u8>,
     pub check: u32,
 }
@@ -1107,6 +1116,7 @@ pub struct NoSpecialAuthority {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockOpWrapper)]
 pub struct OpWrapper {
+    #[schema(no_recursion)]
     pub op: crate::generated::static_variants::Operation,
 }
 
@@ -1247,10 +1257,12 @@ pub struct SametFundUpdateOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockSignedBlock)]
 pub struct SignedBlock {
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub previous: Vec<u8>,
     pub timestamp: String,
     pub witness: crate::generated::ids::WitnessId,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub transaction_merkle_root: Vec<u8>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
     pub witness_signature: crate::generated::types::Signature,
@@ -1276,6 +1288,7 @@ pub struct StealthConfirmation {
     pub one_time_key: String,
     pub to: Option<String>,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub encrypted_memo: Vec<u8>,
 }
 

@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -17,6 +17,41 @@ pub struct GenerateBindingsResult {
     pub rpc_method_count: usize,
     pub struct_count: usize,
     pub operation_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+struct SchemaFieldKey {
+    owner: String,
+    field: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+struct SchemaVariantKey {
+    owner: String,
+    variant: String,
+}
+
+#[derive(Debug, Clone, Default)]
+struct SchemaNoRecursionCuts {
+    fields: BTreeSet<SchemaFieldKey>,
+    variants: BTreeSet<SchemaVariantKey>,
+}
+
+#[derive(Debug, Clone)]
+enum SchemaCut {
+    Field(SchemaFieldKey),
+    Variant(SchemaVariantKey),
+}
+
+#[derive(Debug, Clone)]
+struct SchemaEdge {
+    target: String,
+    cut: Option<SchemaCut>,
+}
+
+#[derive(Debug, Clone)]
+struct DfsEdge {
+    cut: Option<SchemaCut>,
 }
 
 pub fn generate_bindings(
@@ -214,7 +249,232 @@ fn render_string_id_conversions(out: &mut String, id_name: &str) {
     out.push_str("}\n\n");
 }
 
+fn detect_schema_no_recursion_cuts(protocol: &Protocol) -> SchemaNoRecursionCuts {
+    let graph = build_schema_dependency_graph(protocol);
+    let mut cuts = SchemaNoRecursionCuts::default();
+    let mut visited = BTreeSet::new();
+    let mut visiting = BTreeSet::new();
+    let mut path = Vec::new();
+
+    for node in graph.keys() {
+        detect_schema_cycles_from(
+            node,
+            &graph,
+            &mut visited,
+            &mut visiting,
+            &mut path,
+            &mut cuts,
+        );
+    }
+
+    cuts.variants.retain(|variant| variant.owner != "Operation");
+    cuts
+}
+
+fn build_schema_dependency_graph(protocol: &Protocol) -> BTreeMap<String, Vec<SchemaEdge>> {
+    let mut graph = BTreeMap::new();
+
+    for struct_def in &protocol.structs {
+        if struct_def.kind == StructKind::Operation || is_operation_ref(protocol, &struct_def.name) {
+            continue;
+        }
+        let owner = rust_type_name(&struct_def.name);
+        graph.entry(owner.clone()).or_insert_with(Vec::new);
+        for field in &struct_def.fields {
+            add_schema_field_edges(protocol, &mut graph, &owner, field);
+        }
+    }
+
+    for operation in &protocol.operations {
+        let owner = rust_type_name(&operation.name);
+        graph.entry(owner.clone()).or_insert_with(Vec::new);
+        for field in &operation.fields {
+            add_schema_field_edges(protocol, &mut graph, &owner, field);
+        }
+    }
+
+    for variant in &protocol.static_variants {
+        let owner = rust_type_name(&variant.name);
+        graph.entry(owner.clone()).or_insert_with(Vec::new);
+        for arm in &variant.variants {
+            let variant_key = SchemaVariantKey {
+                owner: owner.clone(),
+                variant: rust_variant_name(&arm.name),
+            };
+            for target in schema_type_targets(protocol, &arm.ty) {
+                graph.entry(owner.clone()).or_insert_with(Vec::new).push(SchemaEdge {
+                    target,
+                    cut: Some(SchemaCut::Variant(variant_key.clone())),
+                });
+            }
+        }
+    }
+
+    graph
+}
+
+fn add_schema_field_edges(
+    protocol: &Protocol,
+    graph: &mut BTreeMap<String, Vec<SchemaEdge>>,
+    owner: &str,
+    field: &FieldDef,
+) {
+    let field_key = SchemaFieldKey {
+        owner: owner.to_string(),
+        field: rust_field_name(&field.name),
+    };
+    for target in schema_type_targets(protocol, &field.ty) {
+        graph.entry(owner.to_string()).or_insert_with(Vec::new).push(SchemaEdge {
+            target,
+            cut: Some(SchemaCut::Field(field_key.clone())),
+        });
+    }
+}
+
+fn schema_type_targets(protocol: &Protocol, ty: &TypeRef) -> BTreeSet<String> {
+    let mut targets = BTreeSet::new();
+    collect_schema_type_targets(protocol, ty, &mut targets);
+    targets
+}
+
+fn collect_schema_type_targets(protocol: &Protocol, ty: &TypeRef, targets: &mut BTreeSet<String>) {
+    match ty {
+        TypeRef::Optional { inner }
+        | TypeRef::Vector { inner }
+        | TypeRef::Set { inner, .. } => collect_schema_type_targets(protocol, inner, targets),
+        TypeRef::Map { key, value, .. } | TypeRef::FlatMap { key, value, .. } => {
+            collect_schema_type_targets(protocol, key, targets);
+            collect_schema_type_targets(protocol, value, targets);
+        }
+        TypeRef::Pair { first, second } => {
+            collect_schema_type_targets(protocol, first, targets);
+            collect_schema_type_targets(protocol, second, targets);
+        }
+        TypeRef::Ref { name } if is_operation_ref(protocol, name) => {
+            targets.insert(rust_type_name(name));
+        }
+        TypeRef::Ref { name } | TypeRef::StaticVariantRef { name } => {
+            targets.insert(rust_type_name(name));
+        }
+        TypeRef::Void
+        | TypeRef::Bool
+        | TypeRef::Uint8
+        | TypeRef::Uint16
+        | TypeRef::Uint32
+        | TypeRef::Int32 { .. }
+        | TypeRef::Int64 { .. }
+        | TypeRef::Uint64 { .. }
+        | TypeRef::Uint128 { .. }
+        | TypeRef::UnsignedVarint
+        | TypeRef::CallbackHandle
+        | TypeRef::String
+        | TypeRef::Bytes
+        | TypeRef::FixedHex { .. }
+        | TypeRef::FixedBytes { .. }
+        | TypeRef::TimePointSec
+        | TypeRef::TimePoint
+        | TypeRef::PublicKey { .. }
+        | TypeRef::Address
+        | TypeRef::Signature
+        | TypeRef::ObjectId
+        | TypeRef::ProtocolObjectId { .. }
+        | TypeRef::ProtocolObjectUnion { .. }
+        | TypeRef::VoteId
+        | TypeRef::AnyJson { .. }
+        | TypeRef::Unsupported { .. } => {}
+    }
+}
+
+fn detect_schema_cycles_from(
+    node: &str,
+    graph: &BTreeMap<String, Vec<SchemaEdge>>,
+    _visited: &mut BTreeSet<String>,
+    visiting: &mut BTreeSet<String>,
+    path: &mut Vec<DfsEdge>,
+    cuts: &mut SchemaNoRecursionCuts,
+) {
+    if !visiting.insert(node.to_string()) {
+        return;
+    }
+
+    if let Some(edges) = graph.get(node) {
+        for edge in edges {
+            let dfs_edge = DfsEdge {
+                cut: edge.cut.clone(),
+            };
+            if visiting.contains(&edge.target) {
+                if let Some(cut) = choose_schema_cycle_cut(&edge.target, &dfs_edge, path) {
+                    record_schema_cycle_cut(cut, cuts);
+                }
+                continue;
+            }
+
+            path.push(dfs_edge);
+            detect_schema_cycles_from(
+                &edge.target,
+                graph,
+                _visited,
+                visiting,
+                path,
+                cuts,
+            );
+            path.pop();
+        }
+    }
+
+    visiting.remove(node);
+}
+
+fn choose_schema_cycle_cut(
+    target: &str,
+    back_edge: &DfsEdge,
+    path: &[DfsEdge],
+) -> Option<SchemaCut> {
+    if let Some(SchemaCut::Variant(variant)) = &back_edge.cut {
+        if variant.owner != "Operation" {
+            return Some(SchemaCut::Variant(variant.clone()));
+        }
+        if let Some(field) = path.iter().rev().find_map(|edge| match &edge.cut {
+            Some(SchemaCut::Field(field)) => Some(field.clone()),
+            _ => None,
+        }) {
+            return Some(SchemaCut::Field(field));
+        }
+    }
+
+    if let Some(field) = path.iter().rev().find_map(|edge| match &edge.cut {
+        Some(SchemaCut::Field(field)) if field.owner == target => Some(field.clone()),
+        _ => None,
+    }) {
+        return Some(SchemaCut::Field(field));
+    }
+
+    if let Some(variant) = path.iter().rev().find_map(|edge| match &edge.cut {
+        Some(SchemaCut::Variant(variant)) => Some(variant.clone()),
+        _ => None,
+    }) {
+        return Some(SchemaCut::Variant(variant));
+    }
+
+    back_edge
+        .cut
+        .clone()
+        .or_else(|| path.iter().rev().find_map(|edge| edge.cut.clone()))
+}
+
+fn record_schema_cycle_cut(cut: SchemaCut, cuts: &mut SchemaNoRecursionCuts) {
+    match cut {
+        SchemaCut::Field(field) => {
+            cuts.fields.insert(field);
+        }
+        SchemaCut::Variant(variant) => {
+            cuts.variants.insert(variant);
+        }
+    }
+}
+
 fn render_types(protocol: &Protocol) -> Result<String> {
+    let no_recursion_cuts = detect_schema_no_recursion_cuts(protocol);
     let mut out = generated_header(protocol, "raw structs and enums");
     out.push_str("use serde::{Deserialize, Serialize};\n\n");
     // `share_type` (i64-as-number-or-decimal-string) is decoded the same way on every
@@ -261,13 +521,14 @@ fn render_types(protocol: &Protocol) -> Result<String> {
         }
         let name = rust_type_name(&struct_def.name);
         ensure_unique(&mut emitted, &name, "type")?;
-        render_struct(&mut out, protocol, &struct_def)?;
+        render_struct(&mut out, protocol, &struct_def, &no_recursion_cuts)?;
     }
 
     Ok(out)
 }
 
 fn render_operations(protocol: &Protocol) -> Result<String> {
+    let no_recursion_cuts = detect_schema_no_recursion_cuts(protocol);
     let mut out = generated_header(protocol, "operation structs");
     out.push_str("use serde::{Deserialize, Serialize};\n\n");
 
@@ -280,13 +541,14 @@ fn render_operations(protocol: &Protocol) -> Result<String> {
             rust_const_name(&format!("{}_id", operation.name)),
             operation.wire_tag
         ));
-        render_operation_struct(&mut out, protocol, &operation)?;
+        render_operation_struct(&mut out, protocol, &operation, &no_recursion_cuts)?;
     }
 
     Ok(out)
 }
 
 fn render_static_variants(protocol: &Protocol) -> Result<String> {
+    let no_recursion_cuts = detect_schema_no_recursion_cuts(protocol);
     let mut out = generated_header(protocol, "static variant enums");
     out.push_str("// Static variants use Graphene JSON wire format: [tag, value].\n\n");
 
@@ -294,7 +556,7 @@ fn render_static_variants(protocol: &Protocol) -> Result<String> {
     for variant in sorted_static_variants(&protocol.static_variants) {
         let name = rust_type_name(&variant.name);
         ensure_unique(&mut emitted, &name, "static variant")?;
-        render_static_variant(&mut out, protocol, &variant)?;
+        render_static_variant(&mut out, protocol, &variant, &no_recursion_cuts)?;
     }
 
     Ok(out)
@@ -310,7 +572,7 @@ fn render_signature_type(out: &mut String, protocol: &Protocol) {
         "#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]\n",
     );
     out.push_str(&format!(
-        "#[schema(as = {})]\n",
+        "#[schema(as = {}, value_type = String)]\n",
         openapi_schema_name(protocol, "Signature")
     ));
     out.push_str("pub struct Signature(\n");
@@ -348,7 +610,12 @@ fn render_enum(out: &mut String, protocol: &Protocol, enum_def: &EnumDef) -> Res
     Ok(())
 }
 
-fn render_struct(out: &mut String, protocol: &Protocol, struct_def: &StructDef) -> Result<()> {
+fn render_struct(
+    out: &mut String,
+    protocol: &Protocol,
+    struct_def: &StructDef,
+    no_recursion_cuts: &SchemaNoRecursionCuts,
+) -> Result<()> {
     let struct_name = rust_type_name(&struct_def.name);
     out.push_str(&format!("/// Raw protocol struct `{}`.\n", struct_def.name));
     out.push_str("#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]\n");
@@ -357,7 +624,7 @@ fn render_struct(out: &mut String, protocol: &Protocol, struct_def: &StructDef) 
         openapi_schema_name(protocol, &struct_name)
     ));
     out.push_str(&format!("pub struct {struct_name} {{\n"));
-    render_fields(out, protocol, &struct_def.fields)?;
+    render_fields(out, protocol, &struct_name, &struct_def.fields, no_recursion_cuts)?;
     out.push_str("}\n\n");
     render_asset_constructor(out, protocol, struct_def)?;
     render_price_constructor(out, protocol, struct_def)?;
@@ -426,6 +693,7 @@ fn render_operation_struct(
     out: &mut String,
     protocol: &Protocol,
     operation: &OperationDef,
+    no_recursion_cuts: &SchemaNoRecursionCuts,
 ) -> Result<()> {
     let struct_name = rust_type_name(&operation.name);
     out.push_str(&format!(
@@ -438,12 +706,18 @@ fn render_operation_struct(
         openapi_schema_name(protocol, &struct_name)
     ));
     out.push_str(&format!("pub struct {struct_name} {{\n"));
-    render_fields(out, protocol, &operation.fields)?;
+    render_fields(out, protocol, &struct_name, &operation.fields, no_recursion_cuts)?;
     out.push_str("}\n\n");
     Ok(())
 }
 
-fn render_fields(out: &mut String, protocol: &Protocol, fields: &[FieldDef]) -> Result<()> {
+fn render_fields(
+    out: &mut String,
+    protocol: &Protocol,
+    owner: &str,
+    fields: &[FieldDef],
+    no_recursion_cuts: &SchemaNoRecursionCuts,
+) -> Result<()> {
     let mut fields = fields.to_vec();
     fields.sort_by_key(|field| field.index);
     let mut emitted = BTreeSet::new();
@@ -463,11 +737,19 @@ fn render_fields(out: &mut String, protocol: &Protocol, fields: &[FieldDef]) -> 
             out.push_str(&format!(
                 "    #[serde(serialize_with = \"open_graphene_core::serialize_bytes_as_hex\", deserialize_with = \"crate::generated::types::deserialize_fixed_bytes_{bytes}_from_hex_string_or_byte_array\")]\n"
             ));
+            out.push_str("    #[schema(value_type = String)]\n");
         }
         if matches!(field.ty, TypeRef::Bytes) {
             out.push_str(
                 "    #[serde(serialize_with = \"open_graphene_core::serialize_bytes_as_hex\", deserialize_with = \"open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array\")]\n",
             );
+            out.push_str("    #[schema(value_type = String)]\n");
+        }
+        if no_recursion_cuts.fields.contains(&SchemaFieldKey {
+            owner: owner.to_string(),
+            field: field_name.clone(),
+        }) {
+            out.push_str("    #[schema(no_recursion)]\n");
         }
         out.push_str(&format!("    pub {field_name}: {ty},\n"));
     }
@@ -1638,6 +1920,7 @@ fn render_static_variant(
     out: &mut String,
     protocol: &Protocol,
     variant: &StaticVariantDef,
+    no_recursion_cuts: &SchemaNoRecursionCuts,
 ) -> Result<()> {
     let enum_name = rust_type_name(&variant.name);
     out.push_str(&format!(
@@ -1662,6 +1945,12 @@ fn render_static_variant(
         let method_name =
             static_variant_constructor_name(&enum_name, &arm.name, &mut method_names)?;
         let ty = render_type_ref(protocol, &arm.ty)?;
+        if no_recursion_cuts.variants.contains(&SchemaVariantKey {
+            owner: enum_name.clone(),
+            variant: variant_name.clone(),
+        }) {
+            out.push_str("    #[schema(no_recursion)]\n");
+        }
         out.push_str(&format!("    {variant_name}(Box<{ty}>),\n"));
         rendered_arms.push((arm.tag, variant_name, ty, method_name));
     }
@@ -2411,7 +2700,14 @@ mod tests {
             },
         ];
         let mut out = String::new();
-        render_fields(&mut out, &protocol, &fields).expect("render fields");
+        render_fields(
+            &mut out,
+            &protocol,
+            "TestStruct",
+            &fields,
+            &SchemaNoRecursionCuts::default(),
+        )
+        .expect("render fields");
 
         let first = out.find("pub first").expect("first field");
         let second = out.find("pub second").expect("second field");
@@ -2436,7 +2732,13 @@ mod tests {
             support: None,
         };
         let mut out = String::new();
-        render_static_variant(&mut out, &protocol, &variant).expect("render static variant");
+        render_static_variant(
+            &mut out,
+            &protocol,
+            &variant,
+            &SchemaNoRecursionCuts::default(),
+        )
+        .expect("render static variant");
 
         assert!(out.contains("impl Operation"));
         assert!(out.contains("pub fn transfer(value: String) -> Self"));
@@ -2467,7 +2769,13 @@ mod tests {
             support: None,
         };
         let mut out = String::new();
-        render_static_variant(&mut out, &protocol, &variant).expect("render static variant");
+        render_static_variant(
+            &mut out,
+            &protocol,
+            &variant,
+            &SchemaNoRecursionCuts::default(),
+        )
+        .expect("render static variant");
 
         assert!(out.contains("impl FutureExtensions"));
         assert!(out.contains("pub fn empty() -> Self"));

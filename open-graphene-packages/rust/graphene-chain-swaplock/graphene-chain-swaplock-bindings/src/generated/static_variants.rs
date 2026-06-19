@@ -47,8 +47,11 @@ pub enum ArgumentType {
     FlatSetVestingBalanceIdType(Box<Vec<crate::generated::ids::VestingBalanceId>>),
     FlatSetWorkerIdType(Box<Vec<crate::generated::ids::WorkerId>>),
     FlatSetBalanceIdType(Box<Vec<crate::generated::ids::BalanceId>>),
+    #[schema(no_recursion)]
     VectorRestriction(Box<Vec<crate::generated::types::Restriction>>),
+    #[schema(no_recursion)]
     VectorVectorRestriction(Box<Vec<Vec<crate::generated::types::Restriction>>>),
+    #[schema(no_recursion)]
     VariantAssertArgumentType(Box<(i64, Vec<crate::generated::types::Restriction>)>),
 }
 
