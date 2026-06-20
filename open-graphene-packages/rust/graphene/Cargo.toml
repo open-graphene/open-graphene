@@ -273,3 +273,7 @@ path = "examples/swaplock/blind_transfer_ops.rs"
 [[example]]
 name = "swaplock_orders_grouped_limit_orders"
 path = "examples/swaplock/orders_grouped_limit_orders.rs"
+
+[[example]]
+name = "swaplock_market_methods"
+path = "examples/swaplock/market_methods.rs"

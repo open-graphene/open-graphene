@@ -1,6 +1,7 @@
 mod chain_store;
 mod database;
 mod history;
+mod market;
 mod network_broadcast;
 
 use std::time::{Duration, Instant};
@@ -21,6 +22,7 @@ pub use history::{
     SwaplockLiveAccountHistoryByIdRequest, SwaplockLiveAccountHistoryRequest,
     SwaplockLiveAccountHistorySubscription, SwaplockLiveHistoryApi,
 };
+pub use market::SwaplockLiveMarketSubscription;
 pub use network_broadcast::{
     SwaplockLiveNetworkBroadcastApi, SwaplockLivePendingBroadcastConfirmation,
 };
