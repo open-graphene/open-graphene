@@ -7,7 +7,7 @@
 ///
 /// Each dot-separated label must start with a lowercase letter, hold only `a-z`, `0-9` and `-`,
 /// avoid a double `-`, and end on a letter or digit. Use
-/// [`is_account_name_allow_short`](crate::validation::is_account_name_allow_short) to accept names
+/// [`is_account_name_allow_short`] to accept names
 /// under three characters (e.g. while the user is still typing).
 pub fn is_account_name(name: &str) -> bool {
     is_account_name_inner(name, false)
