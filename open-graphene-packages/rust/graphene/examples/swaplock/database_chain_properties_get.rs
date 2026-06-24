@@ -18,7 +18,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("id: {}", properties.id.0);
     println!("chain id: {}", properties.chain_id.0);
-    println!("immutable parameters: {:?}", properties.immutable_parameters);
+    println!(
+        "immutable parameters: {:?}",
+        properties.immutable_parameters
+    );
 
     Ok(())
 }
