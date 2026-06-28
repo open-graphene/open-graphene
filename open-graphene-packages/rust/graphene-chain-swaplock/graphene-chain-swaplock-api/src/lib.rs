@@ -34,7 +34,8 @@ pub use live::{
     SwaplockLiveAccountSubscription, SwaplockLiveApi, SwaplockLiveAssetByIdRequest,
     SwaplockLiveAssetSubscription, SwaplockLiveDatabaseApi,
     SwaplockLiveDynamicGlobalPropertiesSubscription, SwaplockLiveHistoryApi,
-    SwaplockLiveNetworkBroadcastApi, SwaplockLivePendingBroadcastConfirmation,
+    SwaplockLiveMarketSubscription, SwaplockLiveNetworkBroadcastApi,
+    SwaplockLivePendingBroadcastConfirmation,
 };
 pub use network_broadcast::{
     BroadcastConfirmation, BroadcastReceipt, NetworkBroadcastApi, PendingBroadcastConfirmation,
@@ -86,8 +87,9 @@ pub use orders::{
 pub use history::{
     AccountHistoryByIdRequest, AccountHistoryPage, AccountHistoryRequest,
     AccountHistorySubscription, DEFAULT_ACCOUNT_HISTORY_LIMIT, DEFAULT_ACCOUNT_HISTORY_OFFSET,
-    DEFAULT_FILL_ORDER_HISTORY_LIMIT, FillOrderHistoryRequest, HistoryApi,
-    MAX_ACCOUNT_HISTORY_LIMIT, MAX_FILL_ORDER_HISTORY_LIMIT,
+    DEFAULT_FILL_ORDER_HISTORY_LIMIT, DEFAULT_MARKET_HISTORY_BUCKET_SECONDS,
+    FillOrderHistoryRequest, HistoryApi, MAX_ACCOUNT_HISTORY_LIMIT, MAX_FILL_ORDER_HISTORY_LIMIT,
+    MarketHistoryRequest,
 };
 
 pub use database::{

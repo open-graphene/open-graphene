@@ -13,6 +13,7 @@ use crate::database::{
     collect_account_order_objects, dynamic_global_properties_from_value,
 };
 
+use super::market::SwaplockLiveMarketSubscription;
 use super::{ChainStore, LIVE_DATABASE_CALLBACK_ID, remaining_or_callback_timeout};
 
 pub struct SwaplockLiveDatabaseApi {
@@ -88,6 +89,50 @@ impl SwaplockLiveDatabaseApi {
             initial,
             subscription,
         })
+    }
+
+    /// Subscribe to the `base`/`quote` order book; each update arrives as raw JSON. Dropping the
+    /// returned subscription unsubscribes the market.
+    pub async fn subscribe_to_market(
+        self,
+        base: impl Into<String>,
+        quote: impl Into<String>,
+    ) -> Result<SwaplockLiveMarketSubscription, SwaplockApiError> {
+        self.subscribe_to_market_timeout(base, quote, Duration::from_secs(10))
+            .await
+    }
+
+    pub async fn subscribe_to_market_timeout(
+        self,
+        base: impl Into<String>,
+        quote: impl Into<String>,
+        timeout: Duration,
+    ) -> Result<SwaplockLiveMarketSubscription, SwaplockApiError> {
+        SwaplockLiveMarketSubscription::start(
+            self.live,
+            self.database_api_id,
+            base.into(),
+            quote.into(),
+            timeout,
+        )
+        .await
+    }
+
+    /// Cancel a market order-book subscription (also done automatically when the subscription drops).
+    pub async fn unsubscribe_from_market(
+        self,
+        base: impl Into<String>,
+        quote: impl Into<String>,
+    ) -> Result<(), SwaplockApiError> {
+        self.live
+            .call(
+                self.database_api_id,
+                "unsubscribe_from_market",
+                json!([base.into(), quote.into()]),
+            )?
+            .wait_timeout(Duration::from_secs(10))
+            .await?;
+        Ok(())
     }
 
     pub fn account_by_id(self, account_id: impl Into<String>) -> SwaplockLiveAccountByIdRequest {

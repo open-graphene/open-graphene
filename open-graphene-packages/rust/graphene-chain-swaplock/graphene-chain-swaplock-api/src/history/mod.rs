@@ -3,6 +3,7 @@ mod account_history_by_id;
 mod api;
 mod constants;
 mod fill_order_history;
+mod market_history;
 mod page;
 mod subscription;
 mod wire;
@@ -17,6 +18,7 @@ pub use constants::{
 pub use fill_order_history::{
     DEFAULT_FILL_ORDER_HISTORY_LIMIT, FillOrderHistoryRequest, MAX_FILL_ORDER_HISTORY_LIMIT,
 };
+pub use market_history::{DEFAULT_MARKET_HISTORY_BUCKET_SECONDS, MarketHistoryRequest};
 pub use page::AccountHistoryPage;
 pub use subscription::AccountHistorySubscription;
 pub(crate) use wire::{
