@@ -7,6 +7,7 @@ mod network_broadcast;
 mod operations;
 mod orders;
 
+pub use graphene_chain_swaplock_bindings::generated::OperationHistoryObject;
 use open_graphene_core::{AmountError, BalanceError, HeaderError, ObjectIdError};
 use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
@@ -85,7 +86,8 @@ pub use orders::{
 pub use history::{
     AccountHistoryByIdRequest, AccountHistoryPage, AccountHistoryRequest,
     AccountHistorySubscription, DEFAULT_ACCOUNT_HISTORY_LIMIT, DEFAULT_ACCOUNT_HISTORY_OFFSET,
-    HistoryApi, MAX_ACCOUNT_HISTORY_LIMIT,
+    DEFAULT_FILL_ORDER_HISTORY_LIMIT, FillOrderHistoryRequest, HistoryApi,
+    MAX_ACCOUNT_HISTORY_LIMIT, MAX_FILL_ORDER_HISTORY_LIMIT,
 };
 
 pub use database::{
