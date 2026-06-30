@@ -16,7 +16,8 @@ pub use constants::{
     DEFAULT_ACCOUNT_HISTORY_LIMIT, DEFAULT_ACCOUNT_HISTORY_OFFSET, MAX_ACCOUNT_HISTORY_LIMIT,
 };
 pub use fill_order_history::{
-    DEFAULT_FILL_ORDER_HISTORY_LIMIT, FillOrderHistoryRequest, MAX_FILL_ORDER_HISTORY_LIMIT,
+    DEFAULT_FILL_ORDER_HISTORY_LIMIT, FillOrderHistoryRequest, HistoryKey,
+    MAX_FILL_ORDER_HISTORY_LIMIT, OrderHistoryObject,
 };
 pub use market_history::{DEFAULT_MARKET_HISTORY_BUCKET_SECONDS, MarketHistoryRequest};
 pub use page::AccountHistoryPage;

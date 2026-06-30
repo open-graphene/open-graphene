@@ -16,3 +16,4 @@ serde_json = "1"
 sha2 = "0.10"
 thiserror = "2"
 tokio = { version = "1", features = ["rt", "time"] }
+utoipa.workspace = true
