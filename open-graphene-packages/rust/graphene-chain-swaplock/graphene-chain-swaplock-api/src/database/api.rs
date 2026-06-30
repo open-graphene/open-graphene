@@ -30,6 +30,7 @@ use super::get_config::GetConfigRequest;
 use super::get_key_references::{GetKeyReferencesRequest, get_key_references_request};
 use super::get_limit_orders::{DEFAULT_GET_LIMIT_ORDERS_LIMIT, GetLimitOrdersRequest};
 use super::get_objects::{GetObjectsRequest, get_objects_request};
+use super::get_ticker::GetTickerRequest;
 use super::global_properties::{GlobalPropertiesRequest, get_global_properties};
 use super::list_assets::{DEFAULT_LIST_ASSETS_LIMIT, ListAssetsRequest};
 use super::lookup_accounts::{DEFAULT_LOOKUP_ACCOUNTS_LIMIT, LookupAccountsRequest};
@@ -202,6 +203,19 @@ impl<'session> DatabaseApi<'session> {
             base: base.into(),
             quote: quote.into(),
             limit: DEFAULT_GET_LIMIT_ORDERS_LIMIT,
+        }
+    }
+
+    /// Rolling ticker stats for the `base`/`quote` market (asset ids like `1.3.0`).
+    pub fn ticker<B, Q>(self, base: B, quote: Q) -> GetTickerRequest<'session>
+    where
+        B: Into<String>,
+        Q: Into<String>,
+    {
+        GetTickerRequest {
+            session: self.session,
+            base: base.into(),
+            quote: quote.into(),
         }
     }
 

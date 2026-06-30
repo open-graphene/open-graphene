@@ -100,8 +100,8 @@ pub use database::{
     DEFAULT_GET_LIMIT_ORDERS_LIMIT, DEFAULT_LIST_ASSETS_LIMIT, DEFAULT_LOOKUP_ACCOUNTS_LIMIT,
     DatabaseApi, DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription,
     GetBlockHeaderRequest, GetBlockRequest, GetConfigRequest, GetKeyReferencesRequest,
-    GetLimitOrdersRequest, GetObjectsRequest, GlobalPropertiesRequest, IntoStringList,
-    ListAssetsRequest, LookupAccountsRequest,
+    GetLimitOrdersRequest, GetObjectsRequest, GetTickerRequest, GlobalPropertiesRequest,
+    IntoStringList, ListAssetsRequest, LookupAccountsRequest, Ticker,
 };
 
 pub const SWAPLOCK_CHAIN_ID: &str =
