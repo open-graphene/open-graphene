@@ -1939,6 +1939,7 @@ fn render_static_variant(
     let mut emitted = BTreeSet::new();
     let mut method_names = BTreeSet::new();
     let mut rendered_arms = Vec::new();
+    let mut spec_arm_names = Vec::new();
     for arm in variants {
         let variant_name = rust_variant_name(&arm.name);
         ensure_unique(&mut emitted, &variant_name, "static variant arm")?;
@@ -1952,6 +1953,7 @@ fn render_static_variant(
             out.push_str("    #[schema(no_recursion)]\n");
         }
         out.push_str(&format!("    {variant_name}(Box<{ty}>),\n"));
+        spec_arm_names.push((variant_name.clone(), arm.name));
         rendered_arms.push((arm.tag, variant_name, ty, method_name));
     }
 
@@ -1959,6 +1961,7 @@ fn render_static_variant(
     if enum_name == "Operation" {
         render_static_variant_constructor_impl(out, &enum_name, &rendered_arms);
         render_static_variant_accessor_impl(out, &enum_name, &rendered_arms);
+        render_operation_metadata_impl(out, protocol, &spec_arm_names);
     }
     if enum_name == "FutureExtensions" {
         render_future_extensions_empty_impl(out, &rendered_arms);
@@ -2003,6 +2006,83 @@ fn render_static_variant_accessor_impl(
             "    pub fn as_{method_name}(&self) -> Option<&{ty}> {{\n        match self {{\n            Self::{variant_name}(value) => Some(value.as_ref()),\n            _ => None,\n        }}\n    }}\n\n"
         ));
     }
+    out.push_str("}\n\n");
+}
+
+/// Uniform metadata on the `Operation` static variant: the protocol operation
+/// name, the chain-emitted (virtual) flag, and `fee` access. `fee`/`set_fee`
+/// are only emitted when every operation in the spec carries a `fee: asset`
+/// field, so the accessors can stay total.
+fn render_operation_metadata_impl(
+    out: &mut String,
+    protocol: &Protocol,
+    arms: &[(String, String)],
+) {
+    let operation_def = |spec_name: &str| {
+        protocol
+            .operations
+            .iter()
+            .find(|operation| operation.name == spec_name)
+    };
+
+    out.push_str("impl Operation {\n");
+
+    out.push_str("    /// The protocol operation name (e.g. `transfer`).\n");
+    out.push_str("    pub fn name(&self) -> &'static str {\n");
+    out.push_str("        match self {\n");
+    for (variant_name, spec_name) in arms {
+        let operation_name = spec_name.strip_suffix("_operation").unwrap_or(spec_name);
+        out.push_str(&format!(
+            "            Self::{variant_name}(_) => {},\n",
+            rust_string_literal(operation_name)
+        ));
+    }
+    out.push_str("        }\n    }\n\n");
+
+    out.push_str(
+        "    /// Whether the chain emits this operation itself; virtual operations can never be broadcast.\n",
+    );
+    out.push_str("    pub fn is_virtual(&self) -> bool {\n");
+    out.push_str("        match self {\n");
+    for (variant_name, spec_name) in arms {
+        let is_virtual = operation_def(spec_name).is_some_and(|operation| operation.is_virtual);
+        out.push_str(&format!(
+            "            Self::{variant_name}(_) => {is_virtual},\n"
+        ));
+    }
+    out.push_str("        }\n    }\n");
+
+    let every_operation_has_asset_fee = !arms.is_empty()
+        && arms.iter().all(|(_, spec_name)| {
+            operation_def(spec_name).is_some_and(|operation| {
+                operation.fields.iter().any(|field| {
+                    field.name == "fee"
+                        && matches!(&field.ty, TypeRef::Ref { name } if name == "asset")
+                })
+            })
+        });
+    if every_operation_has_asset_fee {
+        out.push_str("\n    /// The operation fee (every operation in this protocol carries one).\n");
+        out.push_str("    pub fn fee(&self) -> &crate::generated::types::Asset {\n");
+        out.push_str("        match self {\n");
+        for (variant_name, _) in arms {
+            out.push_str(&format!(
+                "            Self::{variant_name}(value) => &value.fee,\n"
+            ));
+        }
+        out.push_str("        }\n    }\n\n");
+
+        out.push_str("    /// Write the node-priced fee into the operation.\n");
+        out.push_str("    pub fn set_fee(&mut self, fee: crate::generated::types::Asset) {\n");
+        out.push_str("        match self {\n");
+        for (variant_name, _) in arms {
+            out.push_str(&format!(
+                "            Self::{variant_name}(value) => value.fee = fee,\n"
+            ));
+        }
+        out.push_str("        }\n    }\n");
+    }
+
     out.push_str("}\n\n");
 }
 
@@ -2749,6 +2829,116 @@ mod tests {
         assert!(out.contains("seq.serialize_element(&0u32)?;"));
         assert!(out.contains("impl<'de> serde::Deserialize<'de> for Operation"));
         assert!(out.contains("0 => serde_json::from_value::<String>(payload)"));
+    }
+
+    #[test]
+    fn operation_static_variant_emits_name_virtual_and_fee_accessors() {
+        let mut protocol = minimal_protocol();
+        let asset_fee_field = FieldDef {
+            index: 0,
+            name: "fee".to_string(),
+            ty: TypeRef::Ref {
+                name: "asset".to_string(),
+            },
+            source: None,
+            support: None,
+        };
+        protocol.operations.push(OperationDef {
+            name: "transfer_operation".to_string(),
+            wire_tag: 0,
+            fields: vec![asset_fee_field.clone()],
+            is_virtual: false,
+            source: None,
+            support: None,
+        });
+        protocol.operations.push(OperationDef {
+            name: "fill_order_operation".to_string(),
+            wire_tag: 4,
+            fields: vec![asset_fee_field],
+            is_virtual: true,
+            source: None,
+            support: None,
+        });
+        let variant = StaticVariantDef {
+            name: "operation".to_string(),
+            kind: "static_variant".to_string(),
+            json: "tagged_tuple".to_string(),
+            fc: "static_variant".to_string(),
+            variants: vec![
+                open_graphene_json_schema::StaticVariantArmDef {
+                    tag: 0,
+                    name: "transfer_operation".to_string(),
+                    ty: TypeRef::String,
+                    support: None,
+                },
+                open_graphene_json_schema::StaticVariantArmDef {
+                    tag: 4,
+                    name: "fill_order_operation".to_string(),
+                    ty: TypeRef::String,
+                    support: None,
+                },
+            ],
+            source: None,
+            support: None,
+        };
+        let mut out = String::new();
+        render_static_variant(
+            &mut out,
+            &protocol,
+            &variant,
+            &SchemaNoRecursionCuts::default(),
+        )
+        .expect("render static variant");
+
+        assert!(out.contains("pub fn name(&self) -> &'static str"));
+        assert!(out.contains("Self::TransferOperation(_) => \"transfer\","));
+        assert!(out.contains("Self::FillOrderOperation(_) => \"fill_order\","));
+        assert!(out.contains("pub fn is_virtual(&self) -> bool"));
+        assert!(out.contains("Self::TransferOperation(_) => false,"));
+        assert!(out.contains("Self::FillOrderOperation(_) => true,"));
+        assert!(out.contains("pub fn fee(&self) -> &crate::generated::types::Asset"));
+        assert!(out.contains("pub fn set_fee(&mut self, fee: crate::generated::types::Asset)"));
+        assert!(out.contains("Self::TransferOperation(value) => value.fee = fee,"));
+    }
+
+    #[test]
+    fn operation_fee_accessors_are_skipped_when_an_operation_lacks_an_asset_fee() {
+        let mut protocol = minimal_protocol();
+        protocol.operations.push(OperationDef {
+            name: "transfer_operation".to_string(),
+            wire_tag: 0,
+            fields: vec![],
+            is_virtual: false,
+            source: None,
+            support: None,
+        });
+        let variant = StaticVariantDef {
+            name: "operation".to_string(),
+            kind: "static_variant".to_string(),
+            json: "tagged_tuple".to_string(),
+            fc: "static_variant".to_string(),
+            variants: vec![open_graphene_json_schema::StaticVariantArmDef {
+                tag: 0,
+                name: "transfer_operation".to_string(),
+                ty: TypeRef::String,
+                support: None,
+            }],
+            source: None,
+            support: None,
+        };
+        let mut out = String::new();
+        render_static_variant(
+            &mut out,
+            &protocol,
+            &variant,
+            &SchemaNoRecursionCuts::default(),
+        )
+        .expect("render static variant");
+
+        assert!(out.contains("pub fn name(&self) -> &'static str"));
+        assert!(out.contains("pub fn is_virtual(&self) -> bool"));
+        assert!(!out.contains("pub fn fee("));
+        assert!(!out.contains("pub fn set_fee("));
     }
 
     #[test]

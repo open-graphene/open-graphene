@@ -15,7 +15,7 @@ pub struct TransferOperation {
     pub to: crate::generated::ids::AccountId,
     pub amount: crate::generated::types::Asset,
     pub memo: Option<crate::generated::types::MemoData>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const LIMIT_ORDER_CREATE_OPERATION_ID: u32 = 1;
@@ -30,7 +30,7 @@ pub struct LimitOrderCreateOperation {
     pub min_to_receive: crate::generated::types::Asset,
     pub expiration: String,
     pub fill_or_kill: bool,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const LIMIT_ORDER_CANCEL_OPERATION_ID: u32 = 2;
@@ -42,7 +42,7 @@ pub struct LimitOrderCancelOperation {
     pub fee: crate::generated::types::Asset,
     pub fee_paying_account: crate::generated::ids::AccountId,
     pub order: crate::generated::ids::LimitOrderId,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CALL_ORDER_UPDATE_OPERATION_ID: u32 = 3;
@@ -55,7 +55,7 @@ pub struct CallOrderUpdateOperation {
     pub funding_account: crate::generated::ids::AccountId,
     pub delta_collateral: crate::generated::types::Asset,
     pub delta_debt: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const FILL_ORDER_OPERATION_ID: u32 = 4;
@@ -114,7 +114,7 @@ pub struct AccountWhitelistOperation {
     pub authorizing_account: crate::generated::ids::AccountId,
     pub account_to_list: crate::generated::ids::AccountId,
     pub new_listing: u8,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ACCOUNT_UPGRADE_OPERATION_ID: u32 = 8;
@@ -126,7 +126,7 @@ pub struct AccountUpgradeOperation {
     pub fee: crate::generated::types::Asset,
     pub account_to_upgrade: crate::generated::ids::AccountId,
     pub upgrade_to_lifetime_member: bool,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ACCOUNT_TRANSFER_OPERATION_ID: u32 = 9;
@@ -138,7 +138,7 @@ pub struct AccountTransferOperation {
     pub fee: crate::generated::types::Asset,
     pub account_id: crate::generated::ids::AccountId,
     pub new_owner: crate::generated::ids::AccountId,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_CREATE_OPERATION_ID: u32 = 10;
@@ -154,7 +154,7 @@ pub struct AssetCreateOperation {
     pub common_options: crate::generated::types::AssetOptions,
     pub bitasset_opts: Option<crate::generated::types::BitassetOptions>,
     pub is_prediction_market: bool,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_UPDATE_OPERATION_ID: u32 = 11;
@@ -181,7 +181,7 @@ pub struct AssetUpdateBitassetOperation {
     pub issuer: crate::generated::ids::AccountId,
     pub asset_to_update: crate::generated::ids::AssetId,
     pub new_options: crate::generated::types::BitassetOptions,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_UPDATE_FEED_PRODUCERS_OPERATION_ID: u32 = 13;
@@ -194,7 +194,7 @@ pub struct AssetUpdateFeedProducersOperation {
     pub issuer: crate::generated::ids::AccountId,
     pub asset_to_update: crate::generated::ids::AssetId,
     pub new_feed_producers: Vec<crate::generated::ids::AccountId>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_ISSUE_OPERATION_ID: u32 = 14;
@@ -208,7 +208,7 @@ pub struct AssetIssueOperation {
     pub asset_to_issue: crate::generated::types::Asset,
     pub issue_to_account: crate::generated::ids::AccountId,
     pub memo: Option<crate::generated::types::MemoData>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_RESERVE_OPERATION_ID: u32 = 15;
@@ -220,7 +220,7 @@ pub struct AssetReserveOperation {
     pub fee: crate::generated::types::Asset,
     pub payer: crate::generated::ids::AccountId,
     pub amount_to_reserve: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_FUND_FEE_POOL_OPERATION_ID: u32 = 16;
@@ -234,7 +234,7 @@ pub struct AssetFundFeePoolOperation {
     pub asset_id: crate::generated::ids::AssetId,
     #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub amount: i64,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_SETTLE_OPERATION_ID: u32 = 17;
@@ -246,7 +246,7 @@ pub struct AssetSettleOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
     pub amount: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_GLOBAL_SETTLE_OPERATION_ID: u32 = 18;
@@ -259,7 +259,7 @@ pub struct AssetGlobalSettleOperation {
     pub issuer: crate::generated::ids::AccountId,
     pub asset_to_settle: crate::generated::ids::AssetId,
     pub settle_price: crate::generated::types::Price,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_PUBLISH_FEED_OPERATION_ID: u32 = 19;
@@ -311,7 +311,7 @@ pub struct ProposalCreateOperation {
     pub expiration_time: String,
     pub proposed_ops: Vec<crate::generated::types::OpWrapper>,
     pub review_period_seconds: Option<u32>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const PROPOSAL_UPDATE_OPERATION_ID: u32 = 23;
@@ -329,7 +329,7 @@ pub struct ProposalUpdateOperation {
     pub owner_approvals_to_remove: Vec<crate::generated::ids::AccountId>,
     pub key_approvals_to_add: Vec<String>,
     pub key_approvals_to_remove: Vec<String>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const PROPOSAL_DELETE_OPERATION_ID: u32 = 24;
@@ -342,7 +342,7 @@ pub struct ProposalDeleteOperation {
     pub fee_paying_account: crate::generated::ids::AccountId,
     pub using_owner_authority: bool,
     pub proposal: crate::generated::ids::ProposalId,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const WITHDRAW_PERMISSION_CREATE_OPERATION_ID: u32 = 25;
@@ -488,6 +488,7 @@ pub struct CustomOperation {
     pub required_auths: Vec<crate::generated::ids::AccountId>,
     pub id: u16,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub data: Vec<u8>,
 }
 
@@ -501,7 +502,7 @@ pub struct AssertOperation {
     pub fee_paying_account: crate::generated::ids::AccountId,
     pub predicates: Vec<crate::generated::static_variants::Predicate>,
     pub required_auths: Vec<crate::generated::ids::AccountId>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const BALANCE_CLAIM_OPERATION_ID: u32 = 37;
@@ -529,7 +530,7 @@ pub struct OverrideTransferOperation {
     pub to: crate::generated::ids::AccountId,
     pub amount: crate::generated::types::Asset,
     pub memo: Option<crate::generated::types::MemoData>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const TRANSFER_TO_BLIND_OPERATION_ID: u32 = 39;
@@ -542,6 +543,7 @@ pub struct TransferToBlindOperation {
     pub amount: crate::generated::types::Asset,
     pub from: crate::generated::ids::AccountId,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_32_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub blinding_factor: Vec<u8>,
     pub outputs: Vec<crate::generated::types::BlindOutput>,
 }
@@ -567,6 +569,7 @@ pub struct TransferFromBlindOperation {
     pub amount: crate::generated::types::Asset,
     pub to: crate::generated::ids::AccountId,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_32_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub blinding_factor: Vec<u8>,
     pub inputs: Vec<crate::generated::types::BlindInput>,
 }
@@ -618,7 +621,7 @@ pub struct BidCollateralOperation {
     pub bidder: crate::generated::ids::AccountId,
     pub additional_collateral: crate::generated::types::Asset,
     pub debt_covered: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const EXECUTE_BID_OPERATION_ID: u32 = 46;
@@ -643,7 +646,7 @@ pub struct AssetClaimPoolOperation {
     pub issuer: crate::generated::ids::AccountId,
     pub asset_id: crate::generated::ids::AssetId,
     pub amount_to_claim: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_UPDATE_ISSUER_OPERATION_ID: u32 = 48;
@@ -656,7 +659,7 @@ pub struct AssetUpdateIssuerOperation {
     pub issuer: crate::generated::ids::AccountId,
     pub asset_to_update: crate::generated::ids::AssetId,
     pub new_issuer: crate::generated::ids::AccountId,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const HTLC_CREATE_OPERATION_ID: u32 = 49;
@@ -685,8 +688,9 @@ pub struct HtlcRedeemOperation {
     pub htlc_id: crate::generated::ids::HtlcId,
     pub redeemer: crate::generated::ids::AccountId,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub preimage: Vec<u8>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const HTLC_REDEEMED_OPERATION_ID: u32 = 51;
@@ -704,6 +708,7 @@ pub struct HtlcRedeemedOperation {
     pub htlc_preimage_hash: crate::generated::static_variants::HtlcHash,
     pub htlc_preimage_size: u16,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub preimage: Vec<u8>,
 }
 
@@ -717,7 +722,7 @@ pub struct HtlcExtendOperation {
     pub htlc_id: crate::generated::ids::HtlcId,
     pub update_issuer: crate::generated::ids::AccountId,
     pub seconds_to_add: u32,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const HTLC_REFUND_OPERATION_ID: u32 = 53;
@@ -749,7 +754,7 @@ pub struct CustomAuthorityCreateOperation {
     pub operation_type: u32,
     pub auth: crate::generated::types::Authority,
     pub restrictions: Vec<crate::generated::types::Restriction>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CUSTOM_AUTHORITY_UPDATE_OPERATION_ID: u32 = 55;
@@ -767,7 +772,7 @@ pub struct CustomAuthorityUpdateOperation {
     pub new_auth: Option<crate::generated::types::Authority>,
     pub restrictions_to_remove: Vec<u16>,
     pub restrictions_to_add: Vec<crate::generated::types::Restriction>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CUSTOM_AUTHORITY_DELETE_OPERATION_ID: u32 = 56;
@@ -779,7 +784,7 @@ pub struct CustomAuthorityDeleteOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
     pub authority_to_delete: crate::generated::ids::CustomAuthorityId,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const TICKET_CREATE_OPERATION_ID: u32 = 57;
@@ -792,7 +797,7 @@ pub struct TicketCreateOperation {
     pub account: crate::generated::ids::AccountId,
     pub target_type: u32,
     pub amount: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const TICKET_UPDATE_OPERATION_ID: u32 = 58;
@@ -806,7 +811,7 @@ pub struct TicketUpdateOperation {
     pub account: crate::generated::ids::AccountId,
     pub target_type: u32,
     pub amount_for_new_target: Option<crate::generated::types::Asset>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const LIQUIDITY_POOL_CREATE_OPERATION_ID: u32 = 59;
@@ -822,7 +827,7 @@ pub struct LiquidityPoolCreateOperation {
     pub share_asset: crate::generated::ids::AssetId,
     pub taker_fee_percent: u16,
     pub withdrawal_fee_percent: u16,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const LIQUIDITY_POOL_DELETE_OPERATION_ID: u32 = 60;
@@ -834,7 +839,7 @@ pub struct LiquidityPoolDeleteOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
     pub pool: crate::generated::ids::LiquidityPoolId,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const LIQUIDITY_POOL_DEPOSIT_OPERATION_ID: u32 = 61;
@@ -848,7 +853,7 @@ pub struct LiquidityPoolDepositOperation {
     pub pool: crate::generated::ids::LiquidityPoolId,
     pub amount_a: crate::generated::types::Asset,
     pub amount_b: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const LIQUIDITY_POOL_WITHDRAW_OPERATION_ID: u32 = 62;
@@ -861,7 +866,7 @@ pub struct LiquidityPoolWithdrawOperation {
     pub account: crate::generated::ids::AccountId,
     pub pool: crate::generated::ids::LiquidityPoolId,
     pub share_amount: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const LIQUIDITY_POOL_EXCHANGE_OPERATION_ID: u32 = 63;
@@ -875,7 +880,7 @@ pub struct LiquidityPoolExchangeOperation {
     pub pool: crate::generated::ids::LiquidityPoolId,
     pub amount_to_sell: crate::generated::types::Asset,
     pub min_to_receive: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const SAMET_FUND_CREATE_OPERATION_ID: u32 = 64;
@@ -890,7 +895,7 @@ pub struct SametFundCreateOperation {
     #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub balance: i64,
     pub fee_rate: u32,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const SAMET_FUND_DELETE_OPERATION_ID: u32 = 65;
@@ -902,7 +907,7 @@ pub struct SametFundDeleteOperation {
     pub fee: crate::generated::types::Asset,
     pub owner_account: crate::generated::ids::AccountId,
     pub fund_id: crate::generated::ids::SametFundId,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const SAMET_FUND_UPDATE_OPERATION_ID: u32 = 66;
@@ -916,7 +921,7 @@ pub struct SametFundUpdateOperation {
     pub fund_id: crate::generated::ids::SametFundId,
     pub delta_amount: Option<crate::generated::types::Asset>,
     pub new_fee_rate: Option<u32>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const SAMET_FUND_BORROW_OPERATION_ID: u32 = 67;
@@ -929,7 +934,7 @@ pub struct SametFundBorrowOperation {
     pub borrower: crate::generated::ids::AccountId,
     pub fund_id: crate::generated::ids::SametFundId,
     pub borrow_amount: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const SAMET_FUND_REPAY_OPERATION_ID: u32 = 68;
@@ -943,7 +948,7 @@ pub struct SametFundRepayOperation {
     pub fund_id: crate::generated::ids::SametFundId,
     pub repay_amount: crate::generated::types::Asset,
     pub fund_fee: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CREDIT_OFFER_CREATE_OPERATION_ID: u32 = 69;
@@ -965,7 +970,7 @@ pub struct CreditOfferCreateOperation {
     pub auto_disable_time: String,
     pub acceptable_collateral: Vec<(crate::generated::ids::AssetId, crate::generated::types::Price)>,
     pub acceptable_borrowers: Vec<(crate::generated::ids::AccountId, i64)>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CREDIT_OFFER_DELETE_OPERATION_ID: u32 = 70;
@@ -977,7 +982,7 @@ pub struct CreditOfferDeleteOperation {
     pub fee: crate::generated::types::Asset,
     pub owner_account: crate::generated::ids::AccountId,
     pub offer_id: crate::generated::ids::CreditOfferId,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CREDIT_OFFER_UPDATE_OPERATION_ID: u32 = 71;
@@ -997,7 +1002,7 @@ pub struct CreditOfferUpdateOperation {
     pub auto_disable_time: Option<String>,
     pub acceptable_collateral: Option<Vec<(crate::generated::ids::AssetId, crate::generated::types::Price)>>,
     pub acceptable_borrowers: Option<Vec<(crate::generated::ids::AccountId, i64)>>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CREDIT_OFFER_ACCEPT_OPERATION_ID: u32 = 72;
@@ -1027,7 +1032,7 @@ pub struct CreditDealRepayOperation {
     pub deal_id: crate::generated::ids::CreditDealId,
     pub repay_amount: crate::generated::types::Asset,
     pub credit_fee: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CREDIT_DEAL_EXPIRED_OPERATION_ID: u32 = 74;
@@ -1057,7 +1062,7 @@ pub struct LiquidityPoolUpdateOperation {
     pub pool: crate::generated::ids::LiquidityPoolId,
     pub taker_fee_percent: Option<u16>,
     pub withdrawal_fee_percent: Option<u16>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CREDIT_DEAL_UPDATE_OPERATION_ID: u32 = 76;
@@ -1070,7 +1075,7 @@ pub struct CreditDealUpdateOperation {
     pub account: crate::generated::ids::AccountId,
     pub deal_id: crate::generated::ids::CreditDealId,
     pub auto_repay: u8,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const LIMIT_ORDER_UPDATE_OPERATION_ID: u32 = 77;
@@ -1086,5 +1091,5 @@ pub struct LimitOrderUpdateOperation {
     pub delta_amount_to_sell: Option<crate::generated::types::Asset>,
     pub new_expiration: Option<String>,
     pub on_fill: Option<Vec<crate::generated::static_variants::LimitOrderAutoAction>>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }

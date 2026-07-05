@@ -42,7 +42,7 @@ pub fn build_protocol(
     mut rpc_methods: Vec<RpcMethodDef>,
 ) -> Protocol {
     let (structs, static_variants) = build_type_graph(config, facts, &rpc_methods);
-    let operations = build_operations(&static_variants, &structs);
+    let operations = build_operations(&static_variants, &structs, &facts.virtual_operations);
     let object_types = build_object_types(facts, &structs);
     let enums = build_enums(facts);
     populate_protocol_object_unions(&mut rpc_methods, &object_types);
@@ -216,6 +216,7 @@ fn is_bitfield_enum(name: &str) -> bool {
 fn build_operations(
     static_variants: &[StaticVariantDef],
     structs: &[StructDef],
+    virtual_operations: &[String],
 ) -> Vec<OperationDef> {
     let Some(operation_variant) = static_variants
         .iter()
@@ -227,13 +228,17 @@ fn build_operations(
     let mut operations = operation_variant
         .variants
         .iter()
-        .filter_map(|arm| operation_from_arm(arm, structs))
+        .filter_map(|arm| operation_from_arm(arm, structs, virtual_operations))
         .collect::<Vec<_>>();
     operations.sort_by(|left, right| left.wire_tag.cmp(&right.wire_tag));
     operations
 }
 
-fn operation_from_arm(arm: &StaticVariantArmDef, structs: &[StructDef]) -> Option<OperationDef> {
+fn operation_from_arm(
+    arm: &StaticVariantArmDef,
+    structs: &[StructDef],
+    virtual_operations: &[String],
+) -> Option<OperationDef> {
     let TypeRef::Ref { name } = &arm.ty else {
         return None;
     };
@@ -243,7 +248,7 @@ fn operation_from_arm(arm: &StaticVariantArmDef, structs: &[StructDef]) -> Optio
         name: arm.name.clone(),
         wire_tag: arm.tag,
         fields: struct_def.fields.clone(),
-        is_virtual: false,
+        is_virtual: virtual_operations.iter().any(|marked| marked == &arm.name),
         source: None,
         support: Some(SupportDef {
             status: SupportStatus::Provisional,

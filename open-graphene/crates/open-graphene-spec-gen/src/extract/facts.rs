@@ -8,6 +8,8 @@ pub struct SourceFacts {
     pub static_variants: Vec<RawStaticVariant>,
     pub object_types: Vec<RawObjectType>,
     pub reflects: Vec<RawReflect>,
+    /// Type names marked `// VIRTUAL` in the operation static-variant typedef.
+    pub virtual_operations: Vec<String>,
     pub diagnostics: Vec<ExtractDiagnostic>,
 }
 

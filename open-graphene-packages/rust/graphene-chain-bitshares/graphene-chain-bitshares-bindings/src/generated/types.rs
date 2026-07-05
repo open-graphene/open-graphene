@@ -32,7 +32,7 @@ where
 /// Graphene compact recoverable ECDSA signature bytes.
 /// Wire layout: one compact header byte followed by 32-byte r and 32-byte s.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
-#[schema(as = GrapheneBitsharesSignature)]
+#[schema(as = GrapheneBitsharesSignature, value_type = String)]
 pub struct Signature(
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array")]
     pub Vec<u8>,
@@ -262,7 +262,7 @@ pub struct AccountOptions {
     pub num_witness: u16,
     pub num_committee: u16,
     pub votes: Vec<crate::generated::ids::VoteId>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 /// Raw protocol struct `account_transfer_operation_fee_params_t`.
@@ -540,6 +540,7 @@ pub struct BitassetOptionsExt {
 #[schema(as = GrapheneBitsharesBlindInput)]
 pub struct BlindInput {
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub commitment: Vec<u8>,
     pub owner: crate::generated::types::Authority,
 }
@@ -549,8 +550,10 @@ pub struct BlindInput {
 #[schema(as = GrapheneBitsharesBlindOutput)]
 pub struct BlindOutput {
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub commitment: Vec<u8>,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub range_proof: Vec<u8>,
     pub owner: crate::generated::types::Authority,
     pub stealth_memo: Option<crate::generated::types::StealthConfirmation>,
@@ -569,6 +572,7 @@ pub struct BlindTransferOperationFeeParamsT {
 #[schema(as = GrapheneBitsharesBlockIdPredicate)]
 pub struct BlockIdPredicate {
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub id: Vec<u8>,
 }
 
@@ -671,7 +675,7 @@ pub struct CreateTakeProfitOrderAction {
     pub size_percent: u16,
     pub expiration_seconds: u32,
     pub repeat: bool,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 /// Raw protocol struct `credit_deal_expired_operation_fee_params_t`.
@@ -773,6 +777,7 @@ pub struct DynamicGlobalPropertyObject {
     pub id: crate::generated::ids::DynamicGlobalPropertyId,
     pub head_block_number: u32,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub head_block_id: Vec<u8>,
     pub time: String,
     pub current_witness: crate::generated::ids::WitnessId,
@@ -994,12 +999,14 @@ pub struct LiquidityPoolWithdrawOperationFeeParamsT {
 #[schema(as = GrapheneBitsharesMaybeSignedBlockHeader)]
 pub struct MaybeSignedBlockHeader {
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub previous: Vec<u8>,
     pub timestamp: String,
     pub witness: crate::generated::ids::WitnessId,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub transaction_merkle_root: Vec<u8>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
     pub witness_signature: Option<crate::generated::types::Signature>,
 }
 
@@ -1010,8 +1017,10 @@ pub struct MemoData {
     pub from: Option<String>,
     pub amount: crate::generated::types::Asset,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_32_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub blinding_factor: Vec<u8>,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub commitment: Vec<u8>,
     pub check: u32,
 }
@@ -1026,6 +1035,7 @@ pub struct NoSpecialAuthority {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneBitsharesOpWrapper)]
 pub struct OpWrapper {
+    #[schema(no_recursion)]
     pub op: crate::generated::static_variants::Operation,
 }
 
@@ -1084,7 +1094,7 @@ pub struct ProcessedTransaction {
     pub ref_block_prefix: u32,
     pub expiration: String,
     pub operations: Vec<crate::generated::static_variants::Operation>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
     pub signatures: Vec<crate::generated::types::Signature>,
     pub operation_results: Vec<crate::generated::static_variants::OperationResult>,
 }
@@ -1123,7 +1133,7 @@ pub struct Restriction {
     pub member_index: u32,
     pub restriction_type: u32,
     pub argument: crate::generated::static_variants::ArgumentType,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 /// Raw protocol struct `samet_fund_borrow_operation_fee_params_t`.
@@ -1166,12 +1176,14 @@ pub struct SametFundUpdateOperationFeeParamsT {
 #[schema(as = GrapheneBitsharesSignedBlock)]
 pub struct SignedBlock {
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub previous: Vec<u8>,
     pub timestamp: String,
     pub witness: crate::generated::ids::WitnessId,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub transaction_merkle_root: Vec<u8>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
     pub witness_signature: crate::generated::types::Signature,
     pub transactions: Vec<crate::generated::types::ProcessedTransaction>,
 }
@@ -1184,7 +1196,7 @@ pub struct SignedTransaction {
     pub ref_block_prefix: u32,
     pub expiration: String,
     pub operations: Vec<crate::generated::static_variants::Operation>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
     pub signatures: Vec<crate::generated::types::Signature>,
 }
 
@@ -1195,6 +1207,7 @@ pub struct StealthConfirmation {
     pub one_time_key: String,
     pub to: Option<String>,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
     pub encrypted_memo: Vec<u8>,
 }
 
@@ -1228,7 +1241,7 @@ pub struct Transaction {
     pub ref_block_prefix: u32,
     pub expiration: String,
     pub operations: Vec<crate::generated::static_variants::Operation>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 /// Raw protocol struct `transfer_from_blind_operation_fee_params_t`.

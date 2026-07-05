@@ -406,6 +406,7 @@ mod tests {
             static_variants: vec![],
             object_types: vec![],
             reflects: vec![],
+            virtual_operations: vec![],
             diagnostics: vec![],
         }
     }

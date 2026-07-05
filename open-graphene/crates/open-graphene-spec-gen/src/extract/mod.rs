@@ -5,6 +5,7 @@ pub mod macros;
 pub mod object_types;
 pub mod reflect;
 pub mod static_variants;
+pub mod virtual_ops;
 
 use std::fs;
 
@@ -21,6 +22,7 @@ pub use macros::extract_fc_apis;
 pub use object_types::extract_object_types;
 pub use reflect::extract_reflects;
 pub use static_variants::extract_static_variants;
+pub use virtual_ops::extract_virtual_operation_markers;
 
 pub fn extract_source_facts(source_set: &SourceSet) -> Result<SourceFacts> {
     let mut facts = SourceFacts::default();
@@ -48,6 +50,9 @@ pub fn extract_source_facts(source_set: &SourceSet) -> Result<SourceFacts> {
         facts
             .reflects
             .extend(extract_reflects(&text, &source_file.path));
+        facts
+            .virtual_operations
+            .extend(extract_virtual_operation_markers(&text));
     }
 
     Ok(facts)

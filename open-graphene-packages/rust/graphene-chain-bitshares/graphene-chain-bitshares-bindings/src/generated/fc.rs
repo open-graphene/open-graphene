@@ -312,7 +312,16 @@ impl FcSerialize for crate::generated::types::AccountOptions {
         for value in &self.votes {
             write_vote_id(&value.0, out)?;
         }
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -801,7 +810,16 @@ impl FcSerialize for crate::generated::types::CreateTakeProfitOrderAction {
         self.size_percent.fc_serialize(out)?;
         self.expiration_seconds.fc_serialize(out)?;
         self.repeat.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -1095,7 +1113,16 @@ impl FcSerialize for crate::generated::types::MaybeSignedBlockHeader {
         write_time_point_sec(&self.timestamp, out)?;
         self.witness.fc_serialize(out)?;
         write_fixed_bytes(&self.transaction_merkle_root, 20, "fixed_bytes_20", out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         self.witness_signature.fc_serialize(out)?;
         Ok(())
     }
@@ -1191,7 +1218,16 @@ impl FcSerialize for crate::generated::types::Restriction {
         self.member_index.fc_serialize(out)?;
         self.restriction_type.fc_serialize(out)?;
         self.argument.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -1237,7 +1273,16 @@ impl FcSerialize for crate::generated::types::SignedTransaction {
         self.ref_block_prefix.fc_serialize(out)?;
         write_time_point_sec(&self.expiration, out)?;
         self.operations.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         self.signatures.fc_serialize(out)?;
         Ok(())
     }
@@ -1286,7 +1331,16 @@ impl FcSerialize for crate::generated::types::Transaction {
         self.ref_block_prefix.fc_serialize(out)?;
         write_time_point_sec(&self.expiration, out)?;
         self.operations.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2328,7 +2382,16 @@ impl FcSerialize for crate::generated::operations::LimitOrderCreateOperation {
         self.min_to_receive.fc_serialize(out)?;
         write_time_point_sec(&self.expiration, out)?;
         self.fill_or_kill.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2338,7 +2401,16 @@ impl FcSerialize for crate::generated::operations::LimitOrderCancelOperation {
         self.fee.fc_serialize(out)?;
         self.fee_paying_account.fc_serialize(out)?;
         self.order.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2349,7 +2421,16 @@ impl FcSerialize for crate::generated::operations::CallOrderUpdateOperation {
         self.funding_account.fc_serialize(out)?;
         self.delta_collateral.fc_serialize(out)?;
         self.delta_debt.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2400,7 +2481,16 @@ impl FcSerialize for crate::generated::operations::AccountWhitelistOperation {
         self.authorizing_account.fc_serialize(out)?;
         self.account_to_list.fc_serialize(out)?;
         self.new_listing.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2410,7 +2500,16 @@ impl FcSerialize for crate::generated::operations::AccountUpgradeOperation {
         self.fee.fc_serialize(out)?;
         self.account_to_upgrade.fc_serialize(out)?;
         self.upgrade_to_lifetime_member.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2420,7 +2519,16 @@ impl FcSerialize for crate::generated::operations::AccountTransferOperation {
         self.fee.fc_serialize(out)?;
         self.account_id.fc_serialize(out)?;
         self.new_owner.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2434,7 +2542,16 @@ impl FcSerialize for crate::generated::operations::AssetCreateOperation {
         self.common_options.fc_serialize(out)?;
         self.bitasset_opts.fc_serialize(out)?;
         self.is_prediction_market.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2457,7 +2574,16 @@ impl FcSerialize for crate::generated::operations::AssetUpdateBitassetOperation 
         self.issuer.fc_serialize(out)?;
         self.asset_to_update.fc_serialize(out)?;
         self.new_options.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2477,7 +2603,16 @@ impl FcSerialize for crate::generated::operations::AssetUpdateFeedProducersOpera
             previous_key = Some(key_parts.instance);
             value.fc_serialize(out)?;
         }
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2489,7 +2624,16 @@ impl FcSerialize for crate::generated::operations::AssetIssueOperation {
         self.asset_to_issue.fc_serialize(out)?;
         self.issue_to_account.fc_serialize(out)?;
         self.memo.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2499,7 +2643,16 @@ impl FcSerialize for crate::generated::operations::AssetReserveOperation {
         self.fee.fc_serialize(out)?;
         self.payer.fc_serialize(out)?;
         self.amount_to_reserve.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2510,7 +2663,16 @@ impl FcSerialize for crate::generated::operations::AssetFundFeePoolOperation {
         self.from_account.fc_serialize(out)?;
         self.asset_id.fc_serialize(out)?;
         self.amount.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2520,7 +2682,16 @@ impl FcSerialize for crate::generated::operations::AssetSettleOperation {
         self.fee.fc_serialize(out)?;
         self.account.fc_serialize(out)?;
         self.amount.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2531,7 +2702,16 @@ impl FcSerialize for crate::generated::operations::AssetGlobalSettleOperation {
         self.issuer.fc_serialize(out)?;
         self.asset_to_settle.fc_serialize(out)?;
         self.settle_price.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2581,7 +2761,16 @@ impl FcSerialize for crate::generated::operations::ProposalCreateOperation {
         write_time_point_sec(&self.expiration_time, out)?;
         self.proposed_ops.fc_serialize(out)?;
         self.review_period_seconds.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2653,7 +2842,16 @@ impl FcSerialize for crate::generated::operations::ProposalUpdateOperation {
             previous_key = Some(key_bytes.clone());
             out.extend_from_slice(&key_bytes);
         }
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2664,7 +2862,16 @@ impl FcSerialize for crate::generated::operations::ProposalDeleteOperation {
         self.fee_paying_account.fc_serialize(out)?;
         self.using_owner_authority.fc_serialize(out)?;
         self.proposal.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2815,7 +3022,16 @@ impl FcSerialize for crate::generated::operations::AssertOperation {
             previous_key = Some(key_parts.instance);
             value.fc_serialize(out)?;
         }
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2839,7 +3055,16 @@ impl FcSerialize for crate::generated::operations::OverrideTransferOperation {
         self.to.fc_serialize(out)?;
         self.amount.fc_serialize(out)?;
         self.memo.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2911,7 +3136,16 @@ impl FcSerialize for crate::generated::operations::BidCollateralOperation {
         self.bidder.fc_serialize(out)?;
         self.additional_collateral.fc_serialize(out)?;
         self.debt_covered.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2932,7 +3166,16 @@ impl FcSerialize for crate::generated::operations::AssetClaimPoolOperation {
         self.issuer.fc_serialize(out)?;
         self.asset_id.fc_serialize(out)?;
         self.amount_to_claim.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2943,7 +3186,16 @@ impl FcSerialize for crate::generated::operations::AssetUpdateIssuerOperation {
         self.issuer.fc_serialize(out)?;
         self.asset_to_update.fc_serialize(out)?;
         self.new_issuer.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2968,7 +3220,16 @@ impl FcSerialize for crate::generated::operations::HtlcRedeemOperation {
         self.htlc_id.fc_serialize(out)?;
         self.redeemer.fc_serialize(out)?;
         write_bytes(&self.preimage, out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -2994,7 +3255,16 @@ impl FcSerialize for crate::generated::operations::HtlcExtendOperation {
         self.htlc_id.fc_serialize(out)?;
         self.update_issuer.fc_serialize(out)?;
         self.seconds_to_add.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3022,7 +3292,16 @@ impl FcSerialize for crate::generated::operations::CustomAuthorityCreateOperatio
         self.operation_type.fc_serialize(out)?;
         self.auth.fc_serialize(out)?;
         self.restrictions.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3058,7 +3337,16 @@ impl FcSerialize for crate::generated::operations::CustomAuthorityUpdateOperatio
             value.fc_serialize(out)?;
         }
         self.restrictions_to_add.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3068,7 +3356,16 @@ impl FcSerialize for crate::generated::operations::CustomAuthorityDeleteOperatio
         self.fee.fc_serialize(out)?;
         self.account.fc_serialize(out)?;
         self.authority_to_delete.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3079,7 +3376,16 @@ impl FcSerialize for crate::generated::operations::TicketCreateOperation {
         self.account.fc_serialize(out)?;
         self.target_type.fc_serialize(out)?;
         self.amount.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3091,7 +3397,16 @@ impl FcSerialize for crate::generated::operations::TicketUpdateOperation {
         self.account.fc_serialize(out)?;
         self.target_type.fc_serialize(out)?;
         self.amount_for_new_target.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3105,7 +3420,16 @@ impl FcSerialize for crate::generated::operations::LiquidityPoolCreateOperation 
         self.share_asset.fc_serialize(out)?;
         self.taker_fee_percent.fc_serialize(out)?;
         self.withdrawal_fee_percent.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3115,7 +3439,16 @@ impl FcSerialize for crate::generated::operations::LiquidityPoolDeleteOperation 
         self.fee.fc_serialize(out)?;
         self.account.fc_serialize(out)?;
         self.pool.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3127,7 +3460,16 @@ impl FcSerialize for crate::generated::operations::LiquidityPoolDepositOperation
         self.pool.fc_serialize(out)?;
         self.amount_a.fc_serialize(out)?;
         self.amount_b.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3138,7 +3480,16 @@ impl FcSerialize for crate::generated::operations::LiquidityPoolWithdrawOperatio
         self.account.fc_serialize(out)?;
         self.pool.fc_serialize(out)?;
         self.share_amount.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3150,7 +3501,16 @@ impl FcSerialize for crate::generated::operations::LiquidityPoolExchangeOperatio
         self.pool.fc_serialize(out)?;
         self.amount_to_sell.fc_serialize(out)?;
         self.min_to_receive.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3162,7 +3522,16 @@ impl FcSerialize for crate::generated::operations::SametFundCreateOperation {
         self.asset_type.fc_serialize(out)?;
         self.balance.fc_serialize(out)?;
         self.fee_rate.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3172,7 +3541,16 @@ impl FcSerialize for crate::generated::operations::SametFundDeleteOperation {
         self.fee.fc_serialize(out)?;
         self.owner_account.fc_serialize(out)?;
         self.fund_id.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3184,7 +3562,16 @@ impl FcSerialize for crate::generated::operations::SametFundUpdateOperation {
         self.fund_id.fc_serialize(out)?;
         self.delta_amount.fc_serialize(out)?;
         self.new_fee_rate.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3195,7 +3582,16 @@ impl FcSerialize for crate::generated::operations::SametFundBorrowOperation {
         self.borrower.fc_serialize(out)?;
         self.fund_id.fc_serialize(out)?;
         self.borrow_amount.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3207,7 +3603,16 @@ impl FcSerialize for crate::generated::operations::SametFundRepayOperation {
         self.fund_id.fc_serialize(out)?;
         self.repay_amount.fc_serialize(out)?;
         self.fund_fee.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3245,7 +3650,16 @@ impl FcSerialize for crate::generated::operations::CreditOfferCreateOperation {
             key.fc_serialize(out)?;
             value.fc_serialize(out)?;
         }
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3255,7 +3669,16 @@ impl FcSerialize for crate::generated::operations::CreditOfferDeleteOperation {
         self.fee.fc_serialize(out)?;
         self.owner_account.fc_serialize(out)?;
         self.offer_id.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3311,7 +3734,16 @@ impl FcSerialize for crate::generated::operations::CreditOfferUpdateOperation {
             }
             None => out.push(0),
         }
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3337,7 +3769,16 @@ impl FcSerialize for crate::generated::operations::CreditDealRepayOperation {
         self.deal_id.fc_serialize(out)?;
         self.repay_amount.fc_serialize(out)?;
         self.credit_fee.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3363,7 +3804,16 @@ impl FcSerialize for crate::generated::operations::LiquidityPoolUpdateOperation 
         self.pool.fc_serialize(out)?;
         self.taker_fee_percent.fc_serialize(out)?;
         self.withdrawal_fee_percent.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3374,7 +3824,16 @@ impl FcSerialize for crate::generated::operations::CreditDealUpdateOperation {
         self.account.fc_serialize(out)?;
         self.deal_id.fc_serialize(out)?;
         self.auto_repay.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -3394,7 +3853,16 @@ impl FcSerialize for crate::generated::operations::LimitOrderUpdateOperation {
             None => out.push(0),
         }
         self.on_fill.fc_serialize(out)?;
-        self.extensions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }

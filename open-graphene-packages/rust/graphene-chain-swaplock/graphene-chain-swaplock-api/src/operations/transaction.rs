@@ -2,7 +2,8 @@
 //!
 //! Build one or more operations, let the node price them, sign, and hand the JSON to
 //! `network_broadcast`. The same flow that `transfer` uses, but for any operation the bindings can
-//! serialize. Adding a new operation means one match arm in [`set_operation_fee`].
+//! serialize. Fee write-back uses the generated `Operation::set_fee`, so every broadcastable
+//! operation is supported without per-operation wiring.
 
 use std::time::Duration;
 
@@ -152,172 +153,22 @@ impl SignedTransactionEnvelope {
     }
 }
 
-/// Write the node-supplied `fee` into an operation. Add a match arm here to support a new operation.
+/// Write the node-supplied `fee` into an operation. Virtual operations are emitted by the chain
+/// itself and can never be broadcast, so they are rejected here before signing.
 pub(super) fn set_operation_fee(
     operation: &mut Operation,
     fee: Asset,
 ) -> Result<(), SwaplockApiError> {
-    match operation {
-        Operation::TransferOperation(operation) => operation.fee = fee,
-        Operation::LimitOrderCreateOperation(operation) => operation.fee = fee,
-        Operation::LimitOrderCancelOperation(operation) => operation.fee = fee,
-        Operation::LimitOrderUpdateOperation(operation) => operation.fee = fee,
-        Operation::AssetIssueOperation(operation) => operation.fee = fee,
-        Operation::AssetReserveOperation(operation) => operation.fee = fee,
-        Operation::AssetUpdateOperation(operation) => operation.fee = fee,
-        Operation::AssetCreateOperation(operation) => operation.fee = fee,
-        Operation::AssetUpdateIssuerOperation(operation) => operation.fee = fee,
-        Operation::AssetFundFeePoolOperation(operation) => operation.fee = fee,
-        Operation::AssetClaimPoolOperation(operation) => operation.fee = fee,
-        Operation::AssetClaimFeesOperation(operation) => operation.fee = fee,
-        Operation::AssetSettleOperation(operation) => operation.fee = fee,
-        Operation::AssetGlobalSettleOperation(operation) => operation.fee = fee,
-        Operation::AssetUpdateFeedProducersOperation(operation) => operation.fee = fee,
-        Operation::AssetPublishFeedOperation(operation) => operation.fee = fee,
-        Operation::AssetUpdateBitassetOperation(operation) => operation.fee = fee,
-        Operation::AccountUpdateOperation(operation) => operation.fee = fee,
-        Operation::AccountCreateOperation(operation) => operation.fee = fee,
-        Operation::AccountUpgradeOperation(operation) => operation.fee = fee,
-        Operation::AccountWhitelistOperation(operation) => operation.fee = fee,
-        Operation::AccountTransferOperation(operation) => operation.fee = fee,
-        Operation::HtlcCreateOperation(operation) => operation.fee = fee,
-        Operation::HtlcRedeemOperation(operation) => operation.fee = fee,
-        Operation::HtlcExtendOperation(operation) => operation.fee = fee,
-        Operation::ProposalCreateOperation(operation) => operation.fee = fee,
-        Operation::LiquidityPoolCreateOperation(operation) => operation.fee = fee,
-        Operation::LiquidityPoolDeleteOperation(operation) => operation.fee = fee,
-        Operation::LiquidityPoolDepositOperation(operation) => operation.fee = fee,
-        Operation::LiquidityPoolWithdrawOperation(operation) => operation.fee = fee,
-        Operation::LiquidityPoolExchangeOperation(operation) => operation.fee = fee,
-        Operation::LiquidityPoolUpdateOperation(operation) => operation.fee = fee,
-        Operation::CallOrderUpdateOperation(operation) => operation.fee = fee,
-        Operation::CreditOfferCreateOperation(operation) => operation.fee = fee,
-        Operation::CreditOfferUpdateOperation(operation) => operation.fee = fee,
-        Operation::CreditOfferDeleteOperation(operation) => operation.fee = fee,
-        Operation::CreditOfferAcceptOperation(operation) => operation.fee = fee,
-        Operation::CreditDealRepayOperation(operation) => operation.fee = fee,
-        Operation::CreditDealUpdateOperation(operation) => operation.fee = fee,
-        Operation::SametFundCreateOperation(operation) => operation.fee = fee,
-        Operation::SametFundUpdateOperation(operation) => operation.fee = fee,
-        Operation::SametFundDeleteOperation(operation) => operation.fee = fee,
-        Operation::SametFundBorrowOperation(operation) => operation.fee = fee,
-        Operation::SametFundRepayOperation(operation) => operation.fee = fee,
-        Operation::WithdrawPermissionCreateOperation(operation) => operation.fee = fee,
-        Operation::WithdrawPermissionUpdateOperation(operation) => operation.fee = fee,
-        Operation::WithdrawPermissionClaimOperation(operation) => operation.fee = fee,
-        Operation::WithdrawPermissionDeleteOperation(operation) => operation.fee = fee,
-        Operation::VestingBalanceCreateOperation(operation) => operation.fee = fee,
-        Operation::VestingBalanceWithdrawOperation(operation) => operation.fee = fee,
-        Operation::TicketCreateOperation(operation) => operation.fee = fee,
-        Operation::TicketUpdateOperation(operation) => operation.fee = fee,
-        Operation::ProposalUpdateOperation(operation) => operation.fee = fee,
-        Operation::ProposalDeleteOperation(operation) => operation.fee = fee,
-        Operation::CommitteeMemberCreateOperation(operation) => operation.fee = fee,
-        Operation::CommitteeMemberUpdateOperation(operation) => operation.fee = fee,
-        Operation::WitnessCreateOperation(operation) => operation.fee = fee,
-        Operation::WitnessUpdateOperation(operation) => operation.fee = fee,
-        Operation::WorkerCreateOperation(operation) => operation.fee = fee,
-        Operation::CustomOperation(operation) => operation.fee = fee,
-        Operation::TransferToBlindOperation(operation) => operation.fee = fee,
-        Operation::BlindTransferOperation(operation) => operation.fee = fee,
-        Operation::TransferFromBlindOperation(operation) => operation.fee = fee,
-        Operation::OverrideTransferOperation(operation) => operation.fee = fee,
-        Operation::CustomAuthorityCreateOperation(operation) => operation.fee = fee,
-        Operation::CustomAuthorityUpdateOperation(operation) => operation.fee = fee,
-        Operation::CustomAuthorityDeleteOperation(operation) => operation.fee = fee,
-        Operation::AssertOperation(operation) => operation.fee = fee,
-        Operation::BalanceClaimOperation(operation) => operation.fee = fee,
-        Operation::BidCollateralOperation(operation) => operation.fee = fee,
-        Operation::CommitteeMemberUpdateGlobalParametersOperation(operation) => operation.fee = fee,
-        other => {
-            return Err(SwaplockApiError::InvalidTransfer {
-                message: format!(
-                    "automatic fee is not wired for this operation yet: {}",
-                    operation_name(other)
-                ),
-            });
-        }
+    if operation.is_virtual() {
+        return Err(SwaplockApiError::InvalidTransfer {
+            message: format!(
+                "{} is a virtual operation emitted by the chain and cannot be broadcast",
+                operation.name()
+            ),
+        });
     }
+    operation.set_fee(fee);
     Ok(())
-}
-
-fn operation_name(operation: &Operation) -> &'static str {
-    match operation {
-        Operation::TransferOperation(_) => "transfer",
-        Operation::LimitOrderCreateOperation(_) => "limit_order_create",
-        Operation::LimitOrderCancelOperation(_) => "limit_order_cancel",
-        Operation::LimitOrderUpdateOperation(_) => "limit_order_update",
-        Operation::AssetIssueOperation(_) => "asset_issue",
-        Operation::AssetReserveOperation(_) => "asset_reserve",
-        Operation::AssetUpdateOperation(_) => "asset_update",
-        Operation::AssetCreateOperation(_) => "asset_create",
-        Operation::AssetUpdateIssuerOperation(_) => "asset_update_issuer",
-        Operation::AssetFundFeePoolOperation(_) => "asset_fund_fee_pool",
-        Operation::AssetClaimPoolOperation(_) => "asset_claim_pool",
-        Operation::AssetClaimFeesOperation(_) => "asset_claim_fees",
-        Operation::AssetSettleOperation(_) => "asset_settle",
-        Operation::AssetGlobalSettleOperation(_) => "asset_global_settle",
-        Operation::AssetUpdateFeedProducersOperation(_) => "asset_update_feed_producers",
-        Operation::AssetPublishFeedOperation(_) => "asset_publish_feed",
-        Operation::AssetUpdateBitassetOperation(_) => "asset_update_bitasset",
-        Operation::AccountUpdateOperation(_) => "account_update",
-        Operation::AccountCreateOperation(_) => "account_create",
-        Operation::AccountUpgradeOperation(_) => "account_upgrade",
-        Operation::AccountWhitelistOperation(_) => "account_whitelist",
-        Operation::AccountTransferOperation(_) => "account_transfer",
-        Operation::HtlcCreateOperation(_) => "htlc_create",
-        Operation::HtlcRedeemOperation(_) => "htlc_redeem",
-        Operation::HtlcExtendOperation(_) => "htlc_extend",
-        Operation::ProposalCreateOperation(_) => "proposal_create",
-        Operation::LiquidityPoolCreateOperation(_) => "liquidity_pool_create",
-        Operation::LiquidityPoolDeleteOperation(_) => "liquidity_pool_delete",
-        Operation::LiquidityPoolDepositOperation(_) => "liquidity_pool_deposit",
-        Operation::LiquidityPoolWithdrawOperation(_) => "liquidity_pool_withdraw",
-        Operation::LiquidityPoolExchangeOperation(_) => "liquidity_pool_exchange",
-        Operation::LiquidityPoolUpdateOperation(_) => "liquidity_pool_update",
-        Operation::CallOrderUpdateOperation(_) => "call_order_update",
-        Operation::CreditOfferCreateOperation(_) => "credit_offer_create",
-        Operation::CreditOfferUpdateOperation(_) => "credit_offer_update",
-        Operation::CreditOfferDeleteOperation(_) => "credit_offer_delete",
-        Operation::CreditOfferAcceptOperation(_) => "credit_offer_accept",
-        Operation::CreditDealRepayOperation(_) => "credit_deal_repay",
-        Operation::CreditDealUpdateOperation(_) => "credit_deal_update",
-        Operation::SametFundCreateOperation(_) => "samet_fund_create",
-        Operation::SametFundUpdateOperation(_) => "samet_fund_update",
-        Operation::SametFundDeleteOperation(_) => "samet_fund_delete",
-        Operation::SametFundBorrowOperation(_) => "samet_fund_borrow",
-        Operation::SametFundRepayOperation(_) => "samet_fund_repay",
-        Operation::WithdrawPermissionCreateOperation(_) => "withdraw_permission_create",
-        Operation::WithdrawPermissionUpdateOperation(_) => "withdraw_permission_update",
-        Operation::WithdrawPermissionClaimOperation(_) => "withdraw_permission_claim",
-        Operation::WithdrawPermissionDeleteOperation(_) => "withdraw_permission_delete",
-        Operation::VestingBalanceCreateOperation(_) => "vesting_balance_create",
-        Operation::VestingBalanceWithdrawOperation(_) => "vesting_balance_withdraw",
-        Operation::TicketCreateOperation(_) => "ticket_create",
-        Operation::TicketUpdateOperation(_) => "ticket_update",
-        Operation::ProposalUpdateOperation(_) => "proposal_update",
-        Operation::ProposalDeleteOperation(_) => "proposal_delete",
-        Operation::CommitteeMemberCreateOperation(_) => "committee_member_create",
-        Operation::CommitteeMemberUpdateOperation(_) => "committee_member_update",
-        Operation::WitnessCreateOperation(_) => "witness_create",
-        Operation::WitnessUpdateOperation(_) => "witness_update",
-        Operation::WorkerCreateOperation(_) => "worker_create",
-        Operation::CustomOperation(_) => "custom",
-        Operation::TransferToBlindOperation(_) => "transfer_to_blind",
-        Operation::BlindTransferOperation(_) => "blind_transfer",
-        Operation::TransferFromBlindOperation(_) => "transfer_from_blind",
-        Operation::OverrideTransferOperation(_) => "override_transfer",
-        Operation::CustomAuthorityCreateOperation(_) => "custom_authority_create",
-        Operation::CustomAuthorityUpdateOperation(_) => "custom_authority_update",
-        Operation::CustomAuthorityDeleteOperation(_) => "custom_authority_delete",
-        Operation::AssertOperation(_) => "assert",
-        Operation::BalanceClaimOperation(_) => "balance_claim",
-        Operation::BidCollateralOperation(_) => "bid_collateral",
-        Operation::CommitteeMemberUpdateGlobalParametersOperation(_) => {
-            "committee_member_update_global_parameters"
-        }
-        _ => "unknown",
-    }
 }
 
 /// Serialize each operation to its `[op_id, body]` wire form via serde.
@@ -418,10 +269,13 @@ fn sign_checked(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId, LimitOrderId};
-    use graphene_chain_swaplock_bindings::generated::operations::{
-        LimitOrderCancelOperation, TransferOperation,
+    use graphene_chain_swaplock_bindings::generated::ids::{
+        AccountId, AssetId, LimitOrderId, ObjectId,
     };
+    use graphene_chain_swaplock_bindings::generated::operations::{
+        FillOrderOperation, LimitOrderCancelOperation, TransferOperation,
+    };
+    use graphene_chain_swaplock_bindings::generated::types::Price;
 
     #[test]
     fn transfer_serializes_to_the_graphene_wire_shape() {
@@ -482,5 +336,27 @@ mod tests {
             panic!("expected cancel");
         };
         assert_eq!(cancel.fee.amount, 55);
+    }
+
+    #[test]
+    fn set_operation_fee_rejects_a_virtual_operation() {
+        let asset = |amount| Asset::new(amount, AssetId("1.3.0".to_string()));
+        let mut operation = Operation::fill_order(FillOrderOperation {
+            fee: asset(0),
+            order_id: ObjectId::new("1.7.42"),
+            account_id: AccountId("1.2.100".to_string()),
+            pays: asset(100),
+            receives: asset(100),
+            fill_price: Price {
+                base: asset(1),
+                quote: asset(1),
+            },
+            is_maker: true,
+        });
+
+        let error = set_operation_fee(&mut operation, asset(55)).unwrap_err();
+
+        assert!(error.to_string().contains("fill_order"));
+        assert!(error.to_string().contains("virtual"));
     }
 }

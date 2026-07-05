@@ -19811,7 +19811,7 @@
           }
         }
       ],
-      "isVirtual": false,
+      "isVirtual": true,
       "support": {
         "status": "provisional",
         "reason": "operation derived from operation static_variant arm and matching struct fields"
@@ -23772,7 +23772,7 @@
           }
         }
       ],
-      "isVirtual": false,
+      "isVirtual": true,
       "support": {
         "status": "provisional",
         "reason": "operation derived from operation static_variant arm and matching struct fields"
@@ -23928,7 +23928,7 @@
           }
         }
       ],
-      "isVirtual": false,
+      "isVirtual": true,
       "support": {
         "status": "provisional",
         "reason": "operation derived from operation static_variant arm and matching struct fields"
@@ -24107,7 +24107,7 @@
           }
         }
       ],
-      "isVirtual": false,
+      "isVirtual": true,
       "support": {
         "status": "provisional",
         "reason": "operation derived from operation static_variant arm and matching struct fields"
@@ -24713,7 +24713,7 @@
           }
         }
       ],
-      "isVirtual": false,
+      "isVirtual": true,
       "support": {
         "status": "provisional",
         "reason": "operation derived from operation static_variant arm and matching struct fields"
@@ -24941,7 +24941,7 @@
           }
         }
       ],
-      "isVirtual": false,
+      "isVirtual": true,
       "support": {
         "status": "provisional",
         "reason": "operation derived from operation static_variant arm and matching struct fields"
@@ -27684,7 +27684,7 @@
           }
         }
       ],
-      "isVirtual": false,
+      "isVirtual": true,
       "support": {
         "status": "provisional",
         "reason": "operation derived from operation static_variant arm and matching struct fields"
