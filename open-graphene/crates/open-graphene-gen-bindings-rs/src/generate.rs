@@ -261,6 +261,9 @@ fn render_rpc_method(
     out.push_str("            }\n");
     out.push_str("        }\n\n");
 
+    if api_name == "database" && method.name == "get_config" {
+        render_config_rpc_types(out);
+    }
     if api_name == "database" && method.name == "get_required_fees" {
         render_required_fee_rpc_types(out);
     }
@@ -286,47 +289,40 @@ fn render_rpc_method(
 /// Like [`render_type_ref`], but total: RPC signatures resolved from C++ may reference
 /// types the spec does not model, so those degrade to `serde_json::Value` instead of
 /// failing the whole generation, and byte types map to their hex JSON wire shape.
+fn render_config_rpc_types(out: &mut String) {
+    out.push_str("        /// Chain compile-time constants returned by `database.get_config`.\n");
+    out.push_str("        ///\n");
+    out.push_str("        /// The node returns an `fc::variant_object`, represented as a JSON object whose values\n");
+    out.push_str("        /// remain dynamic because individual `GRAPHENE_*` constants mix strings and numbers.\n");
+    out.push_str("        pub type Config = std::collections::BTreeMap<String, serde_json::Value>;\n\n");
+}
+
 fn render_required_fee_rpc_types(out: &mut String) {
-    out.push_str("        /// Fee result returned by `database.get_required_fees`.
-");
-    out.push_str("        ///
-");
-    out.push_str("        /// Plain operations return a single [`Asset`]. `proposal_create_operation` returns
-");
-    out.push_str("        /// a pair of its own fee and the recursively priced proposed operations.
-");
-    out.push_str("        #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-");
-    out.push_str("        #[serde(untagged)]
-");
-    out.push_str("        pub enum RequiredFee {
-");
-    out.push_str("            Asset(crate::generated::types::Asset),
-");
-    out.push_str("            Proposal(ProposalRequiredFee),
-");
-    out.push_str("        }
-
-");
-    out.push_str("        /// Recursive fee shape for `proposal_create_operation`: `[proposal_fee, nested_fees]`.
-");
-    out.push_str("        #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-");
-    out.push_str("        pub struct ProposalRequiredFee(
-");
-    out.push_str("            pub crate::generated::types::Asset,
-");
-    out.push_str("            pub Vec<RequiredFee>,
-");
-    out.push_str("        );
-
-");
+    out.push_str("        /// Fee result returned by `database.get_required_fees`.\n");
+    out.push_str("        ///\n");
+    out.push_str("        /// Plain operations return a single [`Asset`]. `proposal_create_operation` returns\n");
+    out.push_str("        /// a pair of its own fee and the recursively priced proposed operations.\n");
+    out.push_str("        #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]\n");
+    out.push_str("        #[serde(untagged)]\n");
+    out.push_str("        pub enum RequiredFee {\n");
+    out.push_str("            Asset(crate::generated::types::Asset),\n");
+    out.push_str("            Proposal(ProposalRequiredFee),\n");
+    out.push_str("        }\n\n");
+    out.push_str("        /// Recursive fee shape for `proposal_create_operation`: `[proposal_fee, nested_fees]`.\n");
+    out.push_str("        #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]\n");
+    out.push_str("        pub struct ProposalRequiredFee(\n");
+    out.push_str("            pub crate::generated::types::Asset,\n");
+    out.push_str("            pub Vec<RequiredFee>,\n");
+    out.push_str("        );\n\n");
 }
 
 fn render_rpc_type_ref(protocol: &Protocol, ty: &TypeRef) -> Result<String> {
     Ok(match ty {
         // On the JSON-RPC wire byte payloads are hex strings.
         TypeRef::Bytes | TypeRef::FixedBytes { .. } => "String".to_string(),
+        TypeRef::Ref { name } if name == "config" => {
+            "crate::generated::rpc::database::get_config::Config".to_string()
+        },
         TypeRef::Ref { name } if name == "required_fee" => {
             "crate::generated::rpc::database::get_required_fees::RequiredFee".to_string()
         },
@@ -3049,6 +3045,34 @@ mod tests {
         assert!(output.contains("params.push(value.unwrap_or(serde_json::Value::Null));"));
         assert!(output.contains("pub type Returns = Vec<serde_json::Value>;"));
         assert!(output.contains("pub fn parse_returns(value: serde_json::Value)"));
+    }
+
+    #[test]
+    fn renders_config_rpc_shape() {
+        let mut protocol = minimal_protocol();
+        protocol.rpc_methods.push(RpcMethodDef {
+            name: "get_config".to_string(),
+            api_class: "database_api".to_string(),
+            api_name: Some("database".to_string()),
+            params: vec![],
+            returns: Some(TypeRef::Ref {
+                name: "config".to_string(),
+            }),
+            is_subscription: false,
+            notices: vec![],
+            binding_hints: None,
+            source: None,
+            support: None,
+        });
+
+        let output = render_rpc(&protocol).expect("render rpc");
+
+        assert!(output.contains(
+            "pub type Config = std::collections::BTreeMap<String, serde_json::Value>;"
+        ));
+        assert!(output.contains(
+            "pub type Returns = crate::generated::rpc::database::get_config::Config;"
+        ));
     }
 
     #[test]

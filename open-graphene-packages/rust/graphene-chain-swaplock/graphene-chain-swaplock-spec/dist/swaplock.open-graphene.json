@@ -31815,8 +31815,8 @@
       "apiName": "database",
       "params": [],
       "returns": {
-        "kind": "any_json",
-        "reason": "unstructured Graphene variant type: fc::variant_object"
+        "kind": "ref",
+        "name": "config"
       },
       "isSubscription": false,
       "source": {

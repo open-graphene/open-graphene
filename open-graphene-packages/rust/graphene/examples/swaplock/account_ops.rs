@@ -7,7 +7,6 @@ use graphene::{Graphene, PrivateKey};
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenvy::dotenv().ok();
-    let wif = std::env::var("SWAPLOCK_ACTIVE_WIF")?;
     let account = std::env::var("SWAPLOCK_ACCOUNT").unwrap_or_else(|_| "swaplock".to_string());
     let throwaway_key = PrivateKey::from_seed(b"open-graphene-new-account")?
         .to_public_key()

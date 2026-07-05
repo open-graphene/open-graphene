@@ -21,7 +21,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = swaplock.database().config().get().await?;
 
     let symbol = config["GRAPHENE_SYMBOL"].as_str().unwrap_or("?");
-    let keys = config.as_object().map_or(0, |map| map.len());
+    let keys = config.len();
     println!("chain symbol: {symbol}");
     println!("config carries {keys} constants");
     if let Some(max_block) = config.get("GRAPHENE_SOFT_MAX_BLOCK_SIZE") {

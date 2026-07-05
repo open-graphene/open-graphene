@@ -471,7 +471,13 @@ pub mod database {
             }
         }
 
-        pub type Returns = serde_json::Value;
+        /// Chain compile-time constants returned by `database.get_config`.
+        ///
+        /// The node returns an `fc::variant_object`, represented as a JSON object whose values
+        /// remain dynamic because individual `GRAPHENE_*` constants mix strings and numbers.
+        pub type Config = std::collections::BTreeMap<String, serde_json::Value>;
+
+        pub type Returns = crate::generated::rpc::database::get_config::Config;
 
         pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
             serde_json::from_value(value)

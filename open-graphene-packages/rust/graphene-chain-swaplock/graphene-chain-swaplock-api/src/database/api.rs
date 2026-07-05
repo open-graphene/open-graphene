@@ -1,4 +1,5 @@
 use graphene_chain_swaplock_bindings::generated::ids::AccountId;
+use graphene_chain_swaplock_bindings::generated::rpc::database::get_config::Config;
 use graphene_chain_swaplock_bindings::generated::types::{MaybeSignedBlockHeader, SignedBlock};
 use graphene_chain_swaplock_bindings::generated::{
     AccountObject, Asset, AssetObject, ChainPropertyObject, DynamicGlobalPropertyObject,
@@ -341,7 +342,7 @@ impl<'session> DatabaseApi<'session> {
         .await
     }
 
-    pub async fn get_config(&mut self) -> Result<Value, SwaplockApiError> {
+    pub async fn get_config(&mut self) -> Result<Config, SwaplockApiError> {
         GetConfigRequest {
             session: &mut *self.session,
         }

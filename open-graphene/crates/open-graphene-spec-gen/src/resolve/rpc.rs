@@ -171,6 +171,11 @@ fn resolve_rpc_return_type(api_config: &RpcApiConfig, method: &RawMethod) -> Typ
                 }),
             };
         }
+        if method.name == "get_config" {
+            return TypeRef::Ref {
+                name: "config".to_string(),
+            };
+        }
     }
 
     resolve_cpp_type(&method.return_type)
