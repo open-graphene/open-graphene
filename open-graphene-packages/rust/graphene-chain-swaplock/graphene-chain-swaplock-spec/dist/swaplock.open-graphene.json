@@ -32225,8 +32225,8 @@
       "returns": {
         "kind": "vector",
         "inner": {
-          "kind": "any_json",
-          "reason": "unstructured Graphene variant type: fc::variant"
+          "kind": "ref",
+          "name": "required_fee"
         }
       },
       "isSubscription": false,

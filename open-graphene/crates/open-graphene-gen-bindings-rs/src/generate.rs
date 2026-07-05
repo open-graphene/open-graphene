@@ -261,6 +261,10 @@ fn render_rpc_method(
     out.push_str("            }\n");
     out.push_str("        }\n\n");
 
+    if api_name == "database" && method.name == "get_required_fees" {
+        render_required_fee_rpc_types(out);
+    }
+
     let returns = method.returns.clone().unwrap_or(TypeRef::Void);
     if matches!(returns, TypeRef::Void) {
         out.push_str("        /// This method returns no value.\n");
@@ -282,10 +286,50 @@ fn render_rpc_method(
 /// Like [`render_type_ref`], but total: RPC signatures resolved from C++ may reference
 /// types the spec does not model, so those degrade to `serde_json::Value` instead of
 /// failing the whole generation, and byte types map to their hex JSON wire shape.
+fn render_required_fee_rpc_types(out: &mut String) {
+    out.push_str("        /// Fee result returned by `database.get_required_fees`.
+");
+    out.push_str("        ///
+");
+    out.push_str("        /// Plain operations return a single [`Asset`]. `proposal_create_operation` returns
+");
+    out.push_str("        /// a pair of its own fee and the recursively priced proposed operations.
+");
+    out.push_str("        #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+");
+    out.push_str("        #[serde(untagged)]
+");
+    out.push_str("        pub enum RequiredFee {
+");
+    out.push_str("            Asset(crate::generated::types::Asset),
+");
+    out.push_str("            Proposal(ProposalRequiredFee),
+");
+    out.push_str("        }
+
+");
+    out.push_str("        /// Recursive fee shape for `proposal_create_operation`: `[proposal_fee, nested_fees]`.
+");
+    out.push_str("        #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+");
+    out.push_str("        pub struct ProposalRequiredFee(
+");
+    out.push_str("            pub crate::generated::types::Asset,
+");
+    out.push_str("            pub Vec<RequiredFee>,
+");
+    out.push_str("        );
+
+");
+}
+
 fn render_rpc_type_ref(protocol: &Protocol, ty: &TypeRef) -> Result<String> {
     Ok(match ty {
         // On the JSON-RPC wire byte payloads are hex strings.
         TypeRef::Bytes | TypeRef::FixedBytes { .. } => "String".to_string(),
+        TypeRef::Ref { name } if name == "required_fee" => {
+            "crate::generated::rpc::database::get_required_fees::RequiredFee".to_string()
+        },
         TypeRef::ProtocolObjectUnion { .. }
         | TypeRef::AnyJson { .. }
         | TypeRef::Unsupported { .. } => "serde_json::Value".to_string(),
@@ -3005,6 +3049,38 @@ mod tests {
         assert!(output.contains("params.push(value.unwrap_or(serde_json::Value::Null));"));
         assert!(output.contains("pub type Returns = Vec<serde_json::Value>;"));
         assert!(output.contains("pub fn parse_returns(value: serde_json::Value)"));
+    }
+
+    #[test]
+    fn renders_required_fee_rpc_shape() {
+        let mut protocol = minimal_protocol();
+        protocol.rpc_methods.push(RpcMethodDef {
+            name: "get_required_fees".to_string(),
+            api_class: "database_api".to_string(),
+            api_name: Some("database".to_string()),
+            params: vec![],
+            returns: Some(TypeRef::Vector {
+                inner: Box::new(TypeRef::Ref {
+                    name: "required_fee".to_string(),
+                }),
+            }),
+            is_subscription: false,
+            notices: vec![],
+            binding_hints: None,
+            source: None,
+            support: None,
+        });
+
+        let output = render_rpc(&protocol).expect("render rpc");
+
+        assert!(output.contains("pub enum RequiredFee"));
+        assert!(output.contains("Asset(crate::generated::types::Asset)"));
+        assert!(output.contains("Proposal(ProposalRequiredFee)"));
+        assert!(output.contains("pub struct ProposalRequiredFee("));
+        assert!(output.contains("pub Vec<RequiredFee>"));
+        assert!(output.contains(
+            "pub type Returns = Vec<crate::generated::rpc::database::get_required_fees::RequiredFee>;"
+        ));
     }
 
     #[test]

@@ -686,7 +686,25 @@ pub mod database {
             }
         }
 
-        pub type Returns = Vec<serde_json::Value>;
+        /// Fee result returned by `database.get_required_fees`.
+        ///
+        /// Plain operations return a single [`Asset`]. `proposal_create_operation` returns
+        /// a pair of its own fee and the recursively priced proposed operations.
+        #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+        #[serde(untagged)]
+        pub enum RequiredFee {
+            Asset(crate::generated::types::Asset),
+            Proposal(ProposalRequiredFee),
+        }
+
+        /// Recursive fee shape for `proposal_create_operation`: `[proposal_fee, nested_fees]`.
+        #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+        pub struct ProposalRequiredFee(
+            pub crate::generated::types::Asset,
+            pub Vec<RequiredFee>,
+        );
+
+        pub type Returns = Vec<crate::generated::rpc::database::get_required_fees::RequiredFee>;
 
         pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
             serde_json::from_value(value)

@@ -11,6 +11,7 @@ use graphene_chain_swaplock_bindings::generated::fc::{
     decode_public_key, is_graphene_canonical_compact_signature, verify_compact_signature_public_key,
 };
 use graphene_chain_swaplock_bindings::generated::ids::PUBLIC_KEY_PREFIX;
+use graphene_chain_swaplock_bindings::generated::rpc::database::get_required_fees as rpc_get_required_fees;
 use graphene_chain_swaplock_bindings::generated::static_variants::Operation;
 use graphene_chain_swaplock_bindings::generated::types::{Asset, SignedTransaction, Transaction};
 use open_graphene_core::{HeadBlock, transaction_header_from_head};
@@ -189,35 +190,25 @@ pub(super) async fn required_fees(
     operations: &[Operation],
     fee_asset_id: &str,
 ) -> Result<Vec<Asset>, SwaplockApiError> {
-    let operations_json = operations_json(operations)?;
+    let params = rpc_get_required_fees::Params {
+        ops: operations.to_vec(),
+        asset_symbol_or_id: fee_asset_id.to_string(),
+    }
+    .to_params_value()
+    .map_err(SwaplockApiError::unexpected(rpc_get_required_fees::METHOD))?;
     let value = session
-        .database_call("get_required_fees", json!([operations_json, fee_asset_id]))
+        .database_call(rpc_get_required_fees::METHOD, params)
         .await?;
-    // The node returns one fee per operation, but for ops with sub-operations (proposal_create)
-    // it returns a `[base_fee, [sub_fees...]]` pair instead of a bare asset. The op itself pays the
-    // base fee, so take the first element when an entry is the pair form.
-    let raw: Vec<Value> =
-        serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
-            method: "get_required_fees",
-            message: error.to_string(),
-        })?;
-    raw.into_iter()
-        .map(|entry| {
-            let fee = match entry {
-                Value::Array(items) => items.into_iter().next().ok_or_else(|| {
-                    SwaplockApiError::UnexpectedResponse {
-                        method: "get_required_fees",
-                        message: "empty fee pair".to_string(),
-                    }
-                })?,
-                other => other,
-            };
-            serde_json::from_value(fee).map_err(|error| SwaplockApiError::UnexpectedResponse {
-                method: "get_required_fees",
-                message: error.to_string(),
-            })
-        })
-        .collect()
+    let fees = rpc_get_required_fees::parse_returns(value)
+        .map_err(SwaplockApiError::unexpected(rpc_get_required_fees::METHOD))?;
+    Ok(fees.into_iter().map(required_fee_asset).collect())
+}
+
+fn required_fee_asset(fee: rpc_get_required_fees::RequiredFee) -> Asset {
+    match fee {
+        rpc_get_required_fees::RequiredFee::Asset(asset) => asset,
+        rpc_get_required_fees::RequiredFee::Proposal(proposal) => proposal.0,
+    }
 }
 
 fn sign_checked(
@@ -336,6 +327,20 @@ mod tests {
             panic!("expected cancel");
         };
         assert_eq!(cancel.fee.amount, 55);
+    }
+
+    #[test]
+    fn required_fee_asset_extracts_proposal_base_fee() {
+        let base_fee = Asset::new(11, AssetId("1.3.0".to_string()));
+        let nested_fee = Asset::new(7, AssetId("1.3.0".to_string()));
+        let fee = rpc_get_required_fees::RequiredFee::Proposal(
+            rpc_get_required_fees::ProposalRequiredFee(
+                base_fee.clone(),
+                vec![rpc_get_required_fees::RequiredFee::Asset(nested_fee)],
+            ),
+        );
+
+        assert_eq!(required_fee_asset(fee), base_fee);
     }
 
     #[test]
