@@ -1,6 +1,28 @@
+use graphene_chain_swaplock_bindings::generated::rpc::ProtocolObject;
 use graphene_chain_swaplock_bindings::generated::{
     AccountId, Asset, AssetId, LimitOrderId, LimitOrderObject, Operation, TransferOperation,
 };
+
+#[test]
+fn protocol_object_deserializes_by_object_id_type() {
+    let known = serde_json::json!({
+        "id": "2.11.0",
+        "chain_id": "2267f694d96b7ffdcba1a98c63c09e720a18a85ad34954e299c66d5a42234098",
+        "immutable_parameters": {
+            "min_committee_member_count": 1,
+            "min_witness_count": 1,
+            "num_special_accounts": 0,
+            "num_special_assets": 0
+        }
+    });
+
+    let object: ProtocolObject = serde_json::from_value(known).expect("known protocol object");
+    assert!(matches!(object, ProtocolObject::ChainProperty(_)));
+
+    let unknown_json = serde_json::json!({"id": "1.5.0", "url": "https://example.invalid"});
+    let object: ProtocolObject = serde_json::from_value(unknown_json).expect("unknown protocol object");
+    assert!(matches!(object, ProtocolObject::Unknown(_)));
+}
 
 #[test]
 fn operation_serializes_as_graphene_tagged_tuple() {

@@ -9,6 +9,134 @@
 //! with `parse_returns`. Byte-typed values travel as hex strings on the JSON wire,
 //! and types the spec cannot fully model fall back to `serde_json::Value`.
 
+/// Any modeled protocol object returned by generic object RPCs.
+///
+/// Deserialization dispatches by the object's `id` (`space.type.instance`) so objects are
+/// not accidentally matched by shape. Object ids whose type is not modeled yet are kept as
+/// raw JSON in [`ProtocolObject::Unknown`].
+#[derive(Debug, Clone, PartialEq)]
+pub enum ProtocolObject {
+    Account(crate::generated::types::AccountObject),
+    Asset(crate::generated::types::AssetObject),
+    ForceSettlement(crate::generated::types::ForceSettlementObject),
+    LimitOrder(crate::generated::types::LimitOrderObject),
+    CallOrder(crate::generated::types::CallOrderObject),
+    Proposal(crate::generated::types::ProposalObject),
+    OperationHistory(crate::generated::types::OperationHistoryObject),
+    WithdrawPermission(crate::generated::types::WithdrawPermissionObject),
+    VestingBalance(crate::generated::types::VestingBalanceObject),
+    Htlc(crate::generated::types::HtlcObject),
+    GlobalProperty(crate::generated::types::GlobalPropertyObject),
+    DynamicGlobalProperty(crate::generated::types::DynamicGlobalPropertyObject),
+    AssetDynamicData(crate::generated::types::AssetDynamicDataObject),
+    AccountBalance(crate::generated::types::AccountBalanceObject),
+    AccountStatistics(crate::generated::types::AccountStatisticsObject),
+    ChainProperty(crate::generated::types::ChainPropertyObject),
+    Unknown(serde_json::Value),
+}
+
+impl serde::Serialize for ProtocolObject {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match self {
+            Self::Account(value) => serde::Serialize::serialize(value, serializer),
+            Self::Asset(value) => serde::Serialize::serialize(value, serializer),
+            Self::ForceSettlement(value) => serde::Serialize::serialize(value, serializer),
+            Self::LimitOrder(value) => serde::Serialize::serialize(value, serializer),
+            Self::CallOrder(value) => serde::Serialize::serialize(value, serializer),
+            Self::Proposal(value) => serde::Serialize::serialize(value, serializer),
+            Self::OperationHistory(value) => serde::Serialize::serialize(value, serializer),
+            Self::WithdrawPermission(value) => serde::Serialize::serialize(value, serializer),
+            Self::VestingBalance(value) => serde::Serialize::serialize(value, serializer),
+            Self::Htlc(value) => serde::Serialize::serialize(value, serializer),
+            Self::GlobalProperty(value) => serde::Serialize::serialize(value, serializer),
+            Self::DynamicGlobalProperty(value) => serde::Serialize::serialize(value, serializer),
+            Self::AssetDynamicData(value) => serde::Serialize::serialize(value, serializer),
+            Self::AccountBalance(value) => serde::Serialize::serialize(value, serializer),
+            Self::AccountStatistics(value) => serde::Serialize::serialize(value, serializer),
+            Self::ChainProperty(value) => serde::Serialize::serialize(value, serializer),
+            Self::Unknown(value) => serde::Serialize::serialize(value, serializer),
+        }
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for ProtocolObject {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        match value
+            .get("id")
+            .and_then(serde_json::Value::as_str)
+            .and_then(protocol_object_type_key)
+        {
+            Some((1, 2)) => serde_json::from_value(value)
+                .map(Self::Account)
+                .map_err(serde::de::Error::custom),
+            Some((1, 3)) => serde_json::from_value(value)
+                .map(Self::Asset)
+                .map_err(serde::de::Error::custom),
+            Some((1, 4)) => serde_json::from_value(value)
+                .map(Self::ForceSettlement)
+                .map_err(serde::de::Error::custom),
+            Some((1, 7)) => serde_json::from_value(value)
+                .map(Self::LimitOrder)
+                .map_err(serde::de::Error::custom),
+            Some((1, 8)) => serde_json::from_value(value)
+                .map(Self::CallOrder)
+                .map_err(serde::de::Error::custom),
+            Some((1, 10)) => serde_json::from_value(value)
+                .map(Self::Proposal)
+                .map_err(serde::de::Error::custom),
+            Some((1, 11)) => serde_json::from_value(value)
+                .map(Self::OperationHistory)
+                .map_err(serde::de::Error::custom),
+            Some((1, 12)) => serde_json::from_value(value)
+                .map(Self::WithdrawPermission)
+                .map_err(serde::de::Error::custom),
+            Some((1, 13)) => serde_json::from_value(value)
+                .map(Self::VestingBalance)
+                .map_err(serde::de::Error::custom),
+            Some((1, 16)) => serde_json::from_value(value)
+                .map(Self::Htlc)
+                .map_err(serde::de::Error::custom),
+            Some((2, 0)) => serde_json::from_value(value)
+                .map(Self::GlobalProperty)
+                .map_err(serde::de::Error::custom),
+            Some((2, 1)) => serde_json::from_value(value)
+                .map(Self::DynamicGlobalProperty)
+                .map_err(serde::de::Error::custom),
+            Some((2, 3)) => serde_json::from_value(value)
+                .map(Self::AssetDynamicData)
+                .map_err(serde::de::Error::custom),
+            Some((2, 5)) => serde_json::from_value(value)
+                .map(Self::AccountBalance)
+                .map_err(serde::de::Error::custom),
+            Some((2, 6)) => serde_json::from_value(value)
+                .map(Self::AccountStatistics)
+                .map_err(serde::de::Error::custom),
+            Some((2, 11)) => serde_json::from_value(value)
+                .map(Self::ChainProperty)
+                .map_err(serde::de::Error::custom),
+            _ => Ok(Self::Unknown(value)),
+        }
+    }
+}
+
+fn protocol_object_type_key(id: &str) -> Option<(u32, u32)> {
+    let mut parts = id.split('.');
+    let space = parts.next()?.parse().ok()?;
+    let object_type = parts.next()?.parse().ok()?;
+    parts.next()?;
+    if parts.next().is_some() {
+        return None;
+    }
+    Some((space, object_type))
+}
+
 /// RPC methods on the `crypto` API.
 pub mod crypto {
     /// RPC `crypto.blind`.
@@ -663,7 +791,7 @@ pub mod database {
             }
         }
 
-        pub type Returns = Vec<Option<serde_json::Value>>;
+        pub type Returns = Vec<Option<crate::generated::rpc::ProtocolObject>>;
 
         pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
             serde_json::from_value(value)

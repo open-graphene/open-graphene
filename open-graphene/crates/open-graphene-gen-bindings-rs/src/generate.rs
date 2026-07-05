@@ -134,6 +134,14 @@ fn render_rpc(protocol: &Protocol) -> Result<String> {
          //! and types the spec cannot fully model fall back to `serde_json::Value`.\n\n",
     );
 
+    if protocol
+        .rpc_methods
+        .iter()
+        .any(|method| method.returns.as_ref().is_some_and(contains_protocol_object_union))
+    {
+        render_protocol_object_union(&mut out, protocol)?;
+    }
+
     let mut apis: BTreeMap<String, Vec<&RpcMethodDef>> = BTreeMap::new();
     for method in &protocol.rpc_methods {
         let api_name = method
@@ -156,6 +164,107 @@ fn render_rpc(protocol: &Protocol) -> Result<String> {
         out.push_str("}\n\n");
     }
     Ok(out)
+}
+
+fn contains_protocol_object_union(ty: &TypeRef) -> bool {
+    match ty {
+        TypeRef::ProtocolObjectUnion { .. } => true,
+        TypeRef::Optional { inner }
+        | TypeRef::Vector { inner }
+        | TypeRef::Set { inner, .. } => contains_protocol_object_union(inner),
+        TypeRef::Map { key, value, .. } | TypeRef::FlatMap { key, value, .. } => {
+            contains_protocol_object_union(key) || contains_protocol_object_union(value)
+        }
+        TypeRef::Pair { first, second } => {
+            contains_protocol_object_union(first) || contains_protocol_object_union(second)
+        }
+        _ => false,
+    }
+}
+
+fn render_protocol_object_union(out: &mut String, protocol: &Protocol) -> Result<()> {
+    let mut variants = protocol
+        .object_types
+        .iter()
+        .filter_map(|object_type| {
+            Some((
+                object_type.object_space?,
+                object_type.type_id?,
+                rust_type_name(&object_type.object_type),
+                rust_type_name(object_type.struct_ref.as_ref()?),
+            ))
+        })
+        .collect::<Vec<_>>();
+    variants.sort_by_key(|(space, type_id, _, _)| (*space, *type_id));
+
+    out.push_str("/// Any modeled protocol object returned by generic object RPCs.\n");
+    out.push_str("///\n");
+    out.push_str("/// Deserialization dispatches by the object's `id` (`space.type.instance`) so objects are\n");
+    out.push_str("/// not accidentally matched by shape. Object ids whose type is not modeled yet are kept as\n");
+    out.push_str("/// raw JSON in [`ProtocolObject::Unknown`].\n");
+    out.push_str("#[derive(Debug, Clone, PartialEq)]\n");
+    out.push_str("pub enum ProtocolObject {\n");
+    for (_, _, variant_name, struct_name) in &variants {
+        out.push_str(&format!(
+            "    {variant_name}(crate::generated::types::{struct_name}),\n"
+        ));
+    }
+    out.push_str("    Unknown(serde_json::Value),\n");
+    out.push_str("}\n\n");
+
+    out.push_str("impl serde::Serialize for ProtocolObject {\n");
+    out.push_str("    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>\n");
+    out.push_str("    where\n");
+    out.push_str("        S: serde::Serializer,\n");
+    out.push_str("    {\n");
+    out.push_str("        match self {\n");
+    for (_, _, variant_name, _) in &variants {
+        out.push_str(&format!(
+            "            Self::{variant_name}(value) => serde::Serialize::serialize(value, serializer),\n"
+        ));
+    }
+    out.push_str("            Self::Unknown(value) => serde::Serialize::serialize(value, serializer),\n");
+    out.push_str("        }\n");
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
+
+    out.push_str("impl<'de> serde::Deserialize<'de> for ProtocolObject {\n");
+    out.push_str("    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>\n");
+    out.push_str("    where\n");
+    out.push_str("        D: serde::Deserializer<'de>,\n");
+    out.push_str("    {\n");
+    out.push_str("        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;\n");
+    out.push_str("        match value\n");
+    out.push_str("            .get(\"id\")\n");
+    out.push_str("            .and_then(serde_json::Value::as_str)\n");
+    out.push_str("            .and_then(protocol_object_type_key)\n");
+    out.push_str("        {\n");
+    for (space, type_id, variant_name, _) in &variants {
+        out.push_str(&format!(
+            "            Some(({space}, {type_id})) => serde_json::from_value(value)\n"
+        ));
+        out.push_str(&format!(
+            "                .map(Self::{variant_name})\n"
+        ));
+        out.push_str("                .map_err(serde::de::Error::custom),\n");
+    }
+    out.push_str("            _ => Ok(Self::Unknown(value)),\n");
+    out.push_str("        }\n");
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
+
+    out.push_str("fn protocol_object_type_key(id: &str) -> Option<(u32, u32)> {\n");
+    out.push_str("    let mut parts = id.split('.');\n");
+    out.push_str("    let space = parts.next()?.parse().ok()?;\n");
+    out.push_str("    let object_type = parts.next()?.parse().ok()?;\n");
+    out.push_str("    parts.next()?;\n");
+    out.push_str("    if parts.next().is_some() {\n");
+    out.push_str("        return None;\n");
+    out.push_str("    }\n");
+    out.push_str("    Some((space, object_type))\n");
+    out.push_str("}\n\n");
+
+    Ok(())
 }
 
 fn render_rpc_method(
@@ -326,9 +435,8 @@ fn render_rpc_type_ref(protocol: &Protocol, ty: &TypeRef) -> Result<String> {
         TypeRef::Ref { name } if name == "required_fee" => {
             "crate::generated::rpc::database::get_required_fees::RequiredFee".to_string()
         },
-        TypeRef::ProtocolObjectUnion { .. }
-        | TypeRef::AnyJson { .. }
-        | TypeRef::Unsupported { .. } => "serde_json::Value".to_string(),
+        TypeRef::ProtocolObjectUnion { .. } => "crate::generated::rpc::ProtocolObject".to_string(),
+        TypeRef::AnyJson { .. } | TypeRef::Unsupported { .. } => "serde_json::Value".to_string(),
         TypeRef::Optional { inner } => {
             format!("Option<{}>", render_rpc_type_ref(protocol, inner)?)
         }
@@ -3045,6 +3153,49 @@ mod tests {
         assert!(output.contains("params.push(value.unwrap_or(serde_json::Value::Null));"));
         assert!(output.contains("pub type Returns = Vec<serde_json::Value>;"));
         assert!(output.contains("pub fn parse_returns(value: serde_json::Value)"));
+    }
+
+    #[test]
+    fn renders_protocol_object_union_rpc_shape() {
+        let mut protocol = minimal_protocol();
+        protocol.object_types.push(open_graphene_json_schema::ObjectTypeDef {
+            object_type: "account".to_string(),
+            cpp_alias: "account_object_type".to_string(),
+            object_space: Some(1),
+            type_id: Some(2),
+            struct_ref: Some("account_object".to_string()),
+            source: None,
+            support: None,
+        });
+        protocol.rpc_methods.push(RpcMethodDef {
+            name: "get_objects".to_string(),
+            api_class: "database_api".to_string(),
+            api_name: Some("database".to_string()),
+            params: vec![],
+            returns: Some(TypeRef::Vector {
+                inner: Box::new(TypeRef::Optional {
+                    inner: Box::new(TypeRef::ProtocolObjectUnion {
+                        object_types: vec![],
+                    }),
+                }),
+            }),
+            is_subscription: false,
+            notices: vec![],
+            binding_hints: None,
+            source: None,
+            support: None,
+        });
+
+        let output = render_rpc(&protocol).expect("render rpc");
+
+        assert!(output.contains("pub enum ProtocolObject"));
+        assert!(output.contains("Account(crate::generated::types::AccountObject)"));
+        assert!(output.contains("Some((1, 2)) => serde_json::from_value(value)"));
+        assert!(output.contains(".map(Self::Account)"));
+        assert!(output.contains("Unknown(serde_json::Value)"));
+        assert!(output.contains(
+            "pub type Returns = Vec<Option<crate::generated::rpc::ProtocolObject>>;"
+        ));
     }
 
     #[test]

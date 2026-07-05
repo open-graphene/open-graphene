@@ -27,7 +27,7 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 | Feature | JS | open-graphene-rs | Notes |
 |---|:--:|:--:|---|
 | Connect to a node (WebSocket) | ✅ | ✅ | `Session::connect(url)` |
-| `database` API (`db_api`) | ✅ | ✅ 🥸 | `generated::rpc::database` now emits typed `Params`/`Returns`/`parse_returns` from the spec; `lookup_accounts` is typed as `Vec<(String, AccountId)>`, `get_full_accounts` as `Vec<(String, FullAccount)>`, `get_required_fees` as recursive `RequiredFee`, `get_config` as `Config`; remaining raw return is `get_objects` |
+| `database` API (`db_api`) | ✅ | ✅ 🥸 | `generated::rpc::database` now emits typed `Params`/`Returns`/`parse_returns` from the spec; `lookup_accounts` is typed as `Vec<(String, AccountId)>`, `get_full_accounts` as `Vec<(String, FullAccount)>`, `get_required_fees` as recursive `RequiredFee`, `get_config` as `Config`, and `get_objects` as `Vec<Option<ProtocolObject>>` with raw fallback only for unmodeled object kinds |
 | `history` API (`history_api`) | ✅ | ✅ 🥸 | `generated::rpc::history` now emits typed low-level RPC helpers; `swaplock-api/history/` keeps the high-level surface + `session.history_call` |
 | `network_broadcast` API (`network_api`) | ✅ | ✅ 🥸 | `generated::rpc::network_broadcast` now emits typed low-level RPC helpers; `swaplock-api/network_broadcast/` keeps signing/broadcast ergonomics + transport routing |
 | `crypto` API (`crypto_api`) | ✅ | ✅ 🥸 | **DONE** (branch `feature/sdk-apis`): `CryptoApi` (7 methods: blind, blind_sum, verify_sum, verify_range, range_proof_sign, verify_range_proof_rewind, range_get_info) with hex-serde newtypes + typed results + `crypto_pedersen_commitment` example. Param-shaping in `swaplock-api/crypto/`, routed via `session.crypto_call` (transport stays ws/http only) |

@@ -1,4 +1,5 @@
 use graphene_chain_swaplock_bindings::generated::ids::AccountId;
+use graphene_chain_swaplock_bindings::generated::rpc::ProtocolObject;
 use graphene_chain_swaplock_bindings::generated::rpc::database::get_config::Config;
 use graphene_chain_swaplock_bindings::generated::types::{MaybeSignedBlockHeader, SignedBlock};
 use graphene_chain_swaplock_bindings::generated::{
@@ -6,7 +7,6 @@ use graphene_chain_swaplock_bindings::generated::{
     GlobalPropertyObject, LimitOrderObject,
 };
 use open_graphene_transport::GrapheneSession;
-use serde_json::Value;
 
 use crate::SwaplockApiError;
 
@@ -350,7 +350,7 @@ impl<'session> DatabaseApi<'session> {
         .await
     }
 
-    pub async fn get_objects<L>(&mut self, ids: L) -> Result<Vec<Value>, SwaplockApiError>
+    pub async fn get_objects<L>(&mut self, ids: L) -> Result<Vec<Option<ProtocolObject>>, SwaplockApiError>
     where
         L: IntoStringList,
     {
