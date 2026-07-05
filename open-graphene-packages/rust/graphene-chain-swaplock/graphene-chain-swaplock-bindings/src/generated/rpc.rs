@@ -535,7 +535,7 @@ pub mod database {
             }
         }
 
-        pub type Returns = Vec<(String, serde_json::Value)>;
+        pub type Returns = Vec<(String, crate::generated::types::FullAccount)>;
 
         pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
             serde_json::from_value(value)

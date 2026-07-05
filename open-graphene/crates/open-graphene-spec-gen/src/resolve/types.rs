@@ -151,7 +151,8 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
             }),
             ordering: OrderingRule::StaticVariantTag,
         },
-        "verify_range_result"
+        "full_account"
+        | "verify_range_result"
         | "verify_range_proof_rewind_result"
         | "range_proof_info"
         | "market_ticker"
@@ -429,6 +430,12 @@ mod tests {
 
     #[test]
     fn maps_app_rpc_dto_names_to_refs() {
+        assert_eq!(
+            resolve_cpp_type("full_account"),
+            TypeRef::Ref {
+                name: "full_account".to_string()
+            }
+        );
         assert_eq!(
             resolve_cpp_type("verify_range_result"),
             TypeRef::Ref {

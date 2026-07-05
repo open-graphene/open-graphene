@@ -308,6 +308,47 @@ pub struct AccountOptions {
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
+/// Raw protocol struct `account_statistics_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockAccountStatisticsObject)]
+pub struct AccountStatisticsObject {
+    pub id: crate::generated::ids::AccountStatisticsId,
+    pub owner: crate::generated::ids::AccountId,
+    pub name: String,
+    pub most_recent_op: crate::generated::ids::AccountHistoryId,
+    pub total_ops: u64,
+    pub removed_ops: u64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub total_core_in_orders: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub total_core_inactive: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub total_core_pob: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub total_core_pol: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub total_pob_value: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub total_pol_value: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub core_in_balance: i64,
+    pub has_cashback_vb: bool,
+    pub is_voting: bool,
+    pub last_vote_time: String,
+    pub vp_all: u64,
+    pub vp_active: u64,
+    pub vp_committee: u64,
+    pub vp_witness: u64,
+    pub vp_worker: u64,
+    pub vote_tally_time: String,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub lifetime_fees_paid: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub pending_fees: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub pending_vested_fees: i64,
+}
+
 /// Raw protocol struct `account_transfer_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAccountTransferOperationFeeParamsT)]
@@ -669,6 +710,20 @@ pub struct BucketObject {
 pub struct BurnWorkerInitializer {
 }
 
+/// Raw protocol struct `call_order_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockCallOrderObject)]
+pub struct CallOrderObject {
+    pub id: crate::generated::ids::CallOrderId,
+    pub borrower: crate::generated::ids::AccountId,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub collateral: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub debt: i64,
+    pub call_price: crate::generated::types::Price,
+    pub target_collateral_ratio: Option<u16>,
+}
+
 /// Raw protocol struct `call_order_update_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockCallOrderUpdateOperationFeeParamsT)]
@@ -951,6 +1006,41 @@ pub struct FeeSchedule {
 pub struct FillOrderOperationFeeParamsT {
 }
 
+/// Raw protocol struct `force_settlement_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockForceSettlementObject)]
+pub struct ForceSettlementObject {
+    pub id: crate::generated::ids::ForceSettlementId,
+    pub owner: crate::generated::ids::AccountId,
+    pub balance: crate::generated::types::Asset,
+    pub settlement_date: String,
+}
+
+/// Raw protocol struct `full_account`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockFullAccount)]
+pub struct FullAccount {
+    pub account: crate::generated::types::AccountObject,
+    pub statistics: crate::generated::types::AccountStatisticsObject,
+    pub registrar_name: String,
+    pub referrer_name: String,
+    pub lifetime_referrer_name: String,
+    pub votes: Vec<serde_json::Value>,
+    pub cashback_balance: Option<crate::generated::types::VestingBalanceObject>,
+    pub balances: Vec<crate::generated::types::AccountBalanceObject>,
+    pub vesting_balances: Vec<crate::generated::types::VestingBalanceObject>,
+    pub limit_orders: Vec<crate::generated::types::LimitOrderObject>,
+    pub call_orders: Vec<crate::generated::types::CallOrderObject>,
+    pub settle_orders: Vec<crate::generated::types::ForceSettlementObject>,
+    pub proposals: Vec<crate::generated::types::ProposalObject>,
+    pub assets: Vec<crate::generated::ids::AssetId>,
+    pub withdraws_from: Vec<crate::generated::types::WithdrawPermissionObject>,
+    pub withdraws_to: Vec<crate::generated::types::WithdrawPermissionObject>,
+    pub htlcs_from: Vec<crate::generated::types::HtlcObject>,
+    pub htlcs_to: Vec<crate::generated::types::HtlcObject>,
+    pub more_data_available: serde_json::Value,
+}
+
 /// Raw protocol struct `generic_exchange_operation_result`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockGenericExchangeOperationResult)]
@@ -998,6 +1088,16 @@ pub struct HtlcCreateOperationFeeParamsT {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockHtlcExtendOperationFeeParamsT)]
 pub struct HtlcExtendOperationFeeParamsT {
+}
+
+/// Raw protocol struct `htlc_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockHtlcObject)]
+pub struct HtlcObject {
+    pub id: crate::generated::ids::HtlcId,
+    pub transfer: serde_json::Value,
+    pub conditions: serde_json::Value,
+    pub memo: Option<crate::generated::types::MemoData>,
 }
 
 /// Raw protocol struct `htlc_options`.
@@ -1288,6 +1388,23 @@ pub struct ProposalDeleteOperationFeeParamsT {
     pub fee: u64,
 }
 
+/// Raw protocol struct `proposal_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockProposalObject)]
+pub struct ProposalObject {
+    pub id: crate::generated::ids::ProposalId,
+    pub expiration_time: String,
+    pub review_period_time: Option<String>,
+    pub proposed_transaction: crate::generated::types::Transaction,
+    pub required_active_approvals: Vec<crate::generated::ids::AccountId>,
+    pub available_active_approvals: Vec<crate::generated::ids::AccountId>,
+    pub required_owner_approvals: Vec<crate::generated::ids::AccountId>,
+    pub available_owner_approvals: Vec<crate::generated::ids::AccountId>,
+    pub available_key_approvals: Vec<String>,
+    pub proposer: crate::generated::ids::AccountId,
+    pub fail_reason: String,
+}
+
 /// Raw protocol struct `proposal_update_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockProposalUpdateOperationFeeParamsT)]
@@ -1482,6 +1599,17 @@ pub struct VestingBalanceCreateOperationFeeParamsT {
     pub fee: u64,
 }
 
+/// Raw protocol struct `vesting_balance_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockVestingBalanceObject)]
+pub struct VestingBalanceObject {
+    pub id: crate::generated::ids::VestingBalanceId,
+    pub owner: crate::generated::ids::AccountId,
+    pub balance: crate::generated::types::Asset,
+    pub policy: serde_json::Value,
+    pub balance_type: serde_json::Value,
+}
+
 /// Raw protocol struct `vesting_balance_withdraw_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockVestingBalanceWithdrawOperationFeeParamsT)]
@@ -1521,6 +1649,21 @@ pub struct WithdrawPermissionCreateOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockWithdrawPermissionDeleteOperationFeeParamsT)]
 pub struct WithdrawPermissionDeleteOperationFeeParamsT {
     pub fee: u64,
+}
+
+/// Raw protocol struct `withdraw_permission_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockWithdrawPermissionObject)]
+pub struct WithdrawPermissionObject {
+    pub id: crate::generated::ids::WithdrawPermissionId,
+    pub withdraw_from_account: crate::generated::ids::AccountId,
+    pub authorized_account: crate::generated::ids::AccountId,
+    pub withdrawal_limit: crate::generated::types::Asset,
+    pub withdrawal_period_sec: u32,
+    pub period_start_time: String,
+    pub expiration: String,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub claimed_this_period: i64,
 }
 
 /// Raw protocol struct `withdraw_permission_update_operation_fee_params_t`.

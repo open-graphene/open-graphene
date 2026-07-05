@@ -343,6 +343,37 @@ impl FcSerialize for crate::generated::types::AccountOptions {
     }
 }
 
+impl FcSerialize for crate::generated::types::AccountStatisticsObject {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.id.fc_serialize(out)?;
+        self.owner.fc_serialize(out)?;
+        self.name.fc_serialize(out)?;
+        self.most_recent_op.fc_serialize(out)?;
+        self.total_ops.fc_serialize(out)?;
+        self.removed_ops.fc_serialize(out)?;
+        self.total_core_in_orders.fc_serialize(out)?;
+        self.total_core_inactive.fc_serialize(out)?;
+        self.total_core_pob.fc_serialize(out)?;
+        self.total_core_pol.fc_serialize(out)?;
+        self.total_pob_value.fc_serialize(out)?;
+        self.total_pol_value.fc_serialize(out)?;
+        self.core_in_balance.fc_serialize(out)?;
+        self.has_cashback_vb.fc_serialize(out)?;
+        self.is_voting.fc_serialize(out)?;
+        write_time_point_sec(&self.last_vote_time, out)?;
+        self.vp_all.fc_serialize(out)?;
+        self.vp_active.fc_serialize(out)?;
+        self.vp_committee.fc_serialize(out)?;
+        self.vp_witness.fc_serialize(out)?;
+        self.vp_worker.fc_serialize(out)?;
+        write_time_point_sec(&self.vote_tally_time, out)?;
+        self.lifetime_fees_paid.fc_serialize(out)?;
+        self.pending_fees.fc_serialize(out)?;
+        self.pending_vested_fees.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::AccountTransferOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -748,6 +779,18 @@ impl FcSerialize for crate::generated::types::BurnWorkerInitializer {
     }
 }
 
+impl FcSerialize for crate::generated::types::CallOrderObject {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.id.fc_serialize(out)?;
+        self.borrower.fc_serialize(out)?;
+        self.collateral.fc_serialize(out)?;
+        self.debt.fc_serialize(out)?;
+        self.call_price.fc_serialize(out)?;
+        self.target_collateral_ratio.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::CallOrderUpdateOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         let _ = out;
@@ -1015,6 +1058,16 @@ impl FcSerialize for crate::generated::types::FeeSchedule {
 impl FcSerialize for crate::generated::types::FillOrderOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         let _ = out;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::ForceSettlementObject {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.id.fc_serialize(out)?;
+        self.owner.fc_serialize(out)?;
+        self.balance.fc_serialize(out)?;
+        write_time_point_sec(&self.settlement_date, out)?;
         Ok(())
     }
 }
@@ -1315,6 +1368,75 @@ impl FcSerialize for crate::generated::types::ProposalDeleteOperationFeeParamsT 
     }
 }
 
+impl FcSerialize for crate::generated::types::ProposalObject {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.id.fc_serialize(out)?;
+        write_time_point_sec(&self.expiration_time, out)?;
+        match &self.review_period_time {
+            Some(value) => {
+                out.push(1);
+                write_time_point_sec(value, out)?;
+            }
+            None => out.push(0),
+        }
+        self.proposed_transaction.fc_serialize(out)?;
+        write_varint(self.required_active_approvals.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.required_active_approvals {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        write_varint(self.available_active_approvals.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.available_active_approvals {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        write_varint(self.required_owner_approvals.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.required_owner_approvals {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        write_varint(self.available_owner_approvals.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.available_owner_approvals {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        write_varint(self.available_key_approvals.len() as u64, out);
+        let mut previous_key: Option<Vec<u8>> = None;
+        for value in &self.available_key_approvals {
+            let mut key_bytes = Vec::new();
+            write_public_key(value, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), &mut key_bytes)?;
+            if previous_key.as_ref().is_some_and(|previous| previous >= &key_bytes) {
+                return Err(FcSerializeError::UnsupportedValue { type_name: "Set", reason: "set values must be sorted and unique" });
+            }
+            previous_key = Some(key_bytes.clone());
+            out.extend_from_slice(&key_bytes);
+        }
+        self.proposer.fc_serialize(out)?;
+        self.fail_reason.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::ProposalUpdateOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -1560,6 +1682,20 @@ impl FcSerialize for crate::generated::types::WithdrawPermissionCreateOperationF
 impl FcSerialize for crate::generated::types::WithdrawPermissionDeleteOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::WithdrawPermissionObject {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.id.fc_serialize(out)?;
+        self.withdraw_from_account.fc_serialize(out)?;
+        self.authorized_account.fc_serialize(out)?;
+        self.withdrawal_limit.fc_serialize(out)?;
+        self.withdrawal_period_sec.fc_serialize(out)?;
+        write_time_point_sec(&self.period_start_time, out)?;
+        write_time_point_sec(&self.expiration, out)?;
+        self.claimed_this_period.fc_serialize(out)?;
         Ok(())
     }
 }

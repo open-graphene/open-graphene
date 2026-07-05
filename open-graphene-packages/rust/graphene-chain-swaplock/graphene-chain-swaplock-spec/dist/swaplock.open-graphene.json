@@ -946,6 +946,419 @@
       }
     },
     {
+      "name": "account_statistics_object",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account_statistics"
+          },
+          "source": {
+            "name": "id",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 46
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "inherited object id from graphene::db::object for reflected Graphene object"
+          }
+        },
+        {
+          "index": 1,
+          "name": "owner",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "owner",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 46
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 2,
+          "name": "name",
+          "type": {
+            "kind": "string"
+          },
+          "source": {
+            "name": "name",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 48
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 3,
+          "name": "most_recent_op",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account_history"
+          },
+          "source": {
+            "name": "most_recent_op",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 50
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 4,
+          "name": "total_ops",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "total_ops",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 55
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 5,
+          "name": "removed_ops",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "removed_ops",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 57
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 6,
+          "name": "total_core_in_orders",
+          "type": {
+            "kind": "int64"
+          },
+          "source": {
+            "name": "total_core_in_orders",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 59
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 7,
+          "name": "total_core_inactive",
+          "type": {
+            "kind": "int64"
+          },
+          "source": {
+            "name": "total_core_inactive",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 66
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 8,
+          "name": "total_core_pob",
+          "type": {
+            "kind": "int64"
+          },
+          "source": {
+            "name": "total_core_pob",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 69
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 9,
+          "name": "total_core_pol",
+          "type": {
+            "kind": "int64"
+          },
+          "source": {
+            "name": "total_core_pol",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 72
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 10,
+          "name": "total_pob_value",
+          "type": {
+            "kind": "int64"
+          },
+          "source": {
+            "name": "total_pob_value",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 75
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 11,
+          "name": "total_pol_value",
+          "type": {
+            "kind": "int64"
+          },
+          "source": {
+            "name": "total_pol_value",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 78
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 12,
+          "name": "core_in_balance",
+          "type": {
+            "kind": "int64"
+          },
+          "source": {
+            "name": "core_in_balance",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 81
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 13,
+          "name": "has_cashback_vb",
+          "type": {
+            "kind": "bool"
+          },
+          "source": {
+            "name": "has_cashback_vb",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 85
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 14,
+          "name": "is_voting",
+          "type": {
+            "kind": "bool"
+          },
+          "source": {
+            "name": "is_voting",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 87
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 15,
+          "name": "last_vote_time",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "last_vote_time",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 89
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 16,
+          "name": "vp_all",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "vp_all",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 91
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 17,
+          "name": "vp_active",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "vp_active",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 95
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 18,
+          "name": "vp_committee",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "vp_committee",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 96
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 19,
+          "name": "vp_witness",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "vp_witness",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 97
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 20,
+          "name": "vp_worker",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "vp_worker",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 98
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 21,
+          "name": "vote_tally_time",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "vote_tally_time",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 99
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 22,
+          "name": "lifetime_fees_paid",
+          "type": {
+            "kind": "int64"
+          },
+          "source": {
+            "name": "lifetime_fees_paid",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 111
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 23,
+          "name": "pending_fees",
+          "type": {
+            "kind": "int64"
+          },
+          "source": {
+            "name": "pending_fees",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 116
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 24,
+          "name": "pending_vested_fees",
+          "type": {
+            "kind": "int64"
+          },
+          "source": {
+            "name": "pending_vested_fees",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 126
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+      }
+    },
+    {
       "name": "account_transfer_operation",
       "kind": "struct",
       "fields": [
@@ -5043,6 +5456,118 @@
       "support": {
         "status": "provisional",
         "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
+      "name": "call_order_object",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "call_order"
+          },
+          "source": {
+            "name": "id",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 140
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "inherited object id from graphene::db::object for reflected Graphene object"
+          }
+        },
+        {
+          "index": 1,
+          "name": "borrower",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "borrower",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 147
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 2,
+          "name": "collateral",
+          "type": {
+            "kind": "int64"
+          },
+          "source": {
+            "name": "collateral",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 149
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 3,
+          "name": "debt",
+          "type": {
+            "kind": "int64"
+          },
+          "source": {
+            "name": "debt",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 150
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 4,
+          "name": "call_price",
+          "type": {
+            "kind": "ref",
+            "name": "price"
+          },
+          "source": {
+            "name": "call_price",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 151
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 5,
+          "name": "target_collateral_ratio",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "uint16"
+            }
+          },
+          "source": {
+            "name": "target_collateral_ratio",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 152
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
       }
     },
     {
@@ -9213,6 +9738,452 @@
       }
     },
     {
+      "name": "force_settlement_object",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "force_settlement"
+          },
+          "source": {
+            "name": "id",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 187
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "inherited object id from graphene::db::object for reflected Graphene object"
+          }
+        },
+        {
+          "index": 1,
+          "name": "owner",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "owner",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 187
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 2,
+          "name": "balance",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "balance",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 189
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 3,
+          "name": "settlement_date",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "settlement_date",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/market_object.hpp",
+            "line": 190
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+      }
+    },
+    {
+      "name": "full_account",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "account",
+          "type": {
+            "kind": "ref",
+            "name": "account_object"
+          },
+          "source": {
+            "name": "account",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 59
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "statistics",
+          "type": {
+            "kind": "ref",
+            "name": "account_statistics_object"
+          },
+          "source": {
+            "name": "statistics",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 60
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "registrar_name",
+          "type": {
+            "kind": "string"
+          },
+          "source": {
+            "name": "registrar_name",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 61
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "referrer_name",
+          "type": {
+            "kind": "string"
+          },
+          "source": {
+            "name": "referrer_name",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 62
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "lifetime_referrer_name",
+          "type": {
+            "kind": "string"
+          },
+          "source": {
+            "name": "lifetime_referrer_name",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 63
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 5,
+          "name": "votes",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "any_json",
+              "reason": "unsupported C++ type mapping: variant"
+            }
+          },
+          "source": {
+            "name": "votes",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 64
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 6,
+          "name": "cashback_balance",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "ref",
+              "name": "vesting_balance_object"
+            }
+          },
+          "source": {
+            "name": "cashback_balance",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 65
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 7,
+          "name": "balances",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "ref",
+              "name": "account_balance_object"
+            }
+          },
+          "source": {
+            "name": "balances",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 66
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 8,
+          "name": "vesting_balances",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "ref",
+              "name": "vesting_balance_object"
+            }
+          },
+          "source": {
+            "name": "vesting_balances",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 67
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 9,
+          "name": "limit_orders",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "ref",
+              "name": "limit_order_object"
+            }
+          },
+          "source": {
+            "name": "limit_orders",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 68
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 10,
+          "name": "call_orders",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "ref",
+              "name": "call_order_object"
+            }
+          },
+          "source": {
+            "name": "call_orders",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 69
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 11,
+          "name": "settle_orders",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "ref",
+              "name": "force_settlement_object"
+            }
+          },
+          "source": {
+            "name": "settle_orders",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 70
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 12,
+          "name": "proposals",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "ref",
+              "name": "proposal_object"
+            }
+          },
+          "source": {
+            "name": "proposals",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 71
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 13,
+          "name": "assets",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "asset"
+            }
+          },
+          "source": {
+            "name": "assets",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 72
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 14,
+          "name": "withdraws_from",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "ref",
+              "name": "withdraw_permission_object"
+            }
+          },
+          "source": {
+            "name": "withdraws_from",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 73
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 15,
+          "name": "withdraws_to",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "ref",
+              "name": "withdraw_permission_object"
+            }
+          },
+          "source": {
+            "name": "withdraws_to",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 74
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 16,
+          "name": "htlcs_from",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "ref",
+              "name": "htlc_object"
+            }
+          },
+          "source": {
+            "name": "htlcs_from",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 75
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 17,
+          "name": "htlcs_to",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "ref",
+              "name": "htlc_object"
+            }
+          },
+          "source": {
+            "name": "htlcs_to",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 76
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 18,
+          "name": "more_data_available",
+          "type": {
+            "kind": "any_json",
+            "reason": "unsupported C++ type mapping: more_data"
+          },
+          "source": {
+            "name": "more_data_available",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/app/include/graphene/app/api_objects.hpp",
+            "line": 77
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
       "name": "generic_exchange_operation_result",
       "kind": "struct",
       "fields": [
@@ -9764,6 +10735,87 @@
       "support": {
         "status": "provisional",
         "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
+      }
+    },
+    {
+      "name": "htlc_object",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "htlc"
+          },
+          "source": {
+            "name": "id",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/htlc_object.hpp",
+            "line": 40
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "inherited object id from graphene::db::object for reflected Graphene object"
+          }
+        },
+        {
+          "index": 1,
+          "name": "transfer",
+          "type": {
+            "kind": "any_json",
+            "reason": "unsupported C++ type mapping: transfer_info"
+          },
+          "source": {
+            "name": "transfer",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/htlc_object.hpp",
+            "line": 62
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 2,
+          "name": "conditions",
+          "type": {
+            "kind": "any_json",
+            "reason": "unsupported C++ type mapping: condition_info"
+          },
+          "source": {
+            "name": "conditions",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/htlc_object.hpp",
+            "line": 64
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 3,
+          "name": "memo",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "ref",
+              "name": "memo_data"
+            }
+          },
+          "source": {
+            "name": "memo",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/htlc_object.hpp",
+            "line": 65
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
       }
     },
     {
@@ -13289,6 +14341,223 @@
       }
     },
     {
+      "name": "proposal_object",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "proposal"
+          },
+          "source": {
+            "name": "id",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/proposal_object.hpp",
+            "line": 40
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "inherited object id from graphene::db::object for reflected Graphene object"
+          }
+        },
+        {
+          "index": 1,
+          "name": "expiration_time",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "expiration_time",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/proposal_object.hpp",
+            "line": 40
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 2,
+          "name": "review_period_time",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "time_point_sec"
+            }
+          },
+          "source": {
+            "name": "review_period_time",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/proposal_object.hpp",
+            "line": 42
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 3,
+          "name": "proposed_transaction",
+          "type": {
+            "kind": "ref",
+            "name": "transaction"
+          },
+          "source": {
+            "name": "proposed_transaction",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/proposal_object.hpp",
+            "line": 43
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 4,
+          "name": "required_active_approvals",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "account"
+            },
+            "ordering": "unresolved"
+          },
+          "source": {
+            "name": "required_active_approvals",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/proposal_object.hpp",
+            "line": 44
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 5,
+          "name": "available_active_approvals",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "account"
+            },
+            "ordering": "unresolved"
+          },
+          "source": {
+            "name": "available_active_approvals",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/proposal_object.hpp",
+            "line": 45
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 6,
+          "name": "required_owner_approvals",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "account"
+            },
+            "ordering": "unresolved"
+          },
+          "source": {
+            "name": "required_owner_approvals",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/proposal_object.hpp",
+            "line": 46
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 7,
+          "name": "available_owner_approvals",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "account"
+            },
+            "ordering": "unresolved"
+          },
+          "source": {
+            "name": "available_owner_approvals",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/proposal_object.hpp",
+            "line": 47
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 8,
+          "name": "available_key_approvals",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "public_key",
+              "prefixRef": "chain.publicKeyPrefix"
+            },
+            "ordering": "unresolved"
+          },
+          "source": {
+            "name": "available_key_approvals",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/proposal_object.hpp",
+            "line": 48
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 9,
+          "name": "proposer",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "proposer",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/proposal_object.hpp",
+            "line": 49
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 10,
+          "name": "fail_reason",
+          "type": {
+            "kind": "string"
+          },
+          "source": {
+            "name": "fail_reason",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/proposal_object.hpp",
+            "line": 50
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+      }
+    },
+    {
       "name": "proposal_update_operation",
       "kind": "struct",
       "fields": [
@@ -15777,6 +17046,101 @@
       }
     },
     {
+      "name": "vesting_balance_object",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "vesting_balance"
+          },
+          "source": {
+            "name": "id",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/vesting_balance_object.hpp",
+            "line": 151
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "inherited object id from graphene::db::object for reflected Graphene object"
+          }
+        },
+        {
+          "index": 1,
+          "name": "owner",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "owner",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/vesting_balance_object.hpp",
+            "line": 151
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "balance",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "balance",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/vesting_balance_object.hpp",
+            "line": 154
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "policy",
+          "type": {
+            "kind": "any_json",
+            "reason": "unsupported C++ type mapping: vesting_policy"
+          },
+          "source": {
+            "name": "policy",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/vesting_balance_object.hpp",
+            "line": 157
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "balance_type",
+          "type": {
+            "kind": "any_json",
+            "reason": "unsupported C++ type mapping: vesting_balance_type"
+          },
+          "source": {
+            "name": "balance_type",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/vesting_balance_object.hpp",
+            "line": 159
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
       "name": "vesting_balance_withdraw_operation",
       "kind": "struct",
       "fields": [
@@ -16314,6 +17678,148 @@
       "support": {
         "status": "provisional",
         "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
+      }
+    },
+    {
+      "name": "withdraw_permission_object",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "withdraw_permission"
+          },
+          "source": {
+            "name": "id",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/withdraw_permission_object.hpp",
+            "line": 45
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "inherited object id from graphene::db::object for reflected Graphene object"
+          }
+        },
+        {
+          "index": 1,
+          "name": "withdraw_from_account",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "withdraw_from_account",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/withdraw_permission_object.hpp",
+            "line": 45
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 2,
+          "name": "authorized_account",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "authorized_account",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/withdraw_permission_object.hpp",
+            "line": 48
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 3,
+          "name": "withdrawal_limit",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "withdrawal_limit",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/withdraw_permission_object.hpp",
+            "line": 50
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 4,
+          "name": "withdrawal_period_sec",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "withdrawal_period_sec",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/withdraw_permission_object.hpp",
+            "line": 52
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 5,
+          "name": "period_start_time",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "period_start_time",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/withdraw_permission_object.hpp",
+            "line": 54
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 6,
+          "name": "expiration",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "expiration",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/withdraw_permission_object.hpp",
+            "line": 61
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        },
+        {
+          "index": 7,
+          "name": "claimed_this_period",
+          "type": {
+            "kind": "int64"
+          },
+          "source": {
+            "name": "claimed_this_period",
+            "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/withdraw_permission_object.hpp",
+            "line": 63
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "class field declaration extracted; reflection coverage pending"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
       }
     },
     {
@@ -29131,6 +30637,7 @@
       "cppAlias": "force_settlement_id_type",
       "objectSpace": 1,
       "typeId": 4,
+      "structRef": "force_settlement_object",
       "source": {
         "name": "force_settlement",
         "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/types.hpp",
@@ -29192,6 +30699,7 @@
       "cppAlias": "call_order_id_type",
       "objectSpace": 1,
       "typeId": 8,
+      "structRef": "call_order_object",
       "source": {
         "name": "call_order",
         "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/types.hpp",
@@ -29222,6 +30730,7 @@
       "cppAlias": "proposal_id_type",
       "objectSpace": 1,
       "typeId": 10,
+      "structRef": "proposal_object",
       "source": {
         "name": "proposal",
         "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/types.hpp",
@@ -29253,6 +30762,7 @@
       "cppAlias": "withdraw_permission_id_type",
       "objectSpace": 1,
       "typeId": 12,
+      "structRef": "withdraw_permission_object",
       "source": {
         "name": "withdraw_permission",
         "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/types.hpp",
@@ -29268,6 +30778,7 @@
       "cppAlias": "vesting_balance_id_type",
       "objectSpace": 1,
       "typeId": 13,
+      "structRef": "vesting_balance_object",
       "source": {
         "name": "vesting_balance",
         "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/types.hpp",
@@ -29313,6 +30824,7 @@
       "cppAlias": "htlc_id_type",
       "objectSpace": 1,
       "typeId": 16,
+      "structRef": "htlc_object",
       "source": {
         "name": "htlc",
         "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/types.hpp",
@@ -29512,6 +31024,7 @@
       "cppAlias": "account_statistics_id_type",
       "objectSpace": 2,
       "typeId": 6,
+      "structRef": "account_statistics_object",
       "source": {
         "name": "account_statistics",
         "file": "/Users/lunacrafts/workspaces/cora/crates/open-graphene/open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/../../../../blockchains/swaplock/swaplock-core/libraries/chain/include/graphene/chain/types.hpp",
@@ -30128,8 +31641,8 @@
           "kind": "string"
         },
         "value": {
-          "kind": "any_json",
-          "reason": "unsupported C++ type mapping: full_account"
+          "kind": "ref",
+          "name": "full_account"
         },
         "ordering": "unresolved"
       },
