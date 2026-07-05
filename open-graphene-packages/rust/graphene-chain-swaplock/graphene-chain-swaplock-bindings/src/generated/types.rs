@@ -1054,6 +1054,16 @@ pub struct LimitOrderCancelOperationFeeParamsT {
 pub struct LimitOrderCreateOperationFeeParamsT {
 }
 
+/// Raw protocol struct `limit_order_group`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockLimitOrderGroup)]
+pub struct LimitOrderGroup {
+    pub min_price: crate::generated::types::Price,
+    pub max_price: crate::generated::types::Price,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub total_for_sale: i64,
+}
+
 /// Raw protocol struct `limit_order_object`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockLimitOrderObject)]
@@ -1128,6 +1138,26 @@ pub struct LiquidityPoolUpdateOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockLiquidityPoolWithdrawOperationFeeParamsT)]
 pub struct LiquidityPoolWithdrawOperationFeeParamsT {
     pub fee: u64,
+}
+
+/// Raw protocol struct `market_ticker`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockMarketTicker)]
+pub struct MarketTicker {
+    pub time: String,
+    pub base: String,
+    pub quote: String,
+    pub latest: String,
+    pub lowest_ask: String,
+    pub lowest_ask_base_size: String,
+    pub lowest_ask_quote_size: String,
+    pub highest_bid: String,
+    pub highest_bid_base_size: String,
+    pub highest_bid_quote_size: String,
+    pub percent_change: String,
+    pub base_volume: String,
+    pub quote_volume: String,
+    pub mto_id: Option<crate::generated::ids::ObjectId>,
 }
 
 /// Raw protocol struct `maybe_signed_block_header`.
@@ -1263,6 +1293,16 @@ pub struct ProposalDeleteOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockProposalUpdateOperationFeeParamsT)]
 pub struct ProposalUpdateOperationFeeParamsT {
     pub fee: u64,
+}
+
+/// Raw protocol struct `range_proof_info`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockRangeProofInfo)]
+pub struct RangeProofInfo {
+    pub exp: i32,
+    pub mantissa: i32,
+    pub min_value: u64,
+    pub max_value: u64,
 }
 
 /// Raw protocol struct `refund_worker_initializer`.
@@ -1410,6 +1450,29 @@ pub struct TransferOperationFeeParamsT {
 pub struct TransferToBlindOperationFeeParamsT {
     pub fee: u64,
     pub price_per_output: u32,
+}
+
+/// Raw protocol struct `verify_range_proof_rewind_result`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockVerifyRangeProofRewindResult)]
+pub struct VerifyRangeProofRewindResult {
+    pub success: bool,
+    pub min_val: u64,
+    pub max_val: u64,
+    pub value_out: u64,
+    #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_32_from_hex_string_or_byte_array")]
+    #[schema(value_type = String)]
+    pub blind_out: Vec<u8>,
+    pub message_out: String,
+}
+
+/// Raw protocol struct `verify_range_result`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockVerifyRangeResult)]
+pub struct VerifyRangeResult {
+    pub success: bool,
+    pub min_val: u64,
+    pub max_val: u64,
 }
 
 /// Raw protocol struct `vesting_balance_create_operation_fee_params_t`.

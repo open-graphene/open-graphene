@@ -62,8 +62,8 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         };
     }
 
-    if let Some((key, value)) = unwrap_two_arg_template(&normalized, "map")
-        .or_else(|| unwrap_two_arg_template(&normalized, "std::map"))
+    if let Some((key, value)) = unwrap_map_template(&normalized, "map")
+        .or_else(|| unwrap_map_template(&normalized, "std::map"))
     {
         return TypeRef::Map {
             key: Box::new(resolve_cpp_type(&key)),
@@ -138,7 +138,10 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
             name: "additional_asset_options".to_string(),
         },
         "range_proof_type" => TypeRef::Bytes,
-        "blind_factor_type" => TypeRef::FixedBytes { bytes: 32 },
+        "blind_factor_type" | "fc::ecc::blind_factor_type" => TypeRef::FixedBytes { bytes: 32 },
+        "fc::ecc::range_proof_info" => TypeRef::Ref {
+            name: "range_proof_info".to_string(),
+        },
         "block_id_type" | "checksum_type" => TypeRef::FixedBytes { bytes: 20 },
         "digest_type" => TypeRef::FixedBytes { bytes: 32 },
         "signature_type" => TypeRef::Signature,
@@ -147,6 +150,13 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
                 name: "future_extensions".to_string(),
             }),
             ordering: OrderingRule::StaticVariantTag,
+        },
+        "verify_range_result"
+        | "verify_range_proof_rewind_result"
+        | "range_proof_info"
+        | "market_ticker"
+        | "limit_order_group" => TypeRef::Ref {
+            name: normalized.clone(),
         },
         "asset"
         | "authority"
@@ -295,6 +305,16 @@ fn unwrap_two_arg_template(value: &str, template_name: &str) -> Option<(String, 
     }
 }
 
+fn unwrap_map_template(value: &str, template_name: &str) -> Option<(String, String)> {
+    let inner = unwrap_template(value, template_name)?;
+    let args = split_top_level_commas(inner);
+    if args.len() >= 2 {
+        Some((args[0].clone(), args[1].clone()))
+    } else {
+        None
+    }
+}
+
 fn split_top_level_commas(source: &str) -> Vec<String> {
     let mut out = Vec::new();
     let mut start = 0usize;
@@ -375,6 +395,50 @@ mod tests {
                     json: None,
                     fc: None
                 }),
+            }
+        );
+    }
+
+    #[test]
+    fn maps_map_with_comparator_policy() {
+        assert_eq!(
+            resolve_cpp_type("map<string, account_id_type, std::less<>>"),
+            TypeRef::Map {
+                key: Box::new(TypeRef::String),
+                value: Box::new(TypeRef::ProtocolObjectId {
+                    object_type: "account".to_string()
+                }),
+                ordering: OrderingRule::Unresolved,
+            }
+        );
+    }
+
+    #[test]
+    fn maps_qualified_crypto_wire_types() {
+        assert_eq!(
+            resolve_cpp_type("fc::ecc::blind_factor_type"),
+            TypeRef::FixedBytes { bytes: 32 }
+        );
+        assert_eq!(
+            resolve_cpp_type("fc::ecc::range_proof_info"),
+            TypeRef::Ref {
+                name: "range_proof_info".to_string()
+            }
+        );
+    }
+
+    #[test]
+    fn maps_app_rpc_dto_names_to_refs() {
+        assert_eq!(
+            resolve_cpp_type("verify_range_result"),
+            TypeRef::Ref {
+                name: "verify_range_result".to_string()
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("verify_range_proof_rewind_result"),
+            TypeRef::Ref {
+                name: "verify_range_proof_rewind_result".to_string()
             }
         );
     }

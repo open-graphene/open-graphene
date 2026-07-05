@@ -627,44 +627,66 @@ fn extension_inner(type_expr: &str) -> Option<&str> {
 }
 
 fn known_core_struct_def(name: &str) -> Option<StructDef> {
-    if name != "immutable_chain_parameters" {
-        return None;
-    }
+    let (source_name, support_reason, fields): (&str, &str, Vec<(&str, TypeRef)>) = match name {
+        "immutable_chain_parameters" => (
+            "graphene::chain::immutable_chain_parameters",
+            "manual core type mapping; header uses FC_REFLECT_TYPENAME without field reflection",
+            vec![
+                ("min_committee_member_count", TypeRef::Uint16),
+                ("min_witness_count", TypeRef::Uint16),
+                ("num_special_accounts", TypeRef::Uint32),
+                ("num_special_assets", TypeRef::Uint32),
+            ],
+        ),
+        "range_proof_info" => (
+            "fc::ecc::range_proof_info",
+            "manual RPC DTO mapping; fc::ecc::range_proof_info is returned by crypto.range_get_info",
+            vec![
+                (
+                    "exp",
+                    TypeRef::Int32 {
+                        fc: None,
+                        source: None,
+                    },
+                ),
+                (
+                    "mantissa",
+                    TypeRef::Int32 {
+                        fc: None,
+                        source: None,
+                    },
+                ),
+                ("min_value", TypeRef::Uint64 { json: None, fc: None }),
+                ("max_value", TypeRef::Uint64 { json: None, fc: None }),
+            ],
+        ),
+        _ => return None,
+    };
 
-    let fields = [
-        ("min_committee_member_count", TypeRef::Uint16),
-        ("min_witness_count", TypeRef::Uint16),
-        ("num_special_accounts", TypeRef::Uint32),
-        ("num_special_assets", TypeRef::Uint32),
-    ]
-    .into_iter()
-    .enumerate()
-    .map(|(index, (name, ty))| FieldDef {
-        index: index as u32,
-        name: name.to_string(),
-        ty,
-        source: None,
-        support: Some(SupportDef {
-            status: SupportStatus::Supported,
-            reason: Some(
-                "known Graphene core struct from immutable_chain_parameters.hpp".to_string(),
-            ),
-        }),
-    })
-    .collect();
+    let fields = fields
+        .into_iter()
+        .enumerate()
+        .map(|(index, (name, ty))| FieldDef {
+            index: index as u32,
+            name: name.to_string(),
+            ty,
+            source: None,
+            support: Some(SupportDef {
+                status: SupportStatus::Supported,
+                reason: Some(support_reason.to_string()),
+            }),
+        })
+        .collect();
 
     Some(StructDef {
-        name: "immutable_chain_parameters".to_string(),
-        source_name: Some("graphene::chain::immutable_chain_parameters".to_string()),
+        name: name.to_string(),
+        source_name: Some(source_name.to_string()),
         kind: StructKind::Struct,
         wire_tag: None,
         fields,
         support: Some(SupportDef {
             status: SupportStatus::Supported,
-            reason: Some(
-                "manual core type mapping; header uses FC_REFLECT_TYPENAME without field reflection"
-                    .to_string(),
-            ),
+            reason: Some(support_reason.to_string()),
         }),
     })
 }

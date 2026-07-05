@@ -1136,6 +1136,15 @@ impl FcSerialize for crate::generated::types::LimitOrderCreateOperationFeeParams
     }
 }
 
+impl FcSerialize for crate::generated::types::LimitOrderGroup {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.min_price.fc_serialize(out)?;
+        self.max_price.fc_serialize(out)?;
+        self.total_for_sale.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::LimitOrderUpdateOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         let _ = out;
@@ -1190,6 +1199,26 @@ impl FcSerialize for crate::generated::types::LiquidityPoolUpdateOperationFeePar
 impl FcSerialize for crate::generated::types::LiquidityPoolWithdrawOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::MarketTicker {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_time_point_sec(&self.time, out)?;
+        self.base.fc_serialize(out)?;
+        self.quote.fc_serialize(out)?;
+        self.latest.fc_serialize(out)?;
+        self.lowest_ask.fc_serialize(out)?;
+        self.lowest_ask_base_size.fc_serialize(out)?;
+        self.lowest_ask_quote_size.fc_serialize(out)?;
+        self.highest_bid.fc_serialize(out)?;
+        self.highest_bid_base_size.fc_serialize(out)?;
+        self.highest_bid_quote_size.fc_serialize(out)?;
+        self.percent_change.fc_serialize(out)?;
+        self.base_volume.fc_serialize(out)?;
+        self.quote_volume.fc_serialize(out)?;
+        self.mto_id.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -1289,6 +1318,16 @@ impl FcSerialize for crate::generated::types::ProposalDeleteOperationFeeParamsT 
 impl FcSerialize for crate::generated::types::ProposalUpdateOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::RangeProofInfo {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.exp.fc_serialize(out)?;
+        self.mantissa.fc_serialize(out)?;
+        self.min_value.fc_serialize(out)?;
+        self.max_value.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -1451,6 +1490,27 @@ impl FcSerialize for crate::generated::types::TransferToBlindOperationFeeParamsT
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
         self.price_per_output.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::VerifyRangeProofRewindResult {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.success.fc_serialize(out)?;
+        self.min_val.fc_serialize(out)?;
+        self.max_val.fc_serialize(out)?;
+        self.value_out.fc_serialize(out)?;
+        write_fixed_bytes(&self.blind_out, 32, "fixed_bytes_32", out)?;
+        self.message_out.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::VerifyRangeResult {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.success.fc_serialize(out)?;
+        self.min_val.fc_serialize(out)?;
+        self.max_val.fc_serialize(out)?;
         Ok(())
     }
 }

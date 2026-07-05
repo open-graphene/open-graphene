@@ -19,7 +19,7 @@ pub mod crypto {
         /// Positional parameters for `crypto.blind`.
         #[derive(Debug, Clone, PartialEq)]
         pub struct Params {
-            pub blind: serde_json::Value,
+            pub blind: String,
             pub value: u64,
         }
 
@@ -62,7 +62,7 @@ pub mod crypto {
             }
         }
 
-        pub type Returns = serde_json::Value;
+        pub type Returns = String;
 
         pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
             serde_json::from_value(value)
@@ -89,7 +89,7 @@ pub mod crypto {
             }
         }
 
-        pub type Returns = serde_json::Value;
+        pub type Returns = crate::generated::types::RangeProofInfo;
 
         pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
             serde_json::from_value(value)
@@ -157,7 +157,7 @@ pub mod crypto {
             }
         }
 
-        pub type Returns = serde_json::Value;
+        pub type Returns = crate::generated::types::VerifyRangeResult;
 
         pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
             serde_json::from_value(value)
@@ -188,7 +188,7 @@ pub mod crypto {
             }
         }
 
-        pub type Returns = serde_json::Value;
+        pub type Returns = crate::generated::types::VerifyRangeProofRewindResult;
 
         pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
             serde_json::from_value(value)
@@ -535,7 +535,7 @@ pub mod database {
             }
         }
 
-        pub type Returns = serde_json::Value;
+        pub type Returns = Vec<(String, serde_json::Value)>;
 
         pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
             serde_json::from_value(value)
@@ -715,7 +715,7 @@ pub mod database {
             }
         }
 
-        pub type Returns = serde_json::Value;
+        pub type Returns = crate::generated::types::MarketTicker;
 
         pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
             serde_json::from_value(value)
@@ -786,7 +786,7 @@ pub mod database {
             }
         }
 
-        pub type Returns = serde_json::Value;
+        pub type Returns = Vec<(String, crate::generated::ids::AccountId)>;
 
         pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
             serde_json::from_value(value)
@@ -1007,7 +1007,7 @@ pub mod orders {
             }
         }
 
-        pub type Returns = Vec<serde_json::Value>;
+        pub type Returns = Vec<crate::generated::types::LimitOrderGroup>;
 
         pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
             serde_json::from_value(value)

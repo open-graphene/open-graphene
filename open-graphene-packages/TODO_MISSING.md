@@ -27,7 +27,7 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 | Feature | JS | open-graphene-rs | Notes |
 |---|:--:|:--:|---|
 | Connect to a node (WebSocket) | ✅ | ✅ | `Session::connect(url)` |
-| `database` API (`db_api`) | ✅ | ✅ 🥸 | `generated::rpc::database` now emits typed `Params`/`Returns`/`parse_returns` from the spec; `swaplock-api/database/` keeps ergonomic builders + `session.database_call` transport routing |
+| `database` API (`db_api`) | ✅ | ✅ 🥸 | `generated::rpc::database` now emits typed `Params`/`Returns`/`parse_returns` from the spec; `lookup_accounts` is typed as `Vec<(String, AccountId)>`; remaining raw returns are `get_config`, `get_full_accounts`, `get_objects`, `get_required_fees` |
 | `history` API (`history_api`) | ✅ | ✅ 🥸 | `generated::rpc::history` now emits typed low-level RPC helpers; `swaplock-api/history/` keeps the high-level surface + `session.history_call` |
 | `network_broadcast` API (`network_api`) | ✅ | ✅ 🥸 | `generated::rpc::network_broadcast` now emits typed low-level RPC helpers; `swaplock-api/network_broadcast/` keeps signing/broadcast ergonomics + transport routing |
 | `crypto` API (`crypto_api`) | ✅ | ✅ 🥸 | **DONE** (branch `feature/sdk-apis`): `CryptoApi` (7 methods: blind, blind_sum, verify_sum, verify_range, range_proof_sign, verify_range_proof_rewind, range_get_info) with hex-serde newtypes + typed results + `crypto_pedersen_commitment` example. Param-shaping in `swaplock-api/crypto/`, routed via `session.crypto_call` (transport stays ws/http only) |
@@ -36,6 +36,8 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 | Broadcast-with-callback (confirmation) | ✅ | ✅ | `broadcast_*_with_callback[_timeout]` |
 | API id discovery / login | ✅ | ✅ | `discover_required_api` / `api_ids` |
 | `ChainConfig` (chain id, address prefix) | ✅ | ⚠️ 🥸 | chain_id + prefix in builder config; no global mutable config object (by design — JS singleton is anti-idiomatic; `prefix` stays unused until `Address`/`PublicKey` serialization lands). The node-side constants are now readable via `DatabaseApi::config().get()` / `get_config()` (`get_config` RPC), **live-tested** (branch `feature/get-config`) |
+
+Typed RPC note: generated swaplock RPC now has typed returns for all crypto methods (`blind_sum`/byte payloads as hex `String`, `VerifyRangeResult`, `VerifyRangeProofRewindResult`, `RangeProofInfo`); remaining raw database returns are intentionally dynamic or need `ProtocolObjectUnion`/fee-shape work.
 | `ConnectionManager` — multi-node failover, latency sort | ✅ | ⚠️ 🥸 | **PARTIAL** (branch `feature/sdk-apis`): failover + latency sort done — `ConnectionStrategy::{FirstAvailable,LowestLatency}`, `SwaplockApi::connect_with_strategy`, `probe_latencies` (sorted fastest-first), builder `.strategy()`/`.lowest_latency()`/`.probe_latencies()`, `connection_lowest_latency` example. **Missing** for full parity: auto-reconnect/backoff (see row below) and `urlChangeCallback` |
 | Auto-reconnect (`ChainWebSocket`) | ✅ | ⚠️ 🥸 | **DONE for reads** (branch `feature/auto-reconnect`): `ReconnectPolicy` (max retries + exponential backoff, capped), `GrapheneSession::reconnect()` (re-dials same node, rediscovers api ids, refuses a different chain id), and read calls (database/history/crypto/orders) auto-reconnect-and-retry on a dropped connection. **Live-tested** reconnect on the node. Mutating broadcasts are deliberately **not** auto-retried (a resend could double-submit); live subscriptions are **not** auto-resumed yet |
 | Connection pool / `closeCb` lifecycle | ✅ | ⚠️ | basic session lifecycle only |
