@@ -1,5 +1,5 @@
+use graphene_chain_swaplock_bindings::generated::rpc::database::lookup_accounts as rpc_lookup_accounts;
 use open_graphene_transport::GrapheneSession;
-use serde_json::json;
 
 use crate::SwaplockApiError;
 
@@ -24,13 +24,19 @@ impl LookupAccountsRequest<'_> {
     }
 
     pub async fn get(self) -> Result<Vec<(String, String)>, SwaplockApiError> {
+        let params = rpc_lookup_accounts::Params {
+            lower_bound_name: self.lower_bound,
+            limit: self.limit,
+            subscribe: None,
+        }
+        .to_params_value()
+        .map_err(SwaplockApiError::unexpected(rpc_lookup_accounts::METHOD))?;
         let value = self
             .session
-            .database_call("lookup_accounts", json!([self.lower_bound, self.limit]))
+            .database_call(rpc_lookup_accounts::METHOD, params)
             .await?;
-        serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
-            method: "lookup_accounts",
-            message: error.to_string(),
-        })
+        // The node returns a name-to-id map; the generated layer leaves it untyped.
+        serde_json::from_value(value)
+            .map_err(SwaplockApiError::unexpected(rpc_lookup_accounts::METHOD))
     }
 }

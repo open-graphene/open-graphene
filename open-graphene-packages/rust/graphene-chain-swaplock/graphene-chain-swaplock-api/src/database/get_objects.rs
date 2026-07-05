@@ -1,5 +1,7 @@
+use graphene_chain_swaplock_bindings::generated::ids::ObjectId;
+use graphene_chain_swaplock_bindings::generated::rpc::database::get_objects as rpc_get_objects;
 use open_graphene_transport::GrapheneSession;
-use serde_json::{Value, json};
+use serde_json::Value;
 
 use crate::SwaplockApiError;
 
@@ -18,14 +20,23 @@ pub struct GetObjectsRequest<'session> {
 
 impl GetObjectsRequest<'_> {
     pub async fn get(self) -> Result<Vec<Value>, SwaplockApiError> {
+        let params = rpc_get_objects::Params {
+            ids: self.ids.into_iter().map(ObjectId::from).collect(),
+            subscribe: Some(false),
+        }
+        .to_params_value()
+        .map_err(SwaplockApiError::unexpected(rpc_get_objects::METHOD))?;
         let value = self
             .session
-            .database_call("get_objects", json!([self.ids, false]))
+            .database_call(rpc_get_objects::METHOD, params)
             .await?;
-        serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
-            method: "get_objects",
-            message: error.to_string(),
-        })
+        let objects = rpc_get_objects::parse_returns(value)
+            .map_err(SwaplockApiError::unexpected(rpc_get_objects::METHOD))?;
+        // Keep the id order intact: unknown ids stay in place as JSON `null`.
+        Ok(objects
+            .into_iter()
+            .map(|object| object.unwrap_or(Value::Null))
+            .collect())
     }
 }
 

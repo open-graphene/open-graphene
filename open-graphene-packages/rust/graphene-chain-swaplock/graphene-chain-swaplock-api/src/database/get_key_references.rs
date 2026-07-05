@@ -1,6 +1,6 @@
 use graphene_chain_swaplock_bindings::generated::ids::AccountId;
+use graphene_chain_swaplock_bindings::generated::rpc::database::get_key_references as rpc_get_key_references;
 use open_graphene_transport::GrapheneSession;
-use serde_json::json;
 
 use crate::SwaplockApiError;
 
@@ -18,14 +18,15 @@ pub struct GetKeyReferencesRequest<'session> {
 
 impl GetKeyReferencesRequest<'_> {
     pub async fn get(self) -> Result<Vec<Vec<AccountId>>, SwaplockApiError> {
+        let params = rpc_get_key_references::Params { keys: self.keys }
+            .to_params_value()
+            .map_err(SwaplockApiError::unexpected(rpc_get_key_references::METHOD))?;
         let value = self
             .session
-            .database_call("get_key_references", json!([self.keys]))
+            .database_call(rpc_get_key_references::METHOD, params)
             .await?;
-        serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
-            method: "get_key_references",
-            message: error.to_string(),
-        })
+        rpc_get_key_references::parse_returns(value)
+            .map_err(SwaplockApiError::unexpected(rpc_get_key_references::METHOD))
     }
 }
 

@@ -1,6 +1,6 @@
+use graphene_chain_swaplock_bindings::generated::rpc::database::get_block_header as rpc_get_block_header;
 use graphene_chain_swaplock_bindings::generated::types::MaybeSignedBlockHeader;
 use open_graphene_transport::GrapheneSession;
-use serde_json::json;
 
 use crate::SwaplockApiError;
 
@@ -16,13 +16,17 @@ pub struct GetBlockHeaderRequest<'session> {
 
 impl GetBlockHeaderRequest<'_> {
     pub async fn get(self) -> Result<Option<MaybeSignedBlockHeader>, SwaplockApiError> {
+        let params = rpc_get_block_header::Params {
+            block_num: self.block_num,
+            with_witness_signature: None,
+        }
+        .to_params_value()
+        .map_err(SwaplockApiError::unexpected(rpc_get_block_header::METHOD))?;
         let value = self
             .session
-            .database_call("get_block_header", json!([self.block_num]))
+            .database_call(rpc_get_block_header::METHOD, params)
             .await?;
-        serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
-            method: "get_block_header",
-            message: error.to_string(),
-        })
+        rpc_get_block_header::parse_returns(value)
+            .map_err(SwaplockApiError::unexpected(rpc_get_block_header::METHOD))
     }
 }

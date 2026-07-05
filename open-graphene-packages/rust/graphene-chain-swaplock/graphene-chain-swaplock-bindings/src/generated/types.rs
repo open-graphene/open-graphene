@@ -636,6 +636,33 @@ pub struct BlockIdPredicate {
     pub id: Vec<u8>,
 }
 
+/// Raw protocol struct `bucket_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockBucketObject)]
+pub struct BucketObject {
+    pub key: serde_json::Value,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub high_base: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub high_quote: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub low_base: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub low_quote: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub open_base: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub open_quote: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub close_base: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub close_quote: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub base_volume: i64,
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    pub quote_volume: i64,
+}
+
 /// Raw protocol struct `burn_worker_initializer`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockBurnWorkerInitializer)]
@@ -884,6 +911,24 @@ pub struct ExtendableOperationResultDtl {
     pub paid: Option<Vec<crate::generated::types::Asset>>,
     pub received: Option<Vec<crate::generated::types::Asset>>,
     pub fees: Option<Vec<crate::generated::types::Asset>>,
+}
+
+/// Raw protocol struct `extended_asset_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockExtendedAssetObject)]
+pub struct ExtendedAssetObject {
+    pub symbol: String,
+    pub precision: u8,
+    pub issuer: crate::generated::ids::AccountId,
+    pub options: crate::generated::types::AssetOptions,
+    pub dynamic_asset_data_id: crate::generated::ids::AssetDynamicDataId,
+    pub bitasset_data_id: Option<crate::generated::ids::AssetBitassetDataId>,
+    pub buyback_account: Option<crate::generated::ids::AccountId>,
+    pub for_liquidity_pool: Option<crate::generated::ids::LiquidityPoolId>,
+    pub creation_block_num: u32,
+    pub creation_time: String,
+    pub total_in_collateral: Option<i64>,
+    pub total_backing_collateral: Option<i64>,
 }
 
 /// Raw protocol struct `fba_distribute_operation_fee_params_t`.
@@ -1143,6 +1188,15 @@ pub struct OperationHistoryObject {
     pub virtual_op: u32,
     pub is_virtual: bool,
     pub block_time: String,
+}
+
+/// Raw protocol struct `order_history_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockOrderHistoryObject)]
+pub struct OrderHistoryObject {
+    pub key: serde_json::Value,
+    pub time: String,
+    pub op: crate::generated::operations::FillOrderOperation,
 }
 
 /// Raw protocol struct `override_transfer_operation_fee_params_t`.

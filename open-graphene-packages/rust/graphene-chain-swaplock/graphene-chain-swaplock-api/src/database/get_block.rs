@@ -1,6 +1,6 @@
+use graphene_chain_swaplock_bindings::generated::rpc::database::get_block as rpc_get_block;
 use graphene_chain_swaplock_bindings::generated::types::SignedBlock;
 use open_graphene_transport::GrapheneSession;
-use serde_json::json;
 
 use crate::SwaplockApiError;
 
@@ -16,13 +16,16 @@ pub struct GetBlockRequest<'session> {
 
 impl GetBlockRequest<'_> {
     pub async fn get(self) -> Result<Option<SignedBlock>, SwaplockApiError> {
+        let params = rpc_get_block::Params {
+            block_num: self.block_num,
+        }
+        .to_params_value()
+        .map_err(SwaplockApiError::unexpected(rpc_get_block::METHOD))?;
         let value = self
             .session
-            .database_call("get_block", json!([self.block_num]))
+            .database_call(rpc_get_block::METHOD, params)
             .await?;
-        serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
-            method: "get_block",
-            message: error.to_string(),
-        })
+        rpc_get_block::parse_returns(value)
+            .map_err(SwaplockApiError::unexpected(rpc_get_block::METHOD))
     }
 }

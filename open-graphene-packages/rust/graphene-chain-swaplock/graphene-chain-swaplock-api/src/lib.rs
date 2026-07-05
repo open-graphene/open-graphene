@@ -156,6 +156,19 @@ pub enum SwaplockApiError {
     Transport(#[from] TransportError),
 }
 
+impl SwaplockApiError {
+    /// Standard mapping for serde failures around the generated RPC layer
+    /// (`Params::to_params_value` / `parse_returns`).
+    pub(crate) fn unexpected(
+        method: &'static str,
+    ) -> impl FnOnce(serde_json::Error) -> Self {
+        move |error| Self::UnexpectedResponse {
+            method,
+            message: error.to_string(),
+        }
+    }
+}
+
 pub struct SwaplockApi {
     session: GrapheneSession,
 }

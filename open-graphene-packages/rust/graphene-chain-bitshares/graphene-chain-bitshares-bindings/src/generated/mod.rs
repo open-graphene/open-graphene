@@ -5,6 +5,7 @@
 pub mod fc;
 pub mod ids;
 pub mod operations;
+pub mod rpc;
 pub mod static_variants;
 pub mod types;
 

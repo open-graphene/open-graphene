@@ -27,9 +27,9 @@ Legend: ✅ present · ⚠️ partial · ❌ missing · 🥸 @mi4uu
 | Feature | JS | open-graphene-rs | Notes |
 |---|:--:|:--:|---|
 | Connect to a node (WebSocket) | ✅ | ✅ | `Session::connect(url)` |
-| `database` API (`db_api`) | ✅ | ✅ | `swaplock-api/database/` (param-shaping) + `session.database_call` (transport routing) |
-| `history` API (`history_api`) | ✅ | ✅ | `swaplock-api/history/` + `session.history_call` |
-| `network_broadcast` API (`network_api`) | ✅ | ✅ | `swaplock-api/network_broadcast/` + `session.network_broadcast_call` |
+| `database` API (`db_api`) | ✅ | ✅ 🥸 | `generated::rpc::database` now emits typed `Params`/`Returns`/`parse_returns` from the spec; `swaplock-api/database/` keeps ergonomic builders + `session.database_call` transport routing |
+| `history` API (`history_api`) | ✅ | ✅ 🥸 | `generated::rpc::history` now emits typed low-level RPC helpers; `swaplock-api/history/` keeps the high-level surface + `session.history_call` |
+| `network_broadcast` API (`network_api`) | ✅ | ✅ 🥸 | `generated::rpc::network_broadcast` now emits typed low-level RPC helpers; `swaplock-api/network_broadcast/` keeps signing/broadcast ergonomics + transport routing |
 | `crypto` API (`crypto_api`) | ✅ | ✅ 🥸 | **DONE** (branch `feature/sdk-apis`): `CryptoApi` (7 methods: blind, blind_sum, verify_sum, verify_range, range_proof_sign, verify_range_proof_rewind, range_get_info) with hex-serde newtypes + typed results + `crypto_pedersen_commitment` example. Param-shaping in `swaplock-api/crypto/`, routed via `session.crypto_call` (transport stays ws/http only) |
 | `orders` / market API (`orders_api`) | ✅ | ✅ 🥸 | **DONE** (branch `feature/sdk-apis`): grouped order book — `OrdersApi` (`tracked_groups`, `grouped_limit_orders` with optional `start`/`limit`) + `LimitOrderGroup` type + `orders_grouped_limit_orders` example. Routed via `session.orders_call`* |
 | Subscriptions / `set_subscribe_callback` | ✅ | ✅ | `live.rs` + `subscribe_*` methods |
