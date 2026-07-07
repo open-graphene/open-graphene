@@ -10629,16 +10629,13 @@
           "index": 0,
           "name": "from",
           "type": {
-            "kind": "optional",
-            "inner": {
-              "kind": "public_key",
-              "prefixRef": "chain.publicKeyPrefix"
-            }
+            "kind": "public_key",
+            "prefixRef": "chain.publicKeyPrefix"
           },
           "source": {
             "name": "from",
-            "file": "libraries/protocol/include/graphene/protocol/confidential.hpp",
-            "line": 103
+            "file": "libraries/protocol/include/graphene/protocol/memo.hpp",
+            "line": 40
           },
           "support": {
             "status": "provisional",
@@ -10647,15 +10644,15 @@
         },
         {
           "index": 1,
-          "name": "amount",
+          "name": "to",
           "type": {
-            "kind": "ref",
-            "name": "asset"
+            "kind": "public_key",
+            "prefixRef": "chain.publicKeyPrefix"
           },
           "source": {
-            "name": "amount",
-            "file": "libraries/protocol/include/graphene/protocol/confidential.hpp",
-            "line": 104
+            "name": "to",
+            "file": "libraries/protocol/include/graphene/protocol/memo.hpp",
+            "line": 41
           },
           "support": {
             "status": "provisional",
@@ -10664,15 +10661,14 @@
         },
         {
           "index": 2,
-          "name": "blinding_factor",
+          "name": "nonce",
           "type": {
-            "kind": "fixed_bytes",
-            "bytes": 32
+            "kind": "uint64"
           },
           "source": {
-            "name": "blinding_factor",
-            "file": "libraries/protocol/include/graphene/protocol/confidential.hpp",
-            "line": 105
+            "name": "nonce",
+            "file": "libraries/protocol/include/graphene/protocol/memo.hpp",
+            "line": 42
           },
           "support": {
             "status": "provisional",
@@ -10681,31 +10677,14 @@
         },
         {
           "index": 3,
-          "name": "commitment",
+          "name": "message",
           "type": {
-            "kind": "fixed_bytes",
-            "bytes": 33
+            "kind": "bytes"
           },
           "source": {
-            "name": "commitment",
-            "file": "libraries/protocol/include/graphene/protocol/confidential.hpp",
-            "line": 106
-          },
-          "support": {
-            "status": "provisional",
-            "reason": "field selected and ordered by FC_REFLECT"
-          }
-        },
-        {
-          "index": 4,
-          "name": "check",
-          "type": {
-            "kind": "uint32"
-          },
-          "source": {
-            "name": "check",
-            "file": "libraries/protocol/include/graphene/protocol/confidential.hpp",
-            "line": 107
+            "name": "message",
+            "file": "libraries/protocol/include/graphene/protocol/memo.hpp",
+            "line": 54
           },
           "support": {
             "status": "provisional",

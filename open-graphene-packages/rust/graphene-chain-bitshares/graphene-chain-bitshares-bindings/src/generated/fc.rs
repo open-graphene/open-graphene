@@ -1199,17 +1199,18 @@ impl FcSerialize for crate::generated::types::MaybeSignedBlockHeader {
 
 impl FcSerialize for crate::generated::types::MemoData {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        match &self.from {
-            Some(value) => {
-                out.push(1);
-                write_public_key(value, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;
-            }
-            None => out.push(0),
-        }
-        self.amount.fc_serialize(out)?;
-        write_fixed_bytes(&self.blinding_factor, 32, "fixed_bytes_32", out)?;
-        write_fixed_bytes(&self.commitment, 33, "fixed_bytes_33", out)?;
-        self.check.fc_serialize(out)?;
+        write_public_key(
+            &self.from,
+            Some(crate::generated::ids::PUBLIC_KEY_PREFIX),
+            out,
+        )?;
+        write_public_key(
+            &self.to,
+            Some(crate::generated::ids::PUBLIC_KEY_PREFIX),
+            out,
+        )?;
+        self.nonce.fc_serialize(out)?;
+        write_bytes(&self.message, out)?;
         Ok(())
     }
 }

@@ -1997,14 +1997,10 @@ fn signed_transaction_fc_propagates_signature_length_errors() {
 fn transaction_fc_propagates_operation_errors() {
     let mut transfer = sample_transfer_operation();
     transfer.memo = Some(MemoData {
-        from: None,
-        amount: Asset {
-            amount: 1,
-            asset_id: AssetId("1.3.0".to_string()),
-        },
-        blinding_factor: Vec::new(),
-        commitment: Vec::new(),
-        check: 0,
+        from: "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV".to_string(),
+        to: "BTS4tVMTu4hrMTGeAQpAEzueCYqEESJQgkaH9DVJNnzK1mzPCmP45".to_string(),
+        nonce: 0,
+        message: Vec::new(),
     });
     let transaction =
         sample_transaction_with_operations(vec![Operation::TransferOperation(Box::new(transfer))]);
@@ -2169,14 +2165,10 @@ fn transaction_signed_with_wif_propagates_invalid_wif_without_echoing_secret() {
 fn transaction_signature_preimage_propagates_operation_errors() {
     let mut transfer = sample_transfer_operation();
     transfer.memo = Some(MemoData {
-        from: None,
-        amount: Asset {
-            amount: 1,
-            asset_id: AssetId("1.3.0".to_string()),
-        },
-        blinding_factor: Vec::new(),
-        commitment: Vec::new(),
-        check: 0,
+        from: "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV".to_string(),
+        to: "BTS4tVMTu4hrMTGeAQpAEzueCYqEESJQgkaH9DVJNnzK1mzPCmP45".to_string(),
+        nonce: 0,
+        message: Vec::new(),
     });
     let transaction =
         sample_transaction_with_operations(vec![Operation::TransferOperation(Box::new(transfer))]);
@@ -2198,14 +2190,10 @@ fn transaction_signature_preimage_propagates_operation_errors() {
 fn transaction_signature_digest_propagates_operation_errors() {
     let mut transfer = sample_transfer_operation();
     transfer.memo = Some(MemoData {
-        from: None,
-        amount: Asset {
-            amount: 1,
-            asset_id: AssetId("1.3.0".to_string()),
-        },
-        blinding_factor: Vec::new(),
-        commitment: Vec::new(),
-        check: 0,
+        from: "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV".to_string(),
+        to: "BTS4tVMTu4hrMTGeAQpAEzueCYqEESJQgkaH9DVJNnzK1mzPCmP45".to_string(),
+        nonce: 0,
+        message: Vec::new(),
     });
     let transaction =
         sample_transaction_with_operations(vec![Operation::TransferOperation(Box::new(transfer))]);
@@ -2248,14 +2236,10 @@ fn operation_fc_serializes_proposal_create_tag_and_nested_operation_payload() {
 fn proposal_create_operation_propagates_nested_operation_fc_errors() {
     let mut transfer = sample_transfer_operation();
     transfer.memo = Some(MemoData {
-        from: None,
-        amount: Asset {
-            amount: 1,
-            asset_id: AssetId("1.3.0".to_string()),
-        },
-        blinding_factor: Vec::new(),
-        commitment: Vec::new(),
-        check: 0,
+        from: "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV".to_string(),
+        to: "BTS4tVMTu4hrMTGeAQpAEzueCYqEESJQgkaH9DVJNnzK1mzPCmP45".to_string(),
+        nonce: 0,
+        message: Vec::new(),
     });
     let mut proposal = sample_proposal_create_operation();
     proposal.proposed_ops = vec![OpWrapper {

@@ -1368,21 +1368,15 @@ pub struct MaybeSignedBlockHeader {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockMemoData)]
 pub struct MemoData {
-    pub from: Option<String>,
-    pub amount: crate::generated::types::Asset,
+    pub from: String,
+    pub to: String,
+    pub nonce: u64,
     #[serde(
         serialize_with = "open_graphene_core::serialize_bytes_as_hex",
-        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_32_from_hex_string_or_byte_array"
+        deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array"
     )]
     #[schema(value_type = String)]
-    pub blinding_factor: Vec<u8>,
-    #[serde(
-        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
-        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array"
-    )]
-    #[schema(value_type = String)]
-    pub commitment: Vec<u8>,
-    pub check: u32,
+    pub message: Vec<u8>,
 }
 
 /// Raw protocol struct `no_special_authority`.

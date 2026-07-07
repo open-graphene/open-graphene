@@ -445,7 +445,14 @@ fn fee_parameters_static_variant_to_def(facts: &SourceFacts) -> Option<StaticVar
 }
 
 fn find_raw_class<'a>(facts: &'a SourceFacts, name: &str) -> Option<&'a RawClass> {
-    facts.classes.iter().find(|class| class.name == name)
+    // Unqualified type references resolve to top-level classes; a nested class
+    // with the same short name (extracted from an earlier-sorted file) must
+    // not shadow them. Names that only exist nested still resolve as before.
+    facts
+        .classes
+        .iter()
+        .find(|class| class.name == name && class.qualified_name.is_none())
+        .or_else(|| facts.classes.iter().find(|class| class.name == name))
 }
 
 fn raw_class_to_struct_def(class: &RawClass, facts: &SourceFacts) -> StructDef {
@@ -513,12 +520,38 @@ fn prepend_inherited_object_id_field(
 }
 
 fn find_raw_reflect<'a>(facts: &'a SourceFacts, class: &RawClass) -> Option<&'a RawReflect> {
-    let candidates = [class.qualified_name.as_deref(), Some(class.name.as_str())];
-    facts.reflects.iter().find(|reflect| {
-        candidates
+    match class.qualified_name.as_deref() {
+        // A nested class only matches reflects that spell out its nesting
+        // path, e.g. `stealth_confirmation::memo_data` never takes the
+        // reflect of a top-level `memo_data`.
+        Some(qualified) => facts
+            .reflects
             .iter()
-            .flatten()
-            .any(|candidate| reflect_type_matches(candidate, &reflect.type_name))
+            .find(|reflect| reflect_path_matches(qualified, &reflect.type_name)),
+        // A top-level class must not take a nested class's reflect either:
+        // the last-segment fallback would otherwise match
+        // `graphene::protocol::stealth_confirmation::memo_data` to the
+        // top-level `memo_data`.
+        None => facts.reflects.iter().find(|reflect| {
+            reflect_type_matches(class.name.as_str(), &reflect.type_name)
+                && !reflect_claimed_by_nested_class(facts, &reflect.type_name)
+        }),
+    }
+}
+
+fn reflect_path_matches(qualified_class: &str, reflect_type_name: &str) -> bool {
+    reflect_type_name == qualified_class
+        || reflect_type_name
+            .strip_suffix(qualified_class)
+            .is_some_and(|prefix| prefix.ends_with("::"))
+}
+
+fn reflect_claimed_by_nested_class(facts: &SourceFacts, reflect_type_name: &str) -> bool {
+    facts.classes.iter().any(|class| {
+        class
+            .qualified_name
+            .as_deref()
+            .is_some_and(|qualified| reflect_path_matches(qualified, reflect_type_name))
     })
 }
 

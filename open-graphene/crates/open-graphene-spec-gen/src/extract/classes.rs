@@ -38,7 +38,7 @@ pub fn extract_classes(source_text: &str, file: &Path) -> Vec<RawClass> {
         let class_line = line_number(&source, record_start);
         let body = &source[open_brace + 1..close_brace];
         classes.push(RawClass {
-            name,
+            name: name.clone(),
             qualified_name: None,
             methods: extract_methods_from_class_body(body, file, class_line),
             fields: extract_fields_from_class_body(body, file, class_line),
@@ -49,6 +49,15 @@ pub fn extract_classes(source_text: &str, file: &Path) -> Vec<RawClass> {
         });
         let mut nested_classes = extract_classes(body, file);
         offset_class_lines(&mut nested_classes, class_line.saturating_sub(1));
+        // Record the nesting path so a nested class (e.g.
+        // `stealth_confirmation::memo_data`) can never be confused with a
+        // top-level class of the same short name.
+        for nested in &mut nested_classes {
+            nested.qualified_name = Some(match nested.qualified_name.take() {
+                Some(inner_path) => format!("{name}::{inner_path}"),
+                None => format!("{name}::{}", nested.name),
+            });
+        }
         classes.extend(nested_classes);
         offset = close_brace + 1;
     }
