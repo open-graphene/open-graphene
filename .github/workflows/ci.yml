@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  # Pinned vendored-source revisions used to regenerate the committed specs.
+  SWAPLOCK_CORE_COMMIT: a79b40ef48dcc4ea2bd39d5302f414247c834c09
+  BITSHARES_CORE_COMMIT: b92b82ba3e57381d111f28383e8cfa89a8356966
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --all --check
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Test
+        run: cargo test --workspace
+
+  regen:
+    name: Generated output is in sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Fetch pinned chain sources
+        run: |
+          fetch() {
+            local url="$1" dir="$2" commit="$3"
+            mkdir -p "$dir" && cd "$dir"
+            git init -q && git remote add origin "$url"
+            git fetch -q --depth 1 origin "$commit"
+            git checkout -q FETCH_HEAD
+            cd - >/dev/null
+          }
+          fetch https://github.com/swaplock/swaplock-core.git \
+            blockchains/swaplock/swaplock-core "$SWAPLOCK_CORE_COMMIT"
+          fetch https://github.com/bitshares/bitshares-core.git \
+            blockchains/bitshares/bitshares-core "$BITSHARES_CORE_COMMIT"
+      - name: Regenerate specs and bindings
+        run: |
+          open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/bin/gen.sh
+          open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-bindings/bin/gen.sh
+          open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/bin/gen.sh
+          open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-bindings/bin/gen.sh
+      - name: Committed output must match the generators
+        run: |
+          git add -N .
+          if ! git diff --exit-code -- open-graphene-packages; then
+            echo '::error::Generated output drifted — rerun the gen.sh scripts and commit the result.'
+            exit 1
+          fi
