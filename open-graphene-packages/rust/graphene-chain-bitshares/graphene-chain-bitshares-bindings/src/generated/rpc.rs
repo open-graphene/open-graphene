@@ -2,6 +2,9 @@
 // Chain: bitshares | schema version: 1 | module: typed RPC call surface.
 // Do not edit by hand.
 
+#![allow(clippy::vec_init_then_push, clippy::needless_borrows_for_generic_args)]
+#![allow(clippy::large_enum_variant)]
+
 //! Typed positional parameters and response decoding for the chain's RPC methods.
 //!
 //! Transport stays outside this module: build a [`Params`] value, send it with the
@@ -153,12 +156,10 @@ pub mod database {
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
                 let mut params: Vec<serde_json::Value> = Vec::new();
                 params.push(serde_json::to_value(&self.block_num)?);
-                let tail: [Option<serde_json::Value>; 1] = [
-                    match &self.with_witness_signature {
-                        Some(value) => Some(serde_json::to_value(value)?),
-                        None => None,
-                    },
-                ];
+                let tail: [Option<serde_json::Value>; 1] = [match &self.with_witness_signature {
+                    Some(value) => Some(serde_json::to_value(value)?),
+                    None => None,
+                }];
                 if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
                     for value in tail.into_iter().take(last_provided + 1) {
                         params.push(value.unwrap_or(serde_json::Value::Null));
@@ -182,8 +183,7 @@ pub mod database {
 
         /// Positional parameters for `database.get_dynamic_global_properties`.
         #[derive(Debug, Clone, PartialEq)]
-        pub struct Params {
-        }
+        pub struct Params {}
 
         impl Params {
             /// The positional JSON parameter list for this call.
@@ -248,12 +248,10 @@ pub mod database {
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
                 let mut params: Vec<serde_json::Value> = Vec::new();
                 params.push(serde_json::to_value(&self.ids)?);
-                let tail: [Option<serde_json::Value>; 1] = [
-                    match &self.subscribe {
-                        Some(value) => Some(serde_json::to_value(value)?),
-                        None => None,
-                    },
-                ];
+                let tail: [Option<serde_json::Value>; 1] = [match &self.subscribe {
+                    Some(value) => Some(serde_json::to_value(value)?),
+                    None => None,
+                }];
                 if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
                     for value in tail.into_iter().take(last_provided + 1) {
                         params.push(value.unwrap_or(serde_json::Value::Null));
@@ -269,7 +267,6 @@ pub mod database {
             serde_json::from_value(value)
         }
     }
-
 }
 
 /// RPC methods on the `history` API.
@@ -325,5 +322,4 @@ pub mod history {
             serde_json::from_value(value)
         }
     }
-
 }

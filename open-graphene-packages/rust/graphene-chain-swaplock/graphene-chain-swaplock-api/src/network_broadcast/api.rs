@@ -154,10 +154,10 @@ impl BroadcastConfirmation {
 pub(crate) fn parse_broadcast_confirmation(
     mut value: Value,
 ) -> Result<BroadcastConfirmation, SwaplockApiError> {
-    if let Some(values) = value.as_array_mut() {
-        if values.len() == 1 {
-            value = values.remove(0);
-        }
+    if let Some(values) = value.as_array_mut()
+        && values.len() == 1
+    {
+        value = values.remove(0);
     }
 
     serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {

@@ -134,11 +134,12 @@ fn render_rpc(protocol: &Protocol) -> Result<String> {
          //! and types the spec cannot fully model fall back to `serde_json::Value`.\n\n",
     );
 
-    if protocol
-        .rpc_methods
-        .iter()
-        .any(|method| method.returns.as_ref().is_some_and(contains_protocol_object_union))
-    {
+    if protocol.rpc_methods.iter().any(|method| {
+        method
+            .returns
+            .as_ref()
+            .is_some_and(contains_protocol_object_union)
+    }) {
         render_protocol_object_union(&mut out, protocol)?;
     }
 
@@ -169,9 +170,9 @@ fn render_rpc(protocol: &Protocol) -> Result<String> {
 fn contains_protocol_object_union(ty: &TypeRef) -> bool {
     match ty {
         TypeRef::ProtocolObjectUnion { .. } => true,
-        TypeRef::Optional { inner }
-        | TypeRef::Vector { inner }
-        | TypeRef::Set { inner, .. } => contains_protocol_object_union(inner),
+        TypeRef::Optional { inner } | TypeRef::Vector { inner } | TypeRef::Set { inner, .. } => {
+            contains_protocol_object_union(inner)
+        }
         TypeRef::Map { key, value, .. } | TypeRef::FlatMap { key, value, .. } => {
             contains_protocol_object_union(key) || contains_protocol_object_union(value)
         }
@@ -223,7 +224,9 @@ fn render_protocol_object_union(out: &mut String, protocol: &Protocol) -> Result
             "            Self::{variant_name}(value) => serde::Serialize::serialize(value, serializer),\n"
         ));
     }
-    out.push_str("            Self::Unknown(value) => serde::Serialize::serialize(value, serializer),\n");
+    out.push_str(
+        "            Self::Unknown(value) => serde::Serialize::serialize(value, serializer),\n",
+    );
     out.push_str("        }\n");
     out.push_str("    }\n");
     out.push_str("}\n\n");
@@ -243,9 +246,7 @@ fn render_protocol_object_union(out: &mut String, protocol: &Protocol) -> Result
         out.push_str(&format!(
             "            Some(({space}, {type_id})) => serde_json::from_value(value)\n"
         ));
-        out.push_str(&format!(
-            "                .map(Self::{variant_name})\n"
-        ));
+        out.push_str(&format!("                .map(Self::{variant_name})\n"));
         out.push_str("                .map_err(serde::de::Error::custom),\n");
     }
     out.push_str("            _ => Ok(Self::Unknown(value)),\n");
@@ -358,7 +359,9 @@ fn render_rpc_method(
             out.push_str(
                 "                if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {\n",
             );
-            out.push_str("                    for value in tail.into_iter().take(last_provided + 1) {\n");
+            out.push_str(
+                "                    for value in tail.into_iter().take(last_provided + 1) {\n",
+            );
             out.push_str(
                 "                        params.push(value.unwrap_or(serde_json::Value::Null));\n",
             );
@@ -403,22 +406,30 @@ fn render_config_rpc_types(out: &mut String) {
     out.push_str("        ///\n");
     out.push_str("        /// The node returns an `fc::variant_object`, represented as a JSON object whose values\n");
     out.push_str("        /// remain dynamic because individual `GRAPHENE_*` constants mix strings and numbers.\n");
-    out.push_str("        pub type Config = std::collections::BTreeMap<String, serde_json::Value>;\n\n");
+    out.push_str(
+        "        pub type Config = std::collections::BTreeMap<String, serde_json::Value>;\n\n",
+    );
 }
 
 fn render_required_fee_rpc_types(out: &mut String) {
     out.push_str("        /// Fee result returned by `database.get_required_fees`.\n");
     out.push_str("        ///\n");
     out.push_str("        /// Plain operations return a single [`Asset`]. `proposal_create_operation` returns\n");
-    out.push_str("        /// a pair of its own fee and the recursively priced proposed operations.\n");
-    out.push_str("        #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]\n");
+    out.push_str(
+        "        /// a pair of its own fee and the recursively priced proposed operations.\n",
+    );
+    out.push_str(
+        "        #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]\n",
+    );
     out.push_str("        #[serde(untagged)]\n");
     out.push_str("        pub enum RequiredFee {\n");
     out.push_str("            Asset(crate::generated::types::Asset),\n");
     out.push_str("            Proposal(ProposalRequiredFee),\n");
     out.push_str("        }\n\n");
     out.push_str("        /// Recursive fee shape for `proposal_create_operation`: `[proposal_fee, nested_fees]`.\n");
-    out.push_str("        #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]\n");
+    out.push_str(
+        "        #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]\n",
+    );
     out.push_str("        pub struct ProposalRequiredFee(\n");
     out.push_str("            pub crate::generated::types::Asset,\n");
     out.push_str("            pub Vec<RequiredFee>,\n");
@@ -431,10 +442,10 @@ fn render_rpc_type_ref(protocol: &Protocol, ty: &TypeRef) -> Result<String> {
         TypeRef::Bytes | TypeRef::FixedBytes { .. } => "String".to_string(),
         TypeRef::Ref { name } if name == "config" => {
             "crate::generated::rpc::database::get_config::Config".to_string()
-        },
+        }
         TypeRef::Ref { name } if name == "required_fee" => {
             "crate::generated::rpc::database::get_required_fees::RequiredFee".to_string()
-        },
+        }
         TypeRef::ProtocolObjectUnion { .. } => "crate::generated::rpc::ProtocolObject".to_string(),
         TypeRef::AnyJson { .. } | TypeRef::Unsupported { .. } => "serde_json::Value".to_string(),
         TypeRef::Optional { inner } => {
@@ -574,15 +585,15 @@ fn render_ids(protocol: &Protocol) -> Result<String> {
         out.push_str("#[serde(transparent)]\n");
         out.push_str(&format!("pub struct {id_name}(pub String);\n\n"));
         render_string_id_conversions(&mut out, &id_name);
-        if let Some(object_type) = object_type {
-            if let Some(space) = object_type.object_space {
-                out.push_str(&format!("impl {id_name} {{\n"));
-                out.push_str(&format!("    pub const SPACE_ID: u32 = {space};\n"));
-                if let Some(type_id) = object_type.type_id {
-                    out.push_str(&format!("    pub const TYPE_ID: u32 = {type_id};\n"));
-                }
-                out.push_str("}\n");
+        if let Some(object_type) = object_type
+            && let Some(space) = object_type.object_space
+        {
+            out.push_str(&format!("impl {id_name} {{\n"));
+            out.push_str(&format!("    pub const SPACE_ID: u32 = {space};\n"));
+            if let Some(type_id) = object_type.type_id {
+                out.push_str(&format!("    pub const TYPE_ID: u32 = {type_id};\n"));
             }
+            out.push_str("}\n");
         }
         out.push('\n');
     }
@@ -634,7 +645,8 @@ fn build_schema_dependency_graph(protocol: &Protocol) -> BTreeMap<String, Vec<Sc
     let mut graph = BTreeMap::new();
 
     for struct_def in &protocol.structs {
-        if struct_def.kind == StructKind::Operation || is_operation_ref(protocol, &struct_def.name) {
+        if struct_def.kind == StructKind::Operation || is_operation_ref(protocol, &struct_def.name)
+        {
             continue;
         }
         let owner = rust_type_name(&struct_def.name);
@@ -661,10 +673,13 @@ fn build_schema_dependency_graph(protocol: &Protocol) -> BTreeMap<String, Vec<Sc
                 variant: rust_variant_name(&arm.name),
             };
             for target in schema_type_targets(protocol, &arm.ty) {
-                graph.entry(owner.clone()).or_insert_with(Vec::new).push(SchemaEdge {
-                    target,
-                    cut: Some(SchemaCut::Variant(variant_key.clone())),
-                });
+                graph
+                    .entry(owner.clone())
+                    .or_insert_with(Vec::new)
+                    .push(SchemaEdge {
+                        target,
+                        cut: Some(SchemaCut::Variant(variant_key.clone())),
+                    });
             }
         }
     }
@@ -683,10 +698,13 @@ fn add_schema_field_edges(
         field: rust_field_name(&field.name),
     };
     for target in schema_type_targets(protocol, &field.ty) {
-        graph.entry(owner.to_string()).or_insert_with(Vec::new).push(SchemaEdge {
-            target,
-            cut: Some(SchemaCut::Field(field_key.clone())),
-        });
+        graph
+            .entry(owner.to_string())
+            .or_default()
+            .push(SchemaEdge {
+                target,
+                cut: Some(SchemaCut::Field(field_key.clone())),
+            });
     }
 }
 
@@ -698,9 +716,9 @@ fn schema_type_targets(protocol: &Protocol, ty: &TypeRef) -> BTreeSet<String> {
 
 fn collect_schema_type_targets(protocol: &Protocol, ty: &TypeRef, targets: &mut BTreeSet<String>) {
     match ty {
-        TypeRef::Optional { inner }
-        | TypeRef::Vector { inner }
-        | TypeRef::Set { inner, .. } => collect_schema_type_targets(protocol, inner, targets),
+        TypeRef::Optional { inner } | TypeRef::Vector { inner } | TypeRef::Set { inner, .. } => {
+            collect_schema_type_targets(protocol, inner, targets)
+        }
         TypeRef::Map { key, value, .. } | TypeRef::FlatMap { key, value, .. } => {
             collect_schema_type_targets(protocol, key, targets);
             collect_schema_type_targets(protocol, value, targets);
@@ -769,14 +787,7 @@ fn detect_schema_cycles_from(
             }
 
             path.push(dfs_edge);
-            detect_schema_cycles_from(
-                &edge.target,
-                graph,
-                _visited,
-                visiting,
-                path,
-                cuts,
-            );
+            detect_schema_cycles_from(&edge.target, graph, _visited, visiting, path, cuts);
             path.pop();
         }
     }
@@ -983,7 +994,13 @@ fn render_struct(
         openapi_schema_name(protocol, &struct_name)
     ));
     out.push_str(&format!("pub struct {struct_name} {{\n"));
-    render_fields(out, protocol, &struct_name, &struct_def.fields, no_recursion_cuts)?;
+    render_fields(
+        out,
+        protocol,
+        &struct_name,
+        &struct_def.fields,
+        no_recursion_cuts,
+    )?;
     out.push_str("}\n\n");
     render_asset_constructor(out, protocol, struct_def)?;
     render_price_constructor(out, protocol, struct_def)?;
@@ -1065,7 +1082,13 @@ fn render_operation_struct(
         openapi_schema_name(protocol, &struct_name)
     ));
     out.push_str(&format!("pub struct {struct_name} {{\n"));
-    render_fields(out, protocol, &struct_name, &operation.fields, no_recursion_cuts)?;
+    render_fields(
+        out,
+        protocol,
+        &struct_name,
+        &operation.fields,
+        no_recursion_cuts,
+    )?;
     out.push_str("}\n\n");
     Ok(())
 }
@@ -1310,7 +1333,7 @@ fn render_fc_transaction_helpers(out: &mut String, protocol: &Protocol) {
     out.push_str("        Ok(crate::generated::types::Signature(sign_digest_compact_with_wif(self.signature_digest_bytes()?, wif)?.to_vec()))\n");
     out.push_str("    }\n");
     if has_signed_transaction {
-        out.push_str("\n");
+        out.push('\n');
         out.push_str("    pub fn signed_with_wif(&self, wif: &str) -> Result<crate::generated::types::SignedTransaction> {\n");
         out.push_str("        Ok(crate::generated::types::SignedTransaction {\n");
         out.push_str("            ref_block_num: self.ref_block_num,\n");
@@ -1680,7 +1703,7 @@ fn render_fc_argument_type_impl(out: &mut String, protocol: &Protocol) -> Result
     arms.sort_by_key(|arm| arm.tag);
     let supported_structs = fc_supported_struct_names(protocol);
     for arm in arms {
-        if !is_fc_supported_type(protocol, &arm.ty, &supported_structs) {
+        if !is_fc_supported_type(&arm.ty, &supported_structs) {
             return Err(GenBindingsRsError::Render {
                 message: format!(
                     "unsupported argument_type variant `{}` payload type for FC rendering",
@@ -1720,7 +1743,7 @@ fn fc_supported_struct_names(protocol: &Protocol) -> BTreeSet<String> {
             if struct_def
                 .fields
                 .iter()
-                .all(|field| is_fc_supported_type(protocol, &field.ty, &supported))
+                .all(|field| is_fc_supported_type(&field.ty, &supported))
             {
                 supported.insert(struct_def.name);
                 changed = true;
@@ -1745,7 +1768,7 @@ fn render_fc_operation_impls(
             continue;
         }
 
-        if !is_fc_supported_operation(protocol, &operation, supported_structs) {
+        if !is_fc_supported_operation(&operation, supported_structs) {
             continue;
         }
 
@@ -2196,21 +2219,16 @@ fn render_fc_transfer_operation_impl(out: &mut String) {
 }
 
 fn is_fc_supported_operation(
-    protocol: &Protocol,
     operation: &OperationDef,
     supported_structs: &BTreeSet<String>,
 ) -> bool {
     operation
         .fields
         .iter()
-        .all(|field| is_fc_supported_type(protocol, &field.ty, supported_structs))
+        .all(|field| is_fc_supported_type(&field.ty, supported_structs))
 }
 
-fn is_fc_supported_type(
-    protocol: &Protocol,
-    ty: &TypeRef,
-    supported_structs: &BTreeSet<String>,
-) -> bool {
+fn is_fc_supported_type(ty: &TypeRef, supported_structs: &BTreeSet<String>) -> bool {
     match ty {
         TypeRef::Void
         | TypeRef::Bool
@@ -2242,7 +2260,7 @@ fn is_fc_supported_type(
                 || name == "operation"
         }
         TypeRef::Optional { inner } | TypeRef::Vector { inner } => {
-            is_fc_supported_type(protocol, inner, supported_structs)
+            is_fc_supported_type(inner, supported_structs)
         }
         TypeRef::Set { inner, .. } if is_vote_id_type(inner) => true,
         TypeRef::Set { inner, .. } if is_fee_parameters_type(inner) => true,
@@ -2255,8 +2273,8 @@ fn is_fc_supported_type(
         }
         TypeRef::FlatMap { key, value, .. } if is_fc_supported_flat_map(key, value) => true,
         TypeRef::Pair { first, second } => {
-            is_fc_supported_type(protocol, first, supported_structs)
-                && is_fc_supported_type(protocol, second, supported_structs)
+            is_fc_supported_type(first, supported_structs)
+                && is_fc_supported_type(second, supported_structs)
         }
         TypeRef::Set { .. }
         | TypeRef::Map { .. }
@@ -2421,7 +2439,9 @@ fn render_operation_metadata_impl(
             })
         });
     if every_operation_has_asset_fee {
-        out.push_str("\n    /// The operation fee (every operation in this protocol carries one).\n");
+        out.push_str(
+            "\n    /// The operation fee (every operation in this protocol carries one).\n",
+        );
         out.push_str("    pub fn fee(&self) -> &crate::generated::types::Asset {\n");
         out.push_str("        match self {\n");
         for (variant_name, _) in arms {
@@ -2866,10 +2886,24 @@ fn collect_protocol_object_id_names_from_type(ty: &TypeRef, names: &mut BTreeSet
 }
 
 fn generated_header(protocol: &Protocol, module: &str) -> String {
+    let allows = match module {
+        // TODO: drop these once the emission templates produce clippy-clean
+        // code (planned alongside the generate.rs split): auto-deref/borrow
+        // patterns in fc serialization, vec building and Copy-aware borrows
+        // in rpc params, and boxed ProtocolObject variants.
+        "minimal FC serialization for transfer path" => {
+            "#![allow(clippy::explicit_auto_deref, clippy::borrow_deref_ref)]\n\n"
+        }
+        "typed RPC call surface" => {
+            "#![allow(clippy::vec_init_then_push, clippy::needless_borrows_for_generic_args)]\n\
+             #![allow(clippy::large_enum_variant)]\n\n"
+        }
+        _ => "",
+    };
     format!(
         "// Generated by open-graphene-gen-bindings-rs.\n\
          // Chain: {} | schema version: {} | module: {module}.\n\
-         // Do not edit by hand.\n\n",
+         // Do not edit by hand.\n\n{allows}",
         protocol.chain.id, protocol.schema_version
     )
 }
@@ -3158,15 +3192,17 @@ mod tests {
     #[test]
     fn renders_protocol_object_union_rpc_shape() {
         let mut protocol = minimal_protocol();
-        protocol.object_types.push(open_graphene_json_schema::ObjectTypeDef {
-            object_type: "account".to_string(),
-            cpp_alias: "account_object_type".to_string(),
-            object_space: Some(1),
-            type_id: Some(2),
-            struct_ref: Some("account_object".to_string()),
-            source: None,
-            support: None,
-        });
+        protocol
+            .object_types
+            .push(open_graphene_json_schema::ObjectTypeDef {
+                object_type: "account".to_string(),
+                cpp_alias: "account_object_type".to_string(),
+                object_space: Some(1),
+                type_id: Some(2),
+                struct_ref: Some("account_object".to_string()),
+                source: None,
+                support: None,
+            });
         protocol.rpc_methods.push(RpcMethodDef {
             name: "get_objects".to_string(),
             api_class: "database_api".to_string(),
@@ -3193,9 +3229,10 @@ mod tests {
         assert!(output.contains("Some((1, 2)) => serde_json::from_value(value)"));
         assert!(output.contains(".map(Self::Account)"));
         assert!(output.contains("Unknown(serde_json::Value)"));
-        assert!(output.contains(
-            "pub type Returns = Vec<Option<crate::generated::rpc::ProtocolObject>>;"
-        ));
+        assert!(
+            output
+                .contains("pub type Returns = Vec<Option<crate::generated::rpc::ProtocolObject>>;")
+        );
     }
 
     #[test]
@@ -3218,12 +3255,16 @@ mod tests {
 
         let output = render_rpc(&protocol).expect("render rpc");
 
-        assert!(output.contains(
-            "pub type Config = std::collections::BTreeMap<String, serde_json::Value>;"
-        ));
-        assert!(output.contains(
-            "pub type Returns = crate::generated::rpc::database::get_config::Config;"
-        ));
+        assert!(
+            output.contains(
+                "pub type Config = std::collections::BTreeMap<String, serde_json::Value>;"
+            )
+        );
+        assert!(
+            output.contains(
+                "pub type Returns = crate::generated::rpc::database::get_config::Config;"
+            )
+        );
     }
 
     #[test]
@@ -4291,11 +4332,9 @@ mod tests {
 
     #[test]
     fn fc_type_support_allows_nested_operation_static_variant() {
-        let protocol = minimal_protocol();
         let supported_structs = BTreeSet::new();
 
         assert!(is_fc_supported_type(
-            &protocol,
             &TypeRef::StaticVariantRef {
                 name: "operation".to_string(),
             },
@@ -4597,9 +4636,11 @@ mod tests {
         assert!(rendered.contains("pub subscribe: Option<bool>,"));
         // The optional tail is dropped positionally when not provided.
         assert!(rendered.contains("tail.iter().rposition(|value| value.is_some())"));
-        assert!(rendered.contains(
-            "pub type Returns = Vec<Option<crate::generated::types::AccountObject>>;"
-        ));
+        assert!(
+            rendered.contains(
+                "pub type Returns = Vec<Option<crate::generated::types::AccountObject>>;"
+            )
+        );
     }
 
     #[test]
@@ -4622,9 +4663,11 @@ mod tests {
     #[test]
     fn rpc_renderer_emits_unit_returns_for_void_methods() {
         let mut protocol = minimal_protocol();
-        protocol
-            .rpc_methods
-            .push(rpc_method("broadcast_transaction", vec![], Some(TypeRef::Void)));
+        protocol.rpc_methods.push(rpc_method(
+            "broadcast_transaction",
+            vec![],
+            Some(TypeRef::Void),
+        ));
 
         let rendered = render_rpc(&protocol).expect("render rpc");
 

@@ -527,7 +527,7 @@ impl<'session> OperationsApi<'session> {
         LiquidityPoolUpdateRequest::new(self.session, account, pool)
     }
 
-    /// Extend a hashed time-locked contract's deadline: `update_issuer` adds time via `.add(..)`.
+    /// Extend a hashed time-locked contract's deadline: `update_issuer` adds time via `.extend_by(..)`.
     pub fn htlc_extend(
         self,
         htlc: impl Into<String>,

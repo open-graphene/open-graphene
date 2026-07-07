@@ -44,7 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let blinding_factor = vec![0x11u8; 32];
     let commitment = {
         let mut bytes = vec![0x08u8];
-        bytes.extend(std::iter::repeat(0x22u8).take(32));
+        bytes.extend(std::iter::repeat_n(0x22u8, 32));
         bytes
     };
     let range_proof = vec![0x33u8; 200];

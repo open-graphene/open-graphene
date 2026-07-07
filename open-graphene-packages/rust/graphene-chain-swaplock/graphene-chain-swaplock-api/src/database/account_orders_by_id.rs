@@ -152,17 +152,16 @@ fn collect_account_order_objects_inner(
     account_id: &str,
     objects: &mut Vec<LimitOrderObject>,
 ) -> Result<(), SwaplockApiError> {
-    if let Some(object) = value.as_object() {
-        if object.get("seller").and_then(Value::as_str) == Some(account_id) {
-            let order: LimitOrderObject =
-                serde_json::from_value(value.clone()).map_err(|error| {
-                    SwaplockApiError::UnexpectedResponse {
-                        method,
-                        message: error.to_string(),
-                    }
-                })?;
-            objects.push(order);
-        }
+    if let Some(object) = value.as_object()
+        && object.get("seller").and_then(Value::as_str) == Some(account_id)
+    {
+        let order: LimitOrderObject = serde_json::from_value(value.clone()).map_err(|error| {
+            SwaplockApiError::UnexpectedResponse {
+                method,
+                message: error.to_string(),
+            }
+        })?;
+        objects.push(order);
     }
 
     if let Some(array) = value.as_array() {

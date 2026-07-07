@@ -20,7 +20,8 @@ fn protocol_object_deserializes_by_object_id_type() {
     assert!(matches!(object, ProtocolObject::ChainProperty(_)));
 
     let unknown_json = serde_json::json!({"id": "1.5.0", "url": "https://example.invalid"});
-    let object: ProtocolObject = serde_json::from_value(unknown_json).expect("unknown protocol object");
+    let object: ProtocolObject =
+        serde_json::from_value(unknown_json).expect("unknown protocol object");
     assert!(matches!(object, ProtocolObject::Unknown(_)));
 }
 

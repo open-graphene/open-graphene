@@ -656,8 +656,20 @@ fn known_core_struct_def(name: &str) -> Option<StructDef> {
                         source: None,
                     },
                 ),
-                ("min_value", TypeRef::Uint64 { json: None, fc: None }),
-                ("max_value", TypeRef::Uint64 { json: None, fc: None }),
+                (
+                    "min_value",
+                    TypeRef::Uint64 {
+                        json: None,
+                        fc: None,
+                    },
+                ),
+                (
+                    "max_value",
+                    TypeRef::Uint64 {
+                        json: None,
+                        fc: None,
+                    },
+                ),
             ],
         ),
         _ => return None,

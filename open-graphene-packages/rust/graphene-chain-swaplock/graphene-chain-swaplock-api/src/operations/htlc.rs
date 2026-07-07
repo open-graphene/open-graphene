@@ -167,7 +167,7 @@ impl<'session> HtlcExtendRequest<'session> {
     }
 
     /// How much longer the contract stays claimable, added to its current deadline.
-    pub fn add(mut self, duration: Duration) -> Self {
+    pub fn extend_by(mut self, duration: Duration) -> Self {
         self.seconds_to_add = duration.as_secs() as u32;
         self
     }

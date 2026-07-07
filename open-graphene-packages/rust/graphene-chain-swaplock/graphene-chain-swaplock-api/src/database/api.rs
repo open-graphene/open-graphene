@@ -350,7 +350,10 @@ impl<'session> DatabaseApi<'session> {
         .await
     }
 
-    pub async fn get_objects<L>(&mut self, ids: L) -> Result<Vec<Option<ProtocolObject>>, SwaplockApiError>
+    pub async fn get_objects<L>(
+        &mut self,
+        ids: L,
+    ) -> Result<Vec<Option<ProtocolObject>>, SwaplockApiError>
     where
         L: IntoStringList,
     {

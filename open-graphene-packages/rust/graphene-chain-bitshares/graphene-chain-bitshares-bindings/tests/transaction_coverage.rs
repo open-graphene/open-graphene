@@ -1,3 +1,4 @@
+use graphene_chain_bitshares_bindings::generated::FcSerialize;
 use graphene_chain_bitshares_bindings::generated::ids::{
     AccountId, AssetId, DynamicGlobalPropertyId, LimitOrderId, WitnessId,
 };
@@ -7,7 +8,6 @@ use graphene_chain_bitshares_bindings::generated::types::{
     Asset, AssetObject, DynamicGlobalPropertyObject, LimitOrderObject, Signature,
     SignedTransaction, Transaction,
 };
-use graphene_chain_bitshares_bindings::generated::FcSerialize;
 
 fn transfer_operation() -> Operation {
     Operation::TransferOperation(Box::new(TransferOperation {
