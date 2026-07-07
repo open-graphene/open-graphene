@@ -34,22 +34,22 @@ pub fn extract_source_facts(source_set: &SourceSet) -> Result<SourceFacts> {
                 source,
             }
         })?;
-        facts
-            .fc_apis
-            .extend(extract_fc_apis(&text, &source_file.path));
-        facts
-            .classes
-            .extend(extract_classes(&text, &source_file.path));
-        facts.enums.extend(extract_enums(&text, &source_file.path));
+        // Recorded source locations must be machine-independent: strip the
+        // chain-repo prefix so the emitted spec is reproducible anywhere.
+        let loc_path = source_file
+            .path
+            .strip_prefix(&source_set.chain_repo)
+            .unwrap_or(&source_file.path);
+        facts.fc_apis.extend(extract_fc_apis(&text, loc_path));
+        facts.classes.extend(extract_classes(&text, loc_path));
+        facts.enums.extend(extract_enums(&text, loc_path));
         facts
             .static_variants
-            .extend(extract_static_variants(&text, &source_file.path));
+            .extend(extract_static_variants(&text, loc_path));
         facts
             .object_types
-            .extend(extract_object_types(&text, &source_file.path));
-        facts
-            .reflects
-            .extend(extract_reflects(&text, &source_file.path));
+            .extend(extract_object_types(&text, loc_path));
+        facts.reflects.extend(extract_reflects(&text, loc_path));
         facts
             .virtual_operations
             .extend(extract_virtual_operation_markers(&text));
