@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use super::facts::{FcApi, SourceLoc};
+use super::lexer::{find_matching_paren, line_number, split_top_level_commas};
 
 pub fn extract_fc_apis(source_text: &str, file: &Path) -> Vec<FcApi> {
     find_invocations(source_text, "FC_API")
@@ -81,51 +82,6 @@ fn is_ident_char(ch: char) -> bool {
     ch == '_' || ch.is_ascii_alphanumeric()
 }
 
-fn find_matching_paren(source: &str, open_paren: usize) -> Option<usize> {
-    let bytes = source.as_bytes();
-    let mut depth = 0usize;
-    for (index, byte) in bytes.iter().enumerate().skip(open_paren) {
-        match byte {
-            b'(' => depth += 1,
-            b')' => {
-                depth = depth.checked_sub(1)?;
-                if depth == 0 {
-                    return Some(index);
-                }
-            }
-            _ => {}
-        }
-    }
-    None
-}
-
-fn split_top_level_commas(source: &str) -> Vec<String> {
-    let mut out = Vec::new();
-    let mut start = 0usize;
-    let mut paren_depth = 0usize;
-    let mut angle_depth = 0usize;
-
-    for (index, ch) in source.char_indices() {
-        match ch {
-            '(' => paren_depth += 1,
-            ')' => paren_depth = paren_depth.saturating_sub(1),
-            '<' => angle_depth += 1,
-            '>' => angle_depth = angle_depth.saturating_sub(1),
-            ',' if paren_depth == 0 && angle_depth == 0 => {
-                out.push(source[start..index].trim().to_string());
-                start = index + ch.len_utf8();
-            }
-            _ => {}
-        }
-    }
-
-    let trailing = source[start..].trim();
-    if !trailing.is_empty() {
-        out.push(trailing.to_string());
-    }
-    out
-}
-
 fn parse_paren_list(source: &str) -> Vec<String> {
     let mut out = Vec::new();
     let bytes = source.as_bytes();
@@ -148,14 +104,6 @@ fn parse_paren_list(source: &str) -> Vec<String> {
     }
 
     out
-}
-
-fn line_number(source: &str, offset: usize) -> usize {
-    source[..offset]
-        .bytes()
-        .filter(|byte| *byte == b'\n')
-        .count()
-        + 1
 }
 
 #[cfg(test)]

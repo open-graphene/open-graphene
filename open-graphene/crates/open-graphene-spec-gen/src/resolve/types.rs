@@ -1,3 +1,4 @@
+use crate::extract::lexer::split_top_level_commas;
 use open_graphene_json_schema::types::{OrderingRule, TypeRef};
 
 pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
@@ -323,33 +324,6 @@ fn unwrap_map_template(value: &str, template_name: &str) -> Option<(String, Stri
     } else {
         None
     }
-}
-
-fn split_top_level_commas(source: &str) -> Vec<String> {
-    let mut out = Vec::new();
-    let mut start = 0usize;
-    let mut paren_depth = 0usize;
-    let mut angle_depth = 0usize;
-
-    for (index, ch) in source.char_indices() {
-        match ch {
-            '(' => paren_depth += 1,
-            ')' => paren_depth = paren_depth.saturating_sub(1),
-            '<' => angle_depth += 1,
-            '>' => angle_depth = angle_depth.saturating_sub(1),
-            ',' if paren_depth == 0 && angle_depth == 0 => {
-                out.push(source[start..index].trim().to_string());
-                start = index + ch.len_utf8();
-            }
-            _ => {}
-        }
-    }
-
-    let trailing = source[start..].trim();
-    if !trailing.is_empty() {
-        out.push(trailing.to_string());
-    }
-    out
 }
 
 #[cfg(test)]

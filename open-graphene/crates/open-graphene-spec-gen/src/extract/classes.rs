@@ -1,9 +1,13 @@
 use std::path::Path;
 
 use super::facts::{RawClass, RawField, RawMethod, RawParam, SourceLoc};
+use super::lexer::{
+    find_matching_delimiter, find_matching_paren, line_number,
+    strip_comments_and_directives_preserving_newlines,
+};
 
 pub fn extract_classes(source_text: &str, file: &Path) -> Vec<RawClass> {
-    let source = strip_comments_preserving_newlines(source_text);
+    let source = strip_comments_and_directives_preserving_newlines(source_text);
     let mut classes = Vec::new();
     let mut offset = 0usize;
 
@@ -374,64 +378,6 @@ fn parse_class_name(source: &str, mut offset: usize) -> Option<(String, usize)> 
     }
 }
 
-fn strip_comments_preserving_newlines(source: &str) -> String {
-    let mut output = String::with_capacity(source.len());
-    let mut chars = source.chars().peekable();
-    let mut at_line_start = true;
-
-    while let Some(ch) = chars.next() {
-        if at_line_start && ch.is_whitespace() && ch != '\n' {
-            output.push(ch);
-            continue;
-        }
-        if at_line_start && ch == '#' {
-            let mut continued = false;
-            for directive_ch in chars.by_ref() {
-                if directive_ch == '\\' {
-                    continued = true;
-                } else if directive_ch == '\n' {
-                    output.push('\n');
-                    at_line_start = true;
-                    if continued {
-                        continued = false;
-                        continue;
-                    }
-                    break;
-                } else if !directive_ch.is_whitespace() {
-                    continued = false;
-                }
-            }
-        } else if ch == '/' && chars.peek() == Some(&'/') {
-            chars.next();
-            for comment_ch in chars.by_ref() {
-                if comment_ch == '\n' {
-                    output.push('\n');
-                    at_line_start = true;
-                    break;
-                }
-            }
-        } else if ch == '/' && chars.peek() == Some(&'*') {
-            chars.next();
-            let mut previous = '\0';
-            for comment_ch in chars.by_ref() {
-                if comment_ch == '\n' {
-                    output.push('\n');
-                    at_line_start = true;
-                }
-                if previous == '*' && comment_ch == '/' {
-                    break;
-                }
-                previous = comment_ch;
-            }
-        } else {
-            output.push(ch);
-            at_line_start = ch == '\n';
-        }
-    }
-
-    output
-}
-
 fn collapse_whitespace(value: &str) -> String {
     value.split_whitespace().collect::<Vec<_>>().join(" ")
 }
@@ -467,30 +413,6 @@ fn find_matching_brace(source: &str, open_brace: usize) -> Option<usize> {
     find_matching_delimiter(source, open_brace, b'{', b'}')
 }
 
-fn find_matching_paren(source: &str, open_paren: usize) -> Option<usize> {
-    find_matching_delimiter(source, open_paren, b'(', b')')
-}
-
-fn find_matching_delimiter(
-    source: &str,
-    open: usize,
-    open_byte: u8,
-    close_byte: u8,
-) -> Option<usize> {
-    let mut depth = 0usize;
-    for (index, byte) in source.as_bytes().iter().enumerate().skip(open) {
-        if *byte == open_byte {
-            depth += 1;
-        } else if *byte == close_byte {
-            depth = depth.checked_sub(1)?;
-            if depth == 0 {
-                return Some(index);
-            }
-        }
-    }
-    None
-}
-
 fn is_keyword_boundary(source: &str, start: usize, len: usize) -> bool {
     let before_ok = source[..start]
         .chars()
@@ -501,14 +423,6 @@ fn is_keyword_boundary(source: &str, start: usize, len: usize) -> bool {
         .next()
         .is_none_or(|ch| !(ch == '_' || ch.is_ascii_alphanumeric()));
     before_ok && after_ok
-}
-
-fn line_number(source: &str, offset: usize) -> usize {
-    source[..offset]
-        .bytes()
-        .filter(|byte| *byte == b'\n')
-        .count()
-        + 1
 }
 
 #[cfg(test)]

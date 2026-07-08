@@ -1,6 +1,9 @@
 use std::path::Path;
 
 use super::facts::{RawObjectType, SourceLoc};
+use super::lexer::{
+    find_matching_paren, line_number, split_top_level_commas, strip_comments_preserving_newlines,
+};
 
 pub fn extract_object_types(source_text: &str, file: &Path) -> Vec<RawObjectType> {
     let source = strip_comments_preserving_newlines(source_text);
@@ -72,94 +75,6 @@ fn parse_boost_pp_seq(source: &str) -> Vec<String> {
         offset = close + 1;
     }
     names
-}
-
-fn split_top_level_commas(source: &str) -> Vec<String> {
-    let mut out = Vec::new();
-    let mut start = 0usize;
-    let mut paren_depth = 0usize;
-    let mut angle_depth = 0usize;
-
-    for (index, ch) in source.char_indices() {
-        match ch {
-            '(' => paren_depth += 1,
-            ')' => paren_depth = paren_depth.saturating_sub(1),
-            '<' => angle_depth += 1,
-            '>' => angle_depth = angle_depth.saturating_sub(1),
-            ',' if paren_depth == 0 && angle_depth == 0 => {
-                out.push(source[start..index].trim().to_string());
-                start = index + ch.len_utf8();
-            }
-            _ => {}
-        }
-    }
-
-    let trailing = source[start..].trim();
-    if !trailing.is_empty() {
-        out.push(trailing.to_string());
-    }
-    out
-}
-
-fn find_matching_paren(source: &str, open_paren: usize) -> Option<usize> {
-    let mut depth = 0usize;
-    for (index, ch) in source
-        .char_indices()
-        .skip_while(|(idx, _)| *idx < open_paren)
-    {
-        match ch {
-            '(' => depth += 1,
-            ')' => {
-                depth = depth.checked_sub(1)?;
-                if depth == 0 {
-                    return Some(index);
-                }
-            }
-            _ => {}
-        }
-    }
-    None
-}
-
-fn strip_comments_preserving_newlines(source: &str) -> String {
-    let mut output = String::with_capacity(source.len());
-    let mut chars = source.chars().peekable();
-
-    while let Some(ch) = chars.next() {
-        if ch == '/' && chars.peek() == Some(&'/') {
-            chars.next();
-            for comment_ch in chars.by_ref() {
-                if comment_ch == '\n' {
-                    output.push('\n');
-                    break;
-                }
-            }
-        } else if ch == '/' && chars.peek() == Some(&'*') {
-            chars.next();
-            let mut previous = '\0';
-            for comment_ch in chars.by_ref() {
-                if comment_ch == '\n' {
-                    output.push('\n');
-                }
-                if previous == '*' && comment_ch == '/' {
-                    break;
-                }
-                previous = comment_ch;
-            }
-        } else {
-            output.push(ch);
-        }
-    }
-
-    output
-}
-
-fn line_number(source: &str, offset: usize) -> usize {
-    source[..offset]
-        .bytes()
-        .filter(|byte| *byte == b'\n')
-        .count()
-        + 1
 }
 
 #[cfg(test)]

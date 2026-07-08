@@ -1,6 +1,7 @@
 pub mod classes;
 pub mod enums;
 pub mod facts;
+pub(crate) mod lexer;
 pub mod macros;
 pub mod object_types;
 pub mod reflect;
