@@ -3008,6 +3008,8 @@ fn rust_type_name(value: &str) -> String {
         "GeneratedType".to_string()
     } else if out.chars().next().is_some_and(|ch| ch.is_ascii_digit()) {
         format!("N{out}")
+    } else if is_rust_keyword(&out) {
+        format!("{out}Type")
     } else {
         out
     }
@@ -3131,7 +3133,9 @@ fn is_rust_keyword(value: &str) -> bool {
 }
 
 fn rust_string_literal(value: &str) -> String {
-    serde_json::to_string(value).expect("serializing a string literal cannot fail")
+    // std's `Debug` for `str` produces a valid Rust string literal; JSON escaping
+    // (`\b`, `\f`, bare `\uXXXX`) is not valid Rust.
+    format!("{value:?}")
 }
 
 #[cfg(test)]
@@ -3374,6 +3378,24 @@ mod tests {
             "TRANSFER_OPERATION_ID"
         );
         assert_eq!(object_id_type_name("account"), "AccountId");
+        // A spec type named `self` must not emit `struct Self`.
+        assert_eq!(rust_type_name("self"), "SelfType");
+    }
+
+    #[test]
+    fn rust_string_literal_emits_valid_rust_escapes() {
+        assert_eq!(rust_string_literal("plain"), "\"plain\"");
+        assert_eq!(
+            rust_string_literal("with \"quotes\" and \\ backslash"),
+            r#""with \"quotes\" and \\ backslash""#
+        );
+        assert_eq!(
+            rust_string_literal("tab\tnewline\n"),
+            "\"tab\\tnewline\\n\""
+        );
+        // JSON would emit `\b`, `\f`, or bare `\uXXXX` here, none of which are
+        // valid Rust escapes; std Debug uses `\u{..}` instead.
+        assert_eq!(rust_string_literal("\u{8}\u{c}"), "\"\\u{8}\\u{c}\"");
     }
 
     #[test]
