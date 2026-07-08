@@ -81,7 +81,8 @@ impl SwaplockLiveApi {
 // Graphene's database API exposes one subscription callback per WebSocket/session.
 // Typed database and history live subscriptions share this callback id, then
 // multicast the raw notice stream in `LiveTransport` and filter/reconcile locally.
-pub(super) const LIVE_DATABASE_CALLBACK_ID: u64 = 1;
+pub(super) const LIVE_DATABASE_CALLBACK_ID: u64 =
+    open_graphene_transport::SUBSCRIPTION_CALLBACK_ID_BASE + 101;
 
 fn remaining_or_callback_timeout(
     deadline: Instant,

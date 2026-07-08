@@ -14,7 +14,8 @@ use crate::SwaplockApiError;
 
 /// Market callbacks use their own id range so they never collide with the shared object/history
 /// callback (`LIVE_DATABASE_CALLBACK_ID`); each subscription gets a fresh id so notices demux.
-const MARKET_CALLBACK_BASE: u64 = 1_000_000;
+const MARKET_CALLBACK_BASE: u64 =
+    open_graphene_transport::SUBSCRIPTION_CALLBACK_ID_BASE + 1_000_000;
 static MARKET_CALLBACK_SEQ: AtomicU64 = AtomicU64::new(0);
 
 fn next_market_callback_id() -> CallbackId {

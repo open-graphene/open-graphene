@@ -4,20 +4,26 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
 use serde_json::Value;
-use tokio::sync::mpsc::error::TryRecvError;
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender, unbounded_channel};
 use tokio::sync::oneshot;
 use tokio::task::JoinHandle;
 
 use crate::{CallbackId, JsonRpcInbound, TransportError, WebSocketTransport};
 
-/// How often the dispatcher wakes to check for new commands while waiting on the socket. Keeps the
-/// task fully async (the read is cancelled on elapse, never blocking a thread).
-const DISPATCH_POLL_INTERVAL: Duration = Duration::from_millis(50);
+/// How often the dispatcher pings the node so NAT/idle timeouts cannot
+/// silently kill an otherwise quiet connection.
+const KEEPALIVE_INTERVAL: Duration = Duration::from_secs(20);
+
+/// Subscription callback ids live above this base so they can never collide
+/// with the transport's request/callback-id counter (which starts at 1 and
+/// grows per request). A one-shot broadcast callback stealing a subscription
+/// notice with the same numeric id was a silent-corruption bug.
+pub const SUBSCRIPTION_CALLBACK_ID_BASE: u64 = 1 << 32;
 
 pub struct LiveTransport {
     commands: UnboundedSender<LiveCommand>,
     next_subscription_id: Arc<AtomicU64>,
+    next_callback_id: Arc<AtomicU64>,
     dispatcher: Option<JoinHandle<()>>,
 }
 
@@ -25,6 +31,7 @@ pub struct LiveTransport {
 pub struct LiveTransportHandle {
     commands: UnboundedSender<LiveCommand>,
     next_subscription_id: Arc<AtomicU64>,
+    next_callback_id: Arc<AtomicU64>,
 }
 
 pub struct PendingResponse {
@@ -87,10 +94,12 @@ impl LiveTransport {
     pub(crate) fn spawn(transport: WebSocketTransport) -> Result<Self, TransportError> {
         let (commands, receiver) = unbounded_channel();
         let next_subscription_id = Arc::new(AtomicU64::new(1));
+        let next_callback_id = Arc::new(AtomicU64::new(SUBSCRIPTION_CALLBACK_ID_BASE));
         let dispatcher = tokio::spawn(run_dispatcher(transport, receiver));
         Ok(Self {
             commands,
             next_subscription_id,
+            next_callback_id,
             dispatcher: Some(dispatcher),
         })
     }
@@ -99,6 +108,7 @@ impl LiveTransport {
         LiveTransportHandle {
             commands: self.commands.clone(),
             next_subscription_id: self.next_subscription_id.clone(),
+            next_callback_id: self.next_callback_id.clone(),
         }
     }
 
@@ -184,10 +194,23 @@ impl LiveTransportHandle {
         })
     }
 
+    /// Allocate a fresh subscription callback id from the reserved range.
+    /// Use this id both in the chain RPC that registers the callback (e.g.
+    /// `set_subscribe_callback` params) and in [`Self::subscribe_callback`].
+    pub fn allocate_callback_id(&self) -> CallbackId {
+        CallbackId::new(self.next_callback_id.fetch_add(1, Ordering::Relaxed))
+    }
+
     pub async fn subscribe_callback(
         &self,
         callback_id: CallbackId,
     ) -> Result<LiveSubscription, TransportError> {
+        if callback_id.as_u64() < SUBSCRIPTION_CALLBACK_ID_BASE {
+            return Err(TransportError::SubscriptionCallbackIdReserved {
+                callback_id,
+                base: SUBSCRIPTION_CALLBACK_ID_BASE,
+            });
+        }
         let (notices, receiver) = unbounded_channel();
         let (response, response_receiver) = oneshot::channel();
         let subscription_id = self.next_subscription_id.fetch_add(1, Ordering::Relaxed);
@@ -284,6 +307,12 @@ impl Drop for LiveSubscription {
     }
 }
 
+enum DispatcherEvent {
+    Command(Option<LiveCommand>),
+    Inbound(Result<JsonRpcInbound, TransportError>),
+    KeepaliveTick,
+}
+
 async fn run_dispatcher(
     mut transport: WebSocketTransport,
     mut commands: UnboundedReceiver<LiveCommand>,
@@ -291,28 +320,37 @@ async fn run_dispatcher(
     let mut pending_calls = HashMap::<u64, PendingCall>::new();
     let mut pending_callbacks = HashMap::<CallbackId, PendingCallback>::new();
     let mut subscriptions = HashMap::<CallbackId, Vec<(u64, UnboundedSender<Value>)>>::new();
+    let mut keepalive = tokio::time::interval(KEEPALIVE_INTERVAL);
+    keepalive.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
+    keepalive.reset();
 
     loop {
-        loop {
-            match commands.try_recv() {
-                Ok(LiveCommand::Shutdown) => return,
-                Ok(command) => {
-                    handle_command(
-                        command,
-                        &mut transport,
-                        &mut pending_calls,
-                        &mut pending_callbacks,
-                        &mut subscriptions,
-                    )
-                    .await;
-                }
-                Err(TryRecvError::Empty) => break,
-                Err(TryRecvError::Disconnected) => return,
-            }
-        }
+        // The select! resolves to an event first so the arms below can use
+        // `transport` mutably without fighting the borrow held by the losing
+        // futures. Outgoing commands are handled the moment they arrive —
+        // no polling interval sits between a caller and the socket.
+        let event = tokio::select! {
+            command = commands.recv() => DispatcherEvent::Command(command),
+            inbound = transport.read_inbound() => DispatcherEvent::Inbound(inbound),
+            _ = keepalive.tick() => DispatcherEvent::KeepaliveTick,
+        };
 
-        match tokio::time::timeout(DISPATCH_POLL_INTERVAL, transport.read_inbound()).await {
-            Ok(Ok(inbound)) => {
+        match event {
+            DispatcherEvent::Command(None)
+            | DispatcherEvent::Command(Some(LiveCommand::Shutdown)) => {
+                return;
+            }
+            DispatcherEvent::Command(Some(command)) => {
+                handle_command(
+                    command,
+                    &mut transport,
+                    &mut pending_calls,
+                    &mut pending_callbacks,
+                    &mut subscriptions,
+                )
+                .await;
+            }
+            DispatcherEvent::Inbound(Ok(inbound)) => {
                 dispatch_inbound(
                     inbound,
                     &mut pending_calls,
@@ -320,11 +358,19 @@ async fn run_dispatcher(
                     &mut subscriptions,
                 );
             }
-            Ok(Err(error)) => {
+            // One garbled frame must not kill every pending call and
+            // subscription on a healthy connection: skip it.
+            DispatcherEvent::Inbound(Err(error)) if error.is_malformed_frame() => {}
+            DispatcherEvent::Inbound(Err(error)) => {
                 fail_all(error, &mut pending_calls, &mut pending_callbacks);
                 return;
             }
-            Err(_elapsed) => {}
+            DispatcherEvent::KeepaliveTick => {
+                if let Err(error) = transport.send_ping().await {
+                    fail_all(error, &mut pending_calls, &mut pending_callbacks);
+                    return;
+                }
+            }
         }
     }
 }

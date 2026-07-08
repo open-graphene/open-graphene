@@ -17,6 +17,7 @@ pub use json_rpc::{
 };
 pub use live::{
     LiveSubscription, LiveTransport, LiveTransportHandle, PendingCallbackNotice, PendingResponse,
+    SUBSCRIPTION_CALLBACK_ID_BASE,
 };
 pub use session::{ApiIds, GrapheneSession, parse_api_id, parse_chain_id};
-pub use websocket::{PendingCallback, WebSocketTransport};
+pub use websocket::{DEFAULT_CALL_TIMEOUT, PendingCallback, WebSocketTransport};

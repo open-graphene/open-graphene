@@ -43,6 +43,11 @@ pub enum TransportError {
     #[error("Graphene live dispatcher stopped")]
     DispatcherStopped,
 
+    #[error(
+        "subscription callback id {callback_id} is below the reserved base {base}; allocate ids with LiveTransportHandle::allocate_callback_id so they cannot collide with request ids"
+    )]
+    SubscriptionCallbackIdReserved { callback_id: CallbackId, base: u64 },
+
     #[error("unsupported JSON-RPC inbound message")]
     UnsupportedInboundMessage,
 
@@ -88,5 +93,23 @@ pub enum TransportError {
 impl TransportError {
     pub(crate) fn websocket(error: tungstenite::Error) -> Self {
         Self::WebSocket(error.to_string())
+    }
+
+    /// A single frame the node sent could not be understood. The connection
+    /// itself is intact, so long-lived consumers (the live dispatcher) skip
+    /// the frame instead of tearing everything down.
+    pub fn is_malformed_frame(&self) -> bool {
+        matches!(
+            self,
+            Self::MessageNotObject
+                | Self::ResponseMissingId
+                | Self::ResponseHasResultAndError { .. }
+                | Self::ResponseMissingResultOrError { .. }
+                | Self::NoticeMissingParams
+                | Self::NoticeMalformedParams
+                | Self::NoticeInvalidCallbackId
+                | Self::UnsupportedInboundMessage
+                | Self::Json(_)
+        )
     }
 }

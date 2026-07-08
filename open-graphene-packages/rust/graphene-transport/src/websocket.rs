@@ -32,9 +32,18 @@ pub struct WebSocketTransport {
     socket: WebSocketStream<MaybeTlsStream<TcpStream>>,
     url: String,
     next_id: u64,
+    call_timeout: Duration,
     buffered_notices: VecDeque<JsonRpcInbound>,
     buffered_responses: VecDeque<JsonRpcInbound>,
 }
+
+/// Default deadline for a request/response round trip. A node that accepts
+/// the request but never answers must not hang the caller forever.
+pub const DEFAULT_CALL_TIMEOUT: Duration = Duration::from_secs(30);
+
+/// Unanswered subscription notices are buffered while the session waits for
+/// specific responses; a slow consumer must not grow that buffer forever.
+const MAX_BUFFERED_NOTICES: usize = 1024;
 
 impl WebSocketTransport {
     pub async fn connect(url: &str) -> Result<Self, TransportError> {
@@ -45,6 +54,7 @@ impl WebSocketTransport {
             socket,
             url: url.to_string(),
             next_id: 1,
+            call_timeout: DEFAULT_CALL_TIMEOUT,
             buffered_notices: VecDeque::new(),
             buffered_responses: VecDeque::new(),
         })
@@ -55,6 +65,11 @@ impl WebSocketTransport {
         &self.url
     }
 
+    /// Override the request/response deadline (default [`DEFAULT_CALL_TIMEOUT`]).
+    pub fn set_call_timeout(&mut self, timeout: Duration) {
+        self.call_timeout = timeout;
+    }
+
     pub async fn call(
         &mut self,
         api_id: u64,
@@ -62,7 +77,11 @@ impl WebSocketTransport {
         params: Value,
     ) -> Result<Value, TransportError> {
         let id = self.send_request(api_id, method, params).await?;
-        self.wait_for_response(id).await
+        let timeout = self.call_timeout;
+        match tokio::time::timeout(timeout, self.wait_for_response(id)).await {
+            Ok(result) => result,
+            Err(_) => Err(TransportError::ResponseTimeout { timeout }),
+        }
     }
 
     pub fn into_live(self) -> Result<crate::LiveTransport, TransportError> {
@@ -154,7 +173,11 @@ impl WebSocketTransport {
         pending: PendingCallback,
     ) -> Result<Value, TransportError> {
         let callback_id = pending.callback_id();
-        self.wait_for_response(callback_id.as_u64()).await?;
+        let timeout = self.call_timeout;
+        match tokio::time::timeout(timeout, self.wait_for_response(callback_id.as_u64())).await {
+            Ok(result) => result?,
+            Err(_) => return Err(TransportError::ResponseTimeout { timeout }),
+        };
         self.wait_for_callback_notice(callback_id).await
     }
 
@@ -197,7 +220,7 @@ impl WebSocketTransport {
                     self.buffered_responses.push_back(response);
                 }
                 notice @ JsonRpcInbound::Notice { .. } => {
-                    self.buffered_notices.push_back(notice);
+                    self.buffer_notice(notice);
                 }
             }
         }
@@ -218,13 +241,22 @@ impl WebSocketTransport {
                     payload,
                 } if actual == callback_id => return Ok(payload),
                 notice @ JsonRpcInbound::Notice { .. } => {
-                    self.buffered_notices.push_back(notice);
+                    self.buffer_notice(notice);
                 }
                 response @ (JsonRpcInbound::Response { .. } | JsonRpcInbound::Error { .. }) => {
                     self.buffered_responses.push_back(response);
                 }
             }
         }
+    }
+
+    /// Buffer a subscription notice, dropping the oldest when full: for a
+    /// sequential session the newest chain state is the useful one.
+    fn buffer_notice(&mut self, notice: JsonRpcInbound) {
+        if self.buffered_notices.len() >= MAX_BUFFERED_NOTICES {
+            self.buffered_notices.pop_front();
+        }
+        self.buffered_notices.push_back(notice);
     }
 
     fn take_buffered_response(&mut self, id: u64) -> Option<Result<Value, TransportError>> {
@@ -254,6 +286,15 @@ impl WebSocketTransport {
             return None;
         };
         Some(payload)
+    }
+
+    /// Send a WebSocket ping so NAT/idle timeouts do not silently kill the
+    /// connection; a failed send surfaces as a connection-level error.
+    pub(crate) async fn send_ping(&mut self) -> Result<(), TransportError> {
+        self.socket
+            .send(Message::Ping(Vec::new()))
+            .await
+            .map_err(TransportError::websocket)
     }
 
     /// Read the next inbound frame off the wire, skipping non-text control frames. A closed stream
