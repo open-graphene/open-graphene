@@ -321,6 +321,85 @@ impl FcSerialize for crate::generated::types::AccountNameEqLitPredicate {
     }
 }
 
+impl FcSerialize for crate::generated::types::AccountObject {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.id.fc_serialize(out)?;
+        write_time_point_sec(&self.membership_expiration_date, out)?;
+        self.registrar.fc_serialize(out)?;
+        self.referrer.fc_serialize(out)?;
+        self.lifetime_referrer.fc_serialize(out)?;
+        self.network_fee_percentage.fc_serialize(out)?;
+        self.lifetime_referrer_fee_percentage.fc_serialize(out)?;
+        self.referrer_rewards_percentage.fc_serialize(out)?;
+        self.name.fc_serialize(out)?;
+        self.owner.fc_serialize(out)?;
+        self.active.fc_serialize(out)?;
+        self.options.fc_serialize(out)?;
+        self.num_committee_voted.fc_serialize(out)?;
+        self.statistics.fc_serialize(out)?;
+        write_varint(self.whitelisting_accounts.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.whitelisting_accounts {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        write_varint(self.blacklisting_accounts.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.blacklisting_accounts {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        write_varint(self.whitelisted_accounts.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.whitelisted_accounts {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        write_varint(self.blacklisted_accounts.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.blacklisted_accounts {
+            let key_parts = parse_protocol_object_id(&value.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key_parts.instance);
+            value.fc_serialize(out)?;
+        }
+        self.cashback_vb.fc_serialize(out)?;
+        self.owner_special_authority.fc_serialize(out)?;
+        self.active_special_authority.fc_serialize(out)?;
+        self.top_n_control_flags.fc_serialize(out)?;
+        self.allowed_assets.fc_serialize(out)?;
+        self.creation_block_num.fc_serialize(out)?;
+        write_time_point_sec(&self.creation_time, out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::AccountOptions {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         write_public_key(

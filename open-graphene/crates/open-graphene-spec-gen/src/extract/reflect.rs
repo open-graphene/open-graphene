@@ -17,19 +17,20 @@ pub fn extract_reflects(source_text: &str, file: &Path) -> Vec<RawReflect> {
             continue;
         };
         let args = split_top_level_commas(&source[open_paren + 1..close_paren]);
-        let field_arg_index = if macro_name == "FC_REFLECT_DERIVED" {
-            2
-        } else {
-            1
-        };
+        let derived = matches!(
+            macro_name,
+            "FC_REFLECT_DERIVED" | "FC_REFLECT_DERIVED_NO_TYPENAME"
+        );
+        let field_arg_index = if derived { 2 } else { 1 };
         if let Some(type_name) = args.first() {
-            let bases = if macro_name == "FC_REFLECT_DERIVED" {
+            let bases = if derived {
                 args.get(1)
                     .map(|bases_arg| parse_reflect_fields(bases_arg))
                     .unwrap_or_default()
             } else {
                 vec![]
             };
+            // FC_REFLECT_EMPTY reflects a type with no fields at all.
             let fields = args
                 .get(field_arg_index)
                 .map(|fields_arg| parse_reflect_fields(fields_arg))
@@ -42,7 +43,7 @@ pub fn extract_reflects(source_text: &str, file: &Path) -> Vec<RawReflect> {
                     file: file.to_path_buf(),
                     line: line_number(&source, macro_start),
                 },
-                derived: macro_name == "FC_REFLECT_DERIVED",
+                derived,
             });
         }
         offset = close_paren + 1;
@@ -51,22 +52,26 @@ pub fn extract_reflects(source_text: &str, file: &Path) -> Vec<RawReflect> {
     reflects
 }
 
-fn find_next_reflect_macro(source: &str, offset: usize) -> Option<(usize, &'static str)> {
-    let reflect = source[offset..]
-        .find("FC_REFLECT(")
-        .map(|relative| (offset + relative, "FC_REFLECT"));
-    let derived = source[offset..]
-        .find("FC_REFLECT_DERIVED(")
-        .map(|relative| (offset + relative, "FC_REFLECT_DERIVED"));
+const REFLECT_MACROS: [&str; 4] = [
+    "FC_REFLECT",
+    "FC_REFLECT_DERIVED",
+    "FC_REFLECT_DERIVED_NO_TYPENAME",
+    "FC_REFLECT_EMPTY",
+];
 
-    match (reflect, derived) {
-        (Some(reflect), Some(derived)) => {
-            Some(std::cmp::min_by_key(reflect, derived, |(idx, _)| *idx))
-        }
-        (Some(reflect), None) => Some(reflect),
-        (None, Some(derived)) => Some(derived),
-        (None, None) => None,
-    }
+fn find_next_reflect_macro(source: &str, offset: usize) -> Option<(usize, &'static str)> {
+    REFLECT_MACROS
+        .iter()
+        .filter_map(|macro_name| {
+            source[offset..]
+                .find(&format!("{macro_name}("))
+                .map(|relative| (offset + relative, *macro_name))
+        })
+        // Longest name wins on a tie so `FC_REFLECT_DERIVED_NO_TYPENAME(`
+        // is not consumed as `FC_REFLECT(` would never match here, but
+        // `FC_REFLECT_DERIVED(` vs `FC_REFLECT_DERIVED_NO_TYPENAME(` differ
+        // by position anyway; ties cannot happen for distinct suffixes.
+        .min_by_key(|(index, _)| *index)
 }
 
 fn parse_reflect_fields(source: &str) -> Vec<String> {

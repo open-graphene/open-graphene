@@ -24,6 +24,7 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
 
     if let Some(inner) = unwrap_template(&normalized, "flat_set")
         .or_else(|| unwrap_template(&normalized, "std::set"))
+        .or_else(|| unwrap_template(&normalized, "set"))
     {
         return TypeRef::Set {
             inner: Box::new(resolve_cpp_type(inner)),

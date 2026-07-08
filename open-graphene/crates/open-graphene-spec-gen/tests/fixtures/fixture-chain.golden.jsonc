@@ -44,7 +44,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -60,7 +60,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -77,13 +77,13 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         }
       ],
       "support": {
         "status": "provisional",
-        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
       }
     },
     {

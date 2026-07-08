@@ -20,6 +20,10 @@ pub struct SourceFile {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SourceFileKind {
     Header,
+    /// A .cpp translation unit. Chain objects are often reflected here
+    /// (FC_REFLECT_DERIVED_NO_TYPENAME in libraries/chain/*.cpp), so these
+    /// files are scanned for reflect macros only.
+    Source,
 }
 
 pub fn discover_sources(config_path: &Path, source: &SourceConfig) -> Result<SourceSet> {
@@ -32,6 +36,11 @@ pub fn discover_sources(config_path: &Path, source: &SourceConfig) -> Result<Sou
     for root in rpc_header_roots(&chain_repo) {
         if root.is_dir() {
             collect_headers(&root, &mut files)?;
+        }
+    }
+    for root in reflect_source_roots(&chain_repo) {
+        if root.is_dir() {
+            collect_sources(&root, &mut files)?;
         }
     }
     files.sort_by(|left, right| left.path.cmp(&right.path));
@@ -65,16 +74,43 @@ fn rpc_header_roots(chain_repo: &Path) -> [PathBuf; 4] {
     ]
 }
 
+/// Translation-unit roots scanned for reflect macros. Chain objects are
+/// registered via FC_REFLECT_DERIVED_NO_TYPENAME in .cpp files; without
+/// these the affected structs silently fall back to declaration order.
+fn reflect_source_roots(chain_repo: &Path) -> [PathBuf; 4] {
+    [
+        chain_repo.join("libraries/app"),
+        chain_repo.join("libraries/chain"),
+        chain_repo.join("libraries/protocol"),
+        chain_repo.join("libraries/plugins"),
+    ]
+}
+
 fn collect_headers(root: &Path, files: &mut Vec<SourceFile>) -> Result<()> {
+    collect_by_extension(root, files, "hpp", SourceFileKind::Header)
+}
+
+fn collect_sources(root: &Path, files: &mut Vec<SourceFile>) -> Result<()> {
+    collect_by_extension(root, files, "cpp", SourceFileKind::Source)
+}
+
+fn collect_by_extension(
+    root: &Path,
+    files: &mut Vec<SourceFile>,
+    extension: &str,
+    kind: SourceFileKind,
+) -> Result<()> {
     for entry in WalkDir::new(root) {
         let entry = entry.map_err(|source| SpecGenError::DiscoverSources {
             path: root.to_path_buf(),
             source,
         })?;
-        if entry.file_type().is_file() && entry.path().extension().is_some_and(|ext| ext == "hpp") {
+        if entry.file_type().is_file()
+            && entry.path().extension().is_some_and(|ext| ext == extension)
+        {
             files.push(SourceFile {
                 path: entry.path().to_path_buf(),
-                kind: SourceFileKind::Header,
+                kind,
             });
         }
     }

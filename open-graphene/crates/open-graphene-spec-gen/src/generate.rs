@@ -752,7 +752,9 @@ fn prepend_inherited_object_id_field(
 
 fn is_graphene_db_object_base(base: &str) -> bool {
     let base = base.trim();
-    base.ends_with("db::object") || base.contains("abstract_object")
+    // `graphene::chain::object` is `graphene::db::object` re-exported via
+    // `using graphene::db::object;`.
+    (base.starts_with("graphene") && base.ends_with("::object")) || base.contains("abstract_object")
 }
 
 fn class_derives_from_db_object(class: &RawClass, facts: &SourceFacts) -> bool {

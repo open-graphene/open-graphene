@@ -10,7 +10,7 @@ pub mod virtual_ops;
 use std::fs;
 
 use crate::error::{Result, SpecGenError};
-use crate::source::SourceSet;
+use crate::source::{SourceFileKind, SourceSet};
 
 pub use classes::extract_classes;
 pub use enums::{extract_enum_definitions, extract_enums};
@@ -41,6 +41,12 @@ pub fn extract_source_facts(source_set: &SourceSet) -> Result<SourceFacts> {
             .path
             .strip_prefix(&source_set.chain_repo)
             .unwrap_or(&source_file.path);
+        // Translation units are scanned for reflect macros only: their local
+        // classes and helpers are implementation detail, not protocol surface.
+        if source_file.kind == SourceFileKind::Source {
+            facts.reflects.extend(extract_reflects(&text, loc_path));
+            continue;
+        }
         facts.fc_apis.extend(extract_fc_apis(&text, loc_path));
         facts.classes.extend(extract_classes(&text, loc_path));
         facts.enums.extend(extract_enums(&text, loc_path));

@@ -41,7 +41,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -58,7 +58,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -74,7 +74,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -90,13 +90,13 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         }
       ],
       "support": {
         "status": "provisional",
-        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
       }
     },
     {
@@ -486,7 +486,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -503,7 +503,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -520,7 +520,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -537,7 +537,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -553,7 +553,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -569,7 +569,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -585,7 +585,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -601,7 +601,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -618,7 +618,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -635,7 +635,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -652,7 +652,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -668,7 +668,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -685,7 +685,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -706,45 +706,11 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
           "index": 15,
-          "name": "whitelisted_accounts",
-          "type": {
-            "kind": "any_json",
-            "reason": "unsupported C++ type mapping: set<account_id_type>"
-          },
-          "source": {
-            "name": "whitelisted_accounts",
-            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
-            "line": 236
-          },
-          "support": {
-            "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
-          }
-        },
-        {
-          "index": 16,
-          "name": "blacklisted_accounts",
-          "type": {
-            "kind": "any_json",
-            "reason": "unsupported C++ type mapping: set<account_id_type>"
-          },
-          "source": {
-            "name": "blacklisted_accounts",
-            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
-            "line": 248
-          },
-          "support": {
-            "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
-          }
-        },
-        {
-          "index": 17,
           "name": "blacklisting_accounts",
           "type": {
             "kind": "set",
@@ -761,7 +727,49 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 16,
+          "name": "whitelisted_accounts",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "account"
+            },
+            "ordering": "unresolved"
+          },
+          "source": {
+            "name": "whitelisted_accounts",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 236
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 17,
+          "name": "blacklisted_accounts",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "account"
+            },
+            "ordering": "unresolved"
+          },
+          "source": {
+            "name": "blacklisted_accounts",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 248
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -781,7 +789,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -798,7 +806,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -815,7 +823,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -831,7 +839,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -855,7 +863,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -871,7 +879,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -887,13 +895,13 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         }
       ],
       "support": {
         "status": "provisional",
-        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
       }
     },
     {
@@ -1048,7 +1056,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1064,7 +1072,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1081,7 +1089,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1097,7 +1105,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1113,7 +1121,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1129,7 +1137,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1145,7 +1153,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1161,7 +1169,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1177,7 +1185,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1193,7 +1201,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1209,7 +1217,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1225,7 +1233,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1241,7 +1249,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1257,7 +1265,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1273,7 +1281,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1289,7 +1297,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1305,7 +1313,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1321,7 +1329,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1337,7 +1345,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1353,7 +1361,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1369,7 +1377,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1385,7 +1393,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1401,7 +1409,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -1417,13 +1425,13 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         }
       ],
       "support": {
         "status": "provisional",
-        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
       }
     },
     {
@@ -2787,7 +2795,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -2803,7 +2811,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -2819,7 +2827,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -2835,7 +2843,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -2851,13 +2859,13 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         }
       ],
       "support": {
         "status": "provisional",
-        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
       }
     },
     {
@@ -5939,7 +5947,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -5955,7 +5963,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -5971,7 +5979,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -5988,7 +5996,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -6007,13 +6015,13 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         }
       ],
       "support": {
         "status": "provisional",
-        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
       }
     },
     {
@@ -6784,7 +6792,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -6801,13 +6809,13 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         }
       ],
       "support": {
         "status": "provisional",
-        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
       }
     },
     {
@@ -9293,7 +9301,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -9310,7 +9318,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -9326,7 +9334,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -9343,7 +9351,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -9359,7 +9367,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -9375,7 +9383,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -9391,7 +9399,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -9407,7 +9415,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -9423,7 +9431,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -9439,7 +9447,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -9455,7 +9463,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -9471,7 +9479,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -9487,7 +9495,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -9504,7 +9512,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -9520,7 +9528,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -9536,13 +9544,13 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         }
       ],
       "support": {
         "status": "provisional",
-        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
       }
     },
     {
@@ -10333,7 +10341,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -10350,7 +10358,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -10366,13 +10374,13 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         }
       ],
       "support": {
         "status": "provisional",
-        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
       }
     },
     {
@@ -10919,7 +10927,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -10939,7 +10947,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -10955,7 +10963,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -10975,7 +10983,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -10996,13 +11004,13 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         }
       ],
       "support": {
         "status": "provisional",
-        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
       }
     },
     {
@@ -11399,7 +11407,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -11416,7 +11424,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -11436,13 +11444,13 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         }
       ],
       "support": {
         "status": "provisional",
-        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
       }
     },
     {
@@ -11954,7 +11962,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -11970,7 +11978,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -11986,7 +11994,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -12002,13 +12010,13 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         }
       ],
       "support": {
         "status": "provisional",
-        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
       }
     },
     {
@@ -12017,7 +12025,7 @@
       "fields": [],
       "support": {
         "status": "provisional",
-        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
       }
     },
     {
@@ -12382,7 +12390,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -12399,7 +12407,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -12415,7 +12423,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -12432,7 +12440,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -12449,7 +12457,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -12465,7 +12473,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -12482,7 +12490,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -12498,7 +12506,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -12518,7 +12526,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -12538,13 +12546,13 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         }
       ],
       "support": {
         "status": "provisional",
-        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
       }
     },
     {
@@ -14140,7 +14148,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -14157,7 +14165,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -14173,7 +14181,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -14189,7 +14197,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -14205,7 +14213,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -14221,7 +14229,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -14237,7 +14245,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -14253,13 +14261,13 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         }
       ],
       "support": {
         "status": "provisional",
-        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
       }
     },
     {
@@ -15097,7 +15105,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -15116,7 +15124,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -15133,7 +15141,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -15154,7 +15162,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -15175,7 +15183,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -15196,7 +15204,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -15217,7 +15225,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -15238,7 +15246,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -15255,7 +15263,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -15271,13 +15279,13 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         }
       ],
       "support": {
         "status": "provisional",
-        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
       }
     },
     {
@@ -18472,7 +18480,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -18489,7 +18497,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -18506,7 +18514,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -18522,7 +18530,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -18538,7 +18546,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -18554,7 +18562,7 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         },
         {
@@ -18570,13 +18578,13 @@
           },
           "support": {
             "status": "provisional",
-            "reason": "class field declaration extracted; reflection coverage pending"
+            "reason": "field selected and ordered by FC_REFLECT"
           }
         }
       ],
       "support": {
         "status": "provisional",
-        "reason": "class fields extracted from C++ declaration; FC_REFLECT validation pending"
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
       }
     },
     {
