@@ -183,7 +183,7 @@
           "source": {
             "name": "null_ext",
             "file": "libraries/protocol/include/graphene/protocol/account.hpp",
-            "line": 137
+            "line": 82
           },
           "support": {
             "status": "provisional",
@@ -203,7 +203,7 @@
           "source": {
             "name": "owner_special_authority",
             "file": "libraries/protocol/include/graphene/protocol/account.hpp",
-            "line": 138
+            "line": 83
           },
           "support": {
             "status": "provisional",
@@ -223,7 +223,27 @@
           "source": {
             "name": "active_special_authority",
             "file": "libraries/protocol/include/graphene/protocol/account.hpp",
-            "line": 139
+            "line": 84
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "buyback_options",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "ref",
+              "name": "buyback_account_options"
+            }
+          },
+          "source": {
+            "name": "buyback_options",
+            "file": "libraries/protocol/include/graphene/protocol/account.hpp",
+            "line": 85
           },
           "support": {
             "status": "provisional",
@@ -240,7 +260,56 @@
       "name": "account_create_operation_fee_params_t",
       "sourceName": "graphene::protocol::account_create_operation::fee_params_t",
       "kind": "struct",
-      "fields": [],
+      "fields": [
+        {
+          "index": 0,
+          "name": "basic_fee",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "basic_fee",
+            "file": "libraries/protocol/include/graphene/protocol/account.hpp",
+            "line": 90
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "premium_fee",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "premium_fee",
+            "file": "libraries/protocol/include/graphene/protocol/account.hpp",
+            "line": 91
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "price_per_kbyte",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "price_per_kbyte",
+            "file": "libraries/protocol/include/graphene/protocol/account.hpp",
+            "line": 92
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
       "support": {
         "status": "provisional",
         "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
@@ -715,12 +784,28 @@
           "index": 0,
           "name": "fee",
           "type": {
-            "kind": "uint64"
+            "kind": "int64"
           },
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/account.hpp",
-            "line": 268
+            "line": 144
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "price_per_kbyte",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "price_per_kbyte",
+            "file": "libraries/protocol/include/graphene/protocol/account.hpp",
+            "line": 145
           },
           "support": {
             "status": "provisional",
@@ -818,7 +903,40 @@
       "name": "account_upgrade_operation_fee_params_t",
       "sourceName": "graphene::protocol::account_upgrade_operation::fee_params_t",
       "kind": "struct",
-      "fields": [],
+      "fields": [
+        {
+          "index": 0,
+          "name": "membership_annual_fee",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "membership_annual_fee",
+            "file": "libraries/protocol/include/graphene/protocol/account.hpp",
+            "line": 236
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "membership_lifetime_fee",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "membership_lifetime_fee",
+            "file": "libraries/protocol/include/graphene/protocol/account.hpp",
+            "line": 237
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
       "support": {
         "status": "provisional",
         "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
@@ -931,12 +1049,12 @@
           "index": 0,
           "name": "fee",
           "type": {
-            "kind": "uint64"
+            "kind": "int64"
           },
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/account.hpp",
-            "line": 268
+            "line": 198
           },
           "support": {
             "status": "provisional",
@@ -1320,7 +1438,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
-            "line": 602
+            "line": 530
           },
           "support": {
             "status": "provisional",
@@ -1613,7 +1731,72 @@
       "name": "asset_create_operation_fee_params_t",
       "sourceName": "graphene::protocol::asset_create_operation::fee_params_t",
       "kind": "struct",
-      "fields": [],
+      "fields": [
+        {
+          "index": 0,
+          "name": "symbol3",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "symbol3",
+            "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
+            "line": 193
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "symbol4",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "symbol4",
+            "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
+            "line": 194
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "long_symbol",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "long_symbol",
+            "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
+            "line": 195
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "price_per_kbyte",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "price_per_kbyte",
+            "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
+            "line": 196
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
       "support": {
         "status": "provisional",
         "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
@@ -1731,7 +1914,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
-            "line": 602
+            "line": 323
           },
           "support": {
             "status": "provisional",
@@ -1857,7 +2040,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
-            "line": 602
+            "line": 239
           },
           "support": {
             "status": "provisional",
@@ -2003,7 +2186,23 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
-            "line": 602
+            "line": 486
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "price_per_kbyte",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "price_per_kbyte",
+            "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
+            "line": 487
           },
           "support": {
             "status": "provisional",
@@ -2581,7 +2780,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
-            "line": 602
+            "line": 469
           },
           "support": {
             "status": "provisional",
@@ -2690,7 +2889,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
-            "line": 602
+            "line": 514
           },
           "support": {
             "status": "provisional",
@@ -2887,7 +3086,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
-            "line": 602
+            "line": 268
           },
           "support": {
             "status": "provisional",
@@ -3056,7 +3255,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
-            "line": 602
+            "line": 399
           },
           "support": {
             "status": "provisional",
@@ -3186,7 +3385,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
-            "line": 602
+            "line": 431
           },
           "support": {
             "status": "provisional",
@@ -3312,7 +3511,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
-            "line": 602
+            "line": 566
           },
           "support": {
             "status": "provisional",
@@ -3444,7 +3643,46 @@
       "name": "asset_update_operation_ext",
       "sourceName": "graphene::protocol::asset_update_operation::ext",
       "kind": "struct",
-      "fields": [],
+      "fields": [
+        {
+          "index": 0,
+          "name": "new_precision",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "uint8"
+            }
+          },
+          "source": {
+            "name": "new_precision",
+            "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
+            "line": 352
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "skip_core_exchange_rate",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "bool"
+            }
+          },
+          "source": {
+            "name": "skip_core_exchange_rate",
+            "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
+            "line": 355
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
       "support": {
         "status": "provisional",
         "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
@@ -3464,7 +3702,23 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
-            "line": 602
+            "line": 362
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "price_per_kbyte",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "price_per_kbyte",
+            "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
+            "line": 363
           },
           "support": {
             "status": "provisional",
@@ -3782,7 +4036,24 @@
       "name": "bid_collateral_operation_fee_params_t",
       "sourceName": "graphene::protocol::bid_collateral_operation::fee_params_t",
       "kind": "struct",
-      "fields": [],
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/market.hpp",
+            "line": 243
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
       "support": {
         "status": "provisional",
         "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
@@ -3929,7 +4200,102 @@
           "source": {
             "name": "initial_collateral_ratio",
             "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
-            "line": 463
+            "line": 139
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "maintenance_collateral_ratio",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "uint16"
+            }
+          },
+          "source": {
+            "name": "maintenance_collateral_ratio",
+            "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
+            "line": 143
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "maximum_short_squeeze_ratio",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "uint16"
+            }
+          },
+          "source": {
+            "name": "maximum_short_squeeze_ratio",
+            "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
+            "line": 145
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "margin_call_fee_ratio",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "uint16"
+            }
+          },
+          "source": {
+            "name": "margin_call_fee_ratio",
+            "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
+            "line": 147
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "force_settle_fee_percent",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "uint16"
+            }
+          },
+          "source": {
+            "name": "force_settle_fee_percent",
+            "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
+            "line": 148
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 5,
+          "name": "black_swan_response_method",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "uint8"
+            }
+          },
+          "source": {
+            "name": "black_swan_response_method",
+            "file": "libraries/protocol/include/graphene/protocol/asset_ops.hpp",
+            "line": 149
           },
           "support": {
             "status": "provisional",
@@ -4213,6 +4579,71 @@
       }
     },
     {
+      "name": "buyback_account_options",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "asset_to_buy",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "asset"
+          },
+          "source": {
+            "name": "asset_to_buy",
+            "file": "libraries/protocol/include/graphene/protocol/buyback.hpp",
+            "line": 30
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "asset_to_buy_issuer",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "asset_to_buy_issuer",
+            "file": "libraries/protocol/include/graphene/protocol/buyback.hpp",
+            "line": 34
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "markets",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "asset"
+            },
+            "ordering": "unresolved"
+          },
+          "source": {
+            "name": "markets",
+            "file": "libraries/protocol/include/graphene/protocol/buyback.hpp",
+            "line": 40
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
       "name": "call_order_update_operation",
       "kind": "struct",
       "fields": [
@@ -4315,7 +4746,24 @@
       "name": "call_order_update_operation_fee_params_t",
       "sourceName": "graphene::protocol::call_order_update_operation::fee_params_t",
       "kind": "struct",
-      "fields": [],
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/market.hpp",
+            "line": 184
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
       "support": {
         "status": "provisional",
         "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
@@ -5002,7 +5450,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/committee_member.hpp",
-            "line": 85
+            "line": 39
           },
           "support": {
             "status": "provisional",
@@ -5180,7 +5628,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/committee_member.hpp",
-            "line": 85
+            "line": 59
           },
           "support": {
             "status": "provisional",
@@ -5590,7 +6038,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/credit_offer.hpp",
-            "line": 216
+            "line": 164
           },
           "support": {
             "status": "provisional",
@@ -5916,7 +6364,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/credit_offer.hpp",
-            "line": 216
+            "line": 142
           },
           "support": {
             "status": "provisional",
@@ -6170,7 +6618,23 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/credit_offer.hpp",
-            "line": 216
+            "line": 37
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "price_per_kbyte",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "price_per_kbyte",
+            "file": "libraries/protocol/include/graphene/protocol/credit_offer.hpp",
+            "line": 38
           },
           "support": {
             "status": "provisional",
@@ -6279,7 +6743,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/credit_offer.hpp",
-            "line": 216
+            "line": 71
           },
           "support": {
             "status": "provisional",
@@ -6558,7 +7022,23 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/credit_offer.hpp",
-            "line": 216
+            "line": 89
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "price_per_kbyte",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "price_per_kbyte",
+            "file": "libraries/protocol/include/graphene/protocol/credit_offer.hpp",
+            "line": 90
           },
           "support": {
             "status": "provisional",
@@ -6741,7 +7221,40 @@
       "name": "custom_authority_create_operation_fee_params_t",
       "sourceName": "graphene::protocol::custom_authority_create_operation::fee_params_t",
       "kind": "struct",
-      "fields": [],
+      "fields": [
+        {
+          "index": 0,
+          "name": "basic_fee",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "basic_fee",
+            "file": "libraries/protocol/include/graphene/protocol/custom_authority.hpp",
+            "line": 37
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "price_per_byte",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "price_per_byte",
+            "file": "libraries/protocol/include/graphene/protocol/custom_authority.hpp",
+            "line": 38
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
       "support": {
         "status": "provisional",
         "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
@@ -7133,7 +7646,40 @@
       "name": "custom_authority_update_operation_fee_params_t",
       "sourceName": "graphene::protocol::custom_authority_update_operation::fee_params_t",
       "kind": "struct",
-      "fields": [],
+      "fields": [
+        {
+          "index": 0,
+          "name": "basic_fee",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "basic_fee",
+            "file": "libraries/protocol/include/graphene/protocol/custom_authority.hpp",
+            "line": 71
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "price_per_byte",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "price_per_byte",
+            "file": "libraries/protocol/include/graphene/protocol/custom_authority.hpp",
+            "line": 72
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
       "support": {
         "status": "provisional",
         "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
@@ -8414,7 +8960,40 @@
       "name": "htlc_create_operation_fee_params_t",
       "sourceName": "graphene::protocol::htlc_create_operation::fee_params_t",
       "kind": "struct",
-      "fields": [],
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/htlc.hpp",
+            "line": 46
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "fee_per_day",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "fee_per_day",
+            "file": "libraries/protocol/include/graphene/protocol/htlc.hpp",
+            "line": 47
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
       "support": {
         "status": "provisional",
         "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
@@ -8522,7 +9101,40 @@
       "name": "htlc_extend_operation_fee_params_t",
       "sourceName": "graphene::protocol::htlc_extend_operation::fee_params_t",
       "kind": "struct",
-      "fields": [],
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/htlc.hpp",
+            "line": 154
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "fee_per_day",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "fee_per_day",
+            "file": "libraries/protocol/include/graphene/protocol/htlc.hpp",
+            "line": 155
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
       "support": {
         "status": "provisional",
         "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
@@ -8672,7 +9284,40 @@
       "name": "htlc_redeem_operation_fee_params_t",
       "sourceName": "graphene::protocol::htlc_redeem_operation::fee_params_t",
       "kind": "struct",
-      "fields": [],
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/htlc.hpp",
+            "line": 91
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "fee_per_kb",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "fee_per_kb",
+            "file": "libraries/protocol/include/graphene/protocol/htlc.hpp",
+            "line": 92
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
       "support": {
         "status": "provisional",
         "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
@@ -9082,7 +9727,24 @@
       "name": "limit_order_cancel_operation_fee_params_t",
       "sourceName": "graphene::protocol::limit_order_cancel_operation::fee_params_t",
       "kind": "struct",
-      "fields": [],
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/market.hpp",
+            "line": 146
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
       "support": {
         "status": "provisional",
         "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
@@ -9223,7 +9885,24 @@
       "name": "limit_order_create_operation_fee_params_t",
       "sourceName": "graphene::protocol::limit_order_create_operation::fee_params_t",
       "kind": "struct",
-      "fields": [],
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/market.hpp",
+            "line": 84
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
       "support": {
         "status": "provisional",
         "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
@@ -9596,7 +10275,24 @@
       "name": "limit_order_update_operation_fee_params_t",
       "sourceName": "graphene::protocol::limit_order_update_operation::fee_params_t",
       "kind": "struct",
-      "fields": [],
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/market.hpp",
+            "line": 118
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
       "support": {
         "status": "provisional",
         "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
@@ -9822,7 +10518,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/liquidity_pool.hpp",
-            "line": 139
+            "line": 35
           },
           "support": {
             "status": "provisional",
@@ -9931,7 +10627,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/liquidity_pool.hpp",
-            "line": 139
+            "line": 57
           },
           "support": {
             "status": "provisional",
@@ -10074,7 +10770,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/liquidity_pool.hpp",
-            "line": 139
+            "line": 95
           },
           "support": {
             "status": "provisional",
@@ -10364,7 +11060,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/liquidity_pool.hpp",
-            "line": 139
+            "line": 75
           },
           "support": {
             "status": "provisional",
@@ -10490,7 +11186,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/liquidity_pool.hpp",
-            "line": 139
+            "line": 115
           },
           "support": {
             "status": "provisional",
@@ -11460,7 +12156,23 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/proposal.hpp",
-            "line": 157
+            "line": 71
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "price_per_kbyte",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "price_per_kbyte",
+            "file": "libraries/protocol/include/graphene/protocol/proposal.hpp",
+            "line": 72
           },
           "support": {
             "status": "provisional",
@@ -11820,7 +12532,23 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/proposal.hpp",
-            "line": 157
+            "line": 120
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "price_per_kbyte",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "price_per_kbyte",
+            "file": "libraries/protocol/include/graphene/protocol/proposal.hpp",
+            "line": 121
           },
           "support": {
             "status": "provisional",
@@ -12035,7 +12763,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/samet_fund.hpp",
-            "line": 114
+            "line": 95
           },
           "support": {
             "status": "provisional",
@@ -12176,7 +12904,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/samet_fund.hpp",
-            "line": 114
+            "line": 37
           },
           "support": {
             "status": "provisional",
@@ -12285,7 +13013,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/samet_fund.hpp",
-            "line": 114
+            "line": 57
           },
           "support": {
             "status": "provisional",
@@ -12576,7 +13304,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/samet_fund.hpp",
-            "line": 114
+            "line": 75
           },
           "support": {
             "status": "provisional",
@@ -13016,7 +13744,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/ticket.hpp",
-            "line": 67
+            "line": 48
           },
           "support": {
             "status": "provisional",
@@ -13428,7 +14156,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/confidential.hpp",
-            "line": 239
+            "line": 174
           },
           "support": {
             "status": "provisional",
@@ -13574,7 +14302,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
-            "line": 78
+            "line": 46
           },
           "support": {
             "status": "provisional",
@@ -13590,7 +14318,7 @@
           "source": {
             "name": "price_per_kbyte",
             "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
-            "line": 79
+            "line": 47
           },
           "support": {
             "status": "provisional",
@@ -13715,7 +14443,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/confidential.hpp",
-            "line": 239
+            "line": 151
           },
           "support": {
             "status": "provisional",
@@ -13731,7 +14459,7 @@
           "source": {
             "name": "price_per_output",
             "file": "libraries/protocol/include/graphene/protocol/confidential.hpp",
-            "line": 240
+            "line": 152
           },
           "support": {
             "status": "provisional",
@@ -13853,7 +14581,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/vesting.hpp",
-            "line": 102
+            "line": 75
           },
           "support": {
             "status": "provisional",
@@ -14135,7 +14863,23 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/withdraw_permission.hpp",
-            "line": 154
+            "line": 121
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "price_per_kbyte",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "price_per_kbyte",
+            "file": "libraries/protocol/include/graphene/protocol/withdraw_permission.hpp",
+            "line": 122
           },
           "support": {
             "status": "provisional",
@@ -14288,7 +15032,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/withdraw_permission.hpp",
-            "line": 154
+            "line": 51
           },
           "support": {
             "status": "provisional",
@@ -14563,7 +15307,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/withdraw_permission.hpp",
-            "line": 154
+            "line": 84
           },
           "support": {
             "status": "provisional",
@@ -14662,12 +15406,12 @@
           "index": 0,
           "name": "fee",
           "type": {
-            "kind": "int64"
+            "kind": "uint64"
           },
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/witness.hpp",
-            "line": 56
+            "line": 38
           },
           "support": {
             "status": "provisional",

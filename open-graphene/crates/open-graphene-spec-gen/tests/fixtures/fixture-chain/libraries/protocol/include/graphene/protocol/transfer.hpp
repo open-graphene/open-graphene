@@ -33,7 +33,43 @@ namespace graphene { namespace protocol {
       share_type      calculate_fee(const fee_params_t& k)const;
    };
 
+   /**
+    * @ingroup operations
+    *
+    * @brief Allows the issuer to transfer an asset between any two accounts
+    *
+    * Its fee_params_t deliberately differs from transfer_operation's: the
+    * bottom-of-file reflects below must pair with the right nested class.
+    */
+   struct override_transfer_operation : public base_operation
+   {
+      struct fee_params_t {
+         uint64_t base_fee   = 5 * GRAPHENE_BLOCKCHAIN_PRECISION;
+         uint64_t premium_fee = 2000 * GRAPHENE_BLOCKCHAIN_PRECISION;
+      };
+
+      struct ext
+      {
+         optional< void_t > null_ext;
+         optional< uint16_t > override_flags;
+      };
+
+      asset            fee;
+      /// The issuer performing the override
+      account_id_type  issuer;
+      account_id_type  from;
+      account_id_type  to;
+      asset            amount;
+      extension< ext > extensions;
+
+      account_id_type fee_payer()const { return issuer; }
+      void            validate()const;
+   };
+
 } } // graphene::protocol
 
 FC_REFLECT( graphene::protocol::transfer_operation::fee_params_t, (fee)(price_per_kbyte) )
+FC_REFLECT( graphene::protocol::override_transfer_operation::fee_params_t, (base_fee)(premium_fee) )
+FC_REFLECT( graphene::protocol::override_transfer_operation::ext, (null_ext)(override_flags) )
+FC_REFLECT( graphene::protocol::override_transfer_operation, (fee)(issuer)(from)(to)(amount)(extensions) )
 FC_REFLECT( graphene::protocol::transfer_operation, (fee)(from)(to)(amount)(memo)(extensions) )

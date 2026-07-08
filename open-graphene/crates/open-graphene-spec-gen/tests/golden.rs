@@ -41,7 +41,8 @@ fn fixture_chain_spec_matches_golden_snapshot() {
         .map(|diagnostic| format!("{diagnostic:?}"))
         .collect();
 
-    let protocol = build_protocol(&config, &facts, rpc_resolution.methods);
+    let build = build_protocol(&config, &facts, rpc_resolution.methods);
+    let protocol = build.protocol;
     let mut rendered = serde_json::to_string_pretty(&protocol).expect("serialize fixture protocol");
     rendered.push('\n');
 
@@ -54,6 +55,10 @@ fn fixture_chain_spec_matches_golden_snapshot() {
     }
     snapshot.push_str("// resolve diagnostics:\n");
     for line in &resolve_diagnostics {
+        snapshot.push_str(&format!("//   {line}\n"));
+    }
+    snapshot.push_str("// build diagnostics:\n");
+    for line in &build.diagnostics {
         snapshot.push_str(&format!("//   {line}\n"));
     }
     snapshot.push_str("// validation issues:\n");

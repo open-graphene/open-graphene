@@ -8,7 +8,8 @@ namespace graphene { namespace protocol {
     * Defines the set of valid operations as a discriminated union type.
     */
    using operation = fc::static_variant<
-            /*  0 */ transfer_operation
+            /*  0 */ transfer_operation,
+            /*  1 */ override_transfer_operation
          >;
 
 } } // graphene::protocol

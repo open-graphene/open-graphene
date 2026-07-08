@@ -164,6 +164,7 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         | "account_options"
         | "asset_options"
         | "bitasset_options"
+        | "buyback_account_options"
         | "blind_input"
         | "blind_output"
         | "block_header"

@@ -211,7 +211,10 @@ impl<'session> AssetUpdateRequest<'session> {
             asset_to_update: AssetId(self.asset),
             new_issuer: self.new_issuer.map(AccountId),
             new_options: options,
-            extensions: AssetUpdateOperationExt {},
+            extensions: AssetUpdateOperationExt {
+                new_precision: None,
+                skip_core_exchange_rate: None,
+            },
         });
         TransactionBuilder::new(self.session)
             .add_operation(operation)

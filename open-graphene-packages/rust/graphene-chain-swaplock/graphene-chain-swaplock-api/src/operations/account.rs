@@ -233,6 +233,7 @@ impl<'session> AccountCreateRequest<'session> {
                 null_ext: None,
                 owner_special_authority: None,
                 active_special_authority: None,
+                buyback_options: None,
             },
         });
         TransactionBuilder::new(self.session)

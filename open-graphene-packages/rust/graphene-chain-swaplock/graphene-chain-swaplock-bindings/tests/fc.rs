@@ -419,6 +419,7 @@ fn sample_account_create_operation() -> AccountCreateOperation {
             null_ext: None,
             owner_special_authority: None,
             active_special_authority: None,
+            buyback_options: None,
         },
     }
 }

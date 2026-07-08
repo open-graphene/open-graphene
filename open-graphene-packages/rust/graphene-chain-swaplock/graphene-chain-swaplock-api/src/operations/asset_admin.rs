@@ -599,6 +599,11 @@ impl<'session> AssetUpdateBitassetRequest<'session> {
                 short_backing_asset: AssetId(self.short_backing_asset),
                 extensions: BitassetOptionsExt {
                     initial_collateral_ratio: None,
+                    maintenance_collateral_ratio: None,
+                    maximum_short_squeeze_ratio: None,
+                    margin_call_fee_ratio: None,
+                    force_settle_fee_percent: None,
+                    black_swan_response_method: None,
                 },
             },
             extensions: vec![],

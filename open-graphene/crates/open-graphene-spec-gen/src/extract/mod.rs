@@ -59,5 +59,40 @@ pub fn extract_source_facts(source_set: &SourceSet) -> Result<SourceFacts> {
             .extend(extract_virtual_operation_markers(&text));
     }
 
+    // The substring-based static-variant scan can desync on `using namespace`
+    // lines and produce garbage names; keep the record out of the facts but
+    // never drop it silently.
+    facts.static_variants.retain(|variant| {
+        let valid = is_valid_cpp_identifier(&variant.name);
+        if !valid {
+            facts.diagnostics.push(ExtractDiagnostic {
+                code: "static-variant-name-unparseable".to_string(),
+                message: format!(
+                    "discarded static variant with unparseable name {:?}",
+                    truncate_for_message(&variant.name)
+                ),
+                source: Some(variant.source.clone()),
+            });
+        }
+        valid
+    });
+
     Ok(facts)
+}
+
+fn is_valid_cpp_identifier(name: &str) -> bool {
+    !name.is_empty()
+        && name
+            .chars()
+            .all(|ch| ch.is_alphanumeric() || ch == '_' || ch == ':')
+}
+
+fn truncate_for_message(value: &str) -> String {
+    const LIMIT: usize = 60;
+    if value.chars().count() <= LIMIT {
+        value.to_string()
+    } else {
+        let prefix: String = value.chars().take(LIMIT).collect();
+        format!("{prefix}…")
+    }
 }
