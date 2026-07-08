@@ -106,6 +106,9 @@ impl ChainClientBuilder<Swaplock> {
 }
 
 impl ChainClientBuilder<BitShares> {
+    /// PLACEHOLDER: validates the config and returns a stub that holds it —
+    /// no connection is made and no RPC surface exists yet. Swaplock is the
+    /// only chain with a working client; see [`BitSharesClient`].
     pub async fn connect(self) -> Result<BitSharesClient, GrapheneConnectError> {
         validate_config(&self.config)?;
         Ok(BitSharesClient {
@@ -115,6 +118,9 @@ impl ChainClientBuilder<BitShares> {
 }
 
 impl ChainClientBuilder<Acta> {
+    /// PLACEHOLDER: validates the config and returns a stub that holds it —
+    /// no connection is made and no RPC surface exists yet. Swaplock is the
+    /// only chain with a working client; see [`ActaClient`].
     pub async fn connect(self) -> Result<ActaClient, GrapheneConnectError> {
         validate_config(&self.config)?;
         Ok(ActaClient {
@@ -123,6 +129,9 @@ impl ChainClientBuilder<Acta> {
     }
 }
 
+/// PLACEHOLDER client: holds the validated config and nothing else. It does
+/// not connect to any node and exposes no chain API. Kept so the multi-chain
+/// builder surface is exercised until real BitShares support lands.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BitSharesClient {
     config: GrapheneClientConfig,
@@ -134,6 +143,9 @@ impl BitSharesClient {
     }
 }
 
+/// PLACEHOLDER client: holds the validated config and nothing else. It does
+/// not connect to any node and exposes no chain API. Kept so the multi-chain
+/// builder surface is exercised until real Acta support lands.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ActaClient {
     config: GrapheneClientConfig,
