@@ -5,6 +5,9 @@ pub struct SourceFacts {
     pub fc_apis: Vec<FcApi>,
     pub classes: Vec<RawClass>,
     pub enums: Vec<RawEnum>,
+    /// C++ `enum` bodies with their real (evaluated) member values, joined
+    /// against the FC_REFLECT_ENUM member lists when the protocol is built.
+    pub enum_definitions: Vec<RawEnumDefinition>,
     pub static_variants: Vec<RawStaticVariant>,
     pub object_types: Vec<RawObjectType>,
     pub reflects: Vec<RawReflect>,
@@ -47,6 +50,21 @@ pub struct RawEnum {
 pub struct RawEnumValue {
     pub name: String,
     pub value: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RawEnumDefinition {
+    /// The enum's short name (namespaces and class nesting are not recorded).
+    pub name: String,
+    pub members: Vec<RawEnumMember>,
+    pub source: SourceLoc,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RawEnumMember {
+    pub name: String,
+    /// `None` when the initializer expression could not be evaluated.
+    pub value: Option<i64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

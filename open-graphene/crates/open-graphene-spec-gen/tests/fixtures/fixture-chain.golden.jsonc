@@ -665,27 +665,27 @@
       "values": [
         {
           "name": "charge_market_fee",
-          "value": 0
-        },
-        {
-          "name": "white_list",
           "value": 1
         },
         {
-          "name": "transfer_restricted",
+          "name": "white_list",
           "value": 2
         },
         {
-          "name": "override_authority",
-          "value": 3
+          "name": "transfer_restricted",
+          "value": 8
         },
         {
-          "name": "disable_force_settle",
+          "name": "override_authority",
           "value": 4
         },
         {
+          "name": "disable_force_settle",
+          "value": 16
+        },
+        {
           "name": "global_settle",
-          "value": 5
+          "value": 32
         }
       ],
       "isBitfield": true,
@@ -696,7 +696,7 @@
       },
       "support": {
         "status": "provisional",
-        "reason": "enum extracted from FC_REFLECT_ENUM"
+        "reason": "member values joined from the C++ enum definition"
       }
     }
   ],

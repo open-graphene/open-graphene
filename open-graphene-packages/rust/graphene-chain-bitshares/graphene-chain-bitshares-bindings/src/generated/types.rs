@@ -69,10 +69,10 @@ pub enum AssetIssuerPermissionFlags {
     ChargeMarketFee,
     #[serde(rename = "white_list")]
     WhiteList,
-    #[serde(rename = "transfer_restricted")]
-    TransferRestricted,
     #[serde(rename = "override_authority")]
     OverrideAuthority,
+    #[serde(rename = "transfer_restricted")]
+    TransferRestricted,
     #[serde(rename = "disable_force_settle")]
     DisableForceSettle,
     #[serde(rename = "global_settle")]
@@ -229,10 +229,10 @@ pub enum VestingBalanceType {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneBitsharesVoteType)]
 pub enum VoteType {
-    #[serde(rename = "witness")]
-    Witness,
     #[serde(rename = "committee")]
     Committee,
+    #[serde(rename = "witness")]
+    Witness,
     #[serde(rename = "worker")]
     Worker,
     #[serde(rename = "VOTE_TYPE_COUNT")]

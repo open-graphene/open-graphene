@@ -13,8 +13,8 @@ use crate::config::{GeneratorConfig, load_config};
 use crate::emit::write_protocol_json;
 use crate::error::Result;
 use crate::extract::{
-    RawClass, RawEnum, RawObjectType, RawReflect, RawStaticVariant, SourceFacts, SourceLoc,
-    extract_source_facts,
+    RawClass, RawEnum, RawEnumDefinition, RawObjectType, RawReflect, RawStaticVariant, SourceFacts,
+    SourceLoc, extract_source_facts,
 };
 use crate::resolve::{resolve_cpp_type, resolve_rpc_methods};
 use crate::source::discover_sources;
@@ -182,31 +182,91 @@ fn seed_configured_object_struct_refs(
 }
 
 fn build_enums(facts: &SourceFacts) -> Vec<EnumDef> {
-    let mut enums = facts.enums.iter().map(raw_enum_to_def).collect::<Vec<_>>();
+    let mut enums = facts
+        .enums
+        .iter()
+        .map(|raw| raw_enum_to_def(raw, facts))
+        .collect::<Vec<_>>();
     enums.sort_by(|left, right| left.name.cmp(&right.name));
     enums
 }
 
-fn raw_enum_to_def(raw: &RawEnum) -> EnumDef {
+fn raw_enum_to_def(raw: &RawEnum, facts: &SourceFacts) -> EnumDef {
     let name = last_path_segment(&raw.name).to_string();
+    let definition = find_enum_definition(facts, &name, raw);
+
+    let mut unresolved_members = Vec::new();
+    let values = raw
+        .values
+        .iter()
+        .map(|value| {
+            let real_value = definition.and_then(|definition| {
+                definition
+                    .members
+                    .iter()
+                    .find(|member| member.name == value.name)
+                    .and_then(|member| member.value)
+            });
+            if real_value.is_none() {
+                unresolved_members.push(value.name.clone());
+            }
+            EnumValueDef {
+                name: value.name.clone(),
+                // FC_REFLECT_ENUM carries no values; the positional fallback
+                // is only kept for members the C++ enum body did not resolve.
+                value: real_value.unwrap_or(value.value),
+            }
+        })
+        .collect();
+
+    let (status, reason) = if unresolved_members.is_empty() {
+        (
+            SupportStatus::Provisional,
+            "member values joined from the C++ enum definition".to_string(),
+        )
+    } else {
+        (
+            SupportStatus::Unsupported,
+            format!(
+                "no C++ enum values found for members [{}]; positional fallback values are almost certainly wrong on the wire",
+                unresolved_members.join(", ")
+            ),
+        )
+    };
+
     EnumDef {
         is_bitfield: is_bitfield_enum(&name),
         name,
         underlying: IntType::I32,
-        values: raw
-            .values
-            .iter()
-            .map(|value| EnumValueDef {
-                name: value.name.clone(),
-                value: value.value,
-            })
-            .collect(),
+        values,
         source: Some(source_meta(&raw.name, &raw.source)),
         support: Some(SupportDef {
-            status: SupportStatus::Provisional,
-            reason: Some("enum extracted from FC_REFLECT_ENUM".to_string()),
+            status,
+            reason: Some(reason),
         }),
     }
+}
+
+fn find_enum_definition<'a>(
+    facts: &'a SourceFacts,
+    short_name: &str,
+    raw: &RawEnum,
+) -> Option<&'a RawEnumDefinition> {
+    let reflected: BTreeSet<&str> = raw.values.iter().map(|value| value.name.as_str()).collect();
+    // Short names can collide across namespaces; require the definition to
+    // actually declare the reflected members.
+    facts
+        .enum_definitions
+        .iter()
+        .filter(|definition| definition.name == short_name)
+        .find(|definition| {
+            let members: BTreeSet<&str> = definition
+                .members
+                .iter()
+                .map(|member| member.name.as_str())
+                .collect();
+            reflected.is_subset(&members)
+        })
 }
 
 fn is_bitfield_enum(name: &str) -> bool {

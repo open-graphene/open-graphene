@@ -414,6 +414,7 @@ mod tests {
             }],
             classes: vec![],
             enums: vec![],
+            enum_definitions: vec![],
             static_variants: vec![],
             object_types: vec![],
             reflects: vec![],

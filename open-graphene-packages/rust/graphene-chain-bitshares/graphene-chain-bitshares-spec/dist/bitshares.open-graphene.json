@@ -15007,7 +15007,7 @@
       },
       "support": {
         "status": "provisional",
-        "reason": "enum extracted from FC_REFLECT_ENUM"
+        "reason": "member values joined from the C++ enum definition"
       }
     },
     {
@@ -15016,67 +15016,67 @@
       "values": [
         {
           "name": "charge_market_fee",
-          "value": 0
-        },
-        {
-          "name": "white_list",
           "value": 1
         },
         {
-          "name": "transfer_restricted",
+          "name": "white_list",
           "value": 2
         },
         {
-          "name": "override_authority",
-          "value": 3
-        },
-        {
-          "name": "disable_force_settle",
-          "value": 4
-        },
-        {
-          "name": "global_settle",
-          "value": 5
-        },
-        {
-          "name": "disable_confidential",
-          "value": 6
-        },
-        {
-          "name": "witness_fed_asset",
-          "value": 7
-        },
-        {
-          "name": "committee_fed_asset",
+          "name": "transfer_restricted",
           "value": 8
         },
         {
+          "name": "override_authority",
+          "value": 4
+        },
+        {
+          "name": "disable_force_settle",
+          "value": 16
+        },
+        {
+          "name": "global_settle",
+          "value": 32
+        },
+        {
+          "name": "disable_confidential",
+          "value": 64
+        },
+        {
+          "name": "witness_fed_asset",
+          "value": 128
+        },
+        {
+          "name": "committee_fed_asset",
+          "value": 256
+        },
+        {
           "name": "lock_max_supply",
-          "value": 9
+          "value": 512
         },
         {
           "name": "disable_new_supply",
-          "value": 10
+          "value": 1024
         },
         {
           "name": "disable_mcr_update",
-          "value": 11
+          "value": 2048
         },
         {
           "name": "disable_icr_update",
-          "value": 12
+          "value": 4096
         },
         {
           "name": "disable_mssr_update",
-          "value": 13
+          "value": 8192
         },
         {
           "name": "disable_bsrm_update",
-          "value": 14
+          "value": 16384
         },
         {
           "name": "disable_collateral_bidding",
-          "value": 15
+          "value": 32768
         }
       ],
       "isBitfield": true,
@@ -15087,7 +15087,7 @@
       },
       "support": {
         "status": "provisional",
-        "reason": "enum extracted from FC_REFLECT_ENUM"
+        "reason": "member values joined from the C++ enum definition"
       }
     },
     {
@@ -15115,7 +15115,7 @@
       },
       "support": {
         "status": "provisional",
-        "reason": "enum extracted from FC_REFLECT_ENUM"
+        "reason": "member values joined from the C++ enum definition"
       }
     },
     {
@@ -15135,7 +15135,7 @@
       },
       "support": {
         "status": "provisional",
-        "reason": "enum extracted from FC_REFLECT_ENUM"
+        "reason": "member values joined from the C++ enum definition"
       }
     },
     {
@@ -15207,7 +15207,7 @@
       },
       "support": {
         "status": "provisional",
-        "reason": "enum extracted from FC_REFLECT_ENUM"
+        "reason": "member values joined from the C++ enum definition"
       }
     },
     {
@@ -15235,7 +15235,7 @@
       },
       "support": {
         "status": "provisional",
-        "reason": "enum extracted from FC_REFLECT_ENUM"
+        "reason": "member values joined from the C++ enum definition"
       }
     },
     {
@@ -15263,7 +15263,7 @@
       },
       "support": {
         "status": "provisional",
-        "reason": "enum extracted from FC_REFLECT_ENUM"
+        "reason": "member values joined from the C++ enum definition"
       }
     },
     {
@@ -15295,7 +15295,7 @@
       },
       "support": {
         "status": "provisional",
-        "reason": "enum extracted from FC_REFLECT_ENUM"
+        "reason": "member values joined from the C++ enum definition"
       }
     },
     {
@@ -15335,7 +15335,7 @@
       },
       "support": {
         "status": "provisional",
-        "reason": "enum extracted from FC_REFLECT_ENUM"
+        "reason": "member values joined from the C++ enum definition"
       }
     },
     {
@@ -15371,7 +15371,7 @@
       },
       "support": {
         "status": "provisional",
-        "reason": "enum extracted from FC_REFLECT_ENUM"
+        "reason": "member values joined from the C++ enum definition"
       }
     },
     {
@@ -15380,11 +15380,11 @@
       "values": [
         {
           "name": "witness",
-          "value": 0
+          "value": 1
         },
         {
           "name": "committee",
-          "value": 1
+          "value": 0
         },
         {
           "name": "worker",
@@ -15403,7 +15403,7 @@
       },
       "support": {
         "status": "provisional",
-        "reason": "enum extracted from FC_REFLECT_ENUM"
+        "reason": "member values joined from the C++ enum definition"
       }
     }
   ],

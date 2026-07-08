@@ -13,10 +13,11 @@ use crate::error::{Result, SpecGenError};
 use crate::source::SourceSet;
 
 pub use classes::extract_classes;
-pub use enums::extract_enums;
+pub use enums::{extract_enum_definitions, extract_enums};
 pub use facts::{
-    ExtractDiagnostic, FcApi, RawClass, RawEnum, RawEnumValue, RawField, RawMethod, RawObjectType,
-    RawParam, RawReflect, RawStaticVariant, SourceFacts, SourceLoc,
+    ExtractDiagnostic, FcApi, RawClass, RawEnum, RawEnumDefinition, RawEnumMember, RawEnumValue,
+    RawField, RawMethod, RawObjectType, RawParam, RawReflect, RawStaticVariant, SourceFacts,
+    SourceLoc,
 };
 pub use macros::extract_fc_apis;
 pub use object_types::extract_object_types;
@@ -43,6 +44,9 @@ pub fn extract_source_facts(source_set: &SourceSet) -> Result<SourceFacts> {
         facts.fc_apis.extend(extract_fc_apis(&text, loc_path));
         facts.classes.extend(extract_classes(&text, loc_path));
         facts.enums.extend(extract_enums(&text, loc_path));
+        facts
+            .enum_definitions
+            .extend(extract_enum_definitions(&text, loc_path));
         facts
             .static_variants
             .extend(extract_static_variants(&text, loc_path));
