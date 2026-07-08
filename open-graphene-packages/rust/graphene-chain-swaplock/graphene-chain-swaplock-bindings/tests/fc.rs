@@ -14,8 +14,8 @@ use graphene_chain_swaplock_bindings::generated::{
     Price, ProposalCreateOperation, RefundWorkerInitializer, Restriction, Signature,
     SignedTransaction, SpecialAuthority, TopHoldersSpecialAuthority, Transaction,
     TransferOperation, TransferOperationFeeParamsT, VestingBalanceCreateOperation,
-    VestingBalanceWorkerInitializer, VestingPolicyInitializer, VoteId,
-    WithdrawPermissionCreateOperation, WorkerCreateOperation, WorkerInitializer, sha256_bytes,
+    VestingBalanceWorkerInitializer, VestingPolicyInitializer, WithdrawPermissionCreateOperation,
+    WorkerCreateOperation, WorkerInitializer, sha256_bytes,
 };
 
 fn sample_transfer_operation() -> TransferOperation {
@@ -533,7 +533,7 @@ fn sample_account_options() -> AccountOptions {
         voting_account: AccountId("1.2.5".to_string()),
         num_witness: 1,
         num_committee: 2,
-        votes: vec![VoteId("1:5".to_string())],
+        votes: vec!["1:5".to_string()],
         extensions: vec![],
     }
 }
@@ -959,7 +959,7 @@ fn account_options_fc_serializes_vote_ids() {
 #[test]
 fn account_options_fc_rejects_invalid_vote_id() {
     let mut options = sample_account_options();
-    options.votes = vec![VoteId("1:16777216".to_string())];
+    options.votes = vec!["1:16777216".to_string()];
 
     let err = options.to_fc_bytes().expect_err("invalid vote id fails");
 

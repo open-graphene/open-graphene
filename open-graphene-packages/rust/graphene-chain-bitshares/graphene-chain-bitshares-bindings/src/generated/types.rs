@@ -269,7 +269,7 @@ pub struct AccountOptions {
     pub voting_account: crate::generated::ids::AccountId,
     pub num_witness: u16,
     pub num_committee: u16,
-    pub votes: Vec<crate::generated::ids::VoteId>,
+    pub votes: Vec<String>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 

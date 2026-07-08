@@ -903,8 +903,7 @@
           "type": {
             "kind": "set",
             "inner": {
-              "kind": "protocol_object_id",
-              "objectType": "vote"
+              "kind": "vote_id"
             },
             "ordering": "unresolved"
           },
@@ -6311,8 +6310,8 @@
           "index": 1,
           "name": "chain_id",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "chain"
+            "kind": "fixed_hex",
+            "bytes": 32
           },
           "source": {
             "name": "chain_id",
@@ -31777,8 +31776,8 @@
       "apiName": "database",
       "params": [],
       "returns": {
-        "kind": "protocol_object_id",
-        "objectType": "chain"
+        "kind": "fixed_hex",
+        "bytes": 32
       },
       "isSubscription": false,
       "source": {

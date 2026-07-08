@@ -49,6 +49,16 @@ fn main() -> ExitCode {
                 result.resolved_static_variant_count,
                 result.diagnostic_count
             );
+            if !result.validation_issues.is_empty() {
+                for issue in &result.validation_issues {
+                    eprintln!("validation issue: {issue}");
+                }
+                eprintln!(
+                    "error: the emitted spec has {} validation issue(s)",
+                    result.validation_issues.len()
+                );
+                return ExitCode::FAILURE;
+            }
             ExitCode::SUCCESS
         }
         Err(error) => {

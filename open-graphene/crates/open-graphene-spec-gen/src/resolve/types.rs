@@ -239,6 +239,13 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
             reason: Some(format!("unstructured Graphene variant type: {normalized}")),
             source: None,
         },
+        // vote_id_type is a packed uint32 (type in the low byte, instance in
+        // the high 24 bits), not an object id: the `_id_type` suffix rule
+        // below must never claim it.
+        "vote_id_type" => TypeRef::VoteId,
+        // chain_id_type is a sha256 digest of the genesis state, not an
+        // object id.
+        "chain_id_type" => TypeRef::FixedHex { bytes: 32 },
         _ if normalized.ends_with("_id_type") => TypeRef::ProtocolObjectId {
             object_type: normalized.trim_end_matches("_id_type").to_string(),
         },

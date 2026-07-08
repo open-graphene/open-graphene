@@ -476,32 +476,6 @@ impl CallOrderId {
     pub const TYPE_ID: u32 = 8;
 }
 
-/// Object ID for `chain` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
-#[schema(as = GrapheneSwaplockChainId)]
-#[serde(transparent)]
-pub struct ChainId(pub String);
-
-impl ChainId {
-    pub fn new(value: impl Into<String>) -> Self {
-        Self(value.into())
-    }
-}
-
-impl From<String> for ChainId {
-    fn from(value: String) -> Self {
-        Self(value)
-    }
-}
-
-impl From<&str> for ChainId {
-    fn from(value: &str) -> Self {
-        Self(value.to_string())
-    }
-}
-
 /// Object ID for `chain_property` protocol objects.
 #[derive(
     Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
@@ -1244,32 +1218,6 @@ impl From<&str> for VestingBalanceId {
 impl VestingBalanceId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 13;
-}
-
-/// Object ID for `vote` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
-#[schema(as = GrapheneSwaplockVoteId)]
-#[serde(transparent)]
-pub struct VoteId(pub String);
-
-impl VoteId {
-    pub fn new(value: impl Into<String>) -> Self {
-        Self(value.into())
-    }
-}
-
-impl From<String> for VoteId {
-    fn from(value: String) -> Self {
-        Self(value)
-    }
-}
-
-impl From<&str> for VoteId {
-    fn from(value: &str) -> Self {
-        Self(value.to_string())
-    }
 }
 
 /// Object ID for `withdraw_permission` protocol objects.

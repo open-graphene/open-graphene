@@ -5,7 +5,7 @@
 //! and applies only the fields you set, leaving the rest untouched. Owner/active authority changes
 //! are deliberately out of scope here (build those by hand to avoid locking yourself out).
 
-use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId, VoteId};
+use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId};
 use graphene_chain_swaplock_bindings::generated::operations::{
     AccountCreateOperation, AccountTransferOperation, AccountUpdateOperation,
     AccountUpgradeOperation, AccountWhitelistOperation,
@@ -102,7 +102,7 @@ impl<'session> AccountUpdateRequest<'session> {
             options.num_committee = num_committee;
         }
         if let Some(votes) = self.votes {
-            options.votes = votes.into_iter().map(VoteId).collect();
+            options.votes = votes;
         }
 
         let operation = Operation::account_update(AccountUpdateOperation {

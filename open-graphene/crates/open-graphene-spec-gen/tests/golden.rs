@@ -13,6 +13,7 @@ use std::path::PathBuf;
 
 use open_graphene_spec_gen::{
     build_protocol, discover_sources, extract_source_facts, load_config, resolve_rpc_methods,
+    validate_protocol,
 };
 
 fn fixture_path(relative: &str) -> PathBuf {
@@ -54,6 +55,10 @@ fn fixture_chain_spec_matches_golden_snapshot() {
     snapshot.push_str("// resolve diagnostics:\n");
     for line in &resolve_diagnostics {
         snapshot.push_str(&format!("//   {line}\n"));
+    }
+    snapshot.push_str("// validation issues:\n");
+    for issue in validate_protocol(&protocol) {
+        snapshot.push_str(&format!("//   {issue}\n"));
     }
     snapshot.push_str(&rendered);
 

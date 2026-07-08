@@ -1219,32 +1219,6 @@ impl VestingBalanceId {
     pub const TYPE_ID: u32 = 13;
 }
 
-/// Object ID for `vote` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
-#[schema(as = GrapheneBitsharesVoteId)]
-#[serde(transparent)]
-pub struct VoteId(pub String);
-
-impl VoteId {
-    pub fn new(value: impl Into<String>) -> Self {
-        Self(value.into())
-    }
-}
-
-impl From<String> for VoteId {
-    fn from(value: String) -> Self {
-        Self(value)
-    }
-}
-
-impl From<&str> for VoteId {
-    fn from(value: &str) -> Self {
-        Self(value.to_string())
-    }
-}
-
 /// Object ID for `withdraw_permission` protocol objects.
 #[derive(
     Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,

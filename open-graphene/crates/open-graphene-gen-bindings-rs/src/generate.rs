@@ -1850,7 +1850,7 @@ fn render_fc_value_serialize_lines(value_expr: &str, ty: &TypeRef, indent: &str)
              {indent}    }}\n\
              {indent}    None => out.push(0),\n\
              {indent}}}\n",
-            render_vote_id_arg("value", inner)?
+            render_vote_id_ref_arg("value", inner)?
         )),
         TypeRef::Optional { inner } if matches!(inner.as_ref(), TypeRef::FlatMap { key, value, .. } if is_fc_supported_flat_map(key, value)) =>
         {
@@ -1890,7 +1890,7 @@ fn render_fc_value_serialize_lines(value_expr: &str, ty: &TypeRef, indent: &str)
              {indent}for value in &{value_expr} {{\n\
              {indent}    write_vote_id({}, out)?;\n\
              {indent}}}\n",
-                render_vote_id_arg("value", inner)?
+                render_vote_id_ref_arg("value", inner)?
             ))
         }
         TypeRef::Pair { first, second } => {
@@ -2168,6 +2168,20 @@ fn is_fc_supported_flat_map(key: &TypeRef, value: &TypeRef) -> bool {
 fn render_vote_id_arg(value_expr: &str, ty: &TypeRef) -> Result<String> {
     match ty {
         TypeRef::VoteId => Ok(format!("&{value_expr}")),
+        TypeRef::ProtocolObjectId { object_type } if object_type == "vote" => {
+            Ok(format!("&{value_expr}.0"))
+        }
+        _ => Err(GenBindingsRsError::Render {
+            message: "internal error: expected vote id type".to_string(),
+        }),
+    }
+}
+
+/// Like [`render_vote_id_arg`], but for loop/match bindings where the
+/// variable is already a reference and an extra borrow would be redundant.
+fn render_vote_id_ref_arg(value_expr: &str, ty: &TypeRef) -> Result<String> {
+    match ty {
+        TypeRef::VoteId => Ok(value_expr.to_string()),
         TypeRef::ProtocolObjectId { object_type } if object_type == "vote" => {
             Ok(format!("&{value_expr}.0"))
         }
@@ -4196,7 +4210,7 @@ mod tests {
         assert!(output.contains("for value in &self.expiration_points"));
         assert!(output.contains("write_vote_id(&self.vote, out)?;"));
         assert!(output.contains("match &self.optional_vote"));
-        assert!(output.contains("write_vote_id(&value, out)?;"));
+        assert!(output.contains("write_vote_id(value, out)?;"));
         assert!(output.contains("write_varint(self.votes.len() as u64, out);"));
         assert!(output.contains("for value in &self.votes"));
         assert!(output.contains("write_varint(self.account_auths.len() as u64, out);"));

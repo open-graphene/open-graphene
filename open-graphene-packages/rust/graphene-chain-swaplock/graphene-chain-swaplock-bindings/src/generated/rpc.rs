@@ -546,7 +546,7 @@ pub mod database {
             }
         }
 
-        pub type Returns = crate::generated::ids::ChainId;
+        pub type Returns = String;
 
         pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
             serde_json::from_value(value)

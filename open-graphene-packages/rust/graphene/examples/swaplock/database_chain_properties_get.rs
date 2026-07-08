@@ -17,7 +17,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let properties = swaplock.database().chain_properties().get().await?;
 
     println!("id: {}", properties.id.0);
-    println!("chain id: {}", properties.chain_id.0);
+    println!("chain id: {}", properties.chain_id);
     println!(
         "immutable parameters: {:?}",
         properties.immutable_parameters

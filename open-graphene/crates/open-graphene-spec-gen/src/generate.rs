@@ -34,6 +34,107 @@ pub struct GenerateResult {
     pub resolved_static_variant_count: usize,
     pub resolved_rpc_method_count: usize,
     pub diagnostic_count: usize,
+    /// Cross-reference problems in the emitted spec (see [`validate_protocol`]).
+    pub validation_issues: Vec<String>,
+}
+
+/// Cross-references every `ProtocolObjectId` in the emitted spec against the
+/// spec's own object types. A reference to an unknown object type means a C++
+/// alias was mis-mapped (e.g. a packed id heuristically treated as an object
+/// id) and consumers would produce wrong wire bytes.
+pub fn validate_protocol(protocol: &Protocol) -> Vec<String> {
+    let known: BTreeSet<&str> = protocol
+        .object_types
+        .iter()
+        .map(|object_type| object_type.object_type.as_str())
+        .collect();
+    let mut issues = BTreeSet::new();
+
+    for def in &protocol.structs {
+        for field in &def.fields {
+            check_object_id_refs(
+                &format!("struct {}.{}", def.name, field.name),
+                &field.ty,
+                &known,
+                &mut issues,
+            );
+        }
+    }
+    for def in &protocol.operations {
+        for field in &def.fields {
+            check_object_id_refs(
+                &format!("operation {}.{}", def.name, field.name),
+                &field.ty,
+                &known,
+                &mut issues,
+            );
+        }
+    }
+    for variant in &protocol.static_variants {
+        for arm in &variant.variants {
+            check_object_id_refs(
+                &format!("static variant {}::{}", variant.name, arm.name),
+                &arm.ty,
+                &known,
+                &mut issues,
+            );
+        }
+    }
+    for method in &protocol.rpc_methods {
+        for param in &method.params {
+            check_object_id_refs(
+                &format!("rpc {}({})", method.name, param.name),
+                &param.ty,
+                &known,
+                &mut issues,
+            );
+        }
+        if let Some(returns) = &method.returns {
+            check_object_id_refs(
+                &format!("rpc {} return", method.name),
+                returns,
+                &known,
+                &mut issues,
+            );
+        }
+    }
+
+    issues.into_iter().collect()
+}
+
+fn check_object_id_refs(
+    context: &str,
+    ty: &TypeRef,
+    known_object_types: &BTreeSet<&str>,
+    issues: &mut BTreeSet<String>,
+) {
+    visit_type_refs(ty, &mut |ty| {
+        if let TypeRef::ProtocolObjectId { object_type } = ty
+            && !known_object_types.contains(object_type.as_str())
+        {
+            issues.insert(format!(
+                "{context} references protocol object type `{object_type}`, which the spec does not define"
+            ));
+        }
+    });
+}
+
+fn visit_type_refs(ty: &TypeRef, visit: &mut impl FnMut(&TypeRef)) {
+    visit(ty);
+    match ty {
+        TypeRef::Optional { inner } | TypeRef::Vector { inner } | TypeRef::Set { inner, .. } => {
+            visit_type_refs(inner, visit);
+        }
+        TypeRef::Map { key, value, .. } | TypeRef::FlatMap { key, value, .. } => {
+            visit_type_refs(key, visit);
+            visit_type_refs(value, visit);
+        }
+        TypeRef::Pair { first, second } => {
+            visit_type_refs(first, visit);
+            visit_type_refs(second, visit);
+        }
+        _ => {}
+    }
 }
 
 pub fn build_protocol(
@@ -873,6 +974,7 @@ pub fn generate_from_config(path: impl AsRef<Path>) -> Result<GenerateResult> {
     let protocol = build_protocol(&config, &facts, rpc_resolution.methods);
     let resolved_struct_count = protocol.structs.len();
     let resolved_static_variant_count = protocol.static_variants.len();
+    let validation_issues = validate_protocol(&protocol);
     let output_path = write_protocol_json(config_path, &config.output.dist, &protocol)?;
 
     Ok(GenerateResult {
@@ -889,6 +991,7 @@ pub fn generate_from_config(path: impl AsRef<Path>) -> Result<GenerateResult> {
         resolved_static_variant_count,
         resolved_rpc_method_count,
         diagnostic_count,
+        validation_issues,
     })
 }
 

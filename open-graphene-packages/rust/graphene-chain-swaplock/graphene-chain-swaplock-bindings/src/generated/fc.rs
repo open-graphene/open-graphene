@@ -96,12 +96,6 @@ impl FcSerialize for crate::generated::ids::CallOrderId {
     }
 }
 
-impl FcSerialize for crate::generated::ids::ChainId {
-    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        write_protocol_object_id(&self.0, None, None, out)
-    }
-}
-
 impl FcSerialize for crate::generated::ids::ChainPropertyId {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         write_protocol_object_id(&self.0, Some(2), Some(11), out)
@@ -246,12 +240,6 @@ impl FcSerialize for crate::generated::ids::VestingBalanceId {
     }
 }
 
-impl FcSerialize for crate::generated::ids::VoteId {
-    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        write_vote_id(&self.0, out)
-    }
-}
-
 impl FcSerialize for crate::generated::ids::WithdrawPermissionId {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         write_protocol_object_id(&self.0, Some(1), Some(12), out)
@@ -342,7 +330,7 @@ impl FcSerialize for crate::generated::types::AccountOptions {
         self.num_committee.fc_serialize(out)?;
         write_varint(self.votes.len() as u64, out);
         for value in &self.votes {
-            write_vote_id(&value.0, out)?;
+            write_vote_id(value, out)?;
         }
         write_varint(self.extensions.len() as u64, out);
         let mut previous_key: Option<u64> = None;
@@ -907,15 +895,6 @@ impl FcSerialize for crate::generated::types::ChainParametersExt {
             type_name: "chain_parameters_ext",
             reason: "non-empty graphene extension set is not supported by FC serialization yet",
         })
-    }
-}
-
-impl FcSerialize for crate::generated::types::ChainPropertyObject {
-    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        self.id.fc_serialize(out)?;
-        self.chain_id.fc_serialize(out)?;
-        self.immutable_parameters.fc_serialize(out)?;
-        Ok(())
     }
 }
 

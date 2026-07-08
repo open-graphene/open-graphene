@@ -240,12 +240,6 @@ impl FcSerialize for crate::generated::ids::VestingBalanceId {
     }
 }
 
-impl FcSerialize for crate::generated::ids::VoteId {
-    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        write_vote_id(&self.0, out)
-    }
-}
-
 impl FcSerialize for crate::generated::ids::WithdrawPermissionId {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         write_protocol_object_id(&self.0, Some(1), Some(12), out)
@@ -325,7 +319,7 @@ impl FcSerialize for crate::generated::types::AccountOptions {
         self.num_committee.fc_serialize(out)?;
         write_varint(self.votes.len() as u64, out);
         for value in &self.votes {
-            write_vote_id(&value.0, out)?;
+            write_vote_id(value, out)?;
         }
         write_varint(self.extensions.len() as u64, out);
         let mut previous_key: Option<u64> = None;

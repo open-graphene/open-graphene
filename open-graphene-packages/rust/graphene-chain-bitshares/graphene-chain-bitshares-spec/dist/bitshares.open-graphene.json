@@ -365,8 +365,7 @@
           "type": {
             "kind": "set",
             "inner": {
-              "kind": "protocol_object_id",
-              "objectType": "vote"
+              "kind": "vote_id"
             },
             "ordering": "unresolved"
           },

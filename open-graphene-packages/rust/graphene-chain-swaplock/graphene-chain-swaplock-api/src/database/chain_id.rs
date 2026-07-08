@@ -23,6 +23,5 @@ pub(super) async fn get_chain_id(
         .database_call(rpc_get_chain_id::METHOD, params)
         .await?;
     rpc_get_chain_id::parse_returns(value)
-        .map(|chain_id| chain_id.0)
         .map_err(SwaplockApiError::unexpected(rpc_get_chain_id::METHOD))
 }
