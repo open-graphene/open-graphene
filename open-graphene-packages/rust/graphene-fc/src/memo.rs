@@ -7,6 +7,7 @@
 use aes::cipher::block_padding::Pkcs7;
 use aes::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit};
 use sha2::{Digest, Sha256, Sha512};
+use zeroize::Zeroize;
 
 use crate::{FcSerializeError, PrivateKey, PublicKey, Result};
 
@@ -26,16 +27,20 @@ pub fn encrypt_with_checksum(
     nonce: u64,
     message: &[u8],
 ) -> Vec<u8> {
-    let (key, iv) = derive_key_iv(from.get_shared_secret(to), nonce);
+    let (mut key, mut iv) = derive_key_iv(from.get_shared_secret(to), nonce);
 
     let checksum = Sha256::digest(message);
     let mut payload = Vec::with_capacity(4 + message.len());
     payload.extend_from_slice(&checksum[..4]);
     payload.extend_from_slice(message);
 
-    Aes256CbcEnc::new_from_slices(&key, &iv)
+    let encrypted = Aes256CbcEnc::new_from_slices(&key, &iv)
         .expect("32-byte key and 16-byte iv")
-        .encrypt_padded_vec_mut::<Pkcs7>(&payload)
+        .encrypt_padded_vec_mut::<Pkcs7>(&payload);
+    key.zeroize();
+    iv.zeroize();
+    payload.zeroize();
+    encrypted
 }
 
 /// Decrypt a memo produced by [`encrypt_with_checksum`], returning the original message.
@@ -48,14 +53,16 @@ pub fn decrypt_with_checksum(
     nonce: u64,
     ciphertext: &[u8],
 ) -> Result<Vec<u8>> {
-    let (key, iv) = derive_key_iv(secret.get_shared_secret(peer), nonce);
+    let (mut key, mut iv) = derive_key_iv(secret.get_shared_secret(peer), nonce);
 
-    let plaintext = Aes256CbcDec::new_from_slices(&key, &iv)
+    let decrypted = Aes256CbcDec::new_from_slices(&key, &iv)
         .expect("32-byte key and 16-byte iv")
-        .decrypt_padded_vec_mut::<Pkcs7>(ciphertext)
-        .map_err(|_| FcSerializeError::MemoDecryptFailed {
-            reason: "AES decrypt or padding failed (wrong key or nonce?)",
-        })?;
+        .decrypt_padded_vec_mut::<Pkcs7>(ciphertext);
+    key.zeroize();
+    iv.zeroize();
+    let plaintext = decrypted.map_err(|_| FcSerializeError::MemoDecryptFailed {
+        reason: "AES decrypt or padding failed (wrong key or nonce?)",
+    })?;
 
     if plaintext.len() < 4 {
         return Err(FcSerializeError::MemoDecryptFailed {
@@ -73,19 +80,45 @@ pub fn decrypt_with_checksum(
 }
 
 /// The AES key (32 bytes) and IV (16 bytes): `sha512(nonce_decimal ++ hex(shared_secret))`.
-fn derive_key_iv(shared_secret: [u8; 64], nonce: u64) -> ([u8; 32], [u8; 16]) {
+fn derive_key_iv(mut shared_secret: [u8; 64], nonce: u64) -> ([u8; 32], [u8; 16]) {
     let mut seed = nonce.to_string().into_bytes();
     for &byte in shared_secret.iter() {
         seed.push(HEX[(byte >> 4) as usize]);
         seed.push(HEX[(byte & 0x0f) as usize]);
     }
-    let hash = Sha512::digest(&seed);
+    let mut hash = Sha512::digest(&seed);
 
     let mut key = [0u8; 32];
     let mut iv = [0u8; 16];
     key.copy_from_slice(&hash[..32]);
     iv.copy_from_slice(&hash[32..48]);
+    shared_secret.zeroize();
+    seed.zeroize();
+    hash.zeroize();
     (key, iv)
+}
+
+/// A nonce for [`encrypt_with_checksum`] that is unique with high probability:
+/// one byte of OS entropy over 56 bits of microsecond timestamp, mirroring
+/// bitsharesjs's `unique_nonce_uint64`.
+///
+/// Reusing a nonce with the same key pair reuses the exact AES key and IV,
+/// which leaks message structure to anyone holding both ciphertexts — always
+/// generate a fresh nonce per memo and store it alongside the ciphertext.
+pub fn unique_nonce() -> Result<u64> {
+    let mut entropy = [0u8; 1];
+    getrandom::getrandom(&mut entropy).map_err(|_| FcSerializeError::UnsupportedValue {
+        type_name: "nonce",
+        reason: "OS random generator unavailable",
+    })?;
+    let micros = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_err(|_| FcSerializeError::UnsupportedValue {
+            type_name: "nonce",
+            reason: "system clock is before the Unix epoch",
+        })?
+        .as_micros() as u64;
+    Ok((u64::from(entropy[0]) << 56) | (micros & 0x00ff_ffff_ffff_ffff))
 }
 
 #[cfg(test)]

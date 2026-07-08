@@ -2,6 +2,7 @@ use ripemd::Digest;
 use secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
 use secp256k1::{Message, Secp256k1, SecretKey};
 use sha2::Sha256;
+use zeroize::Zeroize;
 
 pub mod address;
 pub mod brainkey;
@@ -14,7 +15,7 @@ pub use address::Address;
 pub use brainkey::{BrainKey, SUGGESTED_BRAIN_KEY_WORDS};
 pub use keys::{PrivateKey, PublicKey};
 pub use login::{AccountKeys, account_role_key};
-pub use memo::{decrypt_with_checksum, encrypt_with_checksum};
+pub use memo::{decrypt_with_checksum, encrypt_with_checksum, unique_nonce};
 pub use signature::Signature;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -422,9 +423,16 @@ pub fn sha256_bytes(value: &[u8]) -> [u8; 32] {
 }
 
 pub fn decode_wif_private_key(value: &str) -> Result<[u8; 32]> {
-    let decoded = bs58::decode(value)
+    let mut decoded = bs58::decode(value)
         .into_vec()
         .map_err(|_| invalid_private_key("WIF is not valid base58"))?;
+    // The decoded buffer holds the raw key: scrub it whatever the outcome.
+    let result = decode_wif_payload(&decoded);
+    decoded.zeroize();
+    result
+}
+
+fn decode_wif_payload(decoded: &[u8]) -> Result<[u8; 32]> {
     if decoded.len() != 37 {
         return Err(invalid_private_key(
             "WIF must contain version, 32-byte key, and checksum",

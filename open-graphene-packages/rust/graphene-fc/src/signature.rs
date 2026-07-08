@@ -56,8 +56,11 @@ impl Signature {
         public_key.verify(digest, &self.0)
     }
 
-    /// Whether the signature is in Graphene's canonical low-`s` form (it always is when produced by
-    /// [`sign`](Self::sign); check imported signatures before relying on them).
+    /// Whether the signature satisfies fc's canonicality predicate (no high bit
+    /// and no redundant leading zero in either component's first byte —
+    /// `fc::ecc::public_key::is_canonical`, not a low-`s` check). Signatures
+    /// produced by [`sign`](Self::sign) always are; check imported signatures
+    /// before relying on them.
     pub fn is_canonical(&self) -> bool {
         is_graphene_canonical_compact_signature(&self.0)
     }

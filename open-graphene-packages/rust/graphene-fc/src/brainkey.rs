@@ -5,6 +5,7 @@
 //! Graphene wallet. [`BrainKey::suggest`] generates a fresh random one from a supplied dictionary.
 
 use sha2::{Digest, Sha256, Sha512};
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 use crate::{FcSerializeError, PrivateKey, Result};
 
@@ -12,7 +13,8 @@ use crate::{FcSerializeError, PrivateKey, Result};
 pub const SUGGESTED_BRAIN_KEY_WORDS: usize = 16;
 
 /// A normalised brain key. Treat the words like a master password: anyone with them owns the account.
-#[derive(Clone, PartialEq, Eq)]
+/// The words are zeroized on drop.
+#[derive(Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
 pub struct BrainKey(String);
 
 impl BrainKey {

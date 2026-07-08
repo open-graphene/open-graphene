@@ -7,6 +7,7 @@
 use ripemd::{Digest, Ripemd160};
 use secp256k1::{PublicKey as Secp256k1PublicKey, Scalar, Secp256k1, SecretKey};
 use sha2::Sha512;
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 use crate::{
     FcSerializeError, Result, decode_public_key, decode_wif_private_key,
@@ -15,7 +16,8 @@ use crate::{
 };
 
 /// A secp256k1 private key. Keep it secret: treat it like a password, never log or display it.
-#[derive(Clone)]
+/// The key bytes are zeroized on drop.
+#[derive(Clone, Zeroize, ZeroizeOnDrop)]
 pub struct PrivateKey([u8; 32]);
 
 impl PrivateKey {
@@ -44,7 +46,9 @@ impl PrivateKey {
         payload.extend_from_slice(&self.0);
         let checksum = sha256_bytes(&sha256_bytes(&payload));
         payload.extend_from_slice(&checksum[..4]);
-        bs58::encode(payload).into_string()
+        let wif = bs58::encode(&payload).into_string();
+        payload.zeroize();
+        wif
     }
 
     /// The public key that pairs with this private key.
