@@ -1763,7 +1763,7 @@ fn render_fc_operation_impls(
 
     for operation in sorted_operations(&protocol.operations) {
         if operation.name == "transfer_operation" {
-            render_fc_transfer_operation_impl(out);
+            render_fc_transfer_operation_impl(out, &operation)?;
             supported_operations.insert(operation.name);
             continue;
         }
@@ -2215,7 +2215,32 @@ fn render_public_key_prefix_expr(ty: &TypeRef) -> Result<String> {
     }
 }
 
-fn render_fc_transfer_operation_impl(out: &mut String) {
+fn render_fc_transfer_operation_impl(out: &mut String, operation: &OperationDef) -> Result<()> {
+    // This impl hand-encodes the transfer wire layout (with memo kept
+    // fail-closed pending verified test vectors). It must never compile
+    // against a fork whose transfer_operation has a different shape:
+    // verify the spec matches the assumed field sequence exactly.
+    const EXPECTED_FIELDS: [&str; 6] = ["fee", "from", "to", "amount", "memo", "extensions"];
+    let mut fields = operation.fields.clone();
+    fields.sort_by_key(|field| field.index);
+    let actual: Vec<&str> = fields.iter().map(|field| field.name.as_str()).collect();
+    if actual != EXPECTED_FIELDS {
+        return Err(GenBindingsRsError::Render {
+            message: format!(
+                "transfer_operation FC template assumes fields {EXPECTED_FIELDS:?} but the spec declares {actual:?}; update the template before generating signing code"
+            ),
+        });
+    }
+    let memo_is_optional = fields
+        .iter()
+        .find(|field| field.name == "memo")
+        .is_some_and(|field| matches!(field.ty, TypeRef::Optional { .. }));
+    if !memo_is_optional {
+        return Err(GenBindingsRsError::Render {
+            message: "transfer_operation FC template assumes an optional memo field".to_string(),
+        });
+    }
+
     out.push_str("impl FcSerialize for crate::generated::operations::TransferOperation {\n");
     out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
     out.push_str("        self.fee.fc_serialize(out)?;\n");
@@ -2230,6 +2255,7 @@ fn render_fc_transfer_operation_impl(out: &mut String) {
     out.push_str("        Ok(())\n");
     out.push_str("    }\n");
     out.push_str("}\n\n");
+    Ok(())
 }
 
 fn is_fc_supported_operation(
@@ -3671,7 +3697,7 @@ mod tests {
         protocol.operations.push(OperationDef {
             name: "transfer_operation".to_string(),
             wire_tag: 0,
-            fields: vec![],
+            fields: transfer_operation_fields(),
             is_virtual: false,
             source: None,
             support: None,
@@ -4509,7 +4535,7 @@ mod tests {
         protocol.operations.push(OperationDef {
             name: "transfer_operation".to_string(),
             wire_tag: 0,
-            fields: vec![],
+            fields: transfer_operation_fields(),
             is_virtual: false,
             source: None,
             support: None,
@@ -4724,6 +4750,65 @@ mod tests {
             source: None,
             support: None,
         }
+    }
+
+    fn transfer_operation_fields() -> Vec<FieldDef> {
+        let field = |index: u32, name: &str, ty: TypeRef| FieldDef {
+            index,
+            name: name.to_string(),
+            ty,
+            source: None,
+            support: None,
+        };
+        vec![
+            field(
+                0,
+                "fee",
+                TypeRef::Ref {
+                    name: "asset".to_string(),
+                },
+            ),
+            field(
+                1,
+                "from",
+                TypeRef::ProtocolObjectId {
+                    object_type: "account".to_string(),
+                },
+            ),
+            field(
+                2,
+                "to",
+                TypeRef::ProtocolObjectId {
+                    object_type: "account".to_string(),
+                },
+            ),
+            field(
+                3,
+                "amount",
+                TypeRef::Ref {
+                    name: "asset".to_string(),
+                },
+            ),
+            field(
+                4,
+                "memo",
+                TypeRef::Optional {
+                    inner: Box::new(TypeRef::Ref {
+                        name: "memo_data".to_string(),
+                    }),
+                },
+            ),
+            field(
+                5,
+                "extensions",
+                TypeRef::Set {
+                    inner: Box::new(TypeRef::StaticVariantRef {
+                        name: "future_extensions".to_string(),
+                    }),
+                    ordering: open_graphene_json_schema::types::OrderingRule::StaticVariantTag,
+                },
+            ),
+        ]
     }
 
     fn minimal_protocol() -> Protocol {
