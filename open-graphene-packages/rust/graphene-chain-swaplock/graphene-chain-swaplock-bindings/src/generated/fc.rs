@@ -2,8 +2,6 @@
 // Chain: swaplock | schema version: 1 | module: minimal FC serialization for transfer path.
 // Do not edit by hand.
 
-#![allow(clippy::explicit_auto_deref, clippy::borrow_deref_ref)]
-
 pub use open_graphene_fc::{
     FcSerialize, FcSerializeError, Result, decode_chain_id_hex, decode_public_key,
     is_graphene_canonical_compact_signature, parse_protocol_object_id,
@@ -2497,21 +2495,17 @@ impl FcSerialize for crate::generated::static_variants::ArgumentType {
             }
             Self::TimePointSec(value) => {
                 write_varint(4u64, out);
-                write_time_point_sec(&(**value), out)?;
+                write_time_point_sec(value, out)?;
                 Ok(())
             }
             Self::PublicKeyType(value) => {
                 write_varint(5u64, out);
-                write_public_key(
-                    &(**value),
-                    Some(crate::generated::ids::PUBLIC_KEY_PREFIX),
-                    out,
-                )?;
+                write_public_key(value, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;
                 Ok(())
             }
             Self::FcSha256(value) => {
                 write_varint(6u64, out);
-                write_fixed_bytes(&(**value), 32, "fixed_bytes_32", out)?;
+                write_fixed_bytes(value, 32, "fixed_bytes_32", out)?;
                 Ok(())
             }
             Self::AccountIdType(value) => {
@@ -4460,9 +4454,9 @@ impl FcSerialize for crate::generated::operations::CreditOfferUpdateOperation {
         match &self.acceptable_collateral {
             Some(value) => {
                 out.push(1);
-                write_varint((*value).len() as u64, out);
+                write_varint(value.len() as u64, out);
                 let mut previous_key: Option<u64> = None;
-                for (key, value) in &(*value) {
+                for (key, value) in value {
                     let key_parts = parse_protocol_object_id(&key.0, None, None)?;
                     if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
                         return Err(FcSerializeError::UnsupportedValue {
@@ -4480,9 +4474,9 @@ impl FcSerialize for crate::generated::operations::CreditOfferUpdateOperation {
         match &self.acceptable_borrowers {
             Some(value) => {
                 out.push(1);
-                write_varint((*value).len() as u64, out);
+                write_varint(value.len() as u64, out);
                 let mut previous_key: Option<u64> = None;
-                for (key, value) in &(*value) {
+                for (key, value) in value {
                     let key_parts = parse_protocol_object_id(&key.0, None, None)?;
                     if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
                         return Err(FcSerializeError::UnsupportedValue {

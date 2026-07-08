@@ -446,7 +446,7 @@ pub(crate) fn render_fc_argument_type_impl(out: &mut String, protocol: &Protocol
         }
         let variant_name = rust_variant_name(&arm.name);
         let payload_lines =
-            render_fc_value_serialize_lines("(**value)", &arm.ty, "                ")?;
+            render_fc_value_serialize_lines("(**value)", "value", &arm.ty, "                ")?;
         out.push_str(&format!(
             "            Self::{variant_name}(value) => {{\n                write_varint({}u64, out);\n{payload_lines}                Ok(())\n            }}\n",
             arm.tag
@@ -529,11 +529,24 @@ pub(crate) fn render_fc_operation_impls(
 
 pub(crate) fn render_fc_field_serialize_line(field: &FieldDef) -> Result<String> {
     let field_name = rust_field_name(&field.name);
-    render_fc_value_serialize_lines(&format!("self.{field_name}"), &field.ty, "        ")
+    render_fc_value_serialize_lines(
+        &format!("self.{field_name}"),
+        &format!("&self.{field_name}"),
+        &field.ty,
+        "        ",
+    )
 }
 
+/// Renders the statements serializing one value.
+///
+/// `value_expr` is a place expression of the value's own type (e.g. `self.field`),
+/// used for method calls, field access, and iteration borrows. `borrowed_expr` is
+/// an expression usable verbatim as a `&T` function argument: `&self.field` for
+/// owned places, or just `value` when the surrounding match/loop already binds a
+/// reference (borrowing again there would trip clippy's auto-deref/borrow lints).
 pub(crate) fn render_fc_value_serialize_lines(
     value_expr: &str,
+    borrowed_expr: &str,
     ty: &TypeRef,
     indent: &str,
 ) -> Result<String> {
@@ -541,19 +554,19 @@ pub(crate) fn render_fc_value_serialize_lines(
         TypeRef::PublicKey { .. } => {
             let prefix = render_public_key_prefix_expr(ty)?;
             Ok(format!(
-                "{indent}write_public_key(&{value_expr}, {prefix}, out)?;\n"
+                "{indent}write_public_key({borrowed_expr}, {prefix}, out)?;\n"
             ))
         }
         TypeRef::TimePointSec => Ok(format!(
-            "{indent}write_time_point_sec(&{value_expr}, out)?;\n"
+            "{indent}write_time_point_sec({borrowed_expr}, out)?;\n"
         )),
         ty if is_vote_id_type(ty) => Ok(format!(
             "{indent}write_vote_id({}, out)?;\n",
-            render_vote_id_arg(value_expr, ty)?
+            render_vote_id_arg(value_expr, borrowed_expr, ty)?
         )),
-        TypeRef::Bytes => Ok(format!("{indent}write_bytes(&{value_expr}, out)?;\n")),
+        TypeRef::Bytes => Ok(format!("{indent}write_bytes({borrowed_expr}, out)?;\n")),
         TypeRef::FixedBytes { bytes } => Ok(format!(
-            "{indent}write_fixed_bytes(&{value_expr}, {bytes}, {}, out)?;\n",
+            "{indent}write_fixed_bytes({borrowed_expr}, {bytes}, {}, out)?;\n",
             rust_string_literal(&format!("fixed_bytes_{bytes}"))
         )),
         TypeRef::Optional { inner } if matches!(inner.as_ref(), TypeRef::PublicKey { .. }) => {
@@ -594,7 +607,9 @@ pub(crate) fn render_fc_value_serialize_lines(
             let TypeRef::FlatMap { key, value, .. } = inner.as_ref() else {
                 unreachable!("guard checked flat_map inner")
             };
-            let inner_lines = render_fc_flat_map_serialize_lines("(*value)", key, value, indent)?;
+            // `value` is already a reference inside the `Some(value)` arm.
+            let inner_lines =
+                render_fc_flat_map_serialize_lines("value", "value", key, value, indent)?;
             Ok(format!(
                 "{indent}match &{value_expr} {{\n\
                  {indent}    Some(value) => {{\n\
@@ -631,10 +646,18 @@ pub(crate) fn render_fc_value_serialize_lines(
             ))
         }
         TypeRef::Pair { first, second } => {
-            let first_lines =
-                render_fc_value_serialize_lines(&format!("{value_expr}.0"), first, indent)?;
-            let second_lines =
-                render_fc_value_serialize_lines(&format!("{value_expr}.1"), second, indent)?;
+            let first_lines = render_fc_value_serialize_lines(
+                &format!("{value_expr}.0"),
+                &format!("&{value_expr}.0"),
+                first,
+                indent,
+            )?;
+            let second_lines = render_fc_value_serialize_lines(
+                &format!("{value_expr}.1"),
+                &format!("&{value_expr}.1"),
+                second,
+                indent,
+            )?;
             Ok(format!("{first_lines}{second_lines}"))
         }
         TypeRef::Set { inner, .. }
@@ -646,7 +669,13 @@ pub(crate) fn render_fc_value_serialize_lines(
             render_fc_set_serialize_lines(value_expr, inner, indent)
         }
         TypeRef::FlatMap { key, value, .. } if is_fc_supported_flat_map(key, value) => {
-            render_fc_flat_map_serialize_lines(value_expr, key, value, indent)
+            render_fc_flat_map_serialize_lines(
+                value_expr,
+                &format!("&{value_expr}"),
+                key,
+                value,
+                indent,
+            )
         }
         _ => Ok(format!("{indent}{value_expr}.fc_serialize(out)?;\n")),
     }
@@ -809,6 +838,7 @@ pub(crate) fn render_fc_static_variant_set_serialize_lines(
 
 pub(crate) fn render_fc_flat_map_serialize_lines(
     value_expr: &str,
+    iter_expr: &str,
     key: &TypeRef,
     value: &TypeRef,
     indent: &str,
@@ -832,7 +862,7 @@ pub(crate) fn render_fc_flat_map_serialize_lines(
         TypeRef::ProtocolObjectId { .. } => Ok(format!(
             "{indent}write_varint({value_expr}.len() as u64, out);\n\
              {indent}let mut previous_key: Option<u64> = None;\n\
-             {indent}for (key, value) in &{value_expr} {{\n\
+             {indent}for (key, value) in {iter_expr} {{\n\
              {indent}    let key_parts = parse_protocol_object_id(&key.0, None, None)?;\n\
              {indent}    if previous_key.is_some_and(|previous| previous >= key_parts.instance) {{\n\
              {indent}        return Err(FcSerializeError::UnsupportedValue {{ type_name: \"FlatMap\", reason: \"flat_map keys must be sorted and unique\" }});\n\
@@ -847,7 +877,7 @@ pub(crate) fn render_fc_flat_map_serialize_lines(
             Ok(format!(
                 "{indent}write_varint({value_expr}.len() as u64, out);\n\
                  {indent}let mut previous_key: Option<Vec<u8>> = None;\n\
-                 {indent}for (key, value) in &{value_expr} {{\n\
+                 {indent}for (key, value) in {iter_expr} {{\n\
                  {indent}    let mut key_bytes = Vec::new();\n\
                  {indent}    write_public_key(key, {prefix}, &mut key_bytes)?;\n\
                  {indent}    if previous_key.as_ref().is_some_and(|previous| previous >= &key_bytes) {{\n\
@@ -902,9 +932,13 @@ pub(crate) fn is_fc_supported_flat_map(key: &TypeRef, value: &TypeRef) -> bool {
         || matches!(value, TypeRef::Ref { name } if name == "price"))
 }
 
-pub(crate) fn render_vote_id_arg(value_expr: &str, ty: &TypeRef) -> Result<String> {
+pub(crate) fn render_vote_id_arg(
+    value_expr: &str,
+    borrowed_expr: &str,
+    ty: &TypeRef,
+) -> Result<String> {
     match ty {
-        TypeRef::VoteId => Ok(format!("&{value_expr}")),
+        TypeRef::VoteId => Ok(borrowed_expr.to_string()),
         TypeRef::ProtocolObjectId { object_type } if object_type == "vote" => {
             Ok(format!("&{value_expr}.0"))
         }
@@ -1765,6 +1799,7 @@ mod tests {
     fn fc_set_renderer_guards_scalar_and_fixed_bytes_sets_without_sorting() {
         let uint16_set = render_fc_value_serialize_lines(
             "self.restrictions_to_remove",
+            "&self.restrictions_to_remove",
             &TypeRef::Set {
                 inner: Box::new(TypeRef::Uint16),
                 ordering: open_graphene_json_schema::OrderingRule::Unresolved,
@@ -1779,6 +1814,7 @@ mod tests {
 
         let fixed_bytes_set = render_fc_value_serialize_lines(
             "self.hashes",
+            "&self.hashes",
             &TypeRef::Set {
                 inner: Box::new(TypeRef::FixedBytes { bytes: 32 }),
                 ordering: open_graphene_json_schema::OrderingRule::Unresolved,

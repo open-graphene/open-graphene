@@ -80,11 +80,15 @@ pub(crate) fn render_protocol_object_union(out: &mut String, protocol: &Protocol
     out.push_str("/// Deserialization dispatches by the object's `id` (`space.type.instance`) so objects are\n");
     out.push_str("/// not accidentally matched by shape. Object ids whose type is not modeled yet are kept as\n");
     out.push_str("/// raw JSON in [`ProtocolObject::Unknown`].\n");
+    out.push_str("///\n");
+    out.push_str(
+        "/// Payloads are boxed so the enum stays small regardless of the largest object type.\n",
+    );
     out.push_str("#[derive(Debug, Clone, PartialEq)]\n");
     out.push_str("pub enum ProtocolObject {\n");
     for (_, _, variant_name, struct_name) in &variants {
         out.push_str(&format!(
-            "    {variant_name}(crate::generated::types::{struct_name}),\n"
+            "    {variant_name}(Box<crate::generated::types::{struct_name}>),\n"
         ));
     }
     out.push_str("    Unknown(serde_json::Value),\n");
@@ -182,7 +186,7 @@ pub(crate) fn render_rpc_method(
     ));
     out.push_str("        #[derive(Debug, Clone, PartialEq)]\n");
     out.push_str("        pub struct Params {\n");
-    let mut field_names = Vec::new();
+    let mut fields = Vec::new();
     let mut seen_fields = BTreeSet::new();
     for (index, param) in params.iter().enumerate() {
         let field_name = rust_field_name(&param.name);
@@ -198,13 +202,14 @@ pub(crate) fn render_rpc_method(
                 "            /// Omitted from the call when `None`; the node applies its default.\n",
             );
         }
+        let is_copy = is_copy_primitive(&rendered);
         let field_ty = if optional {
             format!("Option<{rendered}>")
         } else {
             rendered
         };
         out.push_str(&format!("            pub {field_name}: {field_ty},\n"));
-        field_names.push(field_name);
+        fields.push((field_name, is_copy));
     }
     out.push_str("        }\n\n");
 
@@ -216,18 +221,27 @@ pub(crate) fn render_rpc_method(
     if params.is_empty() {
         out.push_str("                Ok(serde_json::Value::Array(Vec::new()))\n");
     } else {
-        out.push_str("                let mut params: Vec<serde_json::Value> = Vec::new();\n");
-        for field_name in &field_names[..tail_start] {
-            out.push_str(&format!(
-                "                params.push(serde_json::to_value(&self.{field_name})?);\n"
-            ));
-        }
         let tail_len = params.len() - tail_start;
+        if tail_start > 0 {
+            let mutability = if tail_len > 0 { "mut " } else { "" };
+            out.push_str(&format!("                let {mutability}params = vec![\n"));
+            for (field_name, is_copy) in &fields[..tail_start] {
+                // `Copy` values are passed by value; borrowing them would trip
+                // clippy::needless_borrows_for_generic_args.
+                let borrow = if *is_copy { "" } else { "&" };
+                out.push_str(&format!(
+                    "                    serde_json::to_value({borrow}self.{field_name})?,\n"
+                ));
+            }
+            out.push_str("                ];\n");
+        } else {
+            out.push_str("                let mut params: Vec<serde_json::Value> = Vec::new();\n");
+        }
         if tail_len > 0 {
             out.push_str(&format!(
                 "                let tail: [Option<serde_json::Value>; {tail_len}] = [\n"
             ));
-            for field_name in &field_names[tail_start..] {
+            for (field_name, _) in &fields[tail_start..] {
                 out.push_str(&format!(
                     "                    match &self.{field_name} {{\n                        Some(value) => Some(serde_json::to_value(value)?),\n                        None => None,\n                    }},\n"
                 ));
@@ -273,6 +287,16 @@ pub(crate) fn render_rpc_method(
     }
     out.push_str("    }\n\n");
     Ok(())
+}
+
+/// Whether a rendered Rust type is a `Copy` primitive: those are passed to
+/// `serde_json::to_value` by value, since borrowing them would trip
+/// clippy::needless_borrows_for_generic_args in the generated code.
+fn is_copy_primitive(rendered: &str) -> bool {
+    matches!(
+        rendered,
+        "bool" | "u8" | "u16" | "u32" | "u64" | "i8" | "i16" | "i32" | "i64" | "f32" | "f64"
+    )
 }
 
 /// Like [`render_type_ref`], but total: RPC signatures resolved from C++ may reference
@@ -439,8 +463,10 @@ mod tests {
         assert!(output.contains("pub object_ids: Vec<crate::generated::ids::ObjectId>"));
         assert!(output.contains("pub maybe_subscribe: Option<bool>"));
         assert!(output.contains("pub with_details: Option<bool>"));
-        assert!(output.contains("params.push(serde_json::to_value(&self.object_ids)?);"));
-        assert!(output.contains("params.push(serde_json::to_value(&self.maybe_subscribe)?);"));
+        assert!(output.contains("let mut params = vec![\n"));
+        assert!(output.contains("serde_json::to_value(&self.object_ids)?,"));
+        // Copy-typed values are passed by value, not borrowed.
+        assert!(output.contains("serde_json::to_value(self.maybe_subscribe)?,"));
         assert!(output.contains("if let Some(last_provided) = tail.iter().rposition"));
         assert!(output.contains("params.push(value.unwrap_or(serde_json::Value::Null));"));
         assert!(output.contains("pub type Returns = Vec<serde_json::Value>;"));
@@ -483,7 +509,7 @@ mod tests {
         let output = render_rpc(&protocol).expect("render rpc");
 
         assert!(output.contains("pub enum ProtocolObject"));
-        assert!(output.contains("Account(crate::generated::types::AccountObject)"));
+        assert!(output.contains("Account(Box<crate::generated::types::AccountObject>)"));
         assert!(output.contains("Some((1, 2)) => serde_json::from_value(value)"));
         assert!(output.contains(".map(Self::Account)"));
         assert!(output.contains("Unknown(serde_json::Value)"));
