@@ -49,11 +49,6 @@ struct SchemaEdge {
     cut: Option<SchemaCut>,
 }
 
-#[derive(Debug, Clone)]
-struct DfsEdge {
-    cut: Option<SchemaCut>,
-}
-
 pub fn generate_bindings(
     spec_path: impl AsRef<Path>,
     out_dir: impl AsRef<Path>,
@@ -77,12 +72,19 @@ pub fn generate_bindings(
         source,
     })?;
 
+    let no_recursion_cuts = detect_schema_no_recursion_cuts(&protocol);
     let files = [
         ("mod.rs", render_mod(&protocol)?),
         ("ids.rs", render_ids(&protocol)?),
-        ("types.rs", render_types(&protocol)?),
-        ("operations.rs", render_operations(&protocol)?),
-        ("static_variants.rs", render_static_variants(&protocol)?),
+        ("types.rs", render_types(&protocol, &no_recursion_cuts)?),
+        (
+            "operations.rs",
+            render_operations(&protocol, &no_recursion_cuts)?,
+        ),
+        (
+            "static_variants.rs",
+            render_static_variants(&protocol, &no_recursion_cuts)?,
+        ),
         ("fc.rs", render_fc(&protocol)?),
         ("rpc.rs", render_rpc(&protocol)?),
     ];
@@ -622,19 +624,11 @@ fn render_string_id_conversions(out: &mut String, id_name: &str) {
 fn detect_schema_no_recursion_cuts(protocol: &Protocol) -> SchemaNoRecursionCuts {
     let graph = build_schema_dependency_graph(protocol);
     let mut cuts = SchemaNoRecursionCuts::default();
-    let mut visited = BTreeSet::new();
     let mut visiting = BTreeSet::new();
     let mut path = Vec::new();
 
     for node in graph.keys() {
-        detect_schema_cycles_from(
-            node,
-            &graph,
-            &mut visited,
-            &mut visiting,
-            &mut path,
-            &mut cuts,
-        );
+        detect_schema_cycles_from(node, &graph, &mut visiting, &mut path, &mut cuts);
     }
 
     cuts.variants.retain(|variant| variant.owner != "Operation");
@@ -765,9 +759,8 @@ fn collect_schema_type_targets(protocol: &Protocol, ty: &TypeRef, targets: &mut 
 fn detect_schema_cycles_from(
     node: &str,
     graph: &BTreeMap<String, Vec<SchemaEdge>>,
-    _visited: &mut BTreeSet<String>,
     visiting: &mut BTreeSet<String>,
-    path: &mut Vec<DfsEdge>,
+    path: &mut Vec<Option<SchemaCut>>,
     cuts: &mut SchemaNoRecursionCuts,
 ) {
     if !visiting.insert(node.to_string()) {
@@ -776,18 +769,15 @@ fn detect_schema_cycles_from(
 
     if let Some(edges) = graph.get(node) {
         for edge in edges {
-            let dfs_edge = DfsEdge {
-                cut: edge.cut.clone(),
-            };
             if visiting.contains(&edge.target) {
-                if let Some(cut) = choose_schema_cycle_cut(&edge.target, &dfs_edge, path) {
+                if let Some(cut) = choose_schema_cycle_cut(&edge.target, &edge.cut, path) {
                     record_schema_cycle_cut(cut, cuts);
                 }
                 continue;
             }
 
-            path.push(dfs_edge);
-            detect_schema_cycles_from(&edge.target, graph, _visited, visiting, path, cuts);
+            path.push(edge.cut.clone());
+            detect_schema_cycles_from(&edge.target, graph, visiting, path, cuts);
             path.pop();
         }
     }
@@ -797,14 +787,14 @@ fn detect_schema_cycles_from(
 
 fn choose_schema_cycle_cut(
     target: &str,
-    back_edge: &DfsEdge,
-    path: &[DfsEdge],
+    back_edge_cut: &Option<SchemaCut>,
+    path: &[Option<SchemaCut>],
 ) -> Option<SchemaCut> {
-    if let Some(SchemaCut::Variant(variant)) = &back_edge.cut {
+    if let Some(SchemaCut::Variant(variant)) = back_edge_cut {
         if variant.owner != "Operation" {
             return Some(SchemaCut::Variant(variant.clone()));
         }
-        if let Some(field) = path.iter().rev().find_map(|edge| match &edge.cut {
+        if let Some(field) = path.iter().rev().find_map(|cut| match cut {
             Some(SchemaCut::Field(field)) => Some(field.clone()),
             _ => None,
         }) {
@@ -812,24 +802,23 @@ fn choose_schema_cycle_cut(
         }
     }
 
-    if let Some(field) = path.iter().rev().find_map(|edge| match &edge.cut {
+    if let Some(field) = path.iter().rev().find_map(|cut| match cut {
         Some(SchemaCut::Field(field)) if field.owner == target => Some(field.clone()),
         _ => None,
     }) {
         return Some(SchemaCut::Field(field));
     }
 
-    if let Some(variant) = path.iter().rev().find_map(|edge| match &edge.cut {
+    if let Some(variant) = path.iter().rev().find_map(|cut| match cut {
         Some(SchemaCut::Variant(variant)) => Some(variant.clone()),
         _ => None,
     }) {
         return Some(SchemaCut::Variant(variant));
     }
 
-    back_edge
-        .cut
+    back_edge_cut
         .clone()
-        .or_else(|| path.iter().rev().find_map(|edge| edge.cut.clone()))
+        .or_else(|| path.iter().rev().find_map(|cut| cut.clone()))
 }
 
 fn record_schema_cycle_cut(cut: SchemaCut, cuts: &mut SchemaNoRecursionCuts) {
@@ -843,8 +832,7 @@ fn record_schema_cycle_cut(cut: SchemaCut, cuts: &mut SchemaNoRecursionCuts) {
     }
 }
 
-fn render_types(protocol: &Protocol) -> Result<String> {
-    let no_recursion_cuts = detect_schema_no_recursion_cuts(protocol);
+fn render_types(protocol: &Protocol, no_recursion_cuts: &SchemaNoRecursionCuts) -> Result<String> {
     let mut out = generated_header(protocol, "raw structs and enums");
     out.push_str("use serde::{Deserialize, Serialize};\n\n");
     // `share_type` (i64-as-number-or-decimal-string) is decoded the same way on every
@@ -891,14 +879,16 @@ fn render_types(protocol: &Protocol) -> Result<String> {
         }
         let name = rust_type_name(&struct_def.name);
         ensure_unique(&mut emitted, &name, "type")?;
-        render_struct(&mut out, protocol, &struct_def, &no_recursion_cuts)?;
+        render_struct(&mut out, protocol, &struct_def, no_recursion_cuts)?;
     }
 
     Ok(out)
 }
 
-fn render_operations(protocol: &Protocol) -> Result<String> {
-    let no_recursion_cuts = detect_schema_no_recursion_cuts(protocol);
+fn render_operations(
+    protocol: &Protocol,
+    no_recursion_cuts: &SchemaNoRecursionCuts,
+) -> Result<String> {
     let mut out = generated_header(protocol, "operation structs");
     out.push_str("use serde::{Deserialize, Serialize};\n\n");
 
@@ -911,14 +901,16 @@ fn render_operations(protocol: &Protocol) -> Result<String> {
             rust_const_name(&format!("{}_id", operation.name)),
             operation.wire_tag
         ));
-        render_operation_struct(&mut out, protocol, &operation, &no_recursion_cuts)?;
+        render_operation_struct(&mut out, protocol, &operation, no_recursion_cuts)?;
     }
 
     Ok(out)
 }
 
-fn render_static_variants(protocol: &Protocol) -> Result<String> {
-    let no_recursion_cuts = detect_schema_no_recursion_cuts(protocol);
+fn render_static_variants(
+    protocol: &Protocol,
+    no_recursion_cuts: &SchemaNoRecursionCuts,
+) -> Result<String> {
     let mut out = generated_header(protocol, "static variant enums");
     out.push_str("// Static variants use Graphene JSON wire format: [tag, value].\n\n");
 
@@ -926,7 +918,7 @@ fn render_static_variants(protocol: &Protocol) -> Result<String> {
     for variant in sorted_static_variants(&protocol.static_variants) {
         let name = rust_type_name(&variant.name);
         ensure_unique(&mut emitted, &name, "static variant")?;
-        render_static_variant(&mut out, protocol, &variant, &no_recursion_cuts)?;
+        render_static_variant(&mut out, protocol, &variant, no_recursion_cuts)?;
     }
 
     Ok(out)
@@ -1261,11 +1253,15 @@ fn render_fc_transfer_path_impls(out: &mut String, protocol: &Protocol) -> Resul
         out.push_str("}\n\n");
     }
 
-    render_fc_htlc_hash_impl(out, protocol)?;
-    render_fc_predicate_impl(out, protocol)?;
-    render_fc_vesting_policy_initializer_impl(out, protocol)?;
-    render_fc_worker_initializer_impl(out, protocol)?;
-    render_fc_limit_order_auto_action_impl(out, protocol)?;
+    for spec_name in [
+        "htlc_hash",
+        "predicate",
+        "vesting_policy_initializer",
+        "worker_initializer",
+        "limit_order_auto_action",
+    ] {
+        render_fc_tagged_static_variant_impl(out, protocol, spec_name)?;
+    }
     render_fc_fee_parameters_impl(out, protocol)?;
     render_fc_argument_type_impl(out, protocol)?;
 
@@ -1447,186 +1443,51 @@ fn render_fc_extension_struct_impl(out: &mut String, struct_def: &StructDef) {
     out.push_str("}\n\n");
 }
 
-fn render_fc_htlc_hash_impl(out: &mut String, protocol: &Protocol) -> Result<()> {
+/// Renders the `FcSerialize` impl for a simple tagged static variant: each arm
+/// writes its varint tag followed by the payload. Struct-ref payloads delegate
+/// to the payload's own impl; fixed-byte payloads (`htlc_hash`) write the raw
+/// digest bytes.
+fn render_fc_tagged_static_variant_impl(
+    out: &mut String,
+    protocol: &Protocol,
+    spec_name: &str,
+) -> Result<()> {
     let Some(variant) = protocol
         .static_variants
         .iter()
-        .find(|variant| variant.name == "htlc_hash")
+        .find(|variant| variant.name == spec_name)
     else {
         return Ok(());
     };
 
-    out.push_str("impl FcSerialize for crate::generated::static_variants::HtlcHash {\n");
+    out.push_str(&format!(
+        "impl FcSerialize for crate::generated::static_variants::{} {{\n",
+        rust_type_name(spec_name)
+    ));
     out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
     out.push_str("        match self {\n");
 
     let mut arms = variant.variants.clone();
     arms.sort_by_key(|arm| arm.tag);
     for arm in arms {
-        let TypeRef::FixedBytes { bytes } = arm.ty else {
-            return Err(GenBindingsRsError::Render {
-                message: format!(
-                    "unsupported htlc_hash variant `{}` payload type for FC rendering",
-                    arm.name
-                ),
-            });
+        let payload = match arm.ty {
+            TypeRef::Ref { .. } => "value.as_ref().fc_serialize(out)".to_string(),
+            TypeRef::FixedBytes { bytes } => format!(
+                "write_fixed_bytes(value.as_ref(), {bytes}, {}, out)",
+                rust_string_literal(&format!("{spec_name}::{}", arm.name))
+            ),
+            _ => {
+                return Err(GenBindingsRsError::Render {
+                    message: format!(
+                        "unsupported {spec_name} variant `{}` payload type for FC rendering",
+                        arm.name
+                    ),
+                });
+            }
         };
         let variant_name = rust_variant_name(&arm.name);
         out.push_str(&format!(
-            "            Self::{variant_name}(value) => {{\n                write_varint({}u64, out);\n                write_fixed_bytes(value.as_ref(), {bytes}, {}, out)\n            }}\n",
-            arm.tag,
-            rust_string_literal(&format!("htlc_hash::{}", arm.name))
-        ));
-    }
-
-    out.push_str("        }\n");
-    out.push_str("    }\n");
-    out.push_str("}\n\n");
-    Ok(())
-}
-
-fn render_fc_predicate_impl(out: &mut String, protocol: &Protocol) -> Result<()> {
-    let Some(variant) = protocol
-        .static_variants
-        .iter()
-        .find(|variant| variant.name == "predicate")
-    else {
-        return Ok(());
-    };
-
-    out.push_str("impl FcSerialize for crate::generated::static_variants::Predicate {\n");
-    out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
-    out.push_str("        match self {\n");
-
-    let mut arms = variant.variants.clone();
-    arms.sort_by_key(|arm| arm.tag);
-    for arm in arms {
-        if !matches!(arm.ty, TypeRef::Ref { .. }) {
-            return Err(GenBindingsRsError::Render {
-                message: format!(
-                    "unsupported predicate variant `{}` payload type for FC rendering",
-                    arm.name
-                ),
-            });
-        }
-        let variant_name = rust_variant_name(&arm.name);
-        out.push_str(&format!(
-            "            Self::{variant_name}(value) => {{\n                write_varint({}u64, out);\n                value.as_ref().fc_serialize(out)\n            }}\n",
-            arm.tag
-        ));
-    }
-
-    out.push_str("        }\n");
-    out.push_str("    }\n");
-    out.push_str("}\n\n");
-    Ok(())
-}
-
-fn render_fc_vesting_policy_initializer_impl(out: &mut String, protocol: &Protocol) -> Result<()> {
-    let Some(variant) = protocol
-        .static_variants
-        .iter()
-        .find(|variant| variant.name == "vesting_policy_initializer")
-    else {
-        return Ok(());
-    };
-
-    out.push_str(
-        "impl FcSerialize for crate::generated::static_variants::VestingPolicyInitializer {\n",
-    );
-    out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
-    out.push_str("        match self {\n");
-
-    let mut arms = variant.variants.clone();
-    arms.sort_by_key(|arm| arm.tag);
-    for arm in arms {
-        if !matches!(arm.ty, TypeRef::Ref { .. }) {
-            return Err(GenBindingsRsError::Render {
-                message: format!(
-                    "unsupported vesting_policy_initializer variant `{}` payload type for FC rendering",
-                    arm.name
-                ),
-            });
-        }
-        let variant_name = rust_variant_name(&arm.name);
-        out.push_str(&format!(
-            "            Self::{variant_name}(value) => {{\n                write_varint({}u64, out);\n                value.as_ref().fc_serialize(out)\n            }}\n",
-            arm.tag
-        ));
-    }
-
-    out.push_str("        }\n");
-    out.push_str("    }\n");
-    out.push_str("}\n\n");
-    Ok(())
-}
-
-fn render_fc_worker_initializer_impl(out: &mut String, protocol: &Protocol) -> Result<()> {
-    let Some(variant) = protocol
-        .static_variants
-        .iter()
-        .find(|variant| variant.name == "worker_initializer")
-    else {
-        return Ok(());
-    };
-
-    out.push_str("impl FcSerialize for crate::generated::static_variants::WorkerInitializer {\n");
-    out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
-    out.push_str("        match self {\n");
-
-    let mut arms = variant.variants.clone();
-    arms.sort_by_key(|arm| arm.tag);
-    for arm in arms {
-        if !matches!(arm.ty, TypeRef::Ref { .. }) {
-            return Err(GenBindingsRsError::Render {
-                message: format!(
-                    "unsupported worker_initializer variant `{}` payload type for FC rendering",
-                    arm.name
-                ),
-            });
-        }
-        let variant_name = rust_variant_name(&arm.name);
-        out.push_str(&format!(
-            "            Self::{variant_name}(value) => {{\n                write_varint({}u64, out);\n                value.as_ref().fc_serialize(out)\n            }}\n",
-            arm.tag
-        ));
-    }
-
-    out.push_str("        }\n");
-    out.push_str("    }\n");
-    out.push_str("}\n\n");
-    Ok(())
-}
-
-fn render_fc_limit_order_auto_action_impl(out: &mut String, protocol: &Protocol) -> Result<()> {
-    let Some(variant) = protocol
-        .static_variants
-        .iter()
-        .find(|variant| variant.name == "limit_order_auto_action")
-    else {
-        return Ok(());
-    };
-
-    out.push_str(
-        "impl FcSerialize for crate::generated::static_variants::LimitOrderAutoAction {\n",
-    );
-    out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
-    out.push_str("        match self {\n");
-
-    let mut arms = variant.variants.clone();
-    arms.sort_by_key(|arm| arm.tag);
-    for arm in arms {
-        if !matches!(arm.ty, TypeRef::Ref { .. }) {
-            return Err(GenBindingsRsError::Render {
-                message: format!(
-                    "unsupported limit_order_auto_action variant `{}` payload type for FC rendering",
-                    arm.name
-                ),
-            });
-        }
-        let variant_name = rust_variant_name(&arm.name);
-        out.push_str(&format!(
-            "            Self::{variant_name}(value) => {{\n                write_varint({}u64, out);\n                value.as_ref().fc_serialize(out)\n            }}\n",
+            "            Self::{variant_name}(value) => {{\n                write_varint({}u64, out);\n                {payload}\n            }}\n",
             arm.tag
         ));
     }
@@ -4161,7 +4022,8 @@ mod tests {
             support: None,
         });
 
-        let types = render_types(&protocol).expect("render types");
+        let types = render_types(&protocol, &detect_schema_no_recursion_cuts(&protocol))
+            .expect("render types");
         assert!(types.contains("impl Asset"));
         assert!(
             types.contains(
@@ -4422,7 +4284,8 @@ mod tests {
             support: None,
         });
 
-        let types = render_types(&protocol).expect("render types");
+        let types = render_types(&protocol, &detect_schema_no_recursion_cuts(&protocol))
+            .expect("render types");
 
         assert!(
             types
@@ -4598,7 +4461,8 @@ mod tests {
             "pub const CHAIN_ID_HEX: &str = \"2267f694d96b7ffdcba1a98c63c09e720a18a85ad34954e299c66d5a42234098\";"
         ));
 
-        let types = render_types(&protocol).expect("render types");
+        let types = render_types(&protocol, &detect_schema_no_recursion_cuts(&protocol))
+            .expect("render types");
         assert!(types.contains("pub struct Signature(\n"));
         assert!(types.contains(
             "deserialize_with = \"open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array\")]\n    pub Vec<u8>,\n);"
