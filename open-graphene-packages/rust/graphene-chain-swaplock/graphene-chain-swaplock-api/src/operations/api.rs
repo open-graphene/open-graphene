@@ -18,12 +18,20 @@ use super::asset_admin::{
 use super::balance_claim::BalanceClaimRequest;
 use super::blind::{BlindTransferRequest, TransferFromBlindRequest, TransferToBlindRequest};
 use super::call_order::{BidCollateralRequest, CallOrderUpdateRequest};
+use super::content_card::{
+    ContentCardCreateRequest, ContentCardRemoveRequest, ContentCardUpdateRequest,
+};
 use super::credit_offer::{
     CreditDealRepayRequest, CreditDealUpdateRequest, CreditOfferAcceptRequest,
     CreditOfferCreateRequest, CreditOfferDeleteRequest, CreditOfferUpdateRequest,
 };
 use super::custom_authority::{
     CustomAuthorityCreateRequest, CustomAuthorityDeleteRequest, CustomAuthorityUpdateRequest,
+};
+use super::data_room::{
+    DataRoomCreateRequest, DataRoomDeleteRequest, DataRoomMemberAddRequest,
+    DataRoomMemberRemoveRequest, DataRoomMemberUpdateRequest, DataRoomRotateKeyRequest,
+    DataRoomUpdateRequest,
 };
 use super::governance::{
     CommitteeMemberCreateRequest, CommitteeMemberUpdateGlobalParametersRequest,
@@ -701,6 +709,104 @@ impl<'session> OperationsApi<'session> {
         asset: impl Into<String>,
     ) -> TransferFromBlindRequest<'session> {
         TransferFromBlindRequest::new(self.session, to, amount, asset)
+    }
+
+    /// Open a data room owned by `owner`, named `name` (unique per owner): optionally attach it via
+    /// `.subject_asset(..)`/`.subject_account(..)` and set `.room_key(..)` for an encrypted room.
+    pub fn data_room_create(
+        self,
+        owner: impl Into<String>,
+        name: impl Into<String>,
+    ) -> DataRoomCreateRequest<'session> {
+        DataRoomCreateRequest::new(self.session, owner, name)
+    }
+
+    /// Change a data room in place: `caller`, the `room` id, then partial setters (`.new_name(..)`,
+    /// `.new_subject_*(..)`, `.new_owner(..)`).
+    pub fn data_room_update(
+        self,
+        caller: impl Into<String>,
+        room: impl Into<String>,
+    ) -> DataRoomUpdateRequest<'session> {
+        DataRoomUpdateRequest::new(self.session, caller, room)
+    }
+
+    /// Delete a data room you own, cascade-removing its content cards, members and key epochs.
+    pub fn data_room_delete(
+        self,
+        caller: impl Into<String>,
+        room: impl Into<String>,
+    ) -> DataRoomDeleteRequest<'session> {
+        DataRoomDeleteRequest::new(self.session, caller, room)
+    }
+
+    /// Add `account` as a member of `room`: set `.member_key(..)` for encrypted rooms, historical
+    /// `.epoch_key(..)`s, and grant `.permissions(..)` (see the `DATA_ROOM_PERM_*` flags).
+    pub fn data_room_member_add(
+        self,
+        caller: impl Into<String>,
+        room: impl Into<String>,
+        account: impl Into<String>,
+    ) -> DataRoomMemberAddRequest<'session> {
+        DataRoomMemberAddRequest::new(self.session, caller, room, account)
+    }
+
+    /// Replace a room member's permission flags (see the `DATA_ROOM_PERM_*` constants).
+    pub fn data_room_member_update(
+        self,
+        caller: impl Into<String>,
+        room: impl Into<String>,
+        account: impl Into<String>,
+        permissions: u32,
+    ) -> DataRoomMemberUpdateRequest<'session> {
+        DataRoomMemberUpdateRequest::new(self.session, caller, room, account, permissions)
+    }
+
+    /// Remove a member from a data room (the owner cannot be removed).
+    pub fn data_room_member_remove(
+        self,
+        caller: impl Into<String>,
+        room: impl Into<String>,
+        account: impl Into<String>,
+    ) -> DataRoomMemberRemoveRequest<'session> {
+        DataRoomMemberRemoveRequest::new(self.session, caller, room, account)
+    }
+
+    /// Rotate a room's encryption key: set `.new_room_key(..)` and a `.member_key(..)` per member.
+    pub fn data_room_rotate_key(
+        self,
+        caller: impl Into<String>,
+        room: impl Into<String>,
+    ) -> DataRoomRotateKeyRequest<'session> {
+        DataRoomRotateKeyRequest::new(self.session, caller, room)
+    }
+
+    /// Publish a content card in a data room: `author`, the `room`, then `.hash(..)`, `.url(..)`
+    /// and `.storage_data(..)` (plus optional type, description and content key).
+    pub fn content_card_create(
+        self,
+        author: impl Into<String>,
+        room: impl Into<String>,
+    ) -> ContentCardCreateRequest<'session> {
+        ContentCardCreateRequest::new(self.session, author, room)
+    }
+
+    /// Change a content card in place: `caller`, the `content_id`, then partial `.new_*(..)` setters.
+    pub fn content_card_update(
+        self,
+        caller: impl Into<String>,
+        content_id: impl Into<String>,
+    ) -> ContentCardUpdateRequest<'session> {
+        ContentCardUpdateRequest::new(self.session, caller, content_id)
+    }
+
+    /// Remove a content card: `caller`, the `content_id`.
+    pub fn content_card_remove(
+        self,
+        caller: impl Into<String>,
+        content_id: impl Into<String>,
+    ) -> ContentCardRemoveRequest<'session> {
+        ContentCardRemoveRequest::new(self.session, caller, content_id)
     }
 
     pub async fn sign_transfer_with_wif(

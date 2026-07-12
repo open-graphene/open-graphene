@@ -112,6 +112,12 @@ impl FcSerialize for crate::generated::ids::CommitteeMemberId {
     }
 }
 
+impl FcSerialize for crate::generated::ids::ContentCardId {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_protocol_object_id(&self.0, Some(1), Some(26), out)
+    }
+}
+
 impl FcSerialize for crate::generated::ids::CreditDealId {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         write_protocol_object_id(&self.0, Some(1), Some(22), out)
@@ -139,6 +145,24 @@ impl FcSerialize for crate::generated::ids::CustomId {
 impl FcSerialize for crate::generated::ids::CustomAuthorityId {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         write_protocol_object_id(&self.0, Some(1), Some(17), out)
+    }
+}
+
+impl FcSerialize for crate::generated::ids::DataRoomId {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_protocol_object_id(&self.0, Some(1), Some(23), out)
+    }
+}
+
+impl FcSerialize for crate::generated::ids::DataRoomKeyEpochId {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_protocol_object_id(&self.0, Some(1), Some(25), out)
+    }
+}
+
+impl FcSerialize for crate::generated::ids::DataRoomMemberId {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_protocol_object_id(&self.0, Some(1), Some(24), out)
     }
 }
 
@@ -1041,6 +1065,47 @@ impl FcSerialize for crate::generated::types::CommitteeMemberUpdateOperationFeeP
     }
 }
 
+impl FcSerialize for crate::generated::types::ContentCardCreateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.price_per_kbyte.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::ContentCardObject {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.id.fc_serialize(out)?;
+        self.author.fc_serialize(out)?;
+        self.room.fc_serialize(out)?;
+        self.hash.fc_serialize(out)?;
+        self.url.fc_serialize(out)?;
+        self.r#type.fc_serialize(out)?;
+        self.description.fc_serialize(out)?;
+        self.content_key.fc_serialize(out)?;
+        self.storage_data.fc_serialize(out)?;
+        self.key_epoch.fc_serialize(out)?;
+        write_time_point_sec(&self.created, out)?;
+        write_time_point_sec(&self.updated, out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::ContentCardRemoveOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::ContentCardUpdateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.price_per_kbyte.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::CreateTakeProfitOrderAction {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee_asset_id.fc_serialize(out)?;
@@ -1168,6 +1233,94 @@ impl FcSerialize for crate::generated::types::CustomOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
         self.price_per_kbyte.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::DataRoomCreateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::DataRoomDeleteOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::DataRoomKeyEpochObject {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.id.fc_serialize(out)?;
+        self.room.fc_serialize(out)?;
+        self.epoch.fc_serialize(out)?;
+        self.account.fc_serialize(out)?;
+        self.key.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::DataRoomMemberAddOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.price_per_kbyte.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::DataRoomMemberObject {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.id.fc_serialize(out)?;
+        self.room.fc_serialize(out)?;
+        self.account.fc_serialize(out)?;
+        self.member_key.fc_serialize(out)?;
+        self.permissions.fc_serialize(out)?;
+        write_time_point_sec(&self.added, out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::DataRoomMemberRemoveOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::DataRoomMemberUpdateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::DataRoomObject {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.id.fc_serialize(out)?;
+        self.owner.fc_serialize(out)?;
+        self.name.fc_serialize(out)?;
+        self.description.fc_serialize(out)?;
+        self.subject.fc_serialize(out)?;
+        self.room_key.fc_serialize(out)?;
+        self.current_epoch.fc_serialize(out)?;
+        write_time_point_sec(&self.created, out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::DataRoomRotateKeyOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.price_per_kbyte.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::DataRoomUpdateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -2068,6 +2221,25 @@ impl FcSerialize for crate::generated::static_variants::LimitOrderAutoAction {
     }
 }
 
+impl FcSerialize for crate::generated::static_variants::DataRoomSubject {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        match self {
+            Self::VoidT(value) => {
+                write_varint(0u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AssetIdType(value) => {
+                write_varint(1u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::AccountIdType(value) => {
+                write_varint(2u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+        }
+    }
+}
+
 fn fee_parameters_tag(value: &crate::generated::static_variants::FeeParameters) -> u64 {
     match value {
         crate::generated::static_variants::FeeParameters::TransferOperationFeeParamsT(_) => 0u64,
@@ -2148,6 +2320,16 @@ fn fee_parameters_tag(value: &crate::generated::static_variants::FeeParameters) 
         crate::generated::static_variants::FeeParameters::LiquidityPoolUpdateOperationFeeParamsT(_) => 75u64,
         crate::generated::static_variants::FeeParameters::CreditDealUpdateOperationFeeParamsT(_) => 76u64,
         crate::generated::static_variants::FeeParameters::LimitOrderUpdateOperationFeeParamsT(_) => 77u64,
+        crate::generated::static_variants::FeeParameters::DataRoomCreateOperationFeeParamsT(_) => 78u64,
+        crate::generated::static_variants::FeeParameters::DataRoomUpdateOperationFeeParamsT(_) => 79u64,
+        crate::generated::static_variants::FeeParameters::DataRoomDeleteOperationFeeParamsT(_) => 80u64,
+        crate::generated::static_variants::FeeParameters::DataRoomMemberAddOperationFeeParamsT(_) => 81u64,
+        crate::generated::static_variants::FeeParameters::DataRoomMemberUpdateOperationFeeParamsT(_) => 82u64,
+        crate::generated::static_variants::FeeParameters::DataRoomMemberRemoveOperationFeeParamsT(_) => 83u64,
+        crate::generated::static_variants::FeeParameters::DataRoomRotateKeyOperationFeeParamsT(_) => 84u64,
+        crate::generated::static_variants::FeeParameters::ContentCardCreateOperationFeeParamsT(_) => 85u64,
+        crate::generated::static_variants::FeeParameters::ContentCardUpdateOperationFeeParamsT(_) => 86u64,
+        crate::generated::static_variants::FeeParameters::ContentCardRemoveOperationFeeParamsT(_) => 87u64,
     }
 }
 
@@ -2464,6 +2646,46 @@ impl FcSerialize for crate::generated::static_variants::FeeParameters {
             }
             Self::LimitOrderUpdateOperationFeeParamsT(value) => {
                 write_varint(77u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::DataRoomCreateOperationFeeParamsT(value) => {
+                write_varint(78u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::DataRoomUpdateOperationFeeParamsT(value) => {
+                write_varint(79u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::DataRoomDeleteOperationFeeParamsT(value) => {
+                write_varint(80u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::DataRoomMemberAddOperationFeeParamsT(value) => {
+                write_varint(81u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::DataRoomMemberUpdateOperationFeeParamsT(value) => {
+                write_varint(82u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::DataRoomMemberRemoveOperationFeeParamsT(value) => {
+                write_varint(83u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::DataRoomRotateKeyOperationFeeParamsT(value) => {
+                write_varint(84u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ContentCardCreateOperationFeeParamsT(value) => {
+                write_varint(85u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ContentCardUpdateOperationFeeParamsT(value) => {
+                write_varint(86u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ContentCardRemoveOperationFeeParamsT(value) => {
+                write_varint(87u64, out);
                 value.as_ref().fc_serialize(out)
             }
         }
@@ -4639,6 +4861,279 @@ impl FcSerialize for crate::generated::operations::LimitOrderUpdateOperation {
     }
 }
 
+impl FcSerialize for crate::generated::operations::DataRoomCreateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.owner.fc_serialize(out)?;
+        self.name.fc_serialize(out)?;
+        self.description.fc_serialize(out)?;
+        self.subject.fc_serialize(out)?;
+        self.room_key.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::DataRoomUpdateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.caller.fc_serialize(out)?;
+        self.room.fc_serialize(out)?;
+        self.new_name.fc_serialize(out)?;
+        self.new_description.fc_serialize(out)?;
+        self.new_subject.fc_serialize(out)?;
+        self.new_owner.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::DataRoomDeleteOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.caller.fc_serialize(out)?;
+        self.room.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::DataRoomMemberAddOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.caller.fc_serialize(out)?;
+        self.room.fc_serialize(out)?;
+        self.account.fc_serialize(out)?;
+        self.member_key.fc_serialize(out)?;
+        write_varint(self.epoch_keys.len() as u64, out);
+        let mut previous_key: Option<u32> = None;
+        for (key, value) in &self.epoch_keys {
+            if previous_key.is_some_and(|previous| previous >= *key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "FlatMap",
+                    reason: "flat_map keys must be sorted and unique",
+                });
+            }
+            previous_key = Some(*key);
+            key.fc_serialize(out)?;
+            value.fc_serialize(out)?;
+        }
+        self.permissions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::DataRoomMemberUpdateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.caller.fc_serialize(out)?;
+        self.room.fc_serialize(out)?;
+        self.account.fc_serialize(out)?;
+        self.permissions.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::DataRoomMemberRemoveOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.caller.fc_serialize(out)?;
+        self.room.fc_serialize(out)?;
+        self.account.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::DataRoomRotateKeyOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.caller.fc_serialize(out)?;
+        self.room.fc_serialize(out)?;
+        self.new_room_key.fc_serialize(out)?;
+        write_varint(self.member_keys.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for (key, value) in &self.member_keys {
+            let key_parts = parse_protocol_object_id(&key.0, None, None)?;
+            if previous_key.is_some_and(|previous| previous >= key_parts.instance) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "FlatMap",
+                    reason: "flat_map keys must be sorted and unique",
+                });
+            }
+            previous_key = Some(key_parts.instance);
+            key.fc_serialize(out)?;
+            value.fc_serialize(out)?;
+        }
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::ContentCardCreateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.author.fc_serialize(out)?;
+        self.room.fc_serialize(out)?;
+        self.hash.fc_serialize(out)?;
+        self.url.fc_serialize(out)?;
+        self.r#type.fc_serialize(out)?;
+        self.description.fc_serialize(out)?;
+        self.content_key.fc_serialize(out)?;
+        self.storage_data.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::ContentCardUpdateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.caller.fc_serialize(out)?;
+        self.content_id.fc_serialize(out)?;
+        self.new_hash.fc_serialize(out)?;
+        self.new_url.fc_serialize(out)?;
+        self.new_type.fc_serialize(out)?;
+        self.new_description.fc_serialize(out)?;
+        self.new_content_key.fc_serialize(out)?;
+        self.new_storage_data.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::ContentCardRemoveOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.caller.fc_serialize(out)?;
+        self.content_id.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::static_variants::Operation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         match self {
@@ -4952,6 +5447,46 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             }
             Self::LimitOrderUpdateOperation(value) => {
                 write_varint(77u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::DataRoomCreateOperation(value) => {
+                write_varint(78u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::DataRoomUpdateOperation(value) => {
+                write_varint(79u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::DataRoomDeleteOperation(value) => {
+                write_varint(80u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::DataRoomMemberAddOperation(value) => {
+                write_varint(81u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::DataRoomMemberUpdateOperation(value) => {
+                write_varint(82u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::DataRoomMemberRemoveOperation(value) => {
+                write_varint(83u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::DataRoomRotateKeyOperation(value) => {
+                write_varint(84u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ContentCardCreateOperation(value) => {
+                write_varint(85u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ContentCardUpdateOperation(value) => {
+                write_varint(86u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ContentCardRemoveOperation(value) => {
+                write_varint(87u64, out);
                 value.as_ref().fc_serialize(out)
             }
         }

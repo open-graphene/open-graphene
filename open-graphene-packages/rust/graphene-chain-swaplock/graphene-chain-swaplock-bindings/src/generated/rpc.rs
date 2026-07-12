@@ -28,6 +28,10 @@ pub enum ProtocolObject {
     WithdrawPermission(Box<crate::generated::types::WithdrawPermissionObject>),
     VestingBalance(Box<crate::generated::types::VestingBalanceObject>),
     Htlc(Box<crate::generated::types::HtlcObject>),
+    DataRoom(Box<crate::generated::types::DataRoomObject>),
+    DataRoomMember(Box<crate::generated::types::DataRoomMemberObject>),
+    DataRoomKeyEpoch(Box<crate::generated::types::DataRoomKeyEpochObject>),
+    ContentCard(Box<crate::generated::types::ContentCardObject>),
     GlobalProperty(Box<crate::generated::types::GlobalPropertyObject>),
     DynamicGlobalProperty(Box<crate::generated::types::DynamicGlobalPropertyObject>),
     AssetDynamicData(Box<crate::generated::types::AssetDynamicDataObject>),
@@ -53,6 +57,10 @@ impl serde::Serialize for ProtocolObject {
             Self::WithdrawPermission(value) => serde::Serialize::serialize(value, serializer),
             Self::VestingBalance(value) => serde::Serialize::serialize(value, serializer),
             Self::Htlc(value) => serde::Serialize::serialize(value, serializer),
+            Self::DataRoom(value) => serde::Serialize::serialize(value, serializer),
+            Self::DataRoomMember(value) => serde::Serialize::serialize(value, serializer),
+            Self::DataRoomKeyEpoch(value) => serde::Serialize::serialize(value, serializer),
+            Self::ContentCard(value) => serde::Serialize::serialize(value, serializer),
             Self::GlobalProperty(value) => serde::Serialize::serialize(value, serializer),
             Self::DynamicGlobalProperty(value) => serde::Serialize::serialize(value, serializer),
             Self::AssetDynamicData(value) => serde::Serialize::serialize(value, serializer),
@@ -104,6 +112,18 @@ impl<'de> serde::Deserialize<'de> for ProtocolObject {
                 .map_err(serde::de::Error::custom),
             Some((1, 16)) => serde_json::from_value(value)
                 .map(Self::Htlc)
+                .map_err(serde::de::Error::custom),
+            Some((1, 23)) => serde_json::from_value(value)
+                .map(Self::DataRoom)
+                .map_err(serde::de::Error::custom),
+            Some((1, 24)) => serde_json::from_value(value)
+                .map(Self::DataRoomMember)
+                .map_err(serde::de::Error::custom),
+            Some((1, 25)) => serde_json::from_value(value)
+                .map(Self::DataRoomKeyEpoch)
+                .map_err(serde::de::Error::custom),
+            Some((1, 26)) => serde_json::from_value(value)
+                .map(Self::ContentCard)
                 .map_err(serde::de::Error::custom),
             Some((2, 0)) => serde_json::from_value(value)
                 .map(Self::GlobalProperty)
@@ -600,6 +620,439 @@ pub mod database {
         pub type Config = std::collections::BTreeMap<String, serde_json::Value>;
 
         pub type Returns = crate::generated::rpc::database::get_config::Config;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_content_card_by_id`.
+    pub mod get_content_card_by_id {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_content_card_by_id";
+
+        /// Positional parameters for `database.get_content_card_by_id`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub content_id: crate::generated::ids::ContentCardId,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![serde_json::to_value(&self.content_id)?];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Option<crate::generated::types::ContentCardObject>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_content_cards_by_author`.
+    pub mod get_content_cards_by_author {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_content_cards_by_author";
+
+        /// Positional parameters for `database.get_content_cards_by_author`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub account_name_or_id: String,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub limit: Option<u32>,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub start_id: Option<crate::generated::ids::ContentCardId>,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let mut params = vec![serde_json::to_value(&self.account_name_or_id)?];
+                let tail: [Option<serde_json::Value>; 2] = [
+                    match &self.limit {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                    match &self.start_id {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                ];
+                if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
+                    for value in tail.into_iter().take(last_provided + 1) {
+                        params.push(value.unwrap_or(serde_json::Value::Null));
+                    }
+                }
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<crate::generated::types::ContentCardObject>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_content_cards_by_room`.
+    pub mod get_content_cards_by_room {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_content_cards_by_room";
+
+        /// Positional parameters for `database.get_content_cards_by_room`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub room_id: crate::generated::ids::DataRoomId,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub limit: Option<u32>,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub start_id: Option<crate::generated::ids::ContentCardId>,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let mut params = vec![serde_json::to_value(&self.room_id)?];
+                let tail: [Option<serde_json::Value>; 2] = [
+                    match &self.limit {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                    match &self.start_id {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                ];
+                if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
+                    for value in tail.into_iter().take(last_provided + 1) {
+                        params.push(value.unwrap_or(serde_json::Value::Null));
+                    }
+                }
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<crate::generated::types::ContentCardObject>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_data_room_by_id`.
+    pub mod get_data_room_by_id {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_data_room_by_id";
+
+        /// Positional parameters for `database.get_data_room_by_id`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub room_id: crate::generated::ids::DataRoomId,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![serde_json::to_value(&self.room_id)?];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Option<crate::generated::types::DataRoomObject>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_data_room_key_epoch`.
+    pub mod get_data_room_key_epoch {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_data_room_key_epoch";
+
+        /// Positional parameters for `database.get_data_room_key_epoch`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub room_id: crate::generated::ids::DataRoomId,
+            pub epoch: u32,
+            pub account_name_or_id: String,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![
+                    serde_json::to_value(&self.room_id)?,
+                    serde_json::to_value(self.epoch)?,
+                    serde_json::to_value(&self.account_name_or_id)?,
+                ];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Option<crate::generated::types::DataRoomKeyEpochObject>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_data_room_key_epochs`.
+    pub mod get_data_room_key_epochs {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_data_room_key_epochs";
+
+        /// Positional parameters for `database.get_data_room_key_epochs`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub room_id: crate::generated::ids::DataRoomId,
+            pub account_name_or_id: String,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub limit: Option<u32>,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub start_id: Option<crate::generated::ids::DataRoomKeyEpochId>,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let mut params = vec![
+                    serde_json::to_value(&self.room_id)?,
+                    serde_json::to_value(&self.account_name_or_id)?,
+                ];
+                let tail: [Option<serde_json::Value>; 2] = [
+                    match &self.limit {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                    match &self.start_id {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                ];
+                if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
+                    for value in tail.into_iter().take(last_provided + 1) {
+                        params.push(value.unwrap_or(serde_json::Value::Null));
+                    }
+                }
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<crate::generated::types::DataRoomKeyEpochObject>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_data_room_member`.
+    pub mod get_data_room_member {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_data_room_member";
+
+        /// Positional parameters for `database.get_data_room_member`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub room_id: crate::generated::ids::DataRoomId,
+            pub account_name_or_id: String,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![
+                    serde_json::to_value(&self.room_id)?,
+                    serde_json::to_value(&self.account_name_or_id)?,
+                ];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Option<crate::generated::types::DataRoomMemberObject>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_data_room_members`.
+    pub mod get_data_room_members {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_data_room_members";
+
+        /// Positional parameters for `database.get_data_room_members`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub room_id: crate::generated::ids::DataRoomId,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub limit: Option<u32>,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub start_id: Option<crate::generated::ids::DataRoomMemberId>,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let mut params = vec![serde_json::to_value(&self.room_id)?];
+                let tail: [Option<serde_json::Value>; 2] = [
+                    match &self.limit {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                    match &self.start_id {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                ];
+                if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
+                    for value in tail.into_iter().take(last_provided + 1) {
+                        params.push(value.unwrap_or(serde_json::Value::Null));
+                    }
+                }
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<crate::generated::types::DataRoomMemberObject>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_data_rooms_by_member`.
+    pub mod get_data_rooms_by_member {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_data_rooms_by_member";
+
+        /// Positional parameters for `database.get_data_rooms_by_member`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub account_name_or_id: String,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub limit: Option<u32>,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub start_id: Option<crate::generated::ids::DataRoomMemberId>,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let mut params = vec![serde_json::to_value(&self.account_name_or_id)?];
+                let tail: [Option<serde_json::Value>; 2] = [
+                    match &self.limit {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                    match &self.start_id {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                ];
+                if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
+                    for value in tail.into_iter().take(last_provided + 1) {
+                        params.push(value.unwrap_or(serde_json::Value::Null));
+                    }
+                }
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<crate::generated::types::DataRoomMemberObject>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_data_rooms_by_owner`.
+    pub mod get_data_rooms_by_owner {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_data_rooms_by_owner";
+
+        /// Positional parameters for `database.get_data_rooms_by_owner`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub account_name_or_id: String,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub limit: Option<u32>,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub start_id: Option<crate::generated::ids::DataRoomId>,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let mut params = vec![serde_json::to_value(&self.account_name_or_id)?];
+                let tail: [Option<serde_json::Value>; 2] = [
+                    match &self.limit {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                    match &self.start_id {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                ];
+                if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
+                    for value in tail.into_iter().take(last_provided + 1) {
+                        params.push(value.unwrap_or(serde_json::Value::Null));
+                    }
+                }
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<crate::generated::types::DataRoomObject>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_data_rooms_by_subject`.
+    pub mod get_data_rooms_by_subject {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_data_rooms_by_subject";
+
+        /// Positional parameters for `database.get_data_rooms_by_subject`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub asset_or_account: String,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub limit: Option<u32>,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub start_id: Option<crate::generated::ids::DataRoomId>,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let mut params = vec![serde_json::to_value(&self.asset_or_account)?];
+                let tail: [Option<serde_json::Value>; 2] = [
+                    match &self.limit {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                    match &self.start_id {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                ];
+                if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
+                    for value in tail.into_iter().take(last_provided + 1) {
+                        params.push(value.unwrap_or(serde_json::Value::Null));
+                    }
+                }
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<crate::generated::types::DataRoomObject>;
 
         pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
             serde_json::from_value(value)

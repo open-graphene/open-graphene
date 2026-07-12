@@ -5,6 +5,10 @@ object_structs = [
   "asset_dynamic_data_object",
   "global_property_object",
   "chain_property_object",
+  "data_room_object",
+  "data_room_member_object",
+  "data_room_key_epoch_object",
+  "content_card_object",
 ]
 
 [chain]
@@ -42,6 +46,17 @@ methods = [
   "lookup_accounts",
   "get_ticker",
   "get_required_fees",
+  "get_data_room_by_id",
+  "get_data_rooms_by_owner",
+  "get_data_rooms_by_subject",
+  "get_data_room_members",
+  "get_data_room_member",
+  "get_data_rooms_by_member",
+  "get_data_room_key_epochs",
+  "get_data_room_key_epoch",
+  "get_content_card_by_id",
+  "get_content_cards_by_room",
+  "get_content_cards_by_author",
 ]
 
 [[rpc_apis]]

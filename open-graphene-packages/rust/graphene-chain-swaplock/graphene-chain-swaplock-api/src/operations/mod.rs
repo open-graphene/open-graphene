@@ -6,8 +6,10 @@ mod asset_admin;
 mod balance_claim;
 mod blind;
 mod call_order;
+mod content_card;
 mod credit_offer;
 mod custom_authority;
+mod data_room;
 mod governance;
 mod htlc;
 mod limit_order;
@@ -37,12 +39,23 @@ pub use asset_admin::{
 pub use balance_claim::BalanceClaimRequest;
 pub use blind::{BlindTransferRequest, TransferFromBlindRequest, TransferToBlindRequest};
 pub use call_order::{BidCollateralRequest, CallOrderUpdateRequest};
+pub use content_card::{
+    ContentCardCreateRequest, ContentCardRemoveRequest, ContentCardUpdateRequest,
+};
 pub use credit_offer::{
     CreditDealRepayRequest, CreditDealUpdateRequest, CreditOfferAcceptRequest,
     CreditOfferCreateRequest, CreditOfferDeleteRequest, CreditOfferUpdateRequest,
 };
 pub use custom_authority::{
     CustomAuthorityCreateRequest, CustomAuthorityDeleteRequest, CustomAuthorityUpdateRequest,
+};
+pub use data_room::{
+    DATA_ROOM_PERM_ADD_MEMBERS, DATA_ROOM_PERM_ALL, DATA_ROOM_PERM_CREATE_CONTENT,
+    DATA_ROOM_PERM_MANAGE_CONTENT, DATA_ROOM_PERM_MANAGE_PERMISSIONS,
+    DATA_ROOM_PERM_REMOVE_MEMBERS, DATA_ROOM_PERM_ROTATE_KEYS, DATA_ROOM_PERM_UPDATE_ROOM,
+    DataRoomCreateRequest, DataRoomDeleteRequest, DataRoomMemberAddRequest,
+    DataRoomMemberRemoveRequest, DataRoomMemberUpdateRequest, DataRoomRotateKeyRequest,
+    DataRoomUpdateRequest,
 };
 pub use governance::{
     CommitteeMemberCreateRequest, CommitteeMemberUpdateGlobalParametersRequest,

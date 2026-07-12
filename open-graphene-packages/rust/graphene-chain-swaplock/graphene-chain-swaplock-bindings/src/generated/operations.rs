@@ -1128,3 +1128,151 @@ pub struct LimitOrderUpdateOperation {
     pub on_fill: Option<Vec<crate::generated::static_variants::LimitOrderAutoAction>>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
+
+pub const DATA_ROOM_CREATE_OPERATION_ID: u32 = 78;
+
+/// Protocol operation `data_room_create_operation` with wire tag 78.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomCreateOperation)]
+pub struct DataRoomCreateOperation {
+    pub fee: crate::generated::types::Asset,
+    pub owner: crate::generated::ids::AccountId,
+    pub name: String,
+    pub description: String,
+    pub subject: crate::generated::static_variants::DataRoomSubject,
+    pub room_key: Option<String>,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const DATA_ROOM_UPDATE_OPERATION_ID: u32 = 79;
+
+/// Protocol operation `data_room_update_operation` with wire tag 79.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomUpdateOperation)]
+pub struct DataRoomUpdateOperation {
+    pub fee: crate::generated::types::Asset,
+    pub caller: crate::generated::ids::AccountId,
+    pub room: crate::generated::ids::DataRoomId,
+    pub new_name: Option<String>,
+    pub new_description: Option<String>,
+    pub new_subject: Option<crate::generated::static_variants::DataRoomSubject>,
+    pub new_owner: Option<crate::generated::ids::AccountId>,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const DATA_ROOM_DELETE_OPERATION_ID: u32 = 80;
+
+/// Protocol operation `data_room_delete_operation` with wire tag 80.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomDeleteOperation)]
+pub struct DataRoomDeleteOperation {
+    pub fee: crate::generated::types::Asset,
+    pub caller: crate::generated::ids::AccountId,
+    pub room: crate::generated::ids::DataRoomId,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const DATA_ROOM_MEMBER_ADD_OPERATION_ID: u32 = 81;
+
+/// Protocol operation `data_room_member_add_operation` with wire tag 81.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomMemberAddOperation)]
+pub struct DataRoomMemberAddOperation {
+    pub fee: crate::generated::types::Asset,
+    pub caller: crate::generated::ids::AccountId,
+    pub room: crate::generated::ids::DataRoomId,
+    pub account: crate::generated::ids::AccountId,
+    pub member_key: String,
+    pub epoch_keys: Vec<(u32, String)>,
+    pub permissions: u32,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const DATA_ROOM_MEMBER_UPDATE_OPERATION_ID: u32 = 82;
+
+/// Protocol operation `data_room_member_update_operation` with wire tag 82.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomMemberUpdateOperation)]
+pub struct DataRoomMemberUpdateOperation {
+    pub fee: crate::generated::types::Asset,
+    pub caller: crate::generated::ids::AccountId,
+    pub room: crate::generated::ids::DataRoomId,
+    pub account: crate::generated::ids::AccountId,
+    pub permissions: u32,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const DATA_ROOM_MEMBER_REMOVE_OPERATION_ID: u32 = 83;
+
+/// Protocol operation `data_room_member_remove_operation` with wire tag 83.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomMemberRemoveOperation)]
+pub struct DataRoomMemberRemoveOperation {
+    pub fee: crate::generated::types::Asset,
+    pub caller: crate::generated::ids::AccountId,
+    pub room: crate::generated::ids::DataRoomId,
+    pub account: crate::generated::ids::AccountId,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const DATA_ROOM_ROTATE_KEY_OPERATION_ID: u32 = 84;
+
+/// Protocol operation `data_room_rotate_key_operation` with wire tag 84.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomRotateKeyOperation)]
+pub struct DataRoomRotateKeyOperation {
+    pub fee: crate::generated::types::Asset,
+    pub caller: crate::generated::ids::AccountId,
+    pub room: crate::generated::ids::DataRoomId,
+    pub new_room_key: String,
+    pub member_keys: Vec<(crate::generated::ids::AccountId, String)>,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const CONTENT_CARD_CREATE_OPERATION_ID: u32 = 85;
+
+/// Protocol operation `content_card_create_operation` with wire tag 85.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardCreateOperation)]
+pub struct ContentCardCreateOperation {
+    pub fee: crate::generated::types::Asset,
+    pub author: crate::generated::ids::AccountId,
+    pub room: crate::generated::ids::DataRoomId,
+    pub hash: String,
+    pub url: String,
+    pub r#type: String,
+    pub description: String,
+    pub content_key: String,
+    pub storage_data: String,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const CONTENT_CARD_UPDATE_OPERATION_ID: u32 = 86;
+
+/// Protocol operation `content_card_update_operation` with wire tag 86.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardUpdateOperation)]
+pub struct ContentCardUpdateOperation {
+    pub fee: crate::generated::types::Asset,
+    pub caller: crate::generated::ids::AccountId,
+    pub content_id: crate::generated::ids::ContentCardId,
+    pub new_hash: Option<String>,
+    pub new_url: Option<String>,
+    pub new_type: Option<String>,
+    pub new_description: Option<String>,
+    pub new_content_key: Option<String>,
+    pub new_storage_data: Option<String>,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const CONTENT_CARD_REMOVE_OPERATION_ID: u32 = 87;
+
+/// Protocol operation `content_card_remove_operation` with wire tag 87.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardRemoveOperation)]
+pub struct ContentCardRemoveOperation {
+    pub fee: crate::generated::types::Asset,
+    pub caller: crate::generated::ids::AccountId,
+    pub content_id: crate::generated::ids::ContentCardId,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}

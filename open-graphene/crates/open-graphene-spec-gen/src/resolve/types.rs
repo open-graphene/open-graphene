@@ -225,6 +225,9 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         "limit_order_auto_action" => TypeRef::StaticVariantRef {
             name: "limit_order_auto_action".to_string(),
         },
+        "data_room_subject" => TypeRef::StaticVariantRef {
+            name: "data_room_subject".to_string(),
+        },
         "special_authority" => TypeRef::StaticVariantRef {
             name: "special_authority".to_string(),
         },
@@ -507,6 +510,12 @@ mod tests {
             resolve_cpp_type("worker_initializer"),
             TypeRef::StaticVariantRef {
                 name: "worker_initializer".to_string()
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("data_room_subject"),
+            TypeRef::StaticVariantRef {
+                name: "data_room_subject".to_string()
             }
         );
     }

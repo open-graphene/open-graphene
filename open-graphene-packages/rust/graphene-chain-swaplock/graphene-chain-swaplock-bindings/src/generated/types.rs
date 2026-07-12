@@ -943,6 +943,47 @@ pub struct CommitteeMemberUpdateOperationFeeParamsT {
     pub fee: u64,
 }
 
+/// Raw protocol struct `content_card_create_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardCreateOperationFeeParamsT)]
+pub struct ContentCardCreateOperationFeeParamsT {
+    pub fee: u64,
+    pub price_per_kbyte: u32,
+}
+
+/// Raw protocol struct `content_card_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardObject)]
+pub struct ContentCardObject {
+    pub id: crate::generated::ids::ContentCardId,
+    pub author: crate::generated::ids::AccountId,
+    pub room: crate::generated::ids::DataRoomId,
+    pub hash: String,
+    pub url: String,
+    pub r#type: String,
+    pub description: String,
+    pub content_key: String,
+    pub storage_data: String,
+    pub key_epoch: u32,
+    pub created: String,
+    pub updated: String,
+}
+
+/// Raw protocol struct `content_card_remove_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardRemoveOperationFeeParamsT)]
+pub struct ContentCardRemoveOperationFeeParamsT {
+    pub fee: u64,
+}
+
+/// Raw protocol struct `content_card_update_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardUpdateOperationFeeParamsT)]
+pub struct ContentCardUpdateOperationFeeParamsT {
+    pub fee: u64,
+    pub price_per_kbyte: u32,
+}
+
 /// Raw protocol struct `create_take_profit_order_action`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockCreateTakeProfitOrderAction)]
@@ -1050,6 +1091,94 @@ pub struct CustomAuthorityUpdateOperationFeeParamsT {
 pub struct CustomOperationFeeParamsT {
     pub fee: u64,
     pub price_per_kbyte: u32,
+}
+
+/// Raw protocol struct `data_room_create_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomCreateOperationFeeParamsT)]
+pub struct DataRoomCreateOperationFeeParamsT {
+    pub fee: u64,
+}
+
+/// Raw protocol struct `data_room_delete_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomDeleteOperationFeeParamsT)]
+pub struct DataRoomDeleteOperationFeeParamsT {
+    pub fee: u64,
+}
+
+/// Raw protocol struct `data_room_key_epoch_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomKeyEpochObject)]
+pub struct DataRoomKeyEpochObject {
+    pub id: crate::generated::ids::DataRoomKeyEpochId,
+    pub room: crate::generated::ids::DataRoomId,
+    pub epoch: u32,
+    pub account: crate::generated::ids::AccountId,
+    pub key: String,
+}
+
+/// Raw protocol struct `data_room_member_add_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomMemberAddOperationFeeParamsT)]
+pub struct DataRoomMemberAddOperationFeeParamsT {
+    pub fee: u64,
+    pub price_per_kbyte: u32,
+}
+
+/// Raw protocol struct `data_room_member_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomMemberObject)]
+pub struct DataRoomMemberObject {
+    pub id: crate::generated::ids::DataRoomMemberId,
+    pub room: crate::generated::ids::DataRoomId,
+    pub account: crate::generated::ids::AccountId,
+    pub member_key: String,
+    pub permissions: u32,
+    pub added: String,
+}
+
+/// Raw protocol struct `data_room_member_remove_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomMemberRemoveOperationFeeParamsT)]
+pub struct DataRoomMemberRemoveOperationFeeParamsT {
+    pub fee: u64,
+}
+
+/// Raw protocol struct `data_room_member_update_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomMemberUpdateOperationFeeParamsT)]
+pub struct DataRoomMemberUpdateOperationFeeParamsT {
+    pub fee: u64,
+}
+
+/// Raw protocol struct `data_room_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomObject)]
+pub struct DataRoomObject {
+    pub id: crate::generated::ids::DataRoomId,
+    pub owner: crate::generated::ids::AccountId,
+    pub name: String,
+    pub description: String,
+    pub subject: crate::generated::static_variants::DataRoomSubject,
+    pub room_key: Option<String>,
+    pub current_epoch: u32,
+    pub created: String,
+}
+
+/// Raw protocol struct `data_room_rotate_key_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomRotateKeyOperationFeeParamsT)]
+pub struct DataRoomRotateKeyOperationFeeParamsT {
+    pub fee: u64,
+    pub price_per_kbyte: u32,
+}
+
+/// Raw protocol struct `data_room_update_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomUpdateOperationFeeParamsT)]
+pub struct DataRoomUpdateOperationFeeParamsT {
+    pub fee: u64,
 }
 
 /// Raw protocol struct `dynamic_global_property_object`.

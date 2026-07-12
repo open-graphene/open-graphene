@@ -9,13 +9,13 @@ pub const CHAIN_ID: &str = "swaplock";
 pub const CHAIN_ID_HEX: &str = "2267f694d96b7ffdcba1a98c63c09e720a18a85ad34954e299c66d5a42234098";
 pub const PUBLIC_KEY_PREFIX: &str = "BTS";
 
-pub const STRUCT_COUNT: usize = 231;
+pub const STRUCT_COUNT: usize = 255;
 pub const ENUM_COUNT: usize = 11;
-pub const STATIC_VARIANT_COUNT: usize = 11;
-pub const OPERATION_COUNT: usize = 78;
-pub const OBJECT_TYPE_COUNT: usize = 42;
+pub const STATIC_VARIANT_COUNT: usize = 12;
+pub const OPERATION_COUNT: usize = 88;
+pub const OBJECT_TYPE_COUNT: usize = 46;
 pub const RPC_API_COUNT: usize = 5;
-pub const RPC_METHOD_COUNT: usize = 32;
+pub const RPC_METHOD_COUNT: usize = 43;
 
 #[derive(
     Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
@@ -569,6 +569,37 @@ impl CommitteeMemberId {
     pub const TYPE_ID: u32 = 5;
 }
 
+/// Object ID for `content_card` protocol objects.
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
+)]
+#[schema(as = GrapheneSwaplockContentCardId)]
+#[serde(transparent)]
+pub struct ContentCardId(pub String);
+
+impl ContentCardId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for ContentCardId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for ContentCardId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
+impl ContentCardId {
+    pub const SPACE_ID: u32 = 1;
+    pub const TYPE_ID: u32 = 26;
+}
+
 /// Object ID for `credit_deal` protocol objects.
 #[derive(
     Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
@@ -722,6 +753,99 @@ impl From<&str> for CustomAuthorityId {
 impl CustomAuthorityId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 17;
+}
+
+/// Object ID for `data_room` protocol objects.
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
+)]
+#[schema(as = GrapheneSwaplockDataRoomId)]
+#[serde(transparent)]
+pub struct DataRoomId(pub String);
+
+impl DataRoomId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for DataRoomId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for DataRoomId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
+impl DataRoomId {
+    pub const SPACE_ID: u32 = 1;
+    pub const TYPE_ID: u32 = 23;
+}
+
+/// Object ID for `data_room_key_epoch` protocol objects.
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
+)]
+#[schema(as = GrapheneSwaplockDataRoomKeyEpochId)]
+#[serde(transparent)]
+pub struct DataRoomKeyEpochId(pub String);
+
+impl DataRoomKeyEpochId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for DataRoomKeyEpochId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for DataRoomKeyEpochId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
+impl DataRoomKeyEpochId {
+    pub const SPACE_ID: u32 = 1;
+    pub const TYPE_ID: u32 = 25;
+}
+
+/// Object ID for `data_room_member` protocol objects.
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
+)]
+#[schema(as = GrapheneSwaplockDataRoomMemberId)]
+#[serde(transparent)]
+pub struct DataRoomMemberId(pub String);
+
+impl DataRoomMemberId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for DataRoomMemberId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for DataRoomMemberId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
+impl DataRoomMemberId {
+    pub const SPACE_ID: u32 = 1;
+    pub const TYPE_ID: u32 = 24;
 }
 
 /// Object ID for `dynamic_global_property` protocol objects.

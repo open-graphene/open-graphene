@@ -391,6 +391,74 @@ impl<'de> serde::Deserialize<'de> for ArgumentType {
     }
 }
 
+/// Static variant `data_room_subject` serialized as Graphene `[tag, value]`.
+#[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomSubject)]
+pub enum DataRoomSubject {
+    VoidT(Box<()>),
+    AssetIdType(Box<crate::generated::ids::AssetId>),
+    AccountIdType(Box<crate::generated::ids::AccountId>),
+}
+
+impl serde::Serialize for DataRoomSubject {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeSeq;
+        let mut seq = serializer.serialize_seq(Some(2))?;
+        match self {
+            Self::VoidT(value) => {
+                seq.serialize_element(&0u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::AssetIdType(value) => {
+                seq.serialize_element(&1u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::AccountIdType(value) => {
+                seq.serialize_element(&2u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+        }
+        seq.end()
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for DataRoomSubject {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let mut values = <Vec<serde_json::Value> as serde::Deserialize>::deserialize(deserializer)?;
+        if values.len() != 2 {
+            return Err(serde::de::Error::custom(format!(
+                "expected static variant DataRoomSubject as [tag, value], got {} elements",
+                values.len()
+            )));
+        }
+        let payload = values.pop().expect("length checked");
+        let tag_value = values.pop().expect("length checked");
+        let tag = tag_value.as_u64().ok_or_else(|| {
+            serde::de::Error::custom("expected numeric tag for static variant DataRoomSubject")
+        })? as u32;
+        match tag {
+            0 => serde_json::from_value::<()>(payload)
+                .map(|value| Self::VoidT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            1 => serde_json::from_value::<crate::generated::ids::AssetId>(payload)
+                .map(|value| Self::AssetIdType(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            2 => serde_json::from_value::<crate::generated::ids::AccountId>(payload)
+                .map(|value| Self::AccountIdType(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            other => Err(serde::de::Error::custom(format!(
+                "unknown static variant DataRoomSubject tag {other}"
+            ))),
+        }
+    }
+}
+
 /// Static variant `fee_parameters` serialized as Graphene `[tag, value]`.
 #[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockFeeParameters)]
@@ -590,6 +658,36 @@ pub enum FeeParameters {
     ),
     LimitOrderUpdateOperationFeeParamsT(
         Box<crate::generated::types::LimitOrderUpdateOperationFeeParamsT>,
+    ),
+    DataRoomCreateOperationFeeParamsT(
+        Box<crate::generated::types::DataRoomCreateOperationFeeParamsT>,
+    ),
+    DataRoomUpdateOperationFeeParamsT(
+        Box<crate::generated::types::DataRoomUpdateOperationFeeParamsT>,
+    ),
+    DataRoomDeleteOperationFeeParamsT(
+        Box<crate::generated::types::DataRoomDeleteOperationFeeParamsT>,
+    ),
+    DataRoomMemberAddOperationFeeParamsT(
+        Box<crate::generated::types::DataRoomMemberAddOperationFeeParamsT>,
+    ),
+    DataRoomMemberUpdateOperationFeeParamsT(
+        Box<crate::generated::types::DataRoomMemberUpdateOperationFeeParamsT>,
+    ),
+    DataRoomMemberRemoveOperationFeeParamsT(
+        Box<crate::generated::types::DataRoomMemberRemoveOperationFeeParamsT>,
+    ),
+    DataRoomRotateKeyOperationFeeParamsT(
+        Box<crate::generated::types::DataRoomRotateKeyOperationFeeParamsT>,
+    ),
+    ContentCardCreateOperationFeeParamsT(
+        Box<crate::generated::types::ContentCardCreateOperationFeeParamsT>,
+    ),
+    ContentCardUpdateOperationFeeParamsT(
+        Box<crate::generated::types::ContentCardUpdateOperationFeeParamsT>,
+    ),
+    ContentCardRemoveOperationFeeParamsT(
+        Box<crate::generated::types::ContentCardRemoveOperationFeeParamsT>,
     ),
 }
 
@@ -913,6 +1011,46 @@ impl serde::Serialize for FeeParameters {
                 seq.serialize_element(&77u32)?;
                 seq.serialize_element(value.as_ref())?;
             }
+            Self::DataRoomCreateOperationFeeParamsT(value) => {
+                seq.serialize_element(&78u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::DataRoomUpdateOperationFeeParamsT(value) => {
+                seq.serialize_element(&79u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::DataRoomDeleteOperationFeeParamsT(value) => {
+                seq.serialize_element(&80u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::DataRoomMemberAddOperationFeeParamsT(value) => {
+                seq.serialize_element(&81u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::DataRoomMemberUpdateOperationFeeParamsT(value) => {
+                seq.serialize_element(&82u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::DataRoomMemberRemoveOperationFeeParamsT(value) => {
+                seq.serialize_element(&83u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::DataRoomRotateKeyOperationFeeParamsT(value) => {
+                seq.serialize_element(&84u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::ContentCardCreateOperationFeeParamsT(value) => {
+                seq.serialize_element(&85u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::ContentCardUpdateOperationFeeParamsT(value) => {
+                seq.serialize_element(&86u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::ContentCardRemoveOperationFeeParamsT(value) => {
+                seq.serialize_element(&87u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
         }
         seq.end()
     }
@@ -1169,6 +1307,36 @@ impl<'de> serde::Deserialize<'de> for FeeParameters {
                 .map_err(serde::de::Error::custom),
             77 => serde_json::from_value::<crate::generated::types::LimitOrderUpdateOperationFeeParamsT>(payload)
                 .map(|value| Self::LimitOrderUpdateOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            78 => serde_json::from_value::<crate::generated::types::DataRoomCreateOperationFeeParamsT>(payload)
+                .map(|value| Self::DataRoomCreateOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            79 => serde_json::from_value::<crate::generated::types::DataRoomUpdateOperationFeeParamsT>(payload)
+                .map(|value| Self::DataRoomUpdateOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            80 => serde_json::from_value::<crate::generated::types::DataRoomDeleteOperationFeeParamsT>(payload)
+                .map(|value| Self::DataRoomDeleteOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            81 => serde_json::from_value::<crate::generated::types::DataRoomMemberAddOperationFeeParamsT>(payload)
+                .map(|value| Self::DataRoomMemberAddOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            82 => serde_json::from_value::<crate::generated::types::DataRoomMemberUpdateOperationFeeParamsT>(payload)
+                .map(|value| Self::DataRoomMemberUpdateOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            83 => serde_json::from_value::<crate::generated::types::DataRoomMemberRemoveOperationFeeParamsT>(payload)
+                .map(|value| Self::DataRoomMemberRemoveOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            84 => serde_json::from_value::<crate::generated::types::DataRoomRotateKeyOperationFeeParamsT>(payload)
+                .map(|value| Self::DataRoomRotateKeyOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            85 => serde_json::from_value::<crate::generated::types::ContentCardCreateOperationFeeParamsT>(payload)
+                .map(|value| Self::ContentCardCreateOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            86 => serde_json::from_value::<crate::generated::types::ContentCardUpdateOperationFeeParamsT>(payload)
+                .map(|value| Self::ContentCardUpdateOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            87 => serde_json::from_value::<crate::generated::types::ContentCardRemoveOperationFeeParamsT>(payload)
+                .map(|value| Self::ContentCardRemoveOperationFeeParamsT(Box::new(value)))
                 .map_err(serde::de::Error::custom),
             other => Err(serde::de::Error::custom(format!("unknown static variant FeeParameters tag {other}"))),
         }
@@ -1473,6 +1641,16 @@ pub enum Operation {
     LiquidityPoolUpdateOperation(Box<crate::generated::operations::LiquidityPoolUpdateOperation>),
     CreditDealUpdateOperation(Box<crate::generated::operations::CreditDealUpdateOperation>),
     LimitOrderUpdateOperation(Box<crate::generated::operations::LimitOrderUpdateOperation>),
+    DataRoomCreateOperation(Box<crate::generated::operations::DataRoomCreateOperation>),
+    DataRoomUpdateOperation(Box<crate::generated::operations::DataRoomUpdateOperation>),
+    DataRoomDeleteOperation(Box<crate::generated::operations::DataRoomDeleteOperation>),
+    DataRoomMemberAddOperation(Box<crate::generated::operations::DataRoomMemberAddOperation>),
+    DataRoomMemberUpdateOperation(Box<crate::generated::operations::DataRoomMemberUpdateOperation>),
+    DataRoomMemberRemoveOperation(Box<crate::generated::operations::DataRoomMemberRemoveOperation>),
+    DataRoomRotateKeyOperation(Box<crate::generated::operations::DataRoomRotateKeyOperation>),
+    ContentCardCreateOperation(Box<crate::generated::operations::ContentCardCreateOperation>),
+    ContentCardUpdateOperation(Box<crate::generated::operations::ContentCardUpdateOperation>),
+    ContentCardRemoveOperation(Box<crate::generated::operations::ContentCardRemoveOperation>),
 }
 
 impl Operation {
@@ -1874,6 +2052,60 @@ impl Operation {
         value: crate::generated::operations::LimitOrderUpdateOperation,
     ) -> Self {
         Self::LimitOrderUpdateOperation(Box::new(value))
+    }
+
+    pub fn data_room_create(value: crate::generated::operations::DataRoomCreateOperation) -> Self {
+        Self::DataRoomCreateOperation(Box::new(value))
+    }
+
+    pub fn data_room_update(value: crate::generated::operations::DataRoomUpdateOperation) -> Self {
+        Self::DataRoomUpdateOperation(Box::new(value))
+    }
+
+    pub fn data_room_delete(value: crate::generated::operations::DataRoomDeleteOperation) -> Self {
+        Self::DataRoomDeleteOperation(Box::new(value))
+    }
+
+    pub fn data_room_member_add(
+        value: crate::generated::operations::DataRoomMemberAddOperation,
+    ) -> Self {
+        Self::DataRoomMemberAddOperation(Box::new(value))
+    }
+
+    pub fn data_room_member_update(
+        value: crate::generated::operations::DataRoomMemberUpdateOperation,
+    ) -> Self {
+        Self::DataRoomMemberUpdateOperation(Box::new(value))
+    }
+
+    pub fn data_room_member_remove(
+        value: crate::generated::operations::DataRoomMemberRemoveOperation,
+    ) -> Self {
+        Self::DataRoomMemberRemoveOperation(Box::new(value))
+    }
+
+    pub fn data_room_rotate_key(
+        value: crate::generated::operations::DataRoomRotateKeyOperation,
+    ) -> Self {
+        Self::DataRoomRotateKeyOperation(Box::new(value))
+    }
+
+    pub fn content_card_create(
+        value: crate::generated::operations::ContentCardCreateOperation,
+    ) -> Self {
+        Self::ContentCardCreateOperation(Box::new(value))
+    }
+
+    pub fn content_card_update(
+        value: crate::generated::operations::ContentCardUpdateOperation,
+    ) -> Self {
+        Self::ContentCardUpdateOperation(Box::new(value))
+    }
+
+    pub fn content_card_remove(
+        value: crate::generated::operations::ContentCardRemoveOperation,
+    ) -> Self {
+        Self::ContentCardRemoveOperation(Box::new(value))
     }
 }
 
@@ -2541,6 +2773,96 @@ impl Operation {
             _ => None,
         }
     }
+
+    pub fn as_data_room_create(
+        &self,
+    ) -> Option<&crate::generated::operations::DataRoomCreateOperation> {
+        match self {
+            Self::DataRoomCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_data_room_update(
+        &self,
+    ) -> Option<&crate::generated::operations::DataRoomUpdateOperation> {
+        match self {
+            Self::DataRoomUpdateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_data_room_delete(
+        &self,
+    ) -> Option<&crate::generated::operations::DataRoomDeleteOperation> {
+        match self {
+            Self::DataRoomDeleteOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_data_room_member_add(
+        &self,
+    ) -> Option<&crate::generated::operations::DataRoomMemberAddOperation> {
+        match self {
+            Self::DataRoomMemberAddOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_data_room_member_update(
+        &self,
+    ) -> Option<&crate::generated::operations::DataRoomMemberUpdateOperation> {
+        match self {
+            Self::DataRoomMemberUpdateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_data_room_member_remove(
+        &self,
+    ) -> Option<&crate::generated::operations::DataRoomMemberRemoveOperation> {
+        match self {
+            Self::DataRoomMemberRemoveOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_data_room_rotate_key(
+        &self,
+    ) -> Option<&crate::generated::operations::DataRoomRotateKeyOperation> {
+        match self {
+            Self::DataRoomRotateKeyOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_content_card_create(
+        &self,
+    ) -> Option<&crate::generated::operations::ContentCardCreateOperation> {
+        match self {
+            Self::ContentCardCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_content_card_update(
+        &self,
+    ) -> Option<&crate::generated::operations::ContentCardUpdateOperation> {
+        match self {
+            Self::ContentCardUpdateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_content_card_remove(
+        &self,
+    ) -> Option<&crate::generated::operations::ContentCardRemoveOperation> {
+        match self {
+            Self::ContentCardRemoveOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
 }
 
 impl Operation {
@@ -2627,6 +2949,16 @@ impl Operation {
             Self::LiquidityPoolUpdateOperation(_) => "liquidity_pool_update",
             Self::CreditDealUpdateOperation(_) => "credit_deal_update",
             Self::LimitOrderUpdateOperation(_) => "limit_order_update",
+            Self::DataRoomCreateOperation(_) => "data_room_create",
+            Self::DataRoomUpdateOperation(_) => "data_room_update",
+            Self::DataRoomDeleteOperation(_) => "data_room_delete",
+            Self::DataRoomMemberAddOperation(_) => "data_room_member_add",
+            Self::DataRoomMemberUpdateOperation(_) => "data_room_member_update",
+            Self::DataRoomMemberRemoveOperation(_) => "data_room_member_remove",
+            Self::DataRoomRotateKeyOperation(_) => "data_room_rotate_key",
+            Self::ContentCardCreateOperation(_) => "content_card_create",
+            Self::ContentCardUpdateOperation(_) => "content_card_update",
+            Self::ContentCardRemoveOperation(_) => "content_card_remove",
         }
     }
 
@@ -2711,6 +3043,16 @@ impl Operation {
             Self::LiquidityPoolUpdateOperation(_) => false,
             Self::CreditDealUpdateOperation(_) => false,
             Self::LimitOrderUpdateOperation(_) => false,
+            Self::DataRoomCreateOperation(_) => false,
+            Self::DataRoomUpdateOperation(_) => false,
+            Self::DataRoomDeleteOperation(_) => false,
+            Self::DataRoomMemberAddOperation(_) => false,
+            Self::DataRoomMemberUpdateOperation(_) => false,
+            Self::DataRoomMemberRemoveOperation(_) => false,
+            Self::DataRoomRotateKeyOperation(_) => false,
+            Self::ContentCardCreateOperation(_) => false,
+            Self::ContentCardUpdateOperation(_) => false,
+            Self::ContentCardRemoveOperation(_) => false,
         }
     }
 
@@ -2795,6 +3137,16 @@ impl Operation {
             Self::LiquidityPoolUpdateOperation(value) => &value.fee,
             Self::CreditDealUpdateOperation(value) => &value.fee,
             Self::LimitOrderUpdateOperation(value) => &value.fee,
+            Self::DataRoomCreateOperation(value) => &value.fee,
+            Self::DataRoomUpdateOperation(value) => &value.fee,
+            Self::DataRoomDeleteOperation(value) => &value.fee,
+            Self::DataRoomMemberAddOperation(value) => &value.fee,
+            Self::DataRoomMemberUpdateOperation(value) => &value.fee,
+            Self::DataRoomMemberRemoveOperation(value) => &value.fee,
+            Self::DataRoomRotateKeyOperation(value) => &value.fee,
+            Self::ContentCardCreateOperation(value) => &value.fee,
+            Self::ContentCardUpdateOperation(value) => &value.fee,
+            Self::ContentCardRemoveOperation(value) => &value.fee,
         }
     }
 
@@ -2879,6 +3231,16 @@ impl Operation {
             Self::LiquidityPoolUpdateOperation(value) => value.fee = fee,
             Self::CreditDealUpdateOperation(value) => value.fee = fee,
             Self::LimitOrderUpdateOperation(value) => value.fee = fee,
+            Self::DataRoomCreateOperation(value) => value.fee = fee,
+            Self::DataRoomUpdateOperation(value) => value.fee = fee,
+            Self::DataRoomDeleteOperation(value) => value.fee = fee,
+            Self::DataRoomMemberAddOperation(value) => value.fee = fee,
+            Self::DataRoomMemberUpdateOperation(value) => value.fee = fee,
+            Self::DataRoomMemberRemoveOperation(value) => value.fee = fee,
+            Self::DataRoomRotateKeyOperation(value) => value.fee = fee,
+            Self::ContentCardCreateOperation(value) => value.fee = fee,
+            Self::ContentCardUpdateOperation(value) => value.fee = fee,
+            Self::ContentCardRemoveOperation(value) => value.fee = fee,
         }
     }
 }
@@ -3201,6 +3563,46 @@ impl serde::Serialize for Operation {
             }
             Self::LimitOrderUpdateOperation(value) => {
                 seq.serialize_element(&77u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::DataRoomCreateOperation(value) => {
+                seq.serialize_element(&78u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::DataRoomUpdateOperation(value) => {
+                seq.serialize_element(&79u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::DataRoomDeleteOperation(value) => {
+                seq.serialize_element(&80u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::DataRoomMemberAddOperation(value) => {
+                seq.serialize_element(&81u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::DataRoomMemberUpdateOperation(value) => {
+                seq.serialize_element(&82u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::DataRoomMemberRemoveOperation(value) => {
+                seq.serialize_element(&83u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::DataRoomRotateKeyOperation(value) => {
+                seq.serialize_element(&84u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::ContentCardCreateOperation(value) => {
+                seq.serialize_element(&85u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::ContentCardUpdateOperation(value) => {
+                seq.serialize_element(&86u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::ContentCardRemoveOperation(value) => {
+                seq.serialize_element(&87u32)?;
                 seq.serialize_element(value.as_ref())?;
             }
         }
@@ -3636,6 +4038,66 @@ impl<'de> serde::Deserialize<'de> for Operation {
                     payload,
                 )
                 .map(|value| Self::LimitOrderUpdateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom)
+            }
+            78 => serde_json::from_value::<crate::generated::operations::DataRoomCreateOperation>(
+                payload,
+            )
+            .map(|value| Self::DataRoomCreateOperation(Box::new(value)))
+            .map_err(serde::de::Error::custom),
+            79 => serde_json::from_value::<crate::generated::operations::DataRoomUpdateOperation>(
+                payload,
+            )
+            .map(|value| Self::DataRoomUpdateOperation(Box::new(value)))
+            .map_err(serde::de::Error::custom),
+            80 => serde_json::from_value::<crate::generated::operations::DataRoomDeleteOperation>(
+                payload,
+            )
+            .map(|value| Self::DataRoomDeleteOperation(Box::new(value)))
+            .map_err(serde::de::Error::custom),
+            81 => {
+                serde_json::from_value::<crate::generated::operations::DataRoomMemberAddOperation>(
+                    payload,
+                )
+                .map(|value| Self::DataRoomMemberAddOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom)
+            }
+            82 => serde_json::from_value::<
+                crate::generated::operations::DataRoomMemberUpdateOperation,
+            >(payload)
+            .map(|value| Self::DataRoomMemberUpdateOperation(Box::new(value)))
+            .map_err(serde::de::Error::custom),
+            83 => serde_json::from_value::<
+                crate::generated::operations::DataRoomMemberRemoveOperation,
+            >(payload)
+            .map(|value| Self::DataRoomMemberRemoveOperation(Box::new(value)))
+            .map_err(serde::de::Error::custom),
+            84 => {
+                serde_json::from_value::<crate::generated::operations::DataRoomRotateKeyOperation>(
+                    payload,
+                )
+                .map(|value| Self::DataRoomRotateKeyOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom)
+            }
+            85 => {
+                serde_json::from_value::<crate::generated::operations::ContentCardCreateOperation>(
+                    payload,
+                )
+                .map(|value| Self::ContentCardCreateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom)
+            }
+            86 => {
+                serde_json::from_value::<crate::generated::operations::ContentCardUpdateOperation>(
+                    payload,
+                )
+                .map(|value| Self::ContentCardUpdateOperation(Box::new(value)))
+                .map_err(serde::de::Error::custom)
+            }
+            87 => {
+                serde_json::from_value::<crate::generated::operations::ContentCardRemoveOperation>(
+                    payload,
+                )
+                .map(|value| Self::ContentCardRemoveOperation(Box::new(value)))
                 .map_err(serde::de::Error::custom)
             }
             other => Err(serde::de::Error::custom(format!(

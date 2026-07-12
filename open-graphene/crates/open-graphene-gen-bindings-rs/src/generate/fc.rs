@@ -128,6 +128,7 @@ pub(crate) fn render_fc_transfer_path_impls(out: &mut String, protocol: &Protoco
         "vesting_policy_initializer",
         "worker_initializer",
         "limit_order_auto_action",
+        "data_room_subject",
     ] {
         render_fc_tagged_static_variant_impl(out, protocol, spec_name)?;
     }
@@ -343,7 +344,9 @@ pub(crate) fn render_fc_tagged_static_variant_impl(
     arms.sort_by_key(|arm| arm.tag);
     for arm in arms {
         let payload = match arm.ty {
-            TypeRef::Ref { .. } => "value.as_ref().fc_serialize(out)".to_string(),
+            TypeRef::Ref { .. } | TypeRef::Void | TypeRef::ProtocolObjectId { .. } => {
+                "value.as_ref().fc_serialize(out)".to_string()
+            }
             TypeRef::FixedBytes { bytes } => format!(
                 "write_fixed_bytes(value.as_ref(), {bytes}, {}, out)",
                 rust_string_literal(&format!("{spec_name}::{}", arm.name))
@@ -859,6 +862,18 @@ pub(crate) fn render_fc_flat_map_serialize_lines(
     }
 
     match key {
+        TypeRef::Uint32 => Ok(format!(
+            "{indent}write_varint({value_expr}.len() as u64, out);\n\
+             {indent}let mut previous_key: Option<u32> = None;\n\
+             {indent}for (key, value) in {iter_expr} {{\n\
+             {indent}    if previous_key.is_some_and(|previous| previous >= *key) {{\n\
+             {indent}        return Err(FcSerializeError::UnsupportedValue {{ type_name: \"FlatMap\", reason: \"flat_map keys must be sorted and unique\" }});\n\
+             {indent}    }}\n\
+             {indent}    previous_key = Some(*key);\n\
+             {indent}    key.fc_serialize(out)?;\n\
+             {indent}    value.fc_serialize(out)?;\n\
+             {indent}}}\n"
+        )),
         TypeRef::ProtocolObjectId { .. } => Ok(format!(
             "{indent}write_varint({value_expr}.len() as u64, out);\n\
              {indent}let mut previous_key: Option<u64> = None;\n\
@@ -925,11 +940,17 @@ pub(crate) fn is_fc_supported_flat_map(key: &TypeRef, value: &TypeRef) -> bool {
         return matches!(value, TypeRef::Uint16);
     }
 
+    if matches!(key, TypeRef::Uint32) {
+        return matches!(value, TypeRef::String);
+    }
+
     matches!(
         key,
         TypeRef::ProtocolObjectId { .. } | TypeRef::PublicKey { .. }
-    ) && (matches!(value, TypeRef::Uint16 | TypeRef::Int64 { json: None, .. })
-        || matches!(value, TypeRef::Ref { name } if name == "price"))
+    ) && (matches!(
+        value,
+        TypeRef::Uint16 | TypeRef::Int64 { json: None, .. } | TypeRef::String
+    ) || matches!(value, TypeRef::Ref { name } if name == "price"))
 }
 
 pub(crate) fn render_vote_id_arg(
@@ -1072,6 +1093,7 @@ pub(crate) fn is_fc_supported_type(ty: &TypeRef, supported_structs: &BTreeSet<St
                 || name == "fee_parameters"
                 || name == "argument_type"
                 || name == "operation"
+                || name == "data_room_subject"
         }
         TypeRef::Optional { inner } | TypeRef::Vector { inner } => {
             is_fc_supported_type(inner, supported_structs)
