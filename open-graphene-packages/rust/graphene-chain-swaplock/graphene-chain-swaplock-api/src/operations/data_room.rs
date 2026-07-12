@@ -104,16 +104,18 @@ fn member_add_operation(
     permissions: u32,
 ) -> Result<Operation, SwaplockApiError> {
     validate_permissions(permissions)?;
-    Ok(Operation::data_room_member_add(DataRoomMemberAddOperation {
-        fee: core_fee(),
-        caller: AccountId(caller),
-        room: DataRoomId(room),
-        account: AccountId(account),
-        member_key,
-        epoch_keys: sorted_epoch_keys(epoch_keys)?,
-        permissions,
-        extensions: vec![],
-    }))
+    Ok(Operation::data_room_member_add(
+        DataRoomMemberAddOperation {
+            fee: core_fee(),
+            caller: AccountId(caller),
+            room: DataRoomId(room),
+            account: AccountId(account),
+            member_key,
+            epoch_keys: sorted_epoch_keys(epoch_keys)?,
+            permissions,
+            extensions: vec![],
+        },
+    ))
 }
 
 fn rotate_key_operation(
@@ -130,14 +132,16 @@ fn rotate_key_operation(
             field: "member_keys",
         });
     }
-    Ok(Operation::data_room_rotate_key(DataRoomRotateKeyOperation {
-        fee: core_fee(),
-        caller: AccountId(caller),
-        room: DataRoomId(room),
-        new_room_key,
-        member_keys: sorted_member_keys(member_keys)?,
-        extensions: vec![],
-    }))
+    Ok(Operation::data_room_rotate_key(
+        DataRoomRotateKeyOperation {
+            fee: core_fee(),
+            caller: AccountId(caller),
+            room: DataRoomId(room),
+            new_room_key,
+            member_keys: sorted_member_keys(member_keys)?,
+            extensions: vec![],
+        },
+    ))
 }
 
 /// Builder for `data_room_create`: open a new data room owned by `owner`.
@@ -265,7 +269,9 @@ impl<'session> DataRoomUpdateRequest<'session> {
 
     /// Attach the room to a tokenized asset (owner only).
     pub fn new_subject_asset(mut self, asset: impl Into<String>) -> Self {
-        self.new_subject = Some(DataRoomSubject::AssetIdType(Box::new(AssetId(asset.into()))));
+        self.new_subject = Some(DataRoomSubject::AssetIdType(Box::new(AssetId(
+            asset.into(),
+        ))));
         self
     }
 

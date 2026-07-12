@@ -48,10 +48,16 @@ pub use operations::{
     AssetUpdateFeedProducersRequest, AssetUpdateIssuerRequest, AssetUpdateRequest,
     BalanceClaimRequest, BidCollateralRequest, BlindTransferRequest, CallOrderUpdateRequest,
     CommitteeMemberCreateRequest, CommitteeMemberUpdateGlobalParametersRequest,
-    CommitteeMemberUpdateRequest, CreditDealRepayRequest, CreditDealUpdateRequest,
+    CommitteeMemberUpdateRequest, ContentCardCreateRequest, ContentCardRemoveRequest,
+    ContentCardUpdateRequest, CreditDealRepayRequest, CreditDealUpdateRequest,
     CreditOfferAcceptRequest, CreditOfferCreateRequest, CreditOfferDeleteRequest,
     CreditOfferUpdateRequest, CustomAuthorityCreateRequest, CustomAuthorityDeleteRequest,
-    CustomAuthorityUpdateRequest, CustomRequest, HtlcCreateRequest, HtlcExtendRequest,
+    CustomAuthorityUpdateRequest, CustomRequest, DATA_ROOM_PERM_ADD_MEMBERS, DATA_ROOM_PERM_ALL,
+    DATA_ROOM_PERM_CREATE_CONTENT, DATA_ROOM_PERM_MANAGE_CONTENT,
+    DATA_ROOM_PERM_MANAGE_PERMISSIONS, DATA_ROOM_PERM_REMOVE_MEMBERS, DATA_ROOM_PERM_ROTATE_KEYS,
+    DATA_ROOM_PERM_UPDATE_ROOM, DataRoomCreateRequest, DataRoomDeleteRequest,
+    DataRoomMemberAddRequest, DataRoomMemberRemoveRequest, DataRoomMemberUpdateRequest,
+    DataRoomRotateKeyRequest, DataRoomUpdateRequest, HtlcCreateRequest, HtlcExtendRequest,
     HtlcRedeemRequest, LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
     LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest,
     LiquidityPoolExchangeRequest, LiquidityPoolUpdateRequest, LiquidityPoolWithdrawRequest,
@@ -72,11 +78,14 @@ pub use graphene_chain_swaplock_bindings::generated::operations::{
     AssetIssueOperation, AssetReserveOperation, LimitOrderCancelOperation,
     LimitOrderCreateOperation, LimitOrderUpdateOperation, TransferOperation,
 };
-pub use graphene_chain_swaplock_bindings::generated::static_variants::{ArgumentType, Operation};
+pub use graphene_chain_swaplock_bindings::generated::static_variants::{
+    ArgumentType, DataRoomSubject, Operation,
+};
 pub use graphene_chain_swaplock_bindings::generated::types::{
-    Asset, AssetObject, Authority, ChainParameters, ChainPropertyObject,
-    DynamicGlobalPropertyObject, GlobalPropertyObject, LimitOrderObject, MaybeSignedBlockHeader,
-    Price, ProcessedTransaction, Restriction, SignedBlock,
+    Asset, AssetObject, Authority, ChainParameters, ChainPropertyObject, ContentCardObject,
+    DataRoomKeyEpochObject, DataRoomMemberObject, DataRoomObject, DynamicGlobalPropertyObject,
+    GlobalPropertyObject, LimitOrderObject, MaybeSignedBlockHeader, Price, ProcessedTransaction,
+    Restriction, SignedBlock,
 };
 
 pub use orders::{
@@ -97,11 +106,14 @@ pub use database::{
     AccountByIdRequest, AccountByNameRequest, AccountOrdersByIdRequest, AccountOrdersRequest,
     AccountOrdersSubscription, AccountSubscription, AccountsRequest, AssetByIdRequest,
     AssetBySymbolRequest, AssetSubscription, ChainIdRequest, ChainPropertiesRequest,
+    ContentCardByIdRequest, ContentCardsByAuthorRequest, ContentCardsByRoomRequest,
     DEFAULT_GET_LIMIT_ORDERS_LIMIT, DEFAULT_LIST_ASSETS_LIMIT, DEFAULT_LOOKUP_ACCOUNTS_LIMIT,
-    DatabaseApi, DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription,
-    GetBlockHeaderRequest, GetBlockRequest, GetConfigRequest, GetKeyReferencesRequest,
-    GetLimitOrdersRequest, GetObjectsRequest, GetTickerRequest, GlobalPropertiesRequest,
-    IntoStringList, ListAssetsRequest, LookupAccountsRequest, Ticker,
+    DataRoomByIdRequest, DataRoomKeyEpochRequest, DataRoomKeyEpochsRequest, DataRoomMemberRequest,
+    DataRoomMembersRequest, DataRoomsByMemberRequest, DataRoomsByOwnerRequest,
+    DataRoomsBySubjectRequest, DatabaseApi, DynamicGlobalPropertiesRequest,
+    DynamicGlobalPropertiesSubscription, GetBlockHeaderRequest, GetBlockRequest, GetConfigRequest,
+    GetKeyReferencesRequest, GetLimitOrdersRequest, GetObjectsRequest, GetTickerRequest,
+    GlobalPropertiesRequest, IntoStringList, ListAssetsRequest, LookupAccountsRequest, Ticker,
 };
 
 pub const SWAPLOCK_CHAIN_ID: &str =

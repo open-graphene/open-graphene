@@ -21,6 +21,17 @@ use super::asset_by_id::{AssetByIdRequest, get_asset_by_id};
 use super::asset_by_symbol::{AssetBySymbolRequest, get_asset_by_symbol};
 use super::chain_id::{ChainIdRequest, get_chain_id};
 use super::chain_properties::{ChainPropertiesRequest, get_chain_properties};
+use super::content_card_by_id::ContentCardByIdRequest;
+use super::content_cards_by_author::ContentCardsByAuthorRequest;
+use super::content_cards_by_room::ContentCardsByRoomRequest;
+use super::data_room_by_id::DataRoomByIdRequest;
+use super::data_room_key_epoch::DataRoomKeyEpochRequest;
+use super::data_room_key_epochs::DataRoomKeyEpochsRequest;
+use super::data_room_member::DataRoomMemberRequest;
+use super::data_room_members::DataRoomMembersRequest;
+use super::data_rooms_by_member::DataRoomsByMemberRequest;
+use super::data_rooms_by_owner::DataRoomsByOwnerRequest;
+use super::data_rooms_by_subject::DataRoomsBySubjectRequest;
 use super::dynamic_global_properties::{
     DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription,
     get_dynamic_global_properties,
@@ -154,6 +165,177 @@ impl<'session> DatabaseApi<'session> {
     pub fn chain_properties(self) -> ChainPropertiesRequest<'session> {
         ChainPropertiesRequest {
             session: self.session,
+        }
+    }
+
+    /// Fetch one content card by its id (like `1.10.0`); `None` for an unknown id.
+    pub fn content_card_by_id<S>(self, content_id: S) -> ContentCardByIdRequest<'session>
+    where
+        S: Into<String>,
+    {
+        ContentCardByIdRequest {
+            session: self.session,
+            content_id: content_id.into(),
+        }
+    }
+
+    /// The content cards authored by an account (name or id), pageable with
+    /// `.limit(..)` / `.start_id(..)`.
+    pub fn content_cards_by_author<S>(
+        self,
+        account_name_or_id: S,
+    ) -> ContentCardsByAuthorRequest<'session>
+    where
+        S: Into<String>,
+    {
+        ContentCardsByAuthorRequest {
+            session: self.session,
+            account_name_or_id: account_name_or_id.into(),
+            limit: None,
+            start_id: None,
+        }
+    }
+
+    /// The content cards of a data room (id like `1.9.0`), pageable with
+    /// `.limit(..)` / `.start_id(..)`.
+    pub fn content_cards_by_room<S>(self, room_id: S) -> ContentCardsByRoomRequest<'session>
+    where
+        S: Into<String>,
+    {
+        ContentCardsByRoomRequest {
+            session: self.session,
+            room_id: room_id.into(),
+            limit: None,
+            start_id: None,
+        }
+    }
+
+    /// Fetch one data room by its id (like `1.9.0`); `None` for an unknown id.
+    pub fn data_room_by_id<S>(self, room_id: S) -> DataRoomByIdRequest<'session>
+    where
+        S: Into<String>,
+    {
+        DataRoomByIdRequest {
+            session: self.session,
+            room_id: room_id.into(),
+        }
+    }
+
+    /// One account's key record for a given epoch of a data room; `None` when it does not exist.
+    pub fn data_room_key_epoch<R, A>(
+        self,
+        room_id: R,
+        epoch: u32,
+        account_name_or_id: A,
+    ) -> DataRoomKeyEpochRequest<'session>
+    where
+        R: Into<String>,
+        A: Into<String>,
+    {
+        DataRoomKeyEpochRequest {
+            session: self.session,
+            room_id: room_id.into(),
+            epoch,
+            account_name_or_id: account_name_or_id.into(),
+        }
+    }
+
+    /// One account's key epoch records in a data room, pageable with
+    /// `.limit(..)` / `.start_id(..)`.
+    pub fn data_room_key_epochs<R, A>(
+        self,
+        room_id: R,
+        account_name_or_id: A,
+    ) -> DataRoomKeyEpochsRequest<'session>
+    where
+        R: Into<String>,
+        A: Into<String>,
+    {
+        DataRoomKeyEpochsRequest {
+            session: self.session,
+            room_id: room_id.into(),
+            account_name_or_id: account_name_or_id.into(),
+            limit: None,
+            start_id: None,
+        }
+    }
+
+    /// One account's member record in a data room; `None` when the account is not a member.
+    pub fn data_room_member<R, A>(
+        self,
+        room_id: R,
+        account_name_or_id: A,
+    ) -> DataRoomMemberRequest<'session>
+    where
+        R: Into<String>,
+        A: Into<String>,
+    {
+        DataRoomMemberRequest {
+            session: self.session,
+            room_id: room_id.into(),
+            account_name_or_id: account_name_or_id.into(),
+        }
+    }
+
+    /// The member records of a data room (id like `1.9.0`), pageable with
+    /// `.limit(..)` / `.start_id(..)`.
+    pub fn data_room_members<S>(self, room_id: S) -> DataRoomMembersRequest<'session>
+    where
+        S: Into<String>,
+    {
+        DataRoomMembersRequest {
+            session: self.session,
+            room_id: room_id.into(),
+            limit: None,
+            start_id: None,
+        }
+    }
+
+    /// The data room memberships of an account (name or id), pageable with
+    /// `.limit(..)` / `.start_id(..)`; each member record carries the room id inside.
+    pub fn data_rooms_by_member<S>(
+        self,
+        account_name_or_id: S,
+    ) -> DataRoomsByMemberRequest<'session>
+    where
+        S: Into<String>,
+    {
+        DataRoomsByMemberRequest {
+            session: self.session,
+            account_name_or_id: account_name_or_id.into(),
+            limit: None,
+            start_id: None,
+        }
+    }
+
+    /// The data rooms owned by an account (name or id), pageable with
+    /// `.limit(..)` / `.start_id(..)`.
+    pub fn data_rooms_by_owner<S>(self, account_name_or_id: S) -> DataRoomsByOwnerRequest<'session>
+    where
+        S: Into<String>,
+    {
+        DataRoomsByOwnerRequest {
+            session: self.session,
+            account_name_or_id: account_name_or_id.into(),
+            limit: None,
+            start_id: None,
+        }
+    }
+
+    /// The data rooms attached to a subject: an asset symbol or id, or an account name or id.
+    /// Pageable with `.limit(..)` / `.start_id(..)`.
+    pub fn data_rooms_by_subject<S>(
+        self,
+        asset_or_account: S,
+    ) -> DataRoomsBySubjectRequest<'session>
+    where
+        S: Into<String>,
+    {
+        DataRoomsBySubjectRequest {
+            session: self.session,
+            asset_or_account: asset_or_account.into(),
+            limit: None,
+            start_id: None,
         }
     }
 
