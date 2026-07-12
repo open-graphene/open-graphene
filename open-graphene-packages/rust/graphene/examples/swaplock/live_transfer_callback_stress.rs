@@ -7,7 +7,7 @@ const DEFAULT_TRANSFER_COUNT: usize = 3;
 const MAX_TRANSFER_COUNT: usize = 20;
 const WAIT_TIMEOUT: Duration = Duration::from_secs(30);
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenvy::dotenv().ok();
 
@@ -63,9 +63,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         live.chain_id()
     );
 
-    let dgp = live
+    let mut dgp = live
         .database()
-        .subscribe_dynamic_global_properties_timeout(WAIT_TIMEOUT)?;
+        .subscribe_dynamic_global_properties_timeout(WAIT_TIMEOUT)
+        .await?;
     println!(
         "live dynamic_global_properties subscription initial head block {} {}",
         dgp.initial().head_block_number,
@@ -82,7 +83,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let asset_id = signed.asset_id().to_string();
         let pending_confirmation = live
             .network_broadcast()?
-            .send_signed_transfer_with_callback(signed)?;
+            .send_signed_transfer_with_callback(signed)
+            .await?;
         println!(
             "sent live #{}: amount={} {}, callback request is now in-flight",
             index + 1,
@@ -93,7 +95,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     for (index, amount, asset_id, pending_confirmation) in pending {
-        let confirmation = pending_confirmation.wait_timeout(WAIT_TIMEOUT)?;
+        let confirmation = pending_confirmation.wait_timeout(WAIT_TIMEOUT).await?;
         println!(
             "confirmed live #{}: amount={} {}, block={}, trx_num={}, id={}",
             index,
@@ -105,7 +107,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
     }
 
-    let update = dgp.next_update_timeout(WAIT_TIMEOUT)?;
+    let update = dgp.next_update_timeout(WAIT_TIMEOUT).await?;
     println!(
         "live dynamic_global_properties update after transfers: head block {} {}",
         update.head_block_number, update.time

@@ -154,17 +154,28 @@ fn provisional_rpc_method(
 }
 
 fn resolve_rpc_return_type(api_config: &RpcApiConfig, method: &RawMethod) -> TypeRef {
-    if api_config.name == "database"
-        && class_matches(&api_config.api_class, "database_api")
-        && method.name == "get_objects"
-    {
-        return TypeRef::Vector {
-            inner: Box::new(TypeRef::Optional {
-                inner: Box::new(TypeRef::ProtocolObjectUnion {
-                    object_types: vec![],
+    if api_config.name == "database" && class_matches(&api_config.api_class, "database_api") {
+        if method.name == "get_objects" {
+            return TypeRef::Vector {
+                inner: Box::new(TypeRef::Optional {
+                    inner: Box::new(TypeRef::ProtocolObjectUnion {
+                        object_types: vec![],
+                    }),
                 }),
-            }),
-        };
+            };
+        }
+        if method.name == "get_required_fees" {
+            return TypeRef::Vector {
+                inner: Box::new(TypeRef::Ref {
+                    name: "required_fee".to_string(),
+                }),
+            };
+        }
+        if method.name == "get_config" {
+            return TypeRef::Ref {
+                name: "config".to_string(),
+            };
+        }
     }
 
     resolve_cpp_type(&method.return_type)
@@ -403,9 +414,11 @@ mod tests {
             }],
             classes: vec![],
             enums: vec![],
+            enum_definitions: vec![],
             static_variants: vec![],
             object_types: vec![],
             reflects: vec![],
+            virtual_operations: vec![],
             diagnostics: vec![],
         }
     }

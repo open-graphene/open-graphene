@@ -7,20 +7,22 @@ use serde::{Deserialize, Serialize};
 pub const TRANSFER_OPERATION_ID: u32 = 0;
 
 /// Protocol operation `transfer_operation` with wire tag 0.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesTransferOperation)]
 pub struct TransferOperation {
     pub fee: crate::generated::types::Asset,
     pub from: crate::generated::ids::AccountId,
     pub to: crate::generated::ids::AccountId,
     pub amount: crate::generated::types::Asset,
     pub memo: Option<crate::generated::types::MemoData>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const LIMIT_ORDER_CREATE_OPERATION_ID: u32 = 1;
 
 /// Protocol operation `limit_order_create_operation` with wire tag 1.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesLimitOrderCreateOperation)]
 pub struct LimitOrderCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub seller: crate::generated::ids::AccountId,
@@ -28,36 +30,39 @@ pub struct LimitOrderCreateOperation {
     pub min_to_receive: crate::generated::types::Asset,
     pub expiration: String,
     pub fill_or_kill: bool,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const LIMIT_ORDER_CANCEL_OPERATION_ID: u32 = 2;
 
 /// Protocol operation `limit_order_cancel_operation` with wire tag 2.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesLimitOrderCancelOperation)]
 pub struct LimitOrderCancelOperation {
     pub fee: crate::generated::types::Asset,
     pub fee_paying_account: crate::generated::ids::AccountId,
     pub order: crate::generated::ids::LimitOrderId,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CALL_ORDER_UPDATE_OPERATION_ID: u32 = 3;
 
 /// Protocol operation `call_order_update_operation` with wire tag 3.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesCallOrderUpdateOperation)]
 pub struct CallOrderUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub funding_account: crate::generated::ids::AccountId,
     pub delta_collateral: crate::generated::types::Asset,
     pub delta_debt: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const FILL_ORDER_OPERATION_ID: u32 = 4;
 
 /// Protocol operation `fill_order_operation` with wire tag 4.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesFillOrderOperation)]
 pub struct FillOrderOperation {
     pub fee: crate::generated::types::Asset,
     pub order_id: crate::generated::ids::ObjectId,
@@ -71,7 +76,8 @@ pub struct FillOrderOperation {
 pub const ACCOUNT_CREATE_OPERATION_ID: u32 = 5;
 
 /// Protocol operation `account_create_operation` with wire tag 5.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAccountCreateOperation)]
 pub struct AccountCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub registrar: crate::generated::ids::AccountId,
@@ -87,7 +93,8 @@ pub struct AccountCreateOperation {
 pub const ACCOUNT_UPDATE_OPERATION_ID: u32 = 6;
 
 /// Protocol operation `account_update_operation` with wire tag 6.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAccountUpdateOperation)]
 pub struct AccountUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
@@ -100,41 +107,45 @@ pub struct AccountUpdateOperation {
 pub const ACCOUNT_WHITELIST_OPERATION_ID: u32 = 7;
 
 /// Protocol operation `account_whitelist_operation` with wire tag 7.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAccountWhitelistOperation)]
 pub struct AccountWhitelistOperation {
     pub fee: crate::generated::types::Asset,
     pub authorizing_account: crate::generated::ids::AccountId,
     pub account_to_list: crate::generated::ids::AccountId,
     pub new_listing: u8,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ACCOUNT_UPGRADE_OPERATION_ID: u32 = 8;
 
 /// Protocol operation `account_upgrade_operation` with wire tag 8.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAccountUpgradeOperation)]
 pub struct AccountUpgradeOperation {
     pub fee: crate::generated::types::Asset,
     pub account_to_upgrade: crate::generated::ids::AccountId,
     pub upgrade_to_lifetime_member: bool,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ACCOUNT_TRANSFER_OPERATION_ID: u32 = 9;
 
 /// Protocol operation `account_transfer_operation` with wire tag 9.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAccountTransferOperation)]
 pub struct AccountTransferOperation {
     pub fee: crate::generated::types::Asset,
     pub account_id: crate::generated::ids::AccountId,
     pub new_owner: crate::generated::ids::AccountId,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_CREATE_OPERATION_ID: u32 = 10;
 
 /// Protocol operation `asset_create_operation` with wire tag 10.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAssetCreateOperation)]
 pub struct AssetCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub issuer: crate::generated::ids::AccountId,
@@ -143,13 +154,14 @@ pub struct AssetCreateOperation {
     pub common_options: crate::generated::types::AssetOptions,
     pub bitasset_opts: Option<crate::generated::types::BitassetOptions>,
     pub is_prediction_market: bool,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_UPDATE_OPERATION_ID: u32 = 11;
 
 /// Protocol operation `asset_update_operation` with wire tag 11.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAssetUpdateOperation)]
 pub struct AssetUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub issuer: crate::generated::ids::AccountId,
@@ -162,91 +174,101 @@ pub struct AssetUpdateOperation {
 pub const ASSET_UPDATE_BITASSET_OPERATION_ID: u32 = 12;
 
 /// Protocol operation `asset_update_bitasset_operation` with wire tag 12.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAssetUpdateBitassetOperation)]
 pub struct AssetUpdateBitassetOperation {
     pub fee: crate::generated::types::Asset,
     pub issuer: crate::generated::ids::AccountId,
     pub asset_to_update: crate::generated::ids::AssetId,
     pub new_options: crate::generated::types::BitassetOptions,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_UPDATE_FEED_PRODUCERS_OPERATION_ID: u32 = 13;
 
 /// Protocol operation `asset_update_feed_producers_operation` with wire tag 13.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAssetUpdateFeedProducersOperation)]
 pub struct AssetUpdateFeedProducersOperation {
     pub fee: crate::generated::types::Asset,
     pub issuer: crate::generated::ids::AccountId,
     pub asset_to_update: crate::generated::ids::AssetId,
     pub new_feed_producers: Vec<crate::generated::ids::AccountId>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_ISSUE_OPERATION_ID: u32 = 14;
 
 /// Protocol operation `asset_issue_operation` with wire tag 14.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAssetIssueOperation)]
 pub struct AssetIssueOperation {
     pub fee: crate::generated::types::Asset,
     pub issuer: crate::generated::ids::AccountId,
     pub asset_to_issue: crate::generated::types::Asset,
     pub issue_to_account: crate::generated::ids::AccountId,
     pub memo: Option<crate::generated::types::MemoData>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_RESERVE_OPERATION_ID: u32 = 15;
 
 /// Protocol operation `asset_reserve_operation` with wire tag 15.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAssetReserveOperation)]
 pub struct AssetReserveOperation {
     pub fee: crate::generated::types::Asset,
     pub payer: crate::generated::ids::AccountId,
     pub amount_to_reserve: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_FUND_FEE_POOL_OPERATION_ID: u32 = 16;
 
 /// Protocol operation `asset_fund_fee_pool_operation` with wire tag 16.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAssetFundFeePoolOperation)]
 pub struct AssetFundFeePoolOperation {
     pub fee: crate::generated::types::Asset,
     pub from_account: crate::generated::ids::AccountId,
     pub asset_id: crate::generated::ids::AssetId,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub amount: i64,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_SETTLE_OPERATION_ID: u32 = 17;
 
 /// Protocol operation `asset_settle_operation` with wire tag 17.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAssetSettleOperation)]
 pub struct AssetSettleOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
     pub amount: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_GLOBAL_SETTLE_OPERATION_ID: u32 = 18;
 
 /// Protocol operation `asset_global_settle_operation` with wire tag 18.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAssetGlobalSettleOperation)]
 pub struct AssetGlobalSettleOperation {
     pub fee: crate::generated::types::Asset,
     pub issuer: crate::generated::ids::AccountId,
     pub asset_to_settle: crate::generated::ids::AssetId,
     pub settle_price: crate::generated::types::Price,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_PUBLISH_FEED_OPERATION_ID: u32 = 19;
 
 /// Protocol operation `asset_publish_feed_operation` with wire tag 19.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAssetPublishFeedOperation)]
 pub struct AssetPublishFeedOperation {
     pub fee: crate::generated::types::Asset,
     pub publisher: crate::generated::ids::AccountId,
@@ -258,7 +280,8 @@ pub struct AssetPublishFeedOperation {
 pub const WITNESS_CREATE_OPERATION_ID: u32 = 20;
 
 /// Protocol operation `witness_create_operation` with wire tag 20.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesWitnessCreateOperation)]
 pub struct WitnessCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub witness_account: crate::generated::ids::AccountId,
@@ -269,7 +292,8 @@ pub struct WitnessCreateOperation {
 pub const WITNESS_UPDATE_OPERATION_ID: u32 = 21;
 
 /// Protocol operation `witness_update_operation` with wire tag 21.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesWitnessUpdateOperation)]
 pub struct WitnessUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub witness: crate::generated::ids::WitnessId,
@@ -281,20 +305,22 @@ pub struct WitnessUpdateOperation {
 pub const PROPOSAL_CREATE_OPERATION_ID: u32 = 22;
 
 /// Protocol operation `proposal_create_operation` with wire tag 22.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesProposalCreateOperation)]
 pub struct ProposalCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub fee_paying_account: crate::generated::ids::AccountId,
     pub expiration_time: String,
     pub proposed_ops: Vec<crate::generated::types::OpWrapper>,
     pub review_period_seconds: Option<u32>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const PROPOSAL_UPDATE_OPERATION_ID: u32 = 23;
 
 /// Protocol operation `proposal_update_operation` with wire tag 23.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesProposalUpdateOperation)]
 pub struct ProposalUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub fee_paying_account: crate::generated::ids::AccountId,
@@ -305,25 +331,27 @@ pub struct ProposalUpdateOperation {
     pub owner_approvals_to_remove: Vec<crate::generated::ids::AccountId>,
     pub key_approvals_to_add: Vec<String>,
     pub key_approvals_to_remove: Vec<String>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const PROPOSAL_DELETE_OPERATION_ID: u32 = 24;
 
 /// Protocol operation `proposal_delete_operation` with wire tag 24.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesProposalDeleteOperation)]
 pub struct ProposalDeleteOperation {
     pub fee: crate::generated::types::Asset,
     pub fee_paying_account: crate::generated::ids::AccountId,
     pub using_owner_authority: bool,
     pub proposal: crate::generated::ids::ProposalId,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const WITHDRAW_PERMISSION_CREATE_OPERATION_ID: u32 = 25;
 
 /// Protocol operation `withdraw_permission_create_operation` with wire tag 25.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesWithdrawPermissionCreateOperation)]
 pub struct WithdrawPermissionCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub withdraw_from_account: crate::generated::ids::AccountId,
@@ -337,7 +365,8 @@ pub struct WithdrawPermissionCreateOperation {
 pub const WITHDRAW_PERMISSION_UPDATE_OPERATION_ID: u32 = 26;
 
 /// Protocol operation `withdraw_permission_update_operation` with wire tag 26.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesWithdrawPermissionUpdateOperation)]
 pub struct WithdrawPermissionUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub withdraw_from_account: crate::generated::ids::AccountId,
@@ -352,7 +381,8 @@ pub struct WithdrawPermissionUpdateOperation {
 pub const WITHDRAW_PERMISSION_CLAIM_OPERATION_ID: u32 = 27;
 
 /// Protocol operation `withdraw_permission_claim_operation` with wire tag 27.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesWithdrawPermissionClaimOperation)]
 pub struct WithdrawPermissionClaimOperation {
     pub fee: crate::generated::types::Asset,
     pub withdraw_permission: crate::generated::ids::WithdrawPermissionId,
@@ -365,7 +395,8 @@ pub struct WithdrawPermissionClaimOperation {
 pub const WITHDRAW_PERMISSION_DELETE_OPERATION_ID: u32 = 28;
 
 /// Protocol operation `withdraw_permission_delete_operation` with wire tag 28.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesWithdrawPermissionDeleteOperation)]
 pub struct WithdrawPermissionDeleteOperation {
     pub fee: crate::generated::types::Asset,
     pub withdraw_from_account: crate::generated::ids::AccountId,
@@ -376,7 +407,8 @@ pub struct WithdrawPermissionDeleteOperation {
 pub const COMMITTEE_MEMBER_CREATE_OPERATION_ID: u32 = 29;
 
 /// Protocol operation `committee_member_create_operation` with wire tag 29.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesCommitteeMemberCreateOperation)]
 pub struct CommitteeMemberCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub committee_member_account: crate::generated::ids::AccountId,
@@ -386,7 +418,8 @@ pub struct CommitteeMemberCreateOperation {
 pub const COMMITTEE_MEMBER_UPDATE_OPERATION_ID: u32 = 30;
 
 /// Protocol operation `committee_member_update_operation` with wire tag 30.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesCommitteeMemberUpdateOperation)]
 pub struct CommitteeMemberUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub committee_member: crate::generated::ids::CommitteeMemberId,
@@ -397,7 +430,8 @@ pub struct CommitteeMemberUpdateOperation {
 pub const COMMITTEE_MEMBER_UPDATE_GLOBAL_PARAMETERS_OPERATION_ID: u32 = 31;
 
 /// Protocol operation `committee_member_update_global_parameters_operation` with wire tag 31.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesCommitteeMemberUpdateGlobalParametersOperation)]
 pub struct CommitteeMemberUpdateGlobalParametersOperation {
     pub fee: crate::generated::types::Asset,
     pub new_parameters: crate::generated::types::ChainParameters,
@@ -406,7 +440,8 @@ pub struct CommitteeMemberUpdateGlobalParametersOperation {
 pub const VESTING_BALANCE_CREATE_OPERATION_ID: u32 = 32;
 
 /// Protocol operation `vesting_balance_create_operation` with wire tag 32.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesVestingBalanceCreateOperation)]
 pub struct VestingBalanceCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub creator: crate::generated::ids::AccountId,
@@ -418,7 +453,8 @@ pub struct VestingBalanceCreateOperation {
 pub const VESTING_BALANCE_WITHDRAW_OPERATION_ID: u32 = 33;
 
 /// Protocol operation `vesting_balance_withdraw_operation` with wire tag 33.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesVestingBalanceWithdrawOperation)]
 pub struct VestingBalanceWithdrawOperation {
     pub fee: crate::generated::types::Asset,
     pub vesting_balance: crate::generated::ids::VestingBalanceId,
@@ -429,13 +465,16 @@ pub struct VestingBalanceWithdrawOperation {
 pub const WORKER_CREATE_OPERATION_ID: u32 = 34;
 
 /// Protocol operation `worker_create_operation` with wire tag 34.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesWorkerCreateOperation)]
 pub struct WorkerCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub owner: crate::generated::ids::AccountId,
     pub work_begin_date: String,
     pub work_end_date: String,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub daily_pay: i64,
     pub name: String,
     pub url: String,
@@ -445,31 +484,39 @@ pub struct WorkerCreateOperation {
 pub const CUSTOM_OPERATION_ID: u32 = 35;
 
 /// Protocol operation `custom_operation` with wire tag 35.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesCustomOperation)]
 pub struct CustomOperation {
     pub fee: crate::generated::types::Asset,
     pub payer: crate::generated::ids::AccountId,
     pub required_auths: Vec<crate::generated::ids::AccountId>,
     pub id: u16,
+    #[serde(
+        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
+        deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array"
+    )]
+    #[schema(value_type = String)]
     pub data: Vec<u8>,
 }
 
 pub const ASSERT_OPERATION_ID: u32 = 36;
 
 /// Protocol operation `assert_operation` with wire tag 36.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAssertOperation)]
 pub struct AssertOperation {
     pub fee: crate::generated::types::Asset,
     pub fee_paying_account: crate::generated::ids::AccountId,
     pub predicates: Vec<crate::generated::static_variants::Predicate>,
     pub required_auths: Vec<crate::generated::ids::AccountId>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const BALANCE_CLAIM_OPERATION_ID: u32 = 37;
 
 /// Protocol operation `balance_claim_operation` with wire tag 37.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesBalanceClaimOperation)]
 pub struct BalanceClaimOperation {
     pub fee: crate::generated::types::Asset,
     pub deposit_to_account: crate::generated::ids::AccountId,
@@ -481,7 +528,8 @@ pub struct BalanceClaimOperation {
 pub const OVERRIDE_TRANSFER_OPERATION_ID: u32 = 38;
 
 /// Protocol operation `override_transfer_operation` with wire tag 38.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesOverrideTransferOperation)]
 pub struct OverrideTransferOperation {
     pub fee: crate::generated::types::Asset,
     pub issuer: crate::generated::ids::AccountId,
@@ -489,18 +537,23 @@ pub struct OverrideTransferOperation {
     pub to: crate::generated::ids::AccountId,
     pub amount: crate::generated::types::Asset,
     pub memo: Option<crate::generated::types::MemoData>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const TRANSFER_TO_BLIND_OPERATION_ID: u32 = 39;
 
 /// Protocol operation `transfer_to_blind_operation` with wire tag 39.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesTransferToBlindOperation)]
 pub struct TransferToBlindOperation {
     pub fee: crate::generated::types::Asset,
     pub amount: crate::generated::types::Asset,
     pub from: crate::generated::ids::AccountId,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_32_from_hex_string_or_byte_array")]
+    #[serde(
+        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
+        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_32_from_hex_string_or_byte_array"
+    )]
+    #[schema(value_type = String)]
     pub blinding_factor: Vec<u8>,
     pub outputs: Vec<crate::generated::types::BlindOutput>,
 }
@@ -508,7 +561,8 @@ pub struct TransferToBlindOperation {
 pub const BLIND_TRANSFER_OPERATION_ID: u32 = 40;
 
 /// Protocol operation `blind_transfer_operation` with wire tag 40.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesBlindTransferOperation)]
 pub struct BlindTransferOperation {
     pub fee: crate::generated::types::Asset,
     pub inputs: Vec<crate::generated::types::BlindInput>,
@@ -518,12 +572,17 @@ pub struct BlindTransferOperation {
 pub const TRANSFER_FROM_BLIND_OPERATION_ID: u32 = 41;
 
 /// Protocol operation `transfer_from_blind_operation` with wire tag 41.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesTransferFromBlindOperation)]
 pub struct TransferFromBlindOperation {
     pub fee: crate::generated::types::Asset,
     pub amount: crate::generated::types::Asset,
     pub to: crate::generated::ids::AccountId,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_fixed_bytes_32_from_hex_string_or_byte_array")]
+    #[serde(
+        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
+        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_32_from_hex_string_or_byte_array"
+    )]
+    #[schema(value_type = String)]
     pub blinding_factor: Vec<u8>,
     pub inputs: Vec<crate::generated::types::BlindInput>,
 }
@@ -531,7 +590,8 @@ pub struct TransferFromBlindOperation {
 pub const ASSET_SETTLE_CANCEL_OPERATION_ID: u32 = 42;
 
 /// Protocol operation `asset_settle_cancel_operation` with wire tag 42.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAssetSettleCancelOperation)]
 pub struct AssetSettleCancelOperation {
     pub fee: crate::generated::types::Asset,
     pub settlement: crate::generated::ids::ForceSettlementId,
@@ -542,7 +602,8 @@ pub struct AssetSettleCancelOperation {
 pub const ASSET_CLAIM_FEES_OPERATION_ID: u32 = 43;
 
 /// Protocol operation `asset_claim_fees_operation` with wire tag 43.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAssetClaimFeesOperation)]
 pub struct AssetClaimFeesOperation {
     pub fee: crate::generated::types::Asset,
     pub issuer: crate::generated::ids::AccountId,
@@ -553,31 +614,36 @@ pub struct AssetClaimFeesOperation {
 pub const FBA_DISTRIBUTE_OPERATION_ID: u32 = 44;
 
 /// Protocol operation `fba_distribute_operation` with wire tag 44.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesFbaDistributeOperation)]
 pub struct FbaDistributeOperation {
     pub fee: crate::generated::types::Asset,
     pub account_id: crate::generated::ids::AccountId,
     pub fba_id: crate::generated::ids::ObjectId,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub amount: i64,
 }
 
 pub const BID_COLLATERAL_OPERATION_ID: u32 = 45;
 
 /// Protocol operation `bid_collateral_operation` with wire tag 45.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesBidCollateralOperation)]
 pub struct BidCollateralOperation {
     pub fee: crate::generated::types::Asset,
     pub bidder: crate::generated::ids::AccountId,
     pub additional_collateral: crate::generated::types::Asset,
     pub debt_covered: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const EXECUTE_BID_OPERATION_ID: u32 = 46;
 
 /// Protocol operation `execute_bid_operation` with wire tag 46.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesExecuteBidOperation)]
 pub struct ExecuteBidOperation {
     pub fee: crate::generated::types::Asset,
     pub bidder: crate::generated::ids::AccountId,
@@ -588,31 +654,34 @@ pub struct ExecuteBidOperation {
 pub const ASSET_CLAIM_POOL_OPERATION_ID: u32 = 47;
 
 /// Protocol operation `asset_claim_pool_operation` with wire tag 47.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAssetClaimPoolOperation)]
 pub struct AssetClaimPoolOperation {
     pub fee: crate::generated::types::Asset,
     pub issuer: crate::generated::ids::AccountId,
     pub asset_id: crate::generated::ids::AssetId,
     pub amount_to_claim: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const ASSET_UPDATE_ISSUER_OPERATION_ID: u32 = 48;
 
 /// Protocol operation `asset_update_issuer_operation` with wire tag 48.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAssetUpdateIssuerOperation)]
 pub struct AssetUpdateIssuerOperation {
     pub fee: crate::generated::types::Asset,
     pub issuer: crate::generated::ids::AccountId,
     pub asset_to_update: crate::generated::ids::AssetId,
     pub new_issuer: crate::generated::ids::AccountId,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const HTLC_CREATE_OPERATION_ID: u32 = 49;
 
 /// Protocol operation `htlc_create_operation` with wire tag 49.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesHtlcCreateOperation)]
 pub struct HtlcCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub from: crate::generated::ids::AccountId,
@@ -627,19 +696,26 @@ pub struct HtlcCreateOperation {
 pub const HTLC_REDEEM_OPERATION_ID: u32 = 50;
 
 /// Protocol operation `htlc_redeem_operation` with wire tag 50.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesHtlcRedeemOperation)]
 pub struct HtlcRedeemOperation {
     pub fee: crate::generated::types::Asset,
     pub htlc_id: crate::generated::ids::HtlcId,
     pub redeemer: crate::generated::ids::AccountId,
+    #[serde(
+        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
+        deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array"
+    )]
+    #[schema(value_type = String)]
     pub preimage: Vec<u8>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const HTLC_REDEEMED_OPERATION_ID: u32 = 51;
 
 /// Protocol operation `htlc_redeemed_operation` with wire tag 51.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesHtlcRedeemedOperation)]
 pub struct HtlcRedeemedOperation {
     pub fee: crate::generated::types::Asset,
     pub htlc_id: crate::generated::ids::HtlcId,
@@ -649,25 +725,32 @@ pub struct HtlcRedeemedOperation {
     pub amount: crate::generated::types::Asset,
     pub htlc_preimage_hash: crate::generated::static_variants::HtlcHash,
     pub htlc_preimage_size: u16,
+    #[serde(
+        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
+        deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array"
+    )]
+    #[schema(value_type = String)]
     pub preimage: Vec<u8>,
 }
 
 pub const HTLC_EXTEND_OPERATION_ID: u32 = 52;
 
 /// Protocol operation `htlc_extend_operation` with wire tag 52.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesHtlcExtendOperation)]
 pub struct HtlcExtendOperation {
     pub fee: crate::generated::types::Asset,
     pub htlc_id: crate::generated::ids::HtlcId,
     pub update_issuer: crate::generated::ids::AccountId,
     pub seconds_to_add: u32,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const HTLC_REFUND_OPERATION_ID: u32 = 53;
 
 /// Protocol operation `htlc_refund_operation` with wire tag 53.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesHtlcRefundOperation)]
 pub struct HtlcRefundOperation {
     pub fee: crate::generated::types::Asset,
     pub htlc_id: crate::generated::ids::HtlcId,
@@ -681,7 +764,8 @@ pub struct HtlcRefundOperation {
 pub const CUSTOM_AUTHORITY_CREATE_OPERATION_ID: u32 = 54;
 
 /// Protocol operation `custom_authority_create_operation` with wire tag 54.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesCustomAuthorityCreateOperation)]
 pub struct CustomAuthorityCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
@@ -691,13 +775,14 @@ pub struct CustomAuthorityCreateOperation {
     pub operation_type: u32,
     pub auth: crate::generated::types::Authority,
     pub restrictions: Vec<crate::generated::types::Restriction>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CUSTOM_AUTHORITY_UPDATE_OPERATION_ID: u32 = 55;
 
 /// Protocol operation `custom_authority_update_operation` with wire tag 55.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesCustomAuthorityUpdateOperation)]
 pub struct CustomAuthorityUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
@@ -708,49 +793,53 @@ pub struct CustomAuthorityUpdateOperation {
     pub new_auth: Option<crate::generated::types::Authority>,
     pub restrictions_to_remove: Vec<u16>,
     pub restrictions_to_add: Vec<crate::generated::types::Restriction>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CUSTOM_AUTHORITY_DELETE_OPERATION_ID: u32 = 56;
 
 /// Protocol operation `custom_authority_delete_operation` with wire tag 56.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesCustomAuthorityDeleteOperation)]
 pub struct CustomAuthorityDeleteOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
     pub authority_to_delete: crate::generated::ids::CustomAuthorityId,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const TICKET_CREATE_OPERATION_ID: u32 = 57;
 
 /// Protocol operation `ticket_create_operation` with wire tag 57.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesTicketCreateOperation)]
 pub struct TicketCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
     pub target_type: u32,
     pub amount: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const TICKET_UPDATE_OPERATION_ID: u32 = 58;
 
 /// Protocol operation `ticket_update_operation` with wire tag 58.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesTicketUpdateOperation)]
 pub struct TicketUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub ticket: crate::generated::ids::TicketId,
     pub account: crate::generated::ids::AccountId,
     pub target_type: u32,
     pub amount_for_new_target: Option<crate::generated::types::Asset>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const LIQUIDITY_POOL_CREATE_OPERATION_ID: u32 = 59;
 
 /// Protocol operation `liquidity_pool_create_operation` with wire tag 59.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesLiquidityPoolCreateOperation)]
 pub struct LiquidityPoolCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
@@ -759,157 +848,178 @@ pub struct LiquidityPoolCreateOperation {
     pub share_asset: crate::generated::ids::AssetId,
     pub taker_fee_percent: u16,
     pub withdrawal_fee_percent: u16,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const LIQUIDITY_POOL_DELETE_OPERATION_ID: u32 = 60;
 
 /// Protocol operation `liquidity_pool_delete_operation` with wire tag 60.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesLiquidityPoolDeleteOperation)]
 pub struct LiquidityPoolDeleteOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
     pub pool: crate::generated::ids::LiquidityPoolId,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const LIQUIDITY_POOL_DEPOSIT_OPERATION_ID: u32 = 61;
 
 /// Protocol operation `liquidity_pool_deposit_operation` with wire tag 61.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesLiquidityPoolDepositOperation)]
 pub struct LiquidityPoolDepositOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
     pub pool: crate::generated::ids::LiquidityPoolId,
     pub amount_a: crate::generated::types::Asset,
     pub amount_b: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const LIQUIDITY_POOL_WITHDRAW_OPERATION_ID: u32 = 62;
 
 /// Protocol operation `liquidity_pool_withdraw_operation` with wire tag 62.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesLiquidityPoolWithdrawOperation)]
 pub struct LiquidityPoolWithdrawOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
     pub pool: crate::generated::ids::LiquidityPoolId,
     pub share_amount: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const LIQUIDITY_POOL_EXCHANGE_OPERATION_ID: u32 = 63;
 
 /// Protocol operation `liquidity_pool_exchange_operation` with wire tag 63.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesLiquidityPoolExchangeOperation)]
 pub struct LiquidityPoolExchangeOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
     pub pool: crate::generated::ids::LiquidityPoolId,
     pub amount_to_sell: crate::generated::types::Asset,
     pub min_to_receive: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const SAMET_FUND_CREATE_OPERATION_ID: u32 = 64;
 
 /// Protocol operation `samet_fund_create_operation` with wire tag 64.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesSametFundCreateOperation)]
 pub struct SametFundCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub owner_account: crate::generated::ids::AccountId,
     pub asset_type: crate::generated::ids::AssetId,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub balance: i64,
     pub fee_rate: u32,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const SAMET_FUND_DELETE_OPERATION_ID: u32 = 65;
 
 /// Protocol operation `samet_fund_delete_operation` with wire tag 65.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesSametFundDeleteOperation)]
 pub struct SametFundDeleteOperation {
     pub fee: crate::generated::types::Asset,
     pub owner_account: crate::generated::ids::AccountId,
     pub fund_id: crate::generated::ids::SametFundId,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const SAMET_FUND_UPDATE_OPERATION_ID: u32 = 66;
 
 /// Protocol operation `samet_fund_update_operation` with wire tag 66.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesSametFundUpdateOperation)]
 pub struct SametFundUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub owner_account: crate::generated::ids::AccountId,
     pub fund_id: crate::generated::ids::SametFundId,
     pub delta_amount: Option<crate::generated::types::Asset>,
     pub new_fee_rate: Option<u32>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const SAMET_FUND_BORROW_OPERATION_ID: u32 = 67;
 
 /// Protocol operation `samet_fund_borrow_operation` with wire tag 67.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesSametFundBorrowOperation)]
 pub struct SametFundBorrowOperation {
     pub fee: crate::generated::types::Asset,
     pub borrower: crate::generated::ids::AccountId,
     pub fund_id: crate::generated::ids::SametFundId,
     pub borrow_amount: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const SAMET_FUND_REPAY_OPERATION_ID: u32 = 68;
 
 /// Protocol operation `samet_fund_repay_operation` with wire tag 68.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesSametFundRepayOperation)]
 pub struct SametFundRepayOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
     pub fund_id: crate::generated::ids::SametFundId,
     pub repay_amount: crate::generated::types::Asset,
     pub fund_fee: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CREDIT_OFFER_CREATE_OPERATION_ID: u32 = 69;
 
 /// Protocol operation `credit_offer_create_operation` with wire tag 69.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesCreditOfferCreateOperation)]
 pub struct CreditOfferCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub owner_account: crate::generated::ids::AccountId,
     pub asset_type: crate::generated::ids::AssetId,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub balance: i64,
     pub fee_rate: u32,
     pub max_duration_seconds: u32,
-    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
     pub min_deal_amount: i64,
     pub enabled: bool,
     pub auto_disable_time: String,
-    pub acceptable_collateral: Vec<(crate::generated::ids::AssetId, crate::generated::types::Price)>,
+    pub acceptable_collateral: Vec<(
+        crate::generated::ids::AssetId,
+        crate::generated::types::Price,
+    )>,
     pub acceptable_borrowers: Vec<(crate::generated::ids::AccountId, i64)>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CREDIT_OFFER_DELETE_OPERATION_ID: u32 = 70;
 
 /// Protocol operation `credit_offer_delete_operation` with wire tag 70.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesCreditOfferDeleteOperation)]
 pub struct CreditOfferDeleteOperation {
     pub fee: crate::generated::types::Asset,
     pub owner_account: crate::generated::ids::AccountId,
     pub offer_id: crate::generated::ids::CreditOfferId,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CREDIT_OFFER_UPDATE_OPERATION_ID: u32 = 71;
 
 /// Protocol operation `credit_offer_update_operation` with wire tag 71.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesCreditOfferUpdateOperation)]
 pub struct CreditOfferUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub owner_account: crate::generated::ids::AccountId,
@@ -920,15 +1030,21 @@ pub struct CreditOfferUpdateOperation {
     pub min_deal_amount: Option<i64>,
     pub enabled: Option<bool>,
     pub auto_disable_time: Option<String>,
-    pub acceptable_collateral: Option<Vec<(crate::generated::ids::AssetId, crate::generated::types::Price)>>,
+    pub acceptable_collateral: Option<
+        Vec<(
+            crate::generated::ids::AssetId,
+            crate::generated::types::Price,
+        )>,
+    >,
     pub acceptable_borrowers: Option<Vec<(crate::generated::ids::AccountId, i64)>>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CREDIT_OFFER_ACCEPT_OPERATION_ID: u32 = 72;
 
 /// Protocol operation `credit_offer_accept_operation` with wire tag 72.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesCreditOfferAcceptOperation)]
 pub struct CreditOfferAcceptOperation {
     pub fee: crate::generated::types::Asset,
     pub borrower: crate::generated::ids::AccountId,
@@ -943,20 +1059,22 @@ pub struct CreditOfferAcceptOperation {
 pub const CREDIT_DEAL_REPAY_OPERATION_ID: u32 = 73;
 
 /// Protocol operation `credit_deal_repay_operation` with wire tag 73.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesCreditDealRepayOperation)]
 pub struct CreditDealRepayOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
     pub deal_id: crate::generated::ids::CreditDealId,
     pub repay_amount: crate::generated::types::Asset,
     pub credit_fee: crate::generated::types::Asset,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CREDIT_DEAL_EXPIRED_OPERATION_ID: u32 = 74;
 
 /// Protocol operation `credit_deal_expired_operation` with wire tag 74.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesCreditDealExpiredOperation)]
 pub struct CreditDealExpiredOperation {
     pub fee: crate::generated::types::Asset,
     pub deal_id: crate::generated::ids::CreditDealId,
@@ -971,32 +1089,35 @@ pub struct CreditDealExpiredOperation {
 pub const LIQUIDITY_POOL_UPDATE_OPERATION_ID: u32 = 75;
 
 /// Protocol operation `liquidity_pool_update_operation` with wire tag 75.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesLiquidityPoolUpdateOperation)]
 pub struct LiquidityPoolUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
     pub pool: crate::generated::ids::LiquidityPoolId,
     pub taker_fee_percent: Option<u16>,
     pub withdrawal_fee_percent: Option<u16>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CREDIT_DEAL_UPDATE_OPERATION_ID: u32 = 76;
 
 /// Protocol operation `credit_deal_update_operation` with wire tag 76.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesCreditDealUpdateOperation)]
 pub struct CreditDealUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
     pub deal_id: crate::generated::ids::CreditDealId,
     pub auto_repay: u8,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const LIMIT_ORDER_UPDATE_OPERATION_ID: u32 = 77;
 
 /// Protocol operation `limit_order_update_operation` with wire tag 77.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesLimitOrderUpdateOperation)]
 pub struct LimitOrderUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub seller: crate::generated::ids::AccountId,
@@ -1005,5 +1126,5 @@ pub struct LimitOrderUpdateOperation {
     pub delta_amount_to_sell: Option<crate::generated::types::Asset>,
     pub new_expiration: Option<String>,
     pub on_fill: Option<Vec<crate::generated::static_variants::LimitOrderAutoAction>>,
-    pub extensions: crate::generated::static_variants::FutureExtensions,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }

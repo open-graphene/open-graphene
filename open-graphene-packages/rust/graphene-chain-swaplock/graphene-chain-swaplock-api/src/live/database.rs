@@ -13,7 +13,8 @@ use crate::database::{
     collect_account_order_objects, dynamic_global_properties_from_value,
 };
 
-use super::{LIVE_DATABASE_CALLBACK_ID, remaining_or_callback_timeout};
+use super::market::SwaplockLiveMarketSubscription;
+use super::{ChainStore, LIVE_DATABASE_CALLBACK_ID, remaining_or_callback_timeout};
 
 pub struct SwaplockLiveDatabaseApi {
     pub(crate) live: LiveTransportHandle,
@@ -51,25 +52,27 @@ pub struct SwaplockLiveAccountOrdersSubscription {
 }
 
 impl SwaplockLiveDatabaseApi {
-    pub fn subscribe_dynamic_global_properties(
+    pub async fn subscribe_dynamic_global_properties(
         self,
     ) -> Result<SwaplockLiveDynamicGlobalPropertiesSubscription, SwaplockApiError> {
         self.subscribe_dynamic_global_properties_timeout(Duration::from_secs(10))
+            .await
     }
 
-    pub fn subscribe_dynamic_global_properties_timeout(
+    pub async fn subscribe_dynamic_global_properties_timeout(
         self,
         timeout: Duration,
     ) -> Result<SwaplockLiveDynamicGlobalPropertiesSubscription, SwaplockApiError> {
         let callback_id = CallbackId::new(LIVE_DATABASE_CALLBACK_ID);
-        let subscription = self.live.subscribe_callback(callback_id)?;
+        let subscription = self.live.subscribe_callback(callback_id).await?;
         self.live
             .call(
                 self.database_api_id,
                 "set_subscribe_callback",
                 json!([LIVE_DATABASE_CALLBACK_ID, false]),
             )?
-            .wait_timeout(timeout)?;
+            .wait_timeout(timeout)
+            .await?;
 
         let value = self
             .live
@@ -78,13 +81,58 @@ impl SwaplockLiveDatabaseApi {
                 "get_objects",
                 json!([[DYNAMIC_GLOBAL_PROPERTIES_ID], true]),
             )?
-            .wait_timeout(timeout)?;
+            .wait_timeout(timeout)
+            .await?;
         let initial = dynamic_global_properties_from_value("get_objects", value)?;
 
         Ok(SwaplockLiveDynamicGlobalPropertiesSubscription {
             initial,
             subscription,
         })
+    }
+
+    /// Subscribe to the `base`/`quote` order book; each update arrives as raw JSON. Dropping the
+    /// returned subscription unsubscribes the market.
+    pub async fn subscribe_to_market(
+        self,
+        base: impl Into<String>,
+        quote: impl Into<String>,
+    ) -> Result<SwaplockLiveMarketSubscription, SwaplockApiError> {
+        self.subscribe_to_market_timeout(base, quote, Duration::from_secs(10))
+            .await
+    }
+
+    pub async fn subscribe_to_market_timeout(
+        self,
+        base: impl Into<String>,
+        quote: impl Into<String>,
+        timeout: Duration,
+    ) -> Result<SwaplockLiveMarketSubscription, SwaplockApiError> {
+        SwaplockLiveMarketSubscription::start(
+            self.live,
+            self.database_api_id,
+            base.into(),
+            quote.into(),
+            timeout,
+        )
+        .await
+    }
+
+    /// Cancel a market order-book subscription (also done automatically when the subscription drops).
+    pub async fn unsubscribe_from_market(
+        self,
+        base: impl Into<String>,
+        quote: impl Into<String>,
+    ) -> Result<(), SwaplockApiError> {
+        self.live
+            .call(
+                self.database_api_id,
+                "unsubscribe_from_market",
+                json!([base.into(), quote.into()]),
+            )?
+            .wait_timeout(Duration::from_secs(10))
+            .await?;
+        Ok(())
     }
 
     pub fn account_by_id(self, account_id: impl Into<String>) -> SwaplockLiveAccountByIdRequest {
@@ -126,6 +174,24 @@ impl SwaplockLiveDatabaseApi {
             account_id: account_id.into(),
         }
     }
+
+    /// Open a reactive cache of the given object ids: seeded now, then kept current by a worker
+    /// that applies subscription updates. Read it with [`ChainStore::get`]/[`ChainStore::snapshot`].
+    pub async fn chain_store(
+        self,
+        ids: impl IntoIterator<Item = impl Into<String>>,
+    ) -> Result<ChainStore, SwaplockApiError> {
+        self.chain_store_timeout(ids, Duration::from_secs(10)).await
+    }
+
+    pub async fn chain_store_timeout(
+        self,
+        ids: impl IntoIterator<Item = impl Into<String>>,
+        timeout: Duration,
+    ) -> Result<ChainStore, SwaplockApiError> {
+        let ids = ids.into_iter().map(Into::into).collect();
+        ChainStore::start(self.live, self.database_api_id, ids, timeout).await
+    }
 }
 
 pub struct SwaplockLiveAccountByIdRequest {
@@ -154,23 +220,24 @@ pub struct SwaplockLiveAccountOrdersByIdRequest {
 }
 
 impl SwaplockLiveAccountByIdRequest {
-    pub fn subscribe(self) -> Result<SwaplockLiveAccountSubscription, SwaplockApiError> {
-        self.subscribe_timeout(Duration::from_secs(10))
+    pub async fn subscribe(self) -> Result<SwaplockLiveAccountSubscription, SwaplockApiError> {
+        self.subscribe_timeout(Duration::from_secs(10)).await
     }
 
-    pub fn subscribe_timeout(
+    pub async fn subscribe_timeout(
         self,
         timeout: Duration,
     ) -> Result<SwaplockLiveAccountSubscription, SwaplockApiError> {
         let callback_id = CallbackId::new(LIVE_DATABASE_CALLBACK_ID);
-        let subscription = self.live.subscribe_callback(callback_id)?;
+        let subscription = self.live.subscribe_callback(callback_id).await?;
         self.live
             .call(
                 self.database_api_id,
                 "set_subscribe_callback",
                 json!([LIVE_DATABASE_CALLBACK_ID, false]),
             )?
-            .wait_timeout(timeout)?;
+            .wait_timeout(timeout)
+            .await?;
 
         let value = self
             .live
@@ -179,7 +246,8 @@ impl SwaplockLiveAccountByIdRequest {
                 "get_objects",
                 json!([[self.account_id.clone()], true]),
             )?
-            .wait_timeout(timeout)?;
+            .wait_timeout(timeout)
+            .await?;
         let initial = account_from_value("get_objects", value, &self.account_id)?;
 
         Ok(SwaplockLiveAccountSubscription {
@@ -191,23 +259,24 @@ impl SwaplockLiveAccountByIdRequest {
 }
 
 impl SwaplockLiveAssetByIdRequest {
-    pub fn subscribe(self) -> Result<SwaplockLiveAssetSubscription, SwaplockApiError> {
-        self.subscribe_timeout(Duration::from_secs(10))
+    pub async fn subscribe(self) -> Result<SwaplockLiveAssetSubscription, SwaplockApiError> {
+        self.subscribe_timeout(Duration::from_secs(10)).await
     }
 
-    pub fn subscribe_timeout(
+    pub async fn subscribe_timeout(
         self,
         timeout: Duration,
     ) -> Result<SwaplockLiveAssetSubscription, SwaplockApiError> {
         let callback_id = CallbackId::new(LIVE_DATABASE_CALLBACK_ID);
-        let subscription = self.live.subscribe_callback(callback_id)?;
+        let subscription = self.live.subscribe_callback(callback_id).await?;
         self.live
             .call(
                 self.database_api_id,
                 "set_subscribe_callback",
                 json!([LIVE_DATABASE_CALLBACK_ID, false]),
             )?
-            .wait_timeout(timeout)?;
+            .wait_timeout(timeout)
+            .await?;
 
         let value = self
             .live
@@ -216,7 +285,8 @@ impl SwaplockLiveAssetByIdRequest {
                 "get_objects",
                 json!([[self.asset_id.clone()], true]),
             )?
-            .wait_timeout(timeout)?;
+            .wait_timeout(timeout)
+            .await?;
         let initial = asset_from_value("get_objects", value, &self.asset_id)?;
 
         Ok(SwaplockLiveAssetSubscription {
@@ -228,23 +298,26 @@ impl SwaplockLiveAssetByIdRequest {
 }
 
 impl SwaplockLiveAccountBalancesByIdRequest {
-    pub fn subscribe(self) -> Result<SwaplockLiveAccountBalancesSubscription, SwaplockApiError> {
-        self.subscribe_timeout(Duration::from_secs(10))
+    pub async fn subscribe(
+        self,
+    ) -> Result<SwaplockLiveAccountBalancesSubscription, SwaplockApiError> {
+        self.subscribe_timeout(Duration::from_secs(10)).await
     }
 
-    pub fn subscribe_timeout(
+    pub async fn subscribe_timeout(
         self,
         timeout: Duration,
     ) -> Result<SwaplockLiveAccountBalancesSubscription, SwaplockApiError> {
         let callback_id = CallbackId::new(LIVE_DATABASE_CALLBACK_ID);
-        let subscription = self.live.subscribe_callback(callback_id)?;
+        let subscription = self.live.subscribe_callback(callback_id).await?;
         self.live
             .call(
                 self.database_api_id,
                 "set_subscribe_callback",
                 json!([LIVE_DATABASE_CALLBACK_ID, false]),
             )?
-            .wait_timeout(timeout)?;
+            .wait_timeout(timeout)
+            .await?;
 
         let value = self
             .live
@@ -253,7 +326,8 @@ impl SwaplockLiveAccountBalancesByIdRequest {
                 "get_full_accounts",
                 json!([[self.account_id.clone()], true]),
             )?
-            .wait_timeout(timeout)?;
+            .wait_timeout(timeout)
+            .await?;
         let initial = account_balances_from_full_accounts_value(
             "get_full_accounts",
             value,
@@ -271,23 +345,26 @@ impl SwaplockLiveAccountBalancesByIdRequest {
 }
 
 impl SwaplockLiveAccountOrdersByIdRequest {
-    pub fn subscribe(self) -> Result<SwaplockLiveAccountOrdersSubscription, SwaplockApiError> {
-        self.subscribe_timeout(Duration::from_secs(10))
+    pub async fn subscribe(
+        self,
+    ) -> Result<SwaplockLiveAccountOrdersSubscription, SwaplockApiError> {
+        self.subscribe_timeout(Duration::from_secs(10)).await
     }
 
-    pub fn subscribe_timeout(
+    pub async fn subscribe_timeout(
         self,
         timeout: Duration,
     ) -> Result<SwaplockLiveAccountOrdersSubscription, SwaplockApiError> {
         let callback_id = CallbackId::new(LIVE_DATABASE_CALLBACK_ID);
-        let subscription = self.live.subscribe_callback(callback_id)?;
+        let subscription = self.live.subscribe_callback(callback_id).await?;
         self.live
             .call(
                 self.database_api_id,
                 "set_subscribe_callback",
                 json!([LIVE_DATABASE_CALLBACK_ID, false]),
             )?
-            .wait_timeout(timeout)?;
+            .wait_timeout(timeout)
+            .await?;
 
         let value = self
             .live
@@ -296,7 +373,8 @@ impl SwaplockLiveAccountOrdersByIdRequest {
                 "get_full_accounts",
                 json!([[self.account_id.clone()], true]),
             )?
-            .wait_timeout(timeout)?;
+            .wait_timeout(timeout)
+            .await?;
         let initial =
             account_orders_from_full_accounts_value("get_full_accounts", value, &self.account_id)?;
 
@@ -313,24 +391,24 @@ impl SwaplockLiveDynamicGlobalPropertiesSubscription {
         &self.initial
     }
 
-    pub fn next_update(&self) -> Result<DynamicGlobalPropertyObject, SwaplockApiError> {
+    pub async fn next_update(&mut self) -> Result<DynamicGlobalPropertyObject, SwaplockApiError> {
         loop {
-            let value = self.subscription.next()?;
+            let value = self.subscription.next().await?;
             if let Ok(properties) = dynamic_global_properties_from_value("notice", value) {
                 return Ok(properties);
             }
         }
     }
 
-    pub fn next_update_timeout(
-        &self,
+    pub async fn next_update_timeout(
+        &mut self,
         timeout: Duration,
     ) -> Result<DynamicGlobalPropertyObject, SwaplockApiError> {
         let deadline = Instant::now() + timeout;
         loop {
             let remaining =
                 remaining_or_callback_timeout(deadline, self.subscription.callback_id(), timeout)?;
-            let value = self.subscription.next_timeout(remaining)?;
+            let value = self.subscription.next_timeout(remaining).await?;
             if let Ok(properties) = parse_live_dynamic_global_properties_update(value) {
                 return Ok(properties);
             }
@@ -343,24 +421,24 @@ impl SwaplockLiveAccountSubscription {
         &self.initial
     }
 
-    pub fn next_update(&self) -> Result<AccountObject, SwaplockApiError> {
+    pub async fn next_update(&mut self) -> Result<AccountObject, SwaplockApiError> {
         loop {
-            let value = self.subscription.next()?;
+            let value = self.subscription.next().await?;
             if let Ok(account) = parse_live_account_update(value, &self.account_id) {
                 return Ok(account);
             }
         }
     }
 
-    pub fn next_update_timeout(
-        &self,
+    pub async fn next_update_timeout(
+        &mut self,
         timeout: Duration,
     ) -> Result<AccountObject, SwaplockApiError> {
         let deadline = Instant::now() + timeout;
         loop {
             let remaining =
                 remaining_or_callback_timeout(deadline, self.subscription.callback_id(), timeout)?;
-            let value = self.subscription.next_timeout(remaining)?;
+            let value = self.subscription.next_timeout(remaining).await?;
             if let Ok(account) = parse_live_account_update(value, &self.account_id) {
                 return Ok(account);
             }
@@ -373,21 +451,24 @@ impl SwaplockLiveAssetSubscription {
         &self.initial
     }
 
-    pub fn next_update(&self) -> Result<AssetObject, SwaplockApiError> {
+    pub async fn next_update(&mut self) -> Result<AssetObject, SwaplockApiError> {
         loop {
-            let value = self.subscription.next()?;
+            let value = self.subscription.next().await?;
             if let Ok(asset) = parse_live_asset_update(value, &self.asset_id) {
                 return Ok(asset);
             }
         }
     }
 
-    pub fn next_update_timeout(&self, timeout: Duration) -> Result<AssetObject, SwaplockApiError> {
+    pub async fn next_update_timeout(
+        &mut self,
+        timeout: Duration,
+    ) -> Result<AssetObject, SwaplockApiError> {
         let deadline = Instant::now() + timeout;
         loop {
             let remaining =
                 remaining_or_callback_timeout(deadline, self.subscription.callback_id(), timeout)?;
-            let value = self.subscription.next_timeout(remaining)?;
+            let value = self.subscription.next_timeout(remaining).await?;
             if let Ok(asset) = parse_live_asset_update(value, &self.asset_id) {
                 return Ok(asset);
             }
@@ -400,9 +481,9 @@ impl SwaplockLiveAccountBalancesSubscription {
         &self.initial
     }
 
-    pub fn next_update(&self) -> Result<Vec<AccountBalanceObject>, SwaplockApiError> {
+    pub async fn next_update(&mut self) -> Result<Vec<AccountBalanceObject>, SwaplockApiError> {
         loop {
-            let value = self.subscription.next()?;
+            let value = self.subscription.next().await?;
             let updates =
                 parse_live_account_balance_updates(value, &self.account_id, &self.asset_ids)?;
             if !updates.is_empty() {
@@ -411,15 +492,15 @@ impl SwaplockLiveAccountBalancesSubscription {
         }
     }
 
-    pub fn next_update_timeout(
-        &self,
+    pub async fn next_update_timeout(
+        &mut self,
         timeout: Duration,
     ) -> Result<Vec<AccountBalanceObject>, SwaplockApiError> {
         let deadline = Instant::now() + timeout;
         loop {
             let remaining =
                 remaining_or_callback_timeout(deadline, self.subscription.callback_id(), timeout)?;
-            let value = self.subscription.next_timeout(remaining)?;
+            let value = self.subscription.next_timeout(remaining).await?;
             let updates =
                 parse_live_account_balance_updates(value, &self.account_id, &self.asset_ids)?;
             if !updates.is_empty() {
@@ -434,9 +515,9 @@ impl SwaplockLiveAccountOrdersSubscription {
         &self.initial
     }
 
-    pub fn next_update(&self) -> Result<Vec<LimitOrderObject>, SwaplockApiError> {
+    pub async fn next_update(&mut self) -> Result<Vec<LimitOrderObject>, SwaplockApiError> {
         loop {
-            let value = self.subscription.next()?;
+            let value = self.subscription.next().await?;
             let updates = parse_live_account_order_updates(value, &self.account_id)?;
             if !updates.is_empty() {
                 return Ok(updates);
@@ -444,15 +525,15 @@ impl SwaplockLiveAccountOrdersSubscription {
         }
     }
 
-    pub fn next_update_timeout(
-        &self,
+    pub async fn next_update_timeout(
+        &mut self,
         timeout: Duration,
     ) -> Result<Vec<LimitOrderObject>, SwaplockApiError> {
         let deadline = Instant::now() + timeout;
         loop {
             let remaining =
                 remaining_or_callback_timeout(deadline, self.subscription.callback_id(), timeout)?;
-            let value = self.subscription.next_timeout(remaining)?;
+            let value = self.subscription.next_timeout(remaining).await?;
             let updates = parse_live_account_order_updates(value, &self.account_id)?;
             if !updates.is_empty() {
                 return Ok(updates);

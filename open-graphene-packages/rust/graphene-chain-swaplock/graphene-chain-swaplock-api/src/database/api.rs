@@ -1,3 +1,7 @@
+use graphene_chain_swaplock_bindings::generated::ids::AccountId;
+use graphene_chain_swaplock_bindings::generated::rpc::ProtocolObject;
+use graphene_chain_swaplock_bindings::generated::rpc::database::get_config::Config;
+use graphene_chain_swaplock_bindings::generated::types::{MaybeSignedBlockHeader, SignedBlock};
 use graphene_chain_swaplock_bindings::generated::{
     AccountObject, Asset, AssetObject, ChainPropertyObject, DynamicGlobalPropertyObject,
     GlobalPropertyObject, LimitOrderObject,
@@ -21,7 +25,16 @@ use super::dynamic_global_properties::{
     DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription,
     get_dynamic_global_properties,
 };
+use super::get_block::GetBlockRequest;
+use super::get_block_header::GetBlockHeaderRequest;
+use super::get_config::GetConfigRequest;
+use super::get_key_references::{GetKeyReferencesRequest, get_key_references_request};
+use super::get_limit_orders::{DEFAULT_GET_LIMIT_ORDERS_LIMIT, GetLimitOrdersRequest};
+use super::get_objects::{GetObjectsRequest, get_objects_request};
+use super::get_ticker::GetTickerRequest;
 use super::global_properties::{GlobalPropertiesRequest, get_global_properties};
+use super::list_assets::{DEFAULT_LIST_ASSETS_LIMIT, ListAssetsRequest};
+use super::lookup_accounts::{DEFAULT_LOOKUP_ACCOUNTS_LIMIT, LookupAccountsRequest};
 use super::string_list::IntoStringList;
 
 pub struct DatabaseApi<'session> {
@@ -156,6 +169,97 @@ impl<'session> DatabaseApi<'session> {
         }
     }
 
+    /// List assets in symbol order, starting from `lower_bound` (`""` for the start).
+    pub fn list_assets<S>(self, lower_bound: S) -> ListAssetsRequest<'session>
+    where
+        S: Into<String>,
+    {
+        ListAssetsRequest {
+            session: self.session,
+            lower_bound: lower_bound.into(),
+            limit: DEFAULT_LIST_ASSETS_LIMIT,
+        }
+    }
+
+    /// Look up account `(name, id)` pairs in name order, starting from `lower_bound`.
+    pub fn lookup_accounts<S>(self, lower_bound: S) -> LookupAccountsRequest<'session>
+    where
+        S: Into<String>,
+    {
+        LookupAccountsRequest {
+            session: self.session,
+            lower_bound: lower_bound.into(),
+            limit: DEFAULT_LOOKUP_ACCOUNTS_LIMIT,
+        }
+    }
+
+    /// The raw order book for the `base`/`quote` market (asset ids like `1.3.0`).
+    pub fn limit_orders<B, Q>(self, base: B, quote: Q) -> GetLimitOrdersRequest<'session>
+    where
+        B: Into<String>,
+        Q: Into<String>,
+    {
+        GetLimitOrdersRequest {
+            session: self.session,
+            base: base.into(),
+            quote: quote.into(),
+            limit: DEFAULT_GET_LIMIT_ORDERS_LIMIT,
+        }
+    }
+
+    /// Rolling ticker stats for the `base`/`quote` market (asset ids like `1.3.0`).
+    pub fn ticker<B, Q>(self, base: B, quote: Q) -> GetTickerRequest<'session>
+    where
+        B: Into<String>,
+        Q: Into<String>,
+    {
+        GetTickerRequest {
+            session: self.session,
+            base: base.into(),
+            quote: quote.into(),
+        }
+    }
+
+    /// Fetch a produced block by height (`None` if the chain has not reached it yet).
+    pub fn block(self, block_num: u32) -> GetBlockRequest<'session> {
+        GetBlockRequest {
+            session: self.session,
+            block_num,
+        }
+    }
+
+    /// Fetch just a block's header by height, without its transactions.
+    pub fn block_header(self, block_num: u32) -> GetBlockHeaderRequest<'session> {
+        GetBlockHeaderRequest {
+            session: self.session,
+            block_num,
+        }
+    }
+
+    /// Fetch the chain's compile-time constants (the `GRAPHENE_*` config parameters).
+    pub fn config(self) -> GetConfigRequest<'session> {
+        GetConfigRequest {
+            session: self.session,
+        }
+    }
+
+    /// Which accounts reference each public key in their authorities; one id list per key, in order.
+    pub fn key_references<L>(self, keys: L) -> GetKeyReferencesRequest<'session>
+    where
+        L: IntoStringList,
+    {
+        get_key_references_request(self.session, keys)
+    }
+
+    /// Fetch any chain objects by id as raw JSON, e.g. `["2.1.0", "1.3.0"]`. The generic getter
+    /// behind the typed ones; results keep the id order and unknown ids come back as `null`.
+    pub fn objects<L>(self, ids: L) -> GetObjectsRequest<'session>
+    where
+        L: IntoStringList,
+    {
+        get_objects_request(self.session, ids)
+    }
+
     pub async fn get_account_balances<L>(
         &mut self,
         account_name: &str,
@@ -197,6 +301,73 @@ impl<'session> DatabaseApi<'session> {
         account_id: &str,
     ) -> Result<Vec<LimitOrderObject>, SwaplockApiError> {
         get_account_orders_by_id(self.session, account_id).await
+    }
+
+    pub async fn get_limit_orders(
+        &mut self,
+        base: &str,
+        quote: &str,
+    ) -> Result<Vec<LimitOrderObject>, SwaplockApiError> {
+        GetLimitOrdersRequest {
+            session: &mut *self.session,
+            base: base.to_string(),
+            quote: quote.to_string(),
+            limit: DEFAULT_GET_LIMIT_ORDERS_LIMIT,
+        }
+        .get()
+        .await
+    }
+
+    pub async fn get_block(
+        &mut self,
+        block_num: u32,
+    ) -> Result<Option<SignedBlock>, SwaplockApiError> {
+        GetBlockRequest {
+            session: &mut *self.session,
+            block_num,
+        }
+        .get()
+        .await
+    }
+
+    pub async fn get_block_header(
+        &mut self,
+        block_num: u32,
+    ) -> Result<Option<MaybeSignedBlockHeader>, SwaplockApiError> {
+        GetBlockHeaderRequest {
+            session: &mut *self.session,
+            block_num,
+        }
+        .get()
+        .await
+    }
+
+    pub async fn get_config(&mut self) -> Result<Config, SwaplockApiError> {
+        GetConfigRequest {
+            session: &mut *self.session,
+        }
+        .get()
+        .await
+    }
+
+    pub async fn get_objects<L>(
+        &mut self,
+        ids: L,
+    ) -> Result<Vec<Option<ProtocolObject>>, SwaplockApiError>
+    where
+        L: IntoStringList,
+    {
+        get_objects_request(self.session, ids).get().await
+    }
+
+    pub async fn get_key_references<L>(
+        &mut self,
+        keys: L,
+    ) -> Result<Vec<Vec<AccountId>>, SwaplockApiError>
+    where
+        L: IntoStringList,
+    {
+        get_key_references_request(self.session, keys).get().await
     }
 
     pub async fn get_account_by_name(

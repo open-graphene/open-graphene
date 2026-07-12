@@ -1,0 +1,1331 @@
+// extract diagnostics:
+// resolve diagnostics:
+// build diagnostics:
+// validation issues:
+{
+  "schemaVersion": 1,
+  "chain": {
+    "id": "fixture",
+    "publicKeyPrefix": "TEST",
+    "chainId": "0000000000000000000000000000000000000000000000000000000000000001"
+  },
+  "structs": [
+    {
+      "name": "account_object",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "id",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 13
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "inherited object id from graphene::db::object for reflected Graphene object"
+          }
+        },
+        {
+          "index": 1,
+          "name": "membership_expiration_date",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "membership_expiration_date",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 13
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "name",
+          "type": {
+            "kind": "string"
+          },
+          "source": {
+            "name": "name",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 16
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "options",
+          "type": {
+            "kind": "ref",
+            "name": "account_options"
+          },
+          "source": {
+            "name": "options",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 19
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
+      "name": "account_options",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "memo_key",
+          "type": {
+            "kind": "public_key",
+            "prefixRef": "chain.publicKeyPrefix"
+          },
+          "source": {
+            "name": "memo_key",
+            "file": "libraries/protocol/include/graphene/protocol/account.hpp",
+            "line": 9
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "voting_account",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "voting_account",
+            "file": "libraries/protocol/include/graphene/protocol/account.hpp",
+            "line": 11
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "num_witness",
+          "type": {
+            "kind": "uint16"
+          },
+          "source": {
+            "name": "num_witness",
+            "file": "libraries/protocol/include/graphene/protocol/account.hpp",
+            "line": 13
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "num_committee",
+          "type": {
+            "kind": "uint16"
+          },
+          "source": {
+            "name": "num_committee",
+            "file": "libraries/protocol/include/graphene/protocol/account.hpp",
+            "line": 16
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "votes",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "vote_id"
+            },
+            "ordering": "unresolved"
+          },
+          "source": {
+            "name": "votes",
+            "file": "libraries/protocol/include/graphene/protocol/account.hpp",
+            "line": 18
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 5,
+          "name": "extensions",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "static_variant_ref",
+              "name": "future_extensions"
+            },
+            "ordering": "static_variant_tag"
+          },
+          "source": {
+            "name": "extensions",
+            "file": "libraries/protocol/include/graphene/protocol/account.hpp",
+            "line": 20
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
+      "name": "asset",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "amount",
+          "type": {
+            "kind": "int64"
+          },
+          "source": {
+            "name": "amount",
+            "file": "libraries/protocol/include/graphene/protocol/asset.hpp",
+            "line": 8
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "asset_id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "asset"
+          },
+          "source": {
+            "name": "asset_id",
+            "file": "libraries/protocol/include/graphene/protocol/asset.hpp",
+            "line": 10
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
+      "name": "memo_data",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "from",
+          "type": {
+            "kind": "public_key",
+            "prefixRef": "chain.publicKeyPrefix"
+          },
+          "source": {
+            "name": "from",
+            "file": "libraries/protocol/include/graphene/protocol/memo.hpp",
+            "line": 9
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "to",
+          "type": {
+            "kind": "public_key",
+            "prefixRef": "chain.publicKeyPrefix"
+          },
+          "source": {
+            "name": "to",
+            "file": "libraries/protocol/include/graphene/protocol/memo.hpp",
+            "line": 10
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "nonce",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "nonce",
+            "file": "libraries/protocol/include/graphene/protocol/memo.hpp",
+            "line": 11
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "message",
+          "type": {
+            "kind": "bytes"
+          },
+          "source": {
+            "name": "message",
+            "file": "libraries/protocol/include/graphene/protocol/memo.hpp",
+            "line": 17
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
+      "name": "override_transfer_operation",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 54
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "issuer",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "issuer",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 56
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "from",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "from",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 58
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "to",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "to",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 59
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "amount",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "amount",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 60
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 5,
+          "name": "extensions",
+          "type": {
+            "kind": "ref",
+            "name": "override_transfer_operation_ext"
+          },
+          "source": {
+            "name": "extensions",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 61
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
+      "name": "override_transfer_operation_ext",
+      "sourceName": "graphene::protocol::override_transfer_operation::ext",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "null_ext",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "void"
+            }
+          },
+          "source": {
+            "name": "null_ext",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 50
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "override_flags",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "uint16"
+            }
+          },
+          "source": {
+            "name": "override_flags",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 51
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
+      }
+    },
+    {
+      "name": "signed_transaction",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "ref_block_num",
+          "type": {
+            "kind": "uint16"
+          },
+          "source": {
+            "name": "ref_block_num",
+            "file": "libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 9
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "ref_block_prefix",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "ref_block_prefix",
+            "file": "libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 13
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "expiration",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "expiration",
+            "file": "libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 17
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "operations",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "static_variant_ref",
+              "name": "operation"
+            }
+          },
+          "source": {
+            "name": "operations",
+            "file": "libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 21
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "extensions",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "static_variant_ref",
+              "name": "future_extensions"
+            },
+            "ordering": "static_variant_tag"
+          },
+          "source": {
+            "name": "extensions",
+            "file": "libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 23
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 5,
+          "name": "signatures",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "signature"
+            }
+          },
+          "source": {
+            "name": "signatures",
+            "file": "libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 40
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
+      "name": "transaction",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "ref_block_num",
+          "type": {
+            "kind": "uint16"
+          },
+          "source": {
+            "name": "ref_block_num",
+            "file": "libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 9
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "ref_block_prefix",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "ref_block_prefix",
+            "file": "libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 13
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "expiration",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "expiration",
+            "file": "libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 17
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "operations",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "static_variant_ref",
+              "name": "operation"
+            }
+          },
+          "source": {
+            "name": "operations",
+            "file": "libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 21
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "extensions",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "static_variant_ref",
+              "name": "future_extensions"
+            },
+            "ordering": "static_variant_tag"
+          },
+          "source": {
+            "name": "extensions",
+            "file": "libraries/protocol/include/graphene/protocol/transaction.hpp",
+            "line": 23
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
+      "name": "transfer_operation",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 16
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "from",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "from",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 18
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "to",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "to",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 20
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "amount",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "amount",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 22
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "memo",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "ref",
+              "name": "memo_data"
+            }
+          },
+          "source": {
+            "name": "memo",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 24
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 5,
+          "name": "extensions",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "static_variant_ref",
+              "name": "future_extensions"
+            },
+            "ordering": "static_variant_tag"
+          },
+          "source": {
+            "name": "extensions",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 27
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    }
+  ],
+  "enums": [
+    {
+      "name": "asset_issuer_permission_flags",
+      "underlying": "i32",
+      "values": [
+        {
+          "name": "charge_market_fee",
+          "value": 1
+        },
+        {
+          "name": "white_list",
+          "value": 2
+        },
+        {
+          "name": "transfer_restricted",
+          "value": 8
+        },
+        {
+          "name": "override_authority",
+          "value": 4
+        },
+        {
+          "name": "disable_force_settle",
+          "value": 16
+        },
+        {
+          "name": "global_settle",
+          "value": 32
+        }
+      ],
+      "isBitfield": true,
+      "source": {
+        "name": "graphene::protocol::asset_issuer_permission_flags",
+        "file": "libraries/protocol/include/graphene/protocol/types.hpp",
+        "line": 24
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "member values joined from the C++ enum definition"
+      }
+    }
+  ],
+  "staticVariants": [
+    {
+      "name": "future_extensions",
+      "kind": "fc_static_variant",
+      "json": "tagged_tuple",
+      "fc": "static_variant",
+      "variants": [
+        {
+          "tag": 0,
+          "name": "void_t",
+          "type": {
+            "kind": "void"
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "static variant arm extracted from C++ type list"
+          }
+        }
+      ],
+      "source": {
+        "name": "future_extensions",
+        "file": "libraries/protocol/include/graphene/protocol/base.hpp",
+        "line": 10
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "static variant extracted from C++ type list"
+      }
+    },
+    {
+      "name": "operation",
+      "kind": "fc_static_variant",
+      "json": "tagged_tuple",
+      "fc": "static_variant",
+      "variants": [
+        {
+          "tag": 0,
+          "name": "transfer_operation",
+          "type": {
+            "kind": "ref",
+            "name": "transfer_operation"
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "static variant arm extracted from C++ type list"
+          }
+        },
+        {
+          "tag": 1,
+          "name": "override_transfer_operation",
+          "type": {
+            "kind": "ref",
+            "name": "override_transfer_operation"
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "static variant arm extracted from C++ type list"
+          }
+        }
+      ],
+      "source": {
+        "name": "operation",
+        "file": "libraries/protocol/include/graphene/protocol/operations.hpp",
+        "line": 10
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "static variant extracted from C++ type list"
+      }
+    }
+  ],
+  "operations": [
+    {
+      "name": "transfer_operation",
+      "wireTag": 0,
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 16
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "from",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "from",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 18
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "to",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "to",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 20
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "amount",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "amount",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 22
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "memo",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "ref",
+              "name": "memo_data"
+            }
+          },
+          "source": {
+            "name": "memo",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 24
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 5,
+          "name": "extensions",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "static_variant_ref",
+              "name": "future_extensions"
+            },
+            "ordering": "static_variant_tag"
+          },
+          "source": {
+            "name": "extensions",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 27
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "isVirtual": false,
+      "support": {
+        "status": "provisional",
+        "reason": "operation derived from operation static_variant arm and matching struct fields"
+      }
+    },
+    {
+      "name": "override_transfer_operation",
+      "wireTag": 1,
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 54
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "issuer",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "issuer",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 56
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "from",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "from",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 58
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "to",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "to",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 59
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "amount",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "amount",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 60
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 5,
+          "name": "extensions",
+          "type": {
+            "kind": "ref",
+            "name": "override_transfer_operation_ext"
+          },
+          "source": {
+            "name": "extensions",
+            "file": "libraries/protocol/include/graphene/protocol/transfer.hpp",
+            "line": 61
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "isVirtual": false,
+      "support": {
+        "status": "provisional",
+        "reason": "operation derived from operation static_variant arm and matching struct fields"
+      }
+    }
+  ],
+  "objectTypes": [
+    {
+      "objectType": "null",
+      "cppAlias": "null_id_type",
+      "objectSpace": 1,
+      "typeId": 0,
+      "source": {
+        "name": "null",
+        "file": "libraries/protocol/include/graphene/protocol/types.hpp",
+        "line": 16
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "object type extracted from GRAPHENE_DEFINE_IDS in namespace `protocol` as `null_object_type` from space `protocol_ids`"
+      }
+    },
+    {
+      "objectType": "base",
+      "cppAlias": "base_id_type",
+      "objectSpace": 1,
+      "typeId": 1,
+      "source": {
+        "name": "base",
+        "file": "libraries/protocol/include/graphene/protocol/types.hpp",
+        "line": 16
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "object type extracted from GRAPHENE_DEFINE_IDS in namespace `protocol` as `base_object_type` from space `protocol_ids`"
+      }
+    },
+    {
+      "objectType": "account",
+      "cppAlias": "account_id_type",
+      "objectSpace": 1,
+      "typeId": 2,
+      "structRef": "account_object",
+      "source": {
+        "name": "account",
+        "file": "libraries/protocol/include/graphene/protocol/types.hpp",
+        "line": 16
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "object type extracted from GRAPHENE_DEFINE_IDS in namespace `protocol` as `account_object_type` from space `protocol_ids`"
+      }
+    },
+    {
+      "objectType": "asset",
+      "cppAlias": "asset_id_type",
+      "objectSpace": 1,
+      "typeId": 3,
+      "source": {
+        "name": "asset",
+        "file": "libraries/protocol/include/graphene/protocol/types.hpp",
+        "line": 16
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "object type extracted from GRAPHENE_DEFINE_IDS in namespace `protocol` as `asset_object_type` from space `protocol_ids`"
+      }
+    }
+  ],
+  "rpcApis": [
+    {
+      "name": "database",
+      "class": "database_api",
+      "accessName": "database_api",
+      "discoverMethod": "database"
+    }
+  ],
+  "rpcMethods": [
+    {
+      "name": "get_chain_id",
+      "apiClass": "database_api",
+      "apiName": "database",
+      "params": [],
+      "returns": {
+        "kind": "fixed_hex",
+        "bytes": 32
+      },
+      "isSubscription": false,
+      "source": {
+        "name": "get_chain_id",
+        "file": "libraries/app/include/graphene/app/database_api.hpp",
+        "line": 14
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "selected in config, present in FC_API, and signature found"
+      }
+    },
+    {
+      "name": "get_accounts",
+      "apiClass": "database_api",
+      "apiName": "database",
+      "params": [
+        {
+          "index": 0,
+          "name": "account_names_or_ids",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "source": {
+            "name": "account_names_or_ids",
+            "file": "libraries/app/include/graphene/app/database_api.hpp",
+            "line": 20
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        },
+        {
+          "index": 1,
+          "name": "subscribe",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "bool"
+            }
+          },
+          "required": false,
+          "nullable": true,
+          "source": {
+            "name": "subscribe",
+            "file": "libraries/app/include/graphene/app/database_api.hpp",
+            "line": 20
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "vector",
+        "inner": {
+          "kind": "optional",
+          "inner": {
+            "kind": "ref",
+            "name": "account_object"
+          }
+        }
+      },
+      "isSubscription": false,
+      "source": {
+        "name": "get_accounts",
+        "file": "libraries/app/include/graphene/app/database_api.hpp",
+        "line": 20
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "selected in config, present in FC_API, and signature found"
+      }
+    }
+  ]
+}

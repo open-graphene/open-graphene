@@ -8,7 +8,7 @@ const DEFAULT_TRANSFER_COUNT: usize = 3;
 const MAX_TRANSFER_COUNT: usize = 20;
 const CALLBACK_TIMEOUT: Duration = Duration::from_secs(30);
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenvy::dotenv().ok();
 

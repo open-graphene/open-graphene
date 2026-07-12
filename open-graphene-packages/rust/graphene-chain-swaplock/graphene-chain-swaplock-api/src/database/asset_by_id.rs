@@ -35,7 +35,7 @@ impl AssetSubscription<'_> {
 
     pub async fn next_update(&mut self) -> Result<AssetObject, SwaplockApiError> {
         loop {
-            let notice = self.session.next_notice()?;
+            let notice = self.session.next_notice().await?;
             let JsonRpcInbound::Notice {
                 callback_id,
                 payload,
@@ -58,7 +58,9 @@ pub(super) async fn get_asset_by_id(
     session: &mut GrapheneSession,
     asset_id: &str,
 ) -> Result<AssetObject, SwaplockApiError> {
-    let value = session.database_call("get_assets", json!([[asset_id], false]))?;
+    let value = session
+        .database_call("get_assets", json!([[asset_id], false]))
+        .await?;
     let assets = value
         .as_array()
         .ok_or_else(|| SwaplockApiError::UnexpectedResponse {
@@ -82,8 +84,12 @@ pub(super) async fn subscribe_asset_by_id(
     session: &mut GrapheneSession,
     asset_id: String,
 ) -> Result<AssetSubscription<'_>, SwaplockApiError> {
-    session.database_call("set_subscribe_callback", json!([ASSET_CALLBACK_ID, false]))?;
-    let value = session.database_call("get_objects", json!([[asset_id], true]))?;
+    session
+        .database_call("set_subscribe_callback", json!([ASSET_CALLBACK_ID, false]))
+        .await?;
+    let value = session
+        .database_call("get_objects", json!([[asset_id], true]))
+        .await?;
     let initial = asset_from_value("get_objects", value, &asset_id)?;
 
     Ok(AssetSubscription {

@@ -1,3 +1,4 @@
+use crate::extract::lexer::split_top_level_commas;
 use open_graphene_json_schema::types::{OrderingRule, TypeRef};
 
 pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
@@ -24,6 +25,7 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
 
     if let Some(inner) = unwrap_template(&normalized, "flat_set")
         .or_else(|| unwrap_template(&normalized, "std::set"))
+        .or_else(|| unwrap_template(&normalized, "set"))
     {
         return TypeRef::Set {
             inner: Box::new(resolve_cpp_type(inner)),
@@ -62,8 +64,8 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         };
     }
 
-    if let Some((key, value)) = unwrap_two_arg_template(&normalized, "map")
-        .or_else(|| unwrap_two_arg_template(&normalized, "std::map"))
+    if let Some((key, value)) = unwrap_map_template(&normalized, "map")
+        .or_else(|| unwrap_map_template(&normalized, "std::map"))
     {
         return TypeRef::Map {
             key: Box::new(resolve_cpp_type(&key)),
@@ -138,7 +140,10 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
             name: "additional_asset_options".to_string(),
         },
         "range_proof_type" => TypeRef::Bytes,
-        "blind_factor_type" => TypeRef::FixedBytes { bytes: 32 },
+        "blind_factor_type" | "fc::ecc::blind_factor_type" => TypeRef::FixedBytes { bytes: 32 },
+        "fc::ecc::range_proof_info" => TypeRef::Ref {
+            name: "range_proof_info".to_string(),
+        },
         "block_id_type" | "checksum_type" => TypeRef::FixedBytes { bytes: 20 },
         "digest_type" => TypeRef::FixedBytes { bytes: 32 },
         "signature_type" => TypeRef::Signature,
@@ -148,11 +153,20 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
             }),
             ordering: OrderingRule::StaticVariantTag,
         },
+        "full_account"
+        | "verify_range_result"
+        | "verify_range_proof_rewind_result"
+        | "range_proof_info"
+        | "market_ticker"
+        | "limit_order_group" => TypeRef::Ref {
+            name: normalized.clone(),
+        },
         "asset"
         | "authority"
         | "account_options"
         | "asset_options"
         | "bitasset_options"
+        | "buyback_account_options"
         | "blind_input"
         | "blind_output"
         | "block_header"
@@ -161,6 +175,7 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         | "generic_operation_result"
         | "generic_exchange_operation_result"
         | "htlc_options"
+        | "immutable_chain_parameters"
         | "memo_data"
         | "maybe_signed_block_header"
         | "no_special_authority"
@@ -227,6 +242,13 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
             reason: Some(format!("unstructured Graphene variant type: {normalized}")),
             source: None,
         },
+        // vote_id_type is a packed uint32 (type in the low byte, instance in
+        // the high 24 bits), not an object id: the `_id_type` suffix rule
+        // below must never claim it.
+        "vote_id_type" => TypeRef::VoteId,
+        // chain_id_type is a sha256 digest of the genesis state, not an
+        // object id.
+        "chain_id_type" => TypeRef::FixedHex { bytes: 32 },
         _ if normalized.ends_with("_id_type") => TypeRef::ProtocolObjectId {
             object_type: normalized.trim_end_matches("_id_type").to_string(),
         },
@@ -294,31 +316,14 @@ fn unwrap_two_arg_template(value: &str, template_name: &str) -> Option<(String, 
     }
 }
 
-fn split_top_level_commas(source: &str) -> Vec<String> {
-    let mut out = Vec::new();
-    let mut start = 0usize;
-    let mut paren_depth = 0usize;
-    let mut angle_depth = 0usize;
-
-    for (index, ch) in source.char_indices() {
-        match ch {
-            '(' => paren_depth += 1,
-            ')' => paren_depth = paren_depth.saturating_sub(1),
-            '<' => angle_depth += 1,
-            '>' => angle_depth = angle_depth.saturating_sub(1),
-            ',' if paren_depth == 0 && angle_depth == 0 => {
-                out.push(source[start..index].trim().to_string());
-                start = index + ch.len_utf8();
-            }
-            _ => {}
-        }
+fn unwrap_map_template(value: &str, template_name: &str) -> Option<(String, String)> {
+    let inner = unwrap_template(value, template_name)?;
+    let args = split_top_level_commas(inner);
+    if args.len() >= 2 {
+        Some((args[0].clone(), args[1].clone()))
+    } else {
+        None
     }
-
-    let trailing = source[start..].trim();
-    if !trailing.is_empty() {
-        out.push(trailing.to_string());
-    }
-    out
 }
 
 #[cfg(test)]
@@ -374,6 +379,56 @@ mod tests {
                     json: None,
                     fc: None
                 }),
+            }
+        );
+    }
+
+    #[test]
+    fn maps_map_with_comparator_policy() {
+        assert_eq!(
+            resolve_cpp_type("map<string, account_id_type, std::less<>>"),
+            TypeRef::Map {
+                key: Box::new(TypeRef::String),
+                value: Box::new(TypeRef::ProtocolObjectId {
+                    object_type: "account".to_string()
+                }),
+                ordering: OrderingRule::Unresolved,
+            }
+        );
+    }
+
+    #[test]
+    fn maps_qualified_crypto_wire_types() {
+        assert_eq!(
+            resolve_cpp_type("fc::ecc::blind_factor_type"),
+            TypeRef::FixedBytes { bytes: 32 }
+        );
+        assert_eq!(
+            resolve_cpp_type("fc::ecc::range_proof_info"),
+            TypeRef::Ref {
+                name: "range_proof_info".to_string()
+            }
+        );
+    }
+
+    #[test]
+    fn maps_app_rpc_dto_names_to_refs() {
+        assert_eq!(
+            resolve_cpp_type("full_account"),
+            TypeRef::Ref {
+                name: "full_account".to_string()
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("verify_range_result"),
+            TypeRef::Ref {
+                name: "verify_range_result".to_string()
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("verify_range_proof_rewind_result"),
+            TypeRef::Ref {
+                name: "verify_range_proof_rewind_result".to_string()
             }
         );
     }
@@ -578,6 +633,12 @@ mod tests {
             resolve_cpp_type("htlc_options"),
             TypeRef::Ref {
                 name: "htlc_options".to_string()
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("immutable_chain_parameters"),
+            TypeRef::Ref {
+                name: "immutable_chain_parameters".to_string()
             }
         );
         assert_eq!(

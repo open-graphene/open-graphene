@@ -62,7 +62,8 @@ pub fn ref_block_prefix_from_block_id(block_id: &str) -> Result<u32, HeaderError
 pub fn expiration_from_head_time(head_time: &str, offset: Duration) -> Result<String, HeaderError> {
     let offset =
         time::Duration::try_from(offset).map_err(|_| HeaderError::ExpirationOffsetOutOfRange)?;
-    let format = format_description::parse("[year]-[month]-[day]T[hour]:[minute]:[second]")?;
+    let format =
+        format_description::parse_borrowed::<2>("[year]-[month]-[day]T[hour]:[minute]:[second]")?;
     let parsed = PrimitiveDateTime::parse(head_time, &format)?;
     let expiration = parsed + offset;
     Ok(expiration.format(&format)?)

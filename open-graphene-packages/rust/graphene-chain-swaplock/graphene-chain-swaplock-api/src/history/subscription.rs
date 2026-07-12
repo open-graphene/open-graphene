@@ -22,7 +22,7 @@ impl AccountHistorySubscription<'_> {
 
     pub async fn next_update(&mut self) -> Result<Vec<OperationHistoryObject>, SwaplockApiError> {
         loop {
-            let notice = self.session.next_notice()?;
+            let notice = self.session.next_notice().await?;
             let JsonRpcInbound::Notice { callback_id, .. } = notice else {
                 continue;
             };
@@ -50,11 +50,15 @@ pub(super) async fn subscribe_account_history(
     limit: u32,
     offset: u32,
 ) -> Result<AccountHistorySubscription<'_>, SwaplockApiError> {
-    session.database_call(
-        "set_subscribe_callback",
-        json!([ACCOUNT_HISTORY_CALLBACK_ID, false]),
-    )?;
-    session.database_call("get_full_accounts", json!([[account_name_or_id], true]))?;
+    session
+        .database_call(
+            "set_subscribe_callback",
+            json!([ACCOUNT_HISTORY_CALLBACK_ID, false]),
+        )
+        .await?;
+    session
+        .database_call("get_full_accounts", json!([[account_name_or_id], true]))
+        .await?;
 
     let initial = get_account_history_snapshot(session, &account_name_or_id, limit, offset).await?;
 

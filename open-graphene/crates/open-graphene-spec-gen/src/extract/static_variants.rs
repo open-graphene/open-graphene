@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 use std::path::Path;
 
 use super::facts::{RawStaticVariant, SourceLoc};
+use super::lexer::{line_number, split_top_level_commas, strip_comments_preserving_newlines};
 
 pub fn extract_static_variants(source_text: &str, file: &Path) -> Vec<RawStaticVariant> {
     let macros = extract_variadic_macros(source_text);
@@ -111,7 +112,7 @@ fn parse_static_variant_args(
         .find('<')
         .map(|idx| static_start + idx)?;
     let close_angle = find_matching_angle(source, open_angle)?;
-    let args = split_top_level_commas(&source[open_angle + 1..close_angle])
+    let args = split_top_level_variant_args(&source[open_angle + 1..close_angle])
         .into_iter()
         .flat_map(|arg| macros.get(&arg).cloned().unwrap_or_else(|| vec![arg]))
         .collect();
@@ -147,7 +148,7 @@ fn extract_variadic_macros(source: &str) -> BTreeMap<String, Vec<String>> {
         }
         value = value.trim_end().trim_end_matches('\\').trim().to_string();
 
-        let variants = split_top_level_commas(&value);
+        let variants = split_top_level_variant_args(&value);
         if !variants.is_empty() {
             macros.insert(name.to_string(), variants);
         }
@@ -155,6 +156,15 @@ fn extract_variadic_macros(source: &str) -> BTreeMap<String, Vec<String>> {
     }
 
     macros
+}
+
+/// Top-level comma split that also drops empty middle segments; variadic
+/// macro expansions can leave dangling commas behind.
+fn split_top_level_variant_args(source: &str) -> Vec<String> {
+    split_top_level_commas(source)
+        .into_iter()
+        .filter(|segment| !segment.is_empty())
+        .collect()
 }
 
 fn split_macro_name_and_value(rest: &str) -> Option<(&str, String)> {
@@ -165,36 +175,6 @@ fn split_macro_name_and_value(rest: &str) -> Option<(&str, String)> {
         None
     } else {
         Some((name, value))
-    }
-}
-
-fn split_top_level_commas(source: &str) -> Vec<String> {
-    let mut out = Vec::new();
-    let mut start = 0usize;
-    let mut paren_depth = 0usize;
-    let mut angle_depth = 0usize;
-
-    for (index, ch) in source.char_indices() {
-        match ch {
-            '(' => paren_depth += 1,
-            ')' => paren_depth = paren_depth.saturating_sub(1),
-            '<' => angle_depth += 1,
-            '>' => angle_depth = angle_depth.saturating_sub(1),
-            ',' if paren_depth == 0 && angle_depth == 0 => {
-                push_variant(&mut out, &source[start..index]);
-                start = index + ch.len_utf8();
-            }
-            _ => {}
-        }
-    }
-    push_variant(&mut out, &source[start..]);
-    out
-}
-
-fn push_variant(out: &mut Vec<String>, value: &str) {
-    let value = value.trim();
-    if !value.is_empty() {
-        out.push(value.to_string());
     }
 }
 
@@ -216,47 +196,6 @@ fn find_matching_angle(source: &str, open_angle: usize) -> Option<usize> {
         }
     }
     None
-}
-
-fn strip_comments_preserving_newlines(source: &str) -> String {
-    let mut output = String::with_capacity(source.len());
-    let mut chars = source.chars().peekable();
-
-    while let Some(ch) = chars.next() {
-        if ch == '/' && chars.peek() == Some(&'/') {
-            chars.next();
-            for comment_ch in chars.by_ref() {
-                if comment_ch == '\n' {
-                    output.push('\n');
-                    break;
-                }
-            }
-        } else if ch == '/' && chars.peek() == Some(&'*') {
-            chars.next();
-            let mut previous = '\0';
-            for comment_ch in chars.by_ref() {
-                if comment_ch == '\n' {
-                    output.push('\n');
-                }
-                if previous == '*' && comment_ch == '/' {
-                    break;
-                }
-                previous = comment_ch;
-            }
-        } else {
-            output.push(ch);
-        }
-    }
-
-    output
-}
-
-fn line_number(source: &str, offset: usize) -> usize {
-    source[..offset]
-        .bytes()
-        .filter(|byte| *byte == b'\n')
-        .count()
-        + 1
 }
 
 #[cfg(test)]

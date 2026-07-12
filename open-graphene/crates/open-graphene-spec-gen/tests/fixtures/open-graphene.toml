@@ -1,0 +1,24 @@
+object_structs = [
+  "account_object",
+]
+
+[chain]
+id = "fixture"
+public_key_prefix = "TEST"
+chain_id = "0000000000000000000000000000000000000000000000000000000000000001"
+
+[source]
+chain_repo = "./fixture-chain"
+
+[output]
+# Unused by the golden test (it emits JSON in memory), but the field is required.
+dist = "./fixture-chain.open-graphene.json"
+
+[[rpc_apis]]
+name = "database"
+class = "database_api"
+discover_method = "database"
+methods = [
+  "get_chain_id",
+  "get_accounts",
+]

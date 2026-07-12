@@ -1,6 +1,6 @@
 use graphene::Graphene;
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut swaplock = Graphene::builder()
         .servers([

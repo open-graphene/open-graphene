@@ -1,6 +1,6 @@
 use graphene_chain_swaplock_bindings::generated::GlobalPropertyObject;
+use graphene_chain_swaplock_bindings::generated::rpc::database::get_global_properties as rpc_get_global_properties;
 use open_graphene_transport::GrapheneSession;
-use serde_json::json;
 
 use crate::SwaplockApiError;
 
@@ -17,9 +17,15 @@ impl GlobalPropertiesRequest<'_> {
 pub(super) async fn get_global_properties(
     session: &mut GrapheneSession,
 ) -> Result<GlobalPropertyObject, SwaplockApiError> {
-    let value = session.database_call("get_global_properties", json!([]))?;
-    serde_json::from_value(value).map_err(|error| SwaplockApiError::UnexpectedResponse {
-        method: "get_global_properties",
-        message: error.to_string(),
-    })
+    let params = rpc_get_global_properties::Params {}
+        .to_params_value()
+        .map_err(SwaplockApiError::unexpected(
+            rpc_get_global_properties::METHOD,
+        ))?;
+    let value = session
+        .database_call(rpc_get_global_properties::METHOD, params)
+        .await?;
+    rpc_get_global_properties::parse_returns(value).map_err(SwaplockApiError::unexpected(
+        rpc_get_global_properties::METHOD,
+    ))
 }

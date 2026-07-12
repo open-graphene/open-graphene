@@ -13,8 +13,8 @@ use crate::config::{GeneratorConfig, load_config};
 use crate::emit::write_protocol_json;
 use crate::error::Result;
 use crate::extract::{
-    RawClass, RawEnum, RawObjectType, RawReflect, RawStaticVariant, SourceFacts, SourceLoc,
-    extract_source_facts,
+    RawClass, RawEnum, RawEnumDefinition, RawObjectType, RawReflect, RawStaticVariant, SourceFacts,
+    SourceLoc, extract_source_facts,
 };
 use crate::resolve::{resolve_cpp_type, resolve_rpc_methods};
 use crate::source::discover_sources;
@@ -34,20 +34,135 @@ pub struct GenerateResult {
     pub resolved_static_variant_count: usize,
     pub resolved_rpc_method_count: usize,
     pub diagnostic_count: usize,
+    /// Every extract/resolve/build anomaly, labeled by pipeline stage.
+    pub diagnostics: Vec<String>,
+    /// Cross-reference problems in the emitted spec (see [`validate_protocol`]).
+    pub validation_issues: Vec<String>,
+}
+
+/// Cross-references every `ProtocolObjectId` in the emitted spec against the
+/// spec's own object types. A reference to an unknown object type means a C++
+/// alias was mis-mapped (e.g. a packed id heuristically treated as an object
+/// id) and consumers would produce wrong wire bytes.
+pub fn validate_protocol(protocol: &Protocol) -> Vec<String> {
+    let known: BTreeSet<&str> = protocol
+        .object_types
+        .iter()
+        .map(|object_type| object_type.object_type.as_str())
+        .collect();
+    let mut issues = BTreeSet::new();
+
+    for def in &protocol.structs {
+        for field in &def.fields {
+            check_object_id_refs(
+                &format!("struct {}.{}", def.name, field.name),
+                &field.ty,
+                &known,
+                &mut issues,
+            );
+        }
+    }
+    for def in &protocol.operations {
+        for field in &def.fields {
+            check_object_id_refs(
+                &format!("operation {}.{}", def.name, field.name),
+                &field.ty,
+                &known,
+                &mut issues,
+            );
+        }
+    }
+    for variant in &protocol.static_variants {
+        for arm in &variant.variants {
+            check_object_id_refs(
+                &format!("static variant {}::{}", variant.name, arm.name),
+                &arm.ty,
+                &known,
+                &mut issues,
+            );
+        }
+    }
+    for method in &protocol.rpc_methods {
+        for param in &method.params {
+            check_object_id_refs(
+                &format!("rpc {}({})", method.name, param.name),
+                &param.ty,
+                &known,
+                &mut issues,
+            );
+        }
+        if let Some(returns) = &method.returns {
+            check_object_id_refs(
+                &format!("rpc {} return", method.name),
+                returns,
+                &known,
+                &mut issues,
+            );
+        }
+    }
+
+    issues.into_iter().collect()
+}
+
+fn check_object_id_refs(
+    context: &str,
+    ty: &TypeRef,
+    known_object_types: &BTreeSet<&str>,
+    issues: &mut BTreeSet<String>,
+) {
+    visit_type_refs(ty, &mut |ty| {
+        if let TypeRef::ProtocolObjectId { object_type } = ty
+            && !known_object_types.contains(object_type.as_str())
+        {
+            issues.insert(format!(
+                "{context} references protocol object type `{object_type}`, which the spec does not define"
+            ));
+        }
+    });
+}
+
+fn visit_type_refs(ty: &TypeRef, visit: &mut impl FnMut(&TypeRef)) {
+    visit(ty);
+    match ty {
+        TypeRef::Optional { inner } | TypeRef::Vector { inner } | TypeRef::Set { inner, .. } => {
+            visit_type_refs(inner, visit);
+        }
+        TypeRef::Map { key, value, .. } | TypeRef::FlatMap { key, value, .. } => {
+            visit_type_refs(key, visit);
+            visit_type_refs(value, visit);
+        }
+        TypeRef::Pair { first, second } => {
+            visit_type_refs(first, visit);
+            visit_type_refs(second, visit);
+        }
+        _ => {}
+    }
+}
+
+/// The generated protocol plus every anomaly the build had to work around.
+///
+/// Diagnostics here are the load-bearing kind: a reflect field the class
+/// parser never saw, an unresolvable type reference, an ambiguous class name.
+/// They previously vanished silently, producing plausible-but-wrong specs.
+pub struct ProtocolBuild {
+    pub protocol: Protocol,
+    pub diagnostics: Vec<String>,
 }
 
 pub fn build_protocol(
     config: &GeneratorConfig,
     facts: &SourceFacts,
     mut rpc_methods: Vec<RpcMethodDef>,
-) -> Protocol {
-    let (structs, static_variants) = build_type_graph(config, facts, &rpc_methods);
-    let operations = build_operations(&static_variants, &structs);
+) -> ProtocolBuild {
+    let mut diagnostics = Vec::new();
+    let (structs, static_variants) =
+        build_type_graph(config, facts, &rpc_methods, &mut diagnostics);
+    let operations = build_operations(&static_variants, &structs, &facts.virtual_operations);
     let object_types = build_object_types(facts, &structs);
     let enums = build_enums(facts);
     populate_protocol_object_unions(&mut rpc_methods, &object_types);
 
-    Protocol {
+    let protocol = Protocol {
         schema_version: 1,
         chain: ChainDef {
             id: config.chain.id.clone(),
@@ -74,6 +189,10 @@ pub fn build_protocol(
             .collect(),
         rpc_methods,
         strict_mode: None,
+    };
+    ProtocolBuild {
+        protocol,
+        diagnostics,
     }
 }
 
@@ -81,6 +200,7 @@ fn build_type_graph(
     config: &GeneratorConfig,
     facts: &SourceFacts,
     rpc_methods: &[RpcMethodDef],
+    diagnostics: &mut Vec<String>,
 ) -> (Vec<StructDef>, Vec<StaticVariantDef>) {
     let mut struct_refs = BTreeSet::new();
     let mut static_variant_refs = BTreeSet::new();
@@ -114,10 +234,16 @@ fn build_type_graph(
                 raw_static_variant_to_def(raw)
             } else if name == "fee_parameters" {
                 let Some(def) = fee_parameters_static_variant_to_def(facts) else {
+                    diagnostics.push(
+                        "static variant `fee_parameters` could not be synthesized from the operation static variant".to_string(),
+                    );
                     continue;
                 };
                 def
             } else {
+                diagnostics.push(format!(
+                    "static variant reference `{name}` could not be resolved; it is dropped from the spec"
+                ));
                 continue;
             };
             for arm in &def.variants {
@@ -135,10 +261,30 @@ fn build_type_graph(
         for name in pending_structs {
             resolved_structs.insert(name.clone());
             let def = if let Some(raw) = find_raw_class(facts, &name) {
-                raw_class_to_struct_def(raw, facts)
-            } else if let Some(def) = nested_reflect_struct_to_def(facts, &name) {
+                let top_level_matches = facts
+                    .classes
+                    .iter()
+                    .filter(|class| class.name == name && class.qualified_name.is_none())
+                    .count();
+                if top_level_matches > 1 {
+                    diagnostics.push(format!(
+                        "class name `{name}` is ambiguous: {top_level_matches} top-level declarations; the first extracted one wins"
+                    ));
+                }
+                raw_class_to_struct_def(raw, facts, diagnostics)
+            } else if let Some(def) = known_core_struct_def(&name) {
                 def
+            } else if let Some(def) = nested_reflect_struct_to_def(facts, &name, diagnostics) {
+                def
+            } else if name == "config" || name == "required_fee" {
+                // Intentionally undefined in the spec: the bindings generator
+                // hand-models database.get_config / get_required_fees
+                // responses. Tracked to become spec-driven.
+                continue;
             } else {
+                diagnostics.push(format!(
+                    "struct reference `{name}` could not be resolved; it is dropped from the spec"
+                ));
                 continue;
             };
             for field in &def.fields {
@@ -180,31 +326,91 @@ fn seed_configured_object_struct_refs(
 }
 
 fn build_enums(facts: &SourceFacts) -> Vec<EnumDef> {
-    let mut enums = facts.enums.iter().map(raw_enum_to_def).collect::<Vec<_>>();
+    let mut enums = facts
+        .enums
+        .iter()
+        .map(|raw| raw_enum_to_def(raw, facts))
+        .collect::<Vec<_>>();
     enums.sort_by(|left, right| left.name.cmp(&right.name));
     enums
 }
 
-fn raw_enum_to_def(raw: &RawEnum) -> EnumDef {
+fn raw_enum_to_def(raw: &RawEnum, facts: &SourceFacts) -> EnumDef {
     let name = last_path_segment(&raw.name).to_string();
+    let definition = find_enum_definition(facts, &name, raw);
+
+    let mut unresolved_members = Vec::new();
+    let values = raw
+        .values
+        .iter()
+        .map(|value| {
+            let real_value = definition.and_then(|definition| {
+                definition
+                    .members
+                    .iter()
+                    .find(|member| member.name == value.name)
+                    .and_then(|member| member.value)
+            });
+            if real_value.is_none() {
+                unresolved_members.push(value.name.clone());
+            }
+            EnumValueDef {
+                name: value.name.clone(),
+                // FC_REFLECT_ENUM carries no values; the positional fallback
+                // is only kept for members the C++ enum body did not resolve.
+                value: real_value.unwrap_or(value.value),
+            }
+        })
+        .collect();
+
+    let (status, reason) = if unresolved_members.is_empty() {
+        (
+            SupportStatus::Provisional,
+            "member values joined from the C++ enum definition".to_string(),
+        )
+    } else {
+        (
+            SupportStatus::Unsupported,
+            format!(
+                "no C++ enum values found for members [{}]; positional fallback values are almost certainly wrong on the wire",
+                unresolved_members.join(", ")
+            ),
+        )
+    };
+
     EnumDef {
         is_bitfield: is_bitfield_enum(&name),
         name,
         underlying: IntType::I32,
-        values: raw
-            .values
-            .iter()
-            .map(|value| EnumValueDef {
-                name: value.name.clone(),
-                value: value.value,
-            })
-            .collect(),
+        values,
         source: Some(source_meta(&raw.name, &raw.source)),
         support: Some(SupportDef {
-            status: SupportStatus::Provisional,
-            reason: Some("enum extracted from FC_REFLECT_ENUM".to_string()),
+            status,
+            reason: Some(reason),
         }),
     }
+}
+
+fn find_enum_definition<'a>(
+    facts: &'a SourceFacts,
+    short_name: &str,
+    raw: &RawEnum,
+) -> Option<&'a RawEnumDefinition> {
+    let reflected: BTreeSet<&str> = raw.values.iter().map(|value| value.name.as_str()).collect();
+    // Short names can collide across namespaces; require the definition to
+    // actually declare the reflected members.
+    facts
+        .enum_definitions
+        .iter()
+        .filter(|definition| definition.name == short_name)
+        .find(|definition| {
+            let members: BTreeSet<&str> = definition
+                .members
+                .iter()
+                .map(|member| member.name.as_str())
+                .collect();
+            reflected.is_subset(&members)
+        })
 }
 
 fn is_bitfield_enum(name: &str) -> bool {
@@ -214,6 +420,7 @@ fn is_bitfield_enum(name: &str) -> bool {
 fn build_operations(
     static_variants: &[StaticVariantDef],
     structs: &[StructDef],
+    virtual_operations: &[String],
 ) -> Vec<OperationDef> {
     let Some(operation_variant) = static_variants
         .iter()
@@ -225,13 +432,17 @@ fn build_operations(
     let mut operations = operation_variant
         .variants
         .iter()
-        .filter_map(|arm| operation_from_arm(arm, structs))
+        .filter_map(|arm| operation_from_arm(arm, structs, virtual_operations))
         .collect::<Vec<_>>();
     operations.sort_by(|left, right| left.wire_tag.cmp(&right.wire_tag));
     operations
 }
 
-fn operation_from_arm(arm: &StaticVariantArmDef, structs: &[StructDef]) -> Option<OperationDef> {
+fn operation_from_arm(
+    arm: &StaticVariantArmDef,
+    structs: &[StructDef],
+    virtual_operations: &[String],
+) -> Option<OperationDef> {
     let TypeRef::Ref { name } = &arm.ty else {
         return None;
     };
@@ -241,7 +452,7 @@ fn operation_from_arm(arm: &StaticVariantArmDef, structs: &[StructDef]) -> Optio
         name: arm.name.clone(),
         wire_tag: arm.tag,
         fields: struct_def.fields.clone(),
-        is_virtual: false,
+        is_virtual: virtual_operations.iter().any(|marked| marked == &arm.name),
         source: None,
         support: Some(SupportDef {
             status: SupportStatus::Provisional,
@@ -438,12 +649,23 @@ fn fee_parameters_static_variant_to_def(facts: &SourceFacts) -> Option<StaticVar
 }
 
 fn find_raw_class<'a>(facts: &'a SourceFacts, name: &str) -> Option<&'a RawClass> {
-    facts.classes.iter().find(|class| class.name == name)
+    // Unqualified type references resolve to top-level classes; a nested class
+    // with the same short name (extracted from an earlier-sorted file) must
+    // not shadow them. Names that only exist nested still resolve as before.
+    facts
+        .classes
+        .iter()
+        .find(|class| class.name == name && class.qualified_name.is_none())
+        .or_else(|| facts.classes.iter().find(|class| class.name == name))
 }
 
-fn raw_class_to_struct_def(class: &RawClass, facts: &SourceFacts) -> StructDef {
+fn raw_class_to_struct_def(
+    class: &RawClass,
+    facts: &SourceFacts,
+    diagnostics: &mut Vec<String>,
+) -> StructDef {
     let reflect = find_raw_reflect(facts, class);
-    let mut fields = reflected_or_declared_fields(class, reflect, facts);
+    let mut fields = reflected_or_declared_fields(class, reflect, facts, diagnostics);
     prepend_inherited_object_id_field(class, facts, &mut fields);
     let support_reason = if reflect.is_some() {
         "fields ordered and filtered by FC_REFLECT; field declarations provide types"
@@ -478,6 +700,29 @@ fn prepend_inherited_object_id_field(
         .iter()
         .find(|object_type| object_type.struct_ref.as_deref() == Some(class.name.as_str()))
     else {
+        // Plugin objects (e.g. market-history buckets) derive from
+        // graphene::db::object without registering in the object-type macros;
+        // they still expose a generic object id in JSON.
+        if class_derives_from_db_object(class, facts) {
+            fields.insert(
+                0,
+                FieldDef {
+                    index: 0,
+                    name: "id".to_string(),
+                    ty: TypeRef::ObjectId,
+                    source: Some(source_meta("id", &class.source)),
+                    support: Some(SupportDef {
+                        status: SupportStatus::Provisional,
+                        reason: Some(
+                            "generic object id inherited from graphene::db::object".to_string(),
+                        ),
+                    }),
+                },
+            );
+            for (index, field) in fields.iter_mut().enumerate() {
+                field.index = index as u32;
+            }
+        }
         return;
     };
 
@@ -505,13 +750,55 @@ fn prepend_inherited_object_id_field(
     }
 }
 
-fn find_raw_reflect<'a>(facts: &'a SourceFacts, class: &RawClass) -> Option<&'a RawReflect> {
-    let candidates = [class.qualified_name.as_deref(), Some(class.name.as_str())];
-    facts.reflects.iter().find(|reflect| {
-        candidates
+fn is_graphene_db_object_base(base: &str) -> bool {
+    let base = base.trim();
+    // `graphene::chain::object` is `graphene::db::object` re-exported via
+    // `using graphene::db::object;`.
+    (base.starts_with("graphene") && base.ends_with("::object")) || base.contains("abstract_object")
+}
+
+fn class_derives_from_db_object(class: &RawClass, facts: &SourceFacts) -> bool {
+    find_raw_reflect(facts, class).is_some_and(|reflect| {
+        reflect
+            .bases
             .iter()
-            .flatten()
-            .any(|candidate| reflect_type_matches(candidate, &reflect.type_name))
+            .any(|base| is_graphene_db_object_base(base))
+    })
+}
+
+fn find_raw_reflect<'a>(facts: &'a SourceFacts, class: &RawClass) -> Option<&'a RawReflect> {
+    match class.qualified_name.as_deref() {
+        // A nested class only matches reflects that spell out its nesting
+        // path, e.g. `stealth_confirmation::memo_data` never takes the
+        // reflect of a top-level `memo_data`.
+        Some(qualified) => facts
+            .reflects
+            .iter()
+            .find(|reflect| reflect_path_matches(qualified, &reflect.type_name)),
+        // A top-level class must not take a nested class's reflect either:
+        // the last-segment fallback would otherwise match
+        // `graphene::protocol::stealth_confirmation::memo_data` to the
+        // top-level `memo_data`.
+        None => facts.reflects.iter().find(|reflect| {
+            reflect_type_matches(class.name.as_str(), &reflect.type_name)
+                && !reflect_claimed_by_nested_class(facts, &reflect.type_name)
+        }),
+    }
+}
+
+fn reflect_path_matches(qualified_class: &str, reflect_type_name: &str) -> bool {
+    reflect_type_name == qualified_class
+        || reflect_type_name
+            .strip_suffix(qualified_class)
+            .is_some_and(|prefix| prefix.ends_with("::"))
+}
+
+fn reflect_claimed_by_nested_class(facts: &SourceFacts, reflect_type_name: &str) -> bool {
+    facts.classes.iter().any(|class| {
+        class
+            .qualified_name
+            .as_deref()
+            .is_some_and(|qualified| reflect_path_matches(qualified, reflect_type_name))
     })
 }
 
@@ -528,6 +815,7 @@ fn reflected_or_declared_fields(
     class: &RawClass,
     reflect: Option<&RawReflect>,
     facts: &SourceFacts,
+    diagnostics: &mut Vec<String>,
 ) -> Vec<FieldDef> {
     let Some(reflect) = reflect else {
         return class
@@ -548,32 +836,50 @@ fn reflected_or_declared_fields(
 
     let mut fields = Vec::new();
     for base in &reflect.bases {
+        if is_graphene_db_object_base(base) {
+            // graphene::db::object contributes only the object id, which
+            // prepend_inherited_object_id_field supplies.
+            continue;
+        }
         if let Some(base_class) = find_raw_class(facts, last_path_segment(base)) {
             let base_reflect = find_raw_reflect(facts, base_class);
             fields.extend(reflected_or_declared_fields(
                 base_class,
                 base_reflect,
                 facts,
+                diagnostics,
+            ));
+        } else {
+            diagnostics.push(format!(
+                "reflected base class `{base}` of `{}` was not extracted; its fields are missing from the binary layout",
+                class.name
             ));
         }
     }
 
-    fields.extend(
-        reflect
-            .fields
-            .iter()
-            .filter_map(|field_name| class.fields.iter().find(|field| &field.name == field_name))
-            .enumerate()
-            .map(|(index, field)| {
-                field_def(
-                    index,
-                    field,
-                    class,
-                    facts,
-                    "field selected and ordered by FC_REFLECT",
-                )
-            }),
-    );
+    // The reflect macro defines the binary layout. A reflected field the
+    // class parser did not see means the emitted layout would be silently
+    // wrong — that must surface, never be filter_map'd away.
+    for field_name in &reflect.fields {
+        let Some(field) = class.fields.iter().find(|field| &field.name == field_name) else {
+            diagnostics.push(format!(
+                "FC_REFLECT `{}` field `{field_name}` was not found among the parsed fields of class `{}` ({}:{}); the emitted struct layout is incomplete",
+                reflect.type_name,
+                class.qualified_name.as_deref().unwrap_or(&class.name),
+                class.source.file.display(),
+                class.source.line
+            ));
+            continue;
+        };
+        let index = fields.len();
+        fields.push(field_def(
+            index,
+            field,
+            class,
+            facts,
+            "field selected and ordered by FC_REFLECT",
+        ));
+    }
 
     for (index, field) in fields.iter_mut().enumerate() {
         field.index = index as u32;
@@ -619,6 +925,83 @@ fn extension_inner(type_expr: &str) -> Option<&str> {
     if inner.is_empty() { None } else { Some(inner) }
 }
 
+fn known_core_struct_def(name: &str) -> Option<StructDef> {
+    let (source_name, support_reason, fields): (&str, &str, Vec<(&str, TypeRef)>) = match name {
+        "immutable_chain_parameters" => (
+            "graphene::chain::immutable_chain_parameters",
+            "manual core type mapping; header uses FC_REFLECT_TYPENAME without field reflection",
+            vec![
+                ("min_committee_member_count", TypeRef::Uint16),
+                ("min_witness_count", TypeRef::Uint16),
+                ("num_special_accounts", TypeRef::Uint32),
+                ("num_special_assets", TypeRef::Uint32),
+            ],
+        ),
+        "range_proof_info" => (
+            "fc::ecc::range_proof_info",
+            "manual RPC DTO mapping; fc::ecc::range_proof_info is returned by crypto.range_get_info",
+            vec![
+                (
+                    "exp",
+                    TypeRef::Int32 {
+                        fc: None,
+                        source: None,
+                    },
+                ),
+                (
+                    "mantissa",
+                    TypeRef::Int32 {
+                        fc: None,
+                        source: None,
+                    },
+                ),
+                (
+                    "min_value",
+                    TypeRef::Uint64 {
+                        json: None,
+                        fc: None,
+                    },
+                ),
+                (
+                    "max_value",
+                    TypeRef::Uint64 {
+                        json: None,
+                        fc: None,
+                    },
+                ),
+            ],
+        ),
+        _ => return None,
+    };
+
+    let fields = fields
+        .into_iter()
+        .enumerate()
+        .map(|(index, (name, ty))| FieldDef {
+            index: index as u32,
+            name: name.to_string(),
+            ty,
+            source: None,
+            support: Some(SupportDef {
+                status: SupportStatus::Supported,
+                reason: Some(support_reason.to_string()),
+            }),
+        })
+        .collect();
+
+    Some(StructDef {
+        name: name.to_string(),
+        source_name: Some(source_name.to_string()),
+        kind: StructKind::Struct,
+        wire_tag: None,
+        fields,
+        support: Some(SupportDef {
+            status: SupportStatus::Supported,
+            reason: Some(support_reason.to_string()),
+        }),
+    })
+}
+
 fn nested_reflect_for<'a>(
     parent: &str,
     nested: &str,
@@ -635,26 +1018,34 @@ fn nested_struct_name(parent: &str, nested: &str) -> String {
     format!("{parent}_{nested}")
 }
 
-fn nested_reflect_struct_to_def(facts: &SourceFacts, name: &str) -> Option<StructDef> {
+fn nested_reflect_struct_to_def(
+    facts: &SourceFacts,
+    name: &str,
+    diagnostics: &mut Vec<String>,
+) -> Option<StructDef> {
     let reflect = facts.reflects.iter().find(|reflect| {
         nested_reflect_synthetic_name(&reflect.type_name)
             .as_deref()
             .is_some_and(|synthetic| synthetic == name)
     })?;
-    let nested_name = last_path_segment(&reflect.type_name);
-    let raw = facts
-        .classes
-        .iter()
-        .filter(|class| class.name == nested_name && class.source.file == reflect.source.file)
-        .filter(|class| class.source.line <= reflect.source.line)
-        .max_by_key(|class| class.source.line)?;
+    // Nested classes carry their nesting path, so the reflect's qualified
+    // type name selects the exact instance. The previous file/line heuristic
+    // paired every bottom-of-file reflect with the file's LAST nested class
+    // of that short name, silently emitting empty or wrong fee_params/ext
+    // structs.
+    let raw = facts.classes.iter().find(|class| {
+        class
+            .qualified_name
+            .as_deref()
+            .is_some_and(|qualified| reflect_path_matches(qualified, &reflect.type_name))
+    })?;
 
     Some(StructDef {
         name: name.to_string(),
         source_name: Some(reflect.type_name.clone()),
         kind: StructKind::Struct,
         wire_tag: None,
-        fields: reflected_or_declared_fields(raw, Some(reflect), facts),
+        fields: reflected_or_declared_fields(raw, Some(reflect), facts, diagnostics),
         support: Some(SupportDef {
             status: SupportStatus::Provisional,
             reason: Some(
@@ -692,10 +1083,31 @@ pub fn generate_from_config(path: impl AsRef<Path>) -> Result<GenerateResult> {
     let method_declaration_count = facts.classes.iter().map(|class| class.methods.len()).sum();
     let field_declaration_count = facts.classes.iter().map(|class| class.fields.len()).sum();
     let static_variant_count = facts.static_variants.len();
-    let diagnostic_count = facts.diagnostics.len() + rpc_resolution.diagnostics.len();
-    let protocol = build_protocol(&config, &facts, rpc_resolution.methods);
+    let mut diagnostics: Vec<String> = Vec::new();
+    diagnostics.extend(
+        facts
+            .diagnostics
+            .iter()
+            .map(|diagnostic| format!("extract: {} ({})", diagnostic.message, diagnostic.code)),
+    );
+    diagnostics.extend(
+        rpc_resolution
+            .diagnostics
+            .iter()
+            .map(|diagnostic| format!("resolve: {} ({})", diagnostic.message, diagnostic.code)),
+    );
+    let build = build_protocol(&config, &facts, rpc_resolution.methods);
+    diagnostics.extend(
+        build
+            .diagnostics
+            .iter()
+            .map(|diagnostic| format!("build: {diagnostic}")),
+    );
+    let protocol = build.protocol;
     let resolved_struct_count = protocol.structs.len();
     let resolved_static_variant_count = protocol.static_variants.len();
+    let validation_issues = validate_protocol(&protocol);
+    let diagnostic_count = diagnostics.len();
     let output_path = write_protocol_json(config_path, &config.output.dist, &protocol)?;
 
     Ok(GenerateResult {
@@ -712,6 +1124,8 @@ pub fn generate_from_config(path: impl AsRef<Path>) -> Result<GenerateResult> {
         resolved_static_variant_count,
         resolved_rpc_method_count,
         diagnostic_count,
+        diagnostics,
+        validation_issues,
     })
 }
 
@@ -759,7 +1173,7 @@ mod tests {
             ..SourceFacts::default()
         };
 
-        let protocol = build_protocol(&config, &facts, vec![]);
+        let protocol = build_protocol(&config, &facts, vec![]).protocol;
 
         assert_eq!(protocol.enums.len(), 1);
         assert_eq!(protocol.enums[0].name, "function_type");
@@ -826,7 +1240,7 @@ mod tests {
             support: None,
         }];
 
-        let protocol = build_protocol(&config, &facts, rpc_methods);
+        let protocol = build_protocol(&config, &facts, rpc_methods).protocol;
 
         assert_eq!(protocol.object_types.len(), 1);
         assert_eq!(protocol.object_types[0].object_type, "account");
@@ -909,7 +1323,7 @@ mod tests {
             support: None,
         }];
 
-        let protocol = build_protocol(&config, &facts, rpc_methods);
+        let protocol = build_protocol(&config, &facts, rpc_methods).protocol;
 
         assert_eq!(
             protocol.object_types[0].struct_ref.as_deref(),
@@ -984,7 +1398,7 @@ mod tests {
             ..SourceFacts::default()
         };
 
-        let protocol = build_protocol(&config, &facts, vec![]);
+        let protocol = build_protocol(&config, &facts, vec![]).protocol;
 
         let asset = protocol
             .structs
@@ -1058,7 +1472,7 @@ mod tests {
             support: None,
         }];
 
-        let protocol = build_protocol(&config, &facts, rpc_methods);
+        let protocol = build_protocol(&config, &facts, rpc_methods).protocol;
 
         assert_eq!(protocol.operations.len(), 1);
         assert_eq!(protocol.operations[0].name, "transfer_operation");
@@ -1203,7 +1617,7 @@ mod tests {
             ..SourceFacts::default()
         };
 
-        let protocol = build_protocol(&config, &facts, vec![]);
+        let protocol = build_protocol(&config, &facts, vec![]).protocol;
         let transaction = protocol
             .structs
             .iter()
@@ -1376,7 +1790,7 @@ mod tests {
             support: None,
         }];
 
-        let protocol = build_protocol(&config, &facts, rpc_methods);
+        let protocol = build_protocol(&config, &facts, rpc_methods).protocol;
         let header = protocol
             .structs
             .iter()
@@ -1439,7 +1853,7 @@ mod tests {
                 },
                 RawClass {
                     name: "fee_params_t".to_string(),
-                    qualified_name: None,
+                    qualified_name: Some("transfer_operation::fee_params_t".to_string()),
                     methods: vec![],
                     fields: vec![RawField {
                         name: "fee".to_string(),
@@ -1502,7 +1916,7 @@ mod tests {
             support: None,
         }];
 
-        let protocol = build_protocol(&config, &facts, rpc_methods);
+        let protocol = build_protocol(&config, &facts, rpc_methods).protocol;
         let fee_schedule = protocol
             .structs
             .iter()
@@ -1578,7 +1992,7 @@ mod tests {
                 },
                 RawClass {
                     name: "ext".to_string(),
-                    qualified_name: None,
+                    qualified_name: Some("account_create_operation::ext".to_string()),
                     methods: vec![],
                     fields: vec![RawField {
                         name: "owner_special_authority".to_string(),
@@ -1641,7 +2055,7 @@ mod tests {
             support: None,
         }];
 
-        let protocol = build_protocol(&config, &facts, rpc_methods);
+        let protocol = build_protocol(&config, &facts, rpc_methods).protocol;
         let parent = protocol
             .structs
             .iter()
@@ -1752,7 +2166,7 @@ mod tests {
             support: None,
         }];
 
-        let protocol = build_protocol(&config, &facts, rpc_methods);
+        let protocol = build_protocol(&config, &facts, rpc_methods).protocol;
 
         let sample = protocol
             .structs

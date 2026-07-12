@@ -1,6 +1,9 @@
 use std::path::Path;
 
 use super::facts::{RawReflect, SourceLoc};
+use super::lexer::{
+    find_matching_paren, line_number, split_top_level_commas, strip_comments_preserving_newlines,
+};
 
 pub fn extract_reflects(source_text: &str, file: &Path) -> Vec<RawReflect> {
     let source = strip_comments_preserving_newlines(source_text);
@@ -17,19 +20,20 @@ pub fn extract_reflects(source_text: &str, file: &Path) -> Vec<RawReflect> {
             continue;
         };
         let args = split_top_level_commas(&source[open_paren + 1..close_paren]);
-        let field_arg_index = if macro_name == "FC_REFLECT_DERIVED" {
-            2
-        } else {
-            1
-        };
+        let derived = matches!(
+            macro_name,
+            "FC_REFLECT_DERIVED" | "FC_REFLECT_DERIVED_NO_TYPENAME"
+        );
+        let field_arg_index = if derived { 2 } else { 1 };
         if let Some(type_name) = args.first() {
-            let bases = if macro_name == "FC_REFLECT_DERIVED" {
+            let bases = if derived {
                 args.get(1)
                     .map(|bases_arg| parse_reflect_fields(bases_arg))
                     .unwrap_or_default()
             } else {
                 vec![]
             };
+            // FC_REFLECT_EMPTY reflects a type with no fields at all.
             let fields = args
                 .get(field_arg_index)
                 .map(|fields_arg| parse_reflect_fields(fields_arg))
@@ -42,7 +46,7 @@ pub fn extract_reflects(source_text: &str, file: &Path) -> Vec<RawReflect> {
                     file: file.to_path_buf(),
                     line: line_number(&source, macro_start),
                 },
-                derived: macro_name == "FC_REFLECT_DERIVED",
+                derived,
             });
         }
         offset = close_paren + 1;
@@ -51,22 +55,26 @@ pub fn extract_reflects(source_text: &str, file: &Path) -> Vec<RawReflect> {
     reflects
 }
 
-fn find_next_reflect_macro(source: &str, offset: usize) -> Option<(usize, &'static str)> {
-    let reflect = source[offset..]
-        .find("FC_REFLECT(")
-        .map(|relative| (offset + relative, "FC_REFLECT"));
-    let derived = source[offset..]
-        .find("FC_REFLECT_DERIVED(")
-        .map(|relative| (offset + relative, "FC_REFLECT_DERIVED"));
+const REFLECT_MACROS: [&str; 4] = [
+    "FC_REFLECT",
+    "FC_REFLECT_DERIVED",
+    "FC_REFLECT_DERIVED_NO_TYPENAME",
+    "FC_REFLECT_EMPTY",
+];
 
-    match (reflect, derived) {
-        (Some(reflect), Some(derived)) => {
-            Some(std::cmp::min_by_key(reflect, derived, |(idx, _)| *idx))
-        }
-        (Some(reflect), None) => Some(reflect),
-        (None, Some(derived)) => Some(derived),
-        (None, None) => None,
-    }
+fn find_next_reflect_macro(source: &str, offset: usize) -> Option<(usize, &'static str)> {
+    REFLECT_MACROS
+        .iter()
+        .filter_map(|macro_name| {
+            source[offset..]
+                .find(&format!("{macro_name}("))
+                .map(|relative| (offset + relative, *macro_name))
+        })
+        // Longest name wins on a tie so `FC_REFLECT_DERIVED_NO_TYPENAME(`
+        // is not consumed as `FC_REFLECT(` would never match here, but
+        // `FC_REFLECT_DERIVED(` vs `FC_REFLECT_DERIVED_NO_TYPENAME(` differ
+        // by position anyway; ties cannot happen for distinct suffixes.
+        .min_by_key(|(index, _)| *index)
 }
 
 fn parse_reflect_fields(source: &str) -> Vec<String> {
@@ -86,94 +94,6 @@ fn parse_reflect_fields(source: &str) -> Vec<String> {
     }
 
     fields
-}
-
-fn split_top_level_commas(source: &str) -> Vec<String> {
-    let mut out = Vec::new();
-    let mut start = 0usize;
-    let mut paren_depth = 0usize;
-    let mut angle_depth = 0usize;
-
-    for (index, ch) in source.char_indices() {
-        match ch {
-            '(' => paren_depth += 1,
-            ')' => paren_depth = paren_depth.saturating_sub(1),
-            '<' => angle_depth += 1,
-            '>' => angle_depth = angle_depth.saturating_sub(1),
-            ',' if paren_depth == 0 && angle_depth == 0 => {
-                out.push(source[start..index].trim().to_string());
-                start = index + ch.len_utf8();
-            }
-            _ => {}
-        }
-    }
-
-    let trailing = source[start..].trim();
-    if !trailing.is_empty() {
-        out.push(trailing.to_string());
-    }
-    out
-}
-
-fn find_matching_paren(source: &str, open_paren: usize) -> Option<usize> {
-    let mut depth = 0usize;
-    for (index, ch) in source
-        .char_indices()
-        .skip_while(|(idx, _)| *idx < open_paren)
-    {
-        match ch {
-            '(' => depth += 1,
-            ')' => {
-                depth = depth.checked_sub(1)?;
-                if depth == 0 {
-                    return Some(index);
-                }
-            }
-            _ => {}
-        }
-    }
-    None
-}
-
-fn strip_comments_preserving_newlines(source: &str) -> String {
-    let mut output = String::with_capacity(source.len());
-    let mut chars = source.chars().peekable();
-
-    while let Some(ch) = chars.next() {
-        if ch == '/' && chars.peek() == Some(&'/') {
-            chars.next();
-            for comment_ch in chars.by_ref() {
-                if comment_ch == '\n' {
-                    output.push('\n');
-                    break;
-                }
-            }
-        } else if ch == '/' && chars.peek() == Some(&'*') {
-            chars.next();
-            let mut previous = '\0';
-            for comment_ch in chars.by_ref() {
-                if comment_ch == '\n' {
-                    output.push('\n');
-                }
-                if previous == '*' && comment_ch == '/' {
-                    break;
-                }
-                previous = comment_ch;
-            }
-        } else {
-            output.push(ch);
-        }
-    }
-
-    output
-}
-
-fn line_number(source: &str, offset: usize) -> usize {
-    source[..offset]
-        .bytes()
-        .filter(|byte| *byte == b'\n')
-        .count()
-        + 1
 }
 
 #[cfg(test)]

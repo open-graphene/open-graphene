@@ -16,36 +16,40 @@ pub struct SwaplockLivePendingBroadcastConfirmation {
 }
 
 impl SwaplockLiveNetworkBroadcastApi {
-    pub fn send_signed_transfer_with_callback(
+    pub async fn send_signed_transfer_with_callback(
         self,
         signed: SignedTransfer,
     ) -> Result<SwaplockLivePendingBroadcastConfirmation, SwaplockApiError> {
         self.send_transaction_with_callback(signed.transaction_json()?)
+            .await
     }
 
-    pub fn send_transaction_with_callback(
+    pub async fn send_transaction_with_callback(
         self,
         transaction: serde_json::Value,
     ) -> Result<SwaplockLivePendingBroadcastConfirmation, SwaplockApiError> {
-        let pending = self.live.call_with_callback(
-            self.network_broadcast_api_id,
-            "broadcast_transaction_with_callback",
-            json!([transaction]),
-        )?;
+        let pending = self
+            .live
+            .call_with_callback(
+                self.network_broadcast_api_id,
+                "broadcast_transaction_with_callback",
+                json!([transaction]),
+            )
+            .await?;
         Ok(SwaplockLivePendingBroadcastConfirmation { pending })
     }
 }
 
 impl SwaplockLivePendingBroadcastConfirmation {
-    pub fn wait(self) -> Result<BroadcastConfirmation, SwaplockApiError> {
-        parse_live_broadcast_confirmation(self.pending.wait()?)
+    pub async fn wait(self) -> Result<BroadcastConfirmation, SwaplockApiError> {
+        parse_live_broadcast_confirmation(self.pending.wait().await?)
     }
 
-    pub fn wait_timeout(
+    pub async fn wait_timeout(
         self,
         timeout: Duration,
     ) -> Result<BroadcastConfirmation, SwaplockApiError> {
-        parse_live_broadcast_confirmation(self.pending.wait_timeout(timeout)?)
+        parse_live_broadcast_confirmation(self.pending.wait_timeout(timeout).await?)
     }
 }
 

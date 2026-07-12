@@ -1,13 +1,13 @@
+use graphene_chain_bitshares_bindings::generated::FcSerialize;
 use graphene_chain_bitshares_bindings::generated::ids::{
     AccountId, AssetId, DynamicGlobalPropertyId, LimitOrderId, WitnessId,
 };
 use graphene_chain_bitshares_bindings::generated::operations::TransferOperation;
-use graphene_chain_bitshares_bindings::generated::static_variants::{FutureExtensions, Operation};
+use graphene_chain_bitshares_bindings::generated::static_variants::Operation;
 use graphene_chain_bitshares_bindings::generated::types::{
     Asset, AssetObject, DynamicGlobalPropertyObject, LimitOrderObject, Signature,
     SignedTransaction, Transaction,
 };
-use graphene_chain_bitshares_bindings::generated::FcSerialize;
 
 fn transfer_operation() -> Operation {
     Operation::TransferOperation(Box::new(TransferOperation {
@@ -22,7 +22,7 @@ fn transfer_operation() -> Operation {
             asset_id: AssetId("1.3.0".to_string()),
         },
         memo: None,
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
     }))
 }
 
@@ -166,7 +166,7 @@ fn bitshares_transaction_serializes_transfer_operation_vector() {
         ref_block_prefix: 3,
         expiration: "2026-05-25T12:01:00".to_string(),
         operations: vec![transfer_operation()],
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
     };
 
     let bytes = transaction.to_fc_bytes().unwrap();
@@ -183,7 +183,7 @@ fn bitshares_signed_transaction_serializes_signature_vector() {
         ref_block_prefix: 3,
         expiration: "2026-05-25T12:01:00".to_string(),
         operations: vec![transfer_operation()],
-        extensions: FutureExtensions::VoidT(Box::new(())),
+        extensions: vec![],
         signatures: vec![Signature(vec![0x1f; 65])],
     };
 

@@ -1,6 +1,6 @@
 use graphene::Graphene;
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut swaplock = Graphene::builder()
         .servers([
@@ -17,8 +17,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let properties = swaplock.database().chain_properties().get().await?;
 
     println!("id: {}", properties.id.0);
-    println!("chain id: {}", properties.chain_id.0);
-    println!("immutable parameters: {}", properties.immutable_parameters);
+    println!("chain id: {}", properties.chain_id);
+    println!(
+        "immutable parameters: {:?}",
+        properties.immutable_parameters
+    );
 
     Ok(())
 }

@@ -6,6 +6,13 @@
 !Cargo.lock
 !Cargo.toml
 !mirror.toml
+!README.md
+!LICENSE-MIT
+!LICENSE-APACHE
+!docs
+!docs/**
+!.github
+!.github/**
 !pnpm-lock.yaml
 !pnpm-workspace.yaml
 !graphene/

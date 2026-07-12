@@ -13,6 +13,11 @@ struct Args {
     #[arg(long)]
     config: Option<PathBuf>,
 
+    /// Downgrade pipeline diagnostics from errors to warnings. The spec is
+    /// still written, but silently-degraded output must be opted into.
+    #[arg(long)]
+    allow_diagnostics: bool,
+
     /// Print version and exit.
     #[arg(long)]
     version: bool,
@@ -49,6 +54,26 @@ fn main() -> ExitCode {
                 result.resolved_static_variant_count,
                 result.diagnostic_count
             );
+            for diagnostic in &result.diagnostics {
+                eprintln!("diagnostic: {diagnostic}");
+            }
+            for issue in &result.validation_issues {
+                eprintln!("validation issue: {issue}");
+            }
+            if !result.validation_issues.is_empty() {
+                eprintln!(
+                    "error: the emitted spec has {} validation issue(s)",
+                    result.validation_issues.len()
+                );
+                return ExitCode::FAILURE;
+            }
+            if !result.diagnostics.is_empty() && !args.allow_diagnostics {
+                eprintln!(
+                    "error: the pipeline reported {} diagnostic(s); pass --allow-diagnostics to emit the spec anyway",
+                    result.diagnostics.len()
+                );
+                return ExitCode::FAILURE;
+            }
             ExitCode::SUCCESS
         }
         Err(error) => {

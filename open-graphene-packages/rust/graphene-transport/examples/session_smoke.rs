@@ -2,9 +2,10 @@ use std::error::Error;
 
 use open_graphene_transport::GrapheneSession;
 
-fn main() -> Result<(), Box<dyn Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
     let rpc_url = std::env::var("SWAPLOCK_RPC_URL")?;
-    let session = GrapheneSession::connect(&rpc_url)?;
+    let session = GrapheneSession::connect(&rpc_url).await?;
 
     println!("chain_id={}", session.chain_id());
     println!("database_api_id={}", session.api_ids().database);

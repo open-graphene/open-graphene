@@ -14,8 +14,8 @@ use graphene_chain_swaplock_bindings::generated::{
     Price, ProposalCreateOperation, RefundWorkerInitializer, Restriction, Signature,
     SignedTransaction, SpecialAuthority, TopHoldersSpecialAuthority, Transaction,
     TransferOperation, TransferOperationFeeParamsT, VestingBalanceCreateOperation,
-    VestingBalanceWorkerInitializer, VestingPolicyInitializer, VoteId,
-    WithdrawPermissionCreateOperation, WorkerCreateOperation, WorkerInitializer, sha256_bytes,
+    VestingBalanceWorkerInitializer, VestingPolicyInitializer, WithdrawPermissionCreateOperation,
+    WorkerCreateOperation, WorkerInitializer, sha256_bytes,
 };
 
 fn sample_transfer_operation() -> TransferOperation {
@@ -419,6 +419,7 @@ fn sample_account_create_operation() -> AccountCreateOperation {
             null_ext: None,
             owner_special_authority: None,
             active_special_authority: None,
+            buyback_options: None,
         },
     }
 }
@@ -533,7 +534,7 @@ fn sample_account_options() -> AccountOptions {
         voting_account: AccountId("1.2.5".to_string()),
         num_witness: 1,
         num_committee: 2,
-        votes: vec![VoteId("1:5".to_string())],
+        votes: vec!["1:5".to_string()],
         extensions: vec![],
     }
 }
@@ -681,8 +682,9 @@ fn expected_fee_schedule_payload() -> Vec<u8> {
 
 fn expected_chain_parameters_payload() -> Vec<u8> {
     let mut bytes = expected_fee_schedule_payload();
-    // remaining scalar chain_parameters fields are zero in sample_chain_parameters.
-    bytes.extend(vec![0; 88]);
+    // remaining scalar chain_parameters fields are zero in sample_chain_parameters, then the empty
+    // chain_parameters_ext extension set is a single varint 0.
+    bytes.extend(vec![0; 85]);
     bytes
 }
 
@@ -958,7 +960,7 @@ fn account_options_fc_serializes_vote_ids() {
 #[test]
 fn account_options_fc_rejects_invalid_vote_id() {
     let mut options = sample_account_options();
-    options.votes = vec![VoteId("1:16777216".to_string())];
+    options.votes = vec!["1:16777216".to_string()];
 
     let err = options.to_fc_bytes().expect_err("invalid vote id fails");
 
@@ -1996,14 +1998,10 @@ fn signed_transaction_fc_propagates_signature_length_errors() {
 fn transaction_fc_propagates_operation_errors() {
     let mut transfer = sample_transfer_operation();
     transfer.memo = Some(MemoData {
-        from: None,
-        amount: Asset {
-            amount: 1,
-            asset_id: AssetId("1.3.0".to_string()),
-        },
-        blinding_factor: Vec::new(),
-        commitment: Vec::new(),
-        check: 0,
+        from: "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV".to_string(),
+        to: "BTS4tVMTu4hrMTGeAQpAEzueCYqEESJQgkaH9DVJNnzK1mzPCmP45".to_string(),
+        nonce: 0,
+        message: Vec::new(),
     });
     let transaction =
         sample_transaction_with_operations(vec![Operation::TransferOperation(Box::new(transfer))]);
@@ -2168,14 +2166,10 @@ fn transaction_signed_with_wif_propagates_invalid_wif_without_echoing_secret() {
 fn transaction_signature_preimage_propagates_operation_errors() {
     let mut transfer = sample_transfer_operation();
     transfer.memo = Some(MemoData {
-        from: None,
-        amount: Asset {
-            amount: 1,
-            asset_id: AssetId("1.3.0".to_string()),
-        },
-        blinding_factor: Vec::new(),
-        commitment: Vec::new(),
-        check: 0,
+        from: "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV".to_string(),
+        to: "BTS4tVMTu4hrMTGeAQpAEzueCYqEESJQgkaH9DVJNnzK1mzPCmP45".to_string(),
+        nonce: 0,
+        message: Vec::new(),
     });
     let transaction =
         sample_transaction_with_operations(vec![Operation::TransferOperation(Box::new(transfer))]);
@@ -2197,14 +2191,10 @@ fn transaction_signature_preimage_propagates_operation_errors() {
 fn transaction_signature_digest_propagates_operation_errors() {
     let mut transfer = sample_transfer_operation();
     transfer.memo = Some(MemoData {
-        from: None,
-        amount: Asset {
-            amount: 1,
-            asset_id: AssetId("1.3.0".to_string()),
-        },
-        blinding_factor: Vec::new(),
-        commitment: Vec::new(),
-        check: 0,
+        from: "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV".to_string(),
+        to: "BTS4tVMTu4hrMTGeAQpAEzueCYqEESJQgkaH9DVJNnzK1mzPCmP45".to_string(),
+        nonce: 0,
+        message: Vec::new(),
     });
     let transaction =
         sample_transaction_with_operations(vec![Operation::TransferOperation(Box::new(transfer))]);
@@ -2247,14 +2237,10 @@ fn operation_fc_serializes_proposal_create_tag_and_nested_operation_payload() {
 fn proposal_create_operation_propagates_nested_operation_fc_errors() {
     let mut transfer = sample_transfer_operation();
     transfer.memo = Some(MemoData {
-        from: None,
-        amount: Asset {
-            amount: 1,
-            asset_id: AssetId("1.3.0".to_string()),
-        },
-        blinding_factor: Vec::new(),
-        commitment: Vec::new(),
-        check: 0,
+        from: "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV".to_string(),
+        to: "BTS4tVMTu4hrMTGeAQpAEzueCYqEESJQgkaH9DVJNnzK1mzPCmP45".to_string(),
+        nonce: 0,
+        message: Vec::new(),
     });
     let mut proposal = sample_proposal_create_operation();
     proposal.proposed_ops = vec![OpWrapper {

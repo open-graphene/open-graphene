@@ -24,7 +24,7 @@ pub(super) async fn get_account_history_snapshot(
     validate_account_history_window(limit, offset)?;
 
     let params = account_history_params(account_name_or_id, limit, offset)?;
-    let value = session.history_call(ACCOUNT_HISTORY_METHOD, params)?;
+    let value = session.history_call(ACCOUNT_HISTORY_METHOD, params).await?;
     let raw_items = account_history_items_from_value(value)?;
     let newest_operation_id = raw_items.first().map(|item| item.id.0.clone());
     let page = account_history_page_from_items(raw_items, limit, offset);
@@ -41,15 +41,17 @@ pub(super) async fn get_recent_account_history_since(
     last_seen_operation_id: Option<&str>,
 ) -> Result<Vec<OperationHistoryObject>, SwaplockApiError> {
     let stop = last_seen_operation_id.unwrap_or(HISTORY_STOP_SENTINEL);
-    let value = session.history_call(
-        ACCOUNT_HISTORY_METHOD,
-        json!([
-            account_name_or_id,
-            stop,
-            MAX_ACCOUNT_HISTORY_LIMIT,
-            HISTORY_START_SENTINEL
-        ]),
-    )?;
+    let value = session
+        .history_call(
+            ACCOUNT_HISTORY_METHOD,
+            json!([
+                account_name_or_id,
+                stop,
+                MAX_ACCOUNT_HISTORY_LIMIT,
+                HISTORY_START_SENTINEL
+            ]),
+        )
+        .await?;
     account_history_items_from_value(value)
 }
 

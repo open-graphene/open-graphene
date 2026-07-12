@@ -8,10 +8,151 @@ repository = "https://github.com/open-graphene/open-graphene"
 
 [dependencies]
 graphene-chain-swaplock-api = { path = "../graphene-chain-swaplock/graphene-chain-swaplock-api" }
+open-graphene-fc = { path = "../graphene-fc" }
 
 [dev-dependencies]
 dotenvy = "0.15"
-tokio = { version = "1", features = ["macros", "rt"] }
+tokio = { version = "1", features = ["full"] }
+
+[[example]]
+name = "swaplock_connection_lowest_latency"
+path = "examples/swaplock/connection_lowest_latency.rs"
+
+[[example]]
+name = "swaplock_keys_sign_verify"
+path = "examples/swaplock/keys_sign_verify.rs"
+
+[[example]]
+name = "swaplock_transaction_builder_transfer"
+path = "examples/swaplock/transaction_builder_transfer.rs"
+
+[[example]]
+name = "swaplock_limit_order_create_cancel"
+path = "examples/swaplock/limit_order_create_cancel.rs"
+
+[[example]]
+name = "swaplock_limit_order_update"
+path = "examples/swaplock/limit_order_update.rs"
+
+[[example]]
+name = "swaplock_call_order_update"
+path = "examples/swaplock/call_order_update.rs"
+
+[[example]]
+name = "swaplock_asset_issue_reserve"
+path = "examples/swaplock/asset_issue_reserve.rs"
+
+[[example]]
+name = "swaplock_asset_update"
+path = "examples/swaplock/asset_update.rs"
+
+[[example]]
+name = "swaplock_asset_admin_ops"
+path = "examples/swaplock/asset_admin_ops.rs"
+
+[[example]]
+name = "swaplock_override_transfer_op"
+path = "examples/swaplock/override_transfer_op.rs"
+
+[[example]]
+name = "swaplock_credit_offer_ops"
+path = "examples/swaplock/credit_offer_ops.rs"
+
+[[example]]
+name = "swaplock_samet_fund_ops"
+path = "examples/swaplock/samet_fund_ops.rs"
+
+[[example]]
+name = "swaplock_vesting_tickets_ops"
+path = "examples/swaplock/vesting_tickets_ops.rs"
+
+[[example]]
+name = "swaplock_account_update"
+path = "examples/swaplock/account_update.rs"
+
+[[example]]
+name = "swaplock_account_ops"
+path = "examples/swaplock/account_ops.rs"
+
+[[example]]
+name = "swaplock_htlc_create_redeem"
+path = "examples/swaplock/htlc_create_redeem.rs"
+
+[[example]]
+name = "swaplock_proposal_create"
+path = "examples/swaplock/proposal_create.rs"
+
+[[example]]
+name = "swaplock_governance_ops"
+path = "examples/swaplock/governance_ops.rs"
+
+[[example]]
+name = "swaplock_custom_authority_ops"
+path = "examples/swaplock/custom_authority_ops.rs"
+
+[[example]]
+name = "swaplock_assert_balance_claim_ops"
+path = "examples/swaplock/assert_balance_claim_ops.rs"
+
+[[example]]
+name = "swaplock_bid_collateral_global_params_ops"
+path = "examples/swaplock/bid_collateral_global_params_ops.rs"
+
+[[example]]
+name = "swaplock_liquidity_pool_create_delete"
+path = "examples/swaplock/liquidity_pool_create_delete.rs"
+
+[[example]]
+name = "swaplock_liquidity_pool_flow"
+path = "examples/swaplock/liquidity_pool_flow.rs"
+
+[[example]]
+name = "swaplock_get_limit_orders"
+path = "examples/swaplock/get_limit_orders.rs"
+
+[[example]]
+name = "swaplock_get_objects"
+path = "examples/swaplock/get_objects.rs"
+
+[[example]]
+name = "swaplock_get_block"
+path = "examples/swaplock/get_block.rs"
+
+[[example]]
+name = "swaplock_get_block_header"
+path = "examples/swaplock/get_block_header.rs"
+
+[[example]]
+name = "swaplock_get_config"
+path = "examples/swaplock/get_config.rs"
+
+[[example]]
+name = "swaplock_get_key_references"
+path = "examples/swaplock/get_key_references.rs"
+
+[[example]]
+name = "swaplock_chain_validation"
+path = "examples/swaplock/chain_validation.rs"
+
+[[example]]
+name = "swaplock_reconnect"
+path = "examples/swaplock/reconnect.rs"
+
+[[example]]
+name = "swaplock_chain_store"
+path = "examples/swaplock/chain_store.rs"
+
+[[example]]
+name = "swaplock_brainkey_derive"
+path = "examples/swaplock/brainkey_derive.rs"
+
+[[example]]
+name = "swaplock_account_login"
+path = "examples/swaplock/account_login.rs"
+
+[[example]]
+name = "swaplock_memo_encrypt_decrypt"
+path = "examples/swaplock/memo_encrypt_decrypt.rs"
 
 [[example]]
 name = "swaplock_database_account_get"
@@ -52,6 +193,10 @@ path = "examples/swaplock/database_accounts_get.rs"
 [[example]]
 name = "swaplock_database_chain_id_get"
 path = "examples/swaplock/database_chain_id_get.rs"
+
+[[example]]
+name = "swaplock_database_list_assets_accounts"
+path = "examples/swaplock/database_list_assets_accounts.rs"
 
 [[example]]
 name = "swaplock_database_chain_properties_get"
@@ -116,3 +261,19 @@ path = "examples/swaplock/history_account_get.rs"
 [[example]]
 name = "swaplock_history_account_subscribe"
 path = "examples/swaplock/history_account_subscribe.rs"
+
+[[example]]
+name = "swaplock_crypto_pedersen_commitment"
+path = "examples/swaplock/crypto_pedersen_commitment.rs"
+
+[[example]]
+name = "swaplock_blind_transfer_ops"
+path = "examples/swaplock/blind_transfer_ops.rs"
+
+[[example]]
+name = "swaplock_orders_grouped_limit_orders"
+path = "examples/swaplock/orders_grouped_limit_orders.rs"
+
+[[example]]
+name = "swaplock_market_methods"
+path = "examples/swaplock/market_methods.rs"

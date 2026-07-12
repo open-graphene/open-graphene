@@ -1,75 +1,119 @@
+mod codec;
+mod crypto;
 mod database;
 mod history;
 mod live;
 mod network_broadcast;
 mod operations;
+mod orders;
 
+pub use graphene_chain_swaplock_bindings::generated::OperationHistoryObject;
 use open_graphene_core::{AmountError, BalanceError, HeaderError, ObjectIdError};
 use open_graphene_transport::{GrapheneSession, TransportError};
 use thiserror::Error;
 
+// Chain-agnostic account-name validation lives in core; re-exported here so it sits on the SDK
+// surface next to the calls that take account names.
+pub use open_graphene_core::{is_account_name, is_account_name_allow_short, is_cheap_name};
+
+pub use open_graphene_transport::{
+    ChainIdMismatch, ConnectionStrategy, ReconnectPolicy, ServerConnectFailure, ServerLatency,
+};
+
+pub use crypto::{
+    BlindRequest, BlindSumRequest, BlindingFactor, Commitment, CryptoApi, RangeGetInfoRequest,
+    RangeProof, RangeProofInfo, RangeProofSignRequest, VerifyRangeProofRewindRequest,
+    VerifyRangeProofRewindResult, VerifyRangeRequest, VerifyRangeResult, VerifySumRequest,
+};
+
 pub use live::{
-    SwaplockLiveAccountBalancesByIdRequest, SwaplockLiveAccountBalancesSubscription,
+    ChainStore, SwaplockLiveAccountBalancesByIdRequest, SwaplockLiveAccountBalancesSubscription,
     SwaplockLiveAccountByIdRequest, SwaplockLiveAccountHistoryByIdRequest,
     SwaplockLiveAccountHistoryRequest, SwaplockLiveAccountHistorySubscription,
     SwaplockLiveAccountOrdersByIdRequest, SwaplockLiveAccountOrdersSubscription,
     SwaplockLiveAccountSubscription, SwaplockLiveApi, SwaplockLiveAssetByIdRequest,
     SwaplockLiveAssetSubscription, SwaplockLiveDatabaseApi,
     SwaplockLiveDynamicGlobalPropertiesSubscription, SwaplockLiveHistoryApi,
-    SwaplockLiveNetworkBroadcastApi, SwaplockLivePendingBroadcastConfirmation,
+    SwaplockLiveMarketSubscription, SwaplockLiveNetworkBroadcastApi,
+    SwaplockLivePendingBroadcastConfirmation,
 };
 pub use network_broadcast::{
     BroadcastConfirmation, BroadcastReceipt, NetworkBroadcastApi, PendingBroadcastConfirmation,
 };
-pub use operations::{OperationsApi, PreparedTransfer, SignedTransfer, TransferRequest};
+pub use operations::{
+    AccountCreateRequest, AccountTransferRequest, AccountUpdateRequest, AccountUpgradeRequest,
+    AccountWhitelistRequest, AssertRequest, AssetClaimFeesRequest, AssetClaimPoolRequest,
+    AssetCreateRequest, AssetFundFeePoolRequest, AssetGlobalSettleRequest, AssetIssueRequest,
+    AssetPublishFeedRequest, AssetReserveRequest, AssetSettleRequest, AssetUpdateBitassetRequest,
+    AssetUpdateFeedProducersRequest, AssetUpdateIssuerRequest, AssetUpdateRequest,
+    BalanceClaimRequest, BidCollateralRequest, BlindTransferRequest, CallOrderUpdateRequest,
+    CommitteeMemberCreateRequest, CommitteeMemberUpdateGlobalParametersRequest,
+    CommitteeMemberUpdateRequest, CreditDealRepayRequest, CreditDealUpdateRequest,
+    CreditOfferAcceptRequest, CreditOfferCreateRequest, CreditOfferDeleteRequest,
+    CreditOfferUpdateRequest, CustomAuthorityCreateRequest, CustomAuthorityDeleteRequest,
+    CustomAuthorityUpdateRequest, CustomRequest, HtlcCreateRequest, HtlcExtendRequest,
+    HtlcRedeemRequest, LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
+    LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest,
+    LiquidityPoolExchangeRequest, LiquidityPoolUpdateRequest, LiquidityPoolWithdrawRequest,
+    OperationsApi, OverrideTransferRequest, PreparedTransaction, PreparedTransfer,
+    ProposalCreateRequest, ProposalDeleteRequest, ProposalUpdateRequest, SametFundBorrowRequest,
+    SametFundCreateRequest, SametFundDeleteRequest, SametFundRepayRequest, SametFundUpdateRequest,
+    SignedTransactionEnvelope, SignedTransfer, TicketCreateRequest, TicketUpdateRequest,
+    TransactionBuilder, TransferFromBlindRequest, TransferRequest, TransferToBlindRequest,
+    VestingBalanceCreateRequest, VestingBalanceWithdrawRequest, WithdrawPermissionClaimRequest,
+    WithdrawPermissionCreateRequest, WithdrawPermissionDeleteRequest,
+    WithdrawPermissionUpdateRequest, WitnessCreateRequest, WitnessUpdateRequest,
+    WorkerCreateRequest,
+};
+
+// Binding types callers need to construct operations for `OperationsApi::transaction()`.
+pub use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId, LimitOrderId};
+pub use graphene_chain_swaplock_bindings::generated::operations::{
+    AssetIssueOperation, AssetReserveOperation, LimitOrderCancelOperation,
+    LimitOrderCreateOperation, LimitOrderUpdateOperation, TransferOperation,
+};
+pub use graphene_chain_swaplock_bindings::generated::static_variants::{ArgumentType, Operation};
+pub use graphene_chain_swaplock_bindings::generated::types::{
+    Asset, AssetObject, Authority, ChainParameters, ChainPropertyObject,
+    DynamicGlobalPropertyObject, GlobalPropertyObject, LimitOrderObject, MaybeSignedBlockHeader,
+    Price, ProcessedTransaction, Restriction, SignedBlock,
+};
+
+pub use orders::{
+    DEFAULT_GROUPED_LIMIT_ORDERS_LIMIT, GroupedLimitOrdersRequest, LimitOrderGroup, OrdersApi,
+    TrackedGroupsRequest,
+};
 
 pub use history::{
     AccountHistoryByIdRequest, AccountHistoryPage, AccountHistoryRequest,
     AccountHistorySubscription, DEFAULT_ACCOUNT_HISTORY_LIMIT, DEFAULT_ACCOUNT_HISTORY_OFFSET,
-    HistoryApi, MAX_ACCOUNT_HISTORY_LIMIT,
+    DEFAULT_FILL_ORDER_HISTORY_LIMIT, DEFAULT_MARKET_HISTORY_BUCKET_SECONDS,
+    FillOrderHistoryRequest, HistoryApi, HistoryKey, MAX_ACCOUNT_HISTORY_LIMIT,
+    MAX_FILL_ORDER_HISTORY_LIMIT, MarketHistoryRequest, OrderHistoryObject,
 };
 
 pub use database::{
     AccountBalancesByIdRequest, AccountBalancesRequest, AccountBalancesSubscription,
     AccountByIdRequest, AccountByNameRequest, AccountOrdersByIdRequest, AccountOrdersRequest,
     AccountOrdersSubscription, AccountSubscription, AccountsRequest, AssetByIdRequest,
-    AssetBySymbolRequest, AssetSubscription, ChainIdRequest, ChainPropertiesRequest, DatabaseApi,
-    DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription, GlobalPropertiesRequest,
-    IntoStringList,
+    AssetBySymbolRequest, AssetSubscription, ChainIdRequest, ChainPropertiesRequest,
+    DEFAULT_GET_LIMIT_ORDERS_LIMIT, DEFAULT_LIST_ASSETS_LIMIT, DEFAULT_LOOKUP_ACCOUNTS_LIMIT,
+    DatabaseApi, DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription,
+    GetBlockHeaderRequest, GetBlockRequest, GetConfigRequest, GetKeyReferencesRequest,
+    GetLimitOrdersRequest, GetObjectsRequest, GetTickerRequest, GlobalPropertiesRequest,
+    IntoStringList, ListAssetsRequest, LookupAccountsRequest, Ticker,
 };
 
 pub const SWAPLOCK_CHAIN_ID: &str =
     "2267f694d96b7ffdcba1a98c63c09e720a18a85ad34954e299c66d5a42234098";
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ServerConnectFailure {
-    pub server: String,
-    pub error: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ChainIdMismatch {
-    pub server: String,
-    pub expected: String,
-    pub actual: String,
-}
-
 #[derive(Debug, Error)]
 pub enum SwaplockApiError {
-    #[error("at least one Swaplock RPC server is required")]
-    MissingServers,
-
-    #[error("connected Swaplock RPC server returned unexpected chain id: {mismatch:?}")]
-    ChainIdMismatch { mismatch: ChainIdMismatch },
-
     #[error("account `{account}` was not found")]
     AccountNotFound { account: String },
 
     #[error("asset `{asset}` was not found")]
     AssetNotFound { asset: String },
-
-    #[error("all Swaplock RPC servers failed: {attempts:?}")]
-    AllServersFailed { attempts: Vec<ServerConnectFailure> },
 
     #[error("invalid `{method}` limit {limit}; expected 1..={max}")]
     InvalidLimit {
@@ -83,6 +127,9 @@ pub enum SwaplockApiError {
         method: &'static str,
         message: String,
     },
+
+    #[error("invalid hex for `{kind}`: {message}")]
+    InvalidHex { kind: &'static str, message: String },
 
     #[error("missing transfer field `{field}`")]
     MissingTransferField { field: &'static str },
@@ -109,11 +156,26 @@ pub enum SwaplockApiError {
     Transport(#[from] TransportError),
 }
 
+impl SwaplockApiError {
+    /// Standard mapping for serde failures around the generated RPC layer
+    /// (`Params::to_params_value` / `parse_returns`).
+    pub(crate) fn unexpected(method: &'static str) -> impl FnOnce(serde_json::Error) -> Self {
+        move |error| Self::UnexpectedResponse {
+            method,
+            message: error.to_string(),
+        }
+    }
+}
+
 pub struct SwaplockApi {
     session: GrapheneSession,
 }
 
 impl SwaplockApi {
+    /// Open a Swaplock session, trying `servers` in order and keeping the first that answers.
+    ///
+    /// Pass `expected_chain_id` to refuse a node on the wrong chain. For latency-based
+    /// selection across many nodes, use [`connect_with_strategy`](Self::connect_with_strategy).
     pub async fn connect<I, S>(
         servers: I,
         expected_chain_id: Option<&str>,
@@ -122,38 +184,61 @@ impl SwaplockApi {
         I: IntoIterator<Item = S>,
         S: Into<String>,
     {
-        let servers = servers.into_iter().map(Into::into).collect::<Vec<_>>();
-        if servers.is_empty() {
-            return Err(SwaplockApiError::MissingServers);
-        }
+        Self::connect_with_strategy(
+            servers,
+            expected_chain_id,
+            ConnectionStrategy::FirstAvailable,
+        )
+        .await
+    }
 
-        let expected_chain_id = expected_chain_id.map(str::to_string);
-        let mut attempts = Vec::new();
-        for server in servers {
-            match GrapheneSession::connect(&server) {
-                Ok(session) => {
-                    if let Some(expected) = expected_chain_id.as_deref() {
-                        let actual = session.chain_id();
-                        if actual != expected {
-                            return Err(SwaplockApiError::ChainIdMismatch {
-                                mismatch: ChainIdMismatch {
-                                    server,
-                                    expected: expected.to_string(),
-                                    actual: actual.to_string(),
-                                },
-                            });
-                        }
-                    }
-                    return Ok(Self { session });
-                }
-                Err(error) => attempts.push(ServerConnectFailure {
-                    server,
-                    error: error.to_string(),
-                }),
-            }
-        }
+    /// Open a Swaplock session, choosing the node according to `strategy`
+    /// (first to answer, or lowest connect latency).
+    ///
+    /// Pass `expected_chain_id` to refuse a node on the wrong chain.
+    pub async fn connect_with_strategy<I, S>(
+        servers: I,
+        expected_chain_id: Option<&str>,
+        strategy: ConnectionStrategy,
+    ) -> Result<Self, SwaplockApiError>
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        let session =
+            GrapheneSession::connect_with_strategy(servers, expected_chain_id, strategy).await?;
+        Ok(Self { session })
+    }
 
-        Err(SwaplockApiError::AllServersFailed { attempts })
+    /// Rank `servers` by how fast each completes a connection, fastest first.
+    ///
+    /// A health check that opens and closes a session per node without holding a connection.
+    /// Use it to drive a node picker or status panel, then call
+    /// [`connect_with_strategy`](Self::connect_with_strategy) to connect.
+    pub async fn probe_latencies<I, S>(
+        servers: I,
+        expected_chain_id: Option<&str>,
+    ) -> Result<Vec<ServerLatency>, SwaplockApiError>
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        Ok(GrapheneSession::probe_latencies(servers, expected_chain_id).await?)
+    }
+
+    /// Re-dial the same node and re-establish the API ids in place (refuses a different chain id).
+    ///
+    /// Read calls already reconnect themselves per the [`ReconnectPolicy`]; call this to force a
+    /// reconnect, e.g. before resubscribing. Live subscriptions are not resumed automatically.
+    pub async fn reconnect(&mut self) -> Result<(), SwaplockApiError> {
+        self.session.reconnect().await?;
+        Ok(())
+    }
+
+    /// Tune how read calls reconnect after a dropped connection
+    /// (pass [`ReconnectPolicy::disabled`] to turn it off).
+    pub fn set_reconnect_policy(&mut self, policy: ReconnectPolicy) {
+        self.session.set_reconnect_policy(policy);
     }
 
     pub fn database(&mut self) -> DatabaseApi<'_> {
@@ -180,6 +265,18 @@ impl SwaplockApi {
         }
     }
 
+    pub fn crypto(&mut self) -> CryptoApi<'_> {
+        CryptoApi {
+            session: &mut self.session,
+        }
+    }
+
+    pub fn orders(&mut self) -> OrdersApi<'_> {
+        OrdersApi {
+            session: &mut self.session,
+        }
+    }
+
     pub fn into_live(self) -> Result<SwaplockLiveApi, SwaplockApiError> {
         SwaplockLiveApi::from_session(self.session)
     }
@@ -188,29 +285,6 @@ impl SwaplockApi {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn missing_servers_error_is_actionable() {
-        assert_eq!(
-            SwaplockApiError::MissingServers.to_string(),
-            "at least one Swaplock RPC server is required"
-        );
-    }
-
-    #[test]
-    fn chain_id_mismatch_error_includes_expected_and_actual_values() {
-        let error = SwaplockApiError::ChainIdMismatch {
-            mismatch: ChainIdMismatch {
-                server: "wss://node.example".to_string(),
-                expected: "expected".to_string(),
-                actual: "actual".to_string(),
-            },
-        };
-
-        let message = error.to_string();
-        assert!(message.contains("expected"));
-        assert!(message.contains("actual"));
-    }
 
     #[test]
     fn asset_not_found_error_names_asset() {

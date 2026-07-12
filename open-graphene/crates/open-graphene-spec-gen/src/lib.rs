@@ -20,6 +20,6 @@ pub use extract::{
     ExtractDiagnostic, FcApi, RawClass, RawField, RawMethod, RawParam, RawStaticVariant,
     SourceFacts, SourceLoc, extract_source_facts,
 };
-pub use generate::{GenerateResult, build_protocol, generate_from_config};
+pub use generate::{GenerateResult, build_protocol, generate_from_config, validate_protocol};
 pub use resolve::{ResolveDiagnostic, RpcResolution, resolve_rpc_methods};
 pub use source::{SourceFile, SourceFileKind, SourceSet, discover_sources, resolve_chain_repo};

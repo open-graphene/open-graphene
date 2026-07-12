@@ -1,5 +1,7 @@
+mod chain_store;
 mod database;
 mod history;
+mod market;
 mod network_broadcast;
 
 use std::time::{Duration, Instant};
@@ -8,6 +10,7 @@ use open_graphene_transport::{ApiIds, CallbackId, GrapheneSession, LiveTransport
 
 use crate::SwaplockApiError;
 
+pub use chain_store::ChainStore;
 pub use database::{
     SwaplockLiveAccountBalancesByIdRequest, SwaplockLiveAccountBalancesSubscription,
     SwaplockLiveAccountByIdRequest, SwaplockLiveAccountOrdersByIdRequest,
@@ -19,6 +22,7 @@ pub use history::{
     SwaplockLiveAccountHistoryByIdRequest, SwaplockLiveAccountHistoryRequest,
     SwaplockLiveAccountHistorySubscription, SwaplockLiveHistoryApi,
 };
+pub use market::SwaplockLiveMarketSubscription;
 pub use network_broadcast::{
     SwaplockLiveNetworkBroadcastApi, SwaplockLivePendingBroadcastConfirmation,
 };
@@ -77,7 +81,8 @@ impl SwaplockLiveApi {
 // Graphene's database API exposes one subscription callback per WebSocket/session.
 // Typed database and history live subscriptions share this callback id, then
 // multicast the raw notice stream in `LiveTransport` and filter/reconcile locally.
-pub(super) const LIVE_DATABASE_CALLBACK_ID: u64 = 1;
+pub(super) const LIVE_DATABASE_CALLBACK_ID: u64 =
+    open_graphene_transport::SUBSCRIPTION_CALLBACK_ID_BASE + 101;
 
 fn remaining_or_callback_timeout(
     deadline: Instant,
@@ -120,6 +125,8 @@ mod tests {
             database: 0,
             history: None,
             network_broadcast: Some(2),
+            crypto: None,
+            orders: None,
         };
 
         let error = history_api_id(&api_ids).unwrap_err();
@@ -137,6 +144,8 @@ mod tests {
             database: 0,
             history: Some(1),
             network_broadcast: Some(2),
+            crypto: None,
+            orders: None,
         };
 
         assert_eq!(history_api_id(&api_ids).unwrap(), 1);
@@ -148,6 +157,8 @@ mod tests {
             database: 0,
             history: None,
             network_broadcast: None,
+            crypto: None,
+            orders: None,
         };
 
         let error = network_broadcast_api_id(&api_ids).unwrap_err();
@@ -162,6 +173,8 @@ mod tests {
             database: 0,
             history: None,
             network_broadcast: Some(4),
+            crypto: None,
+            orders: None,
         };
 
         assert_eq!(network_broadcast_api_id(&api_ids).unwrap(), 4);

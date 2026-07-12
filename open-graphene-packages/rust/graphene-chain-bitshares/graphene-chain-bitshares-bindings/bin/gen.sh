@@ -16,4 +16,5 @@ if [[ ! -f "${SPEC_FILE}" ]]; then
 fi
 
 cd "${OPEN_GRAPHENE_DIR}"
-exec cargo run -p open-graphene-gen-bindings-rs -- --spec "${SPEC_FILE}" --out-dir "${OUT_DIR}"
+cargo run -p open-graphene-gen-bindings-rs -- --spec "${SPEC_FILE}" --out-dir "${OUT_DIR}"
+rustfmt --edition 2024 "${OUT_DIR}"/*.rs

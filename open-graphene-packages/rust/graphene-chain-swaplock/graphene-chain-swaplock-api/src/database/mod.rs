@@ -13,7 +13,16 @@ mod chain_properties;
 mod constants;
 mod dynamic_global_properties;
 mod error;
+mod get_block;
+mod get_block_header;
+mod get_config;
+mod get_key_references;
+mod get_limit_orders;
+mod get_objects;
+mod get_ticker;
 mod global_properties;
+mod list_assets;
+mod lookup_accounts;
 mod objects;
 mod string_list;
 
@@ -32,7 +41,16 @@ pub use chain_properties::ChainPropertiesRequest;
 pub use dynamic_global_properties::{
     DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription,
 };
+pub use get_block::GetBlockRequest;
+pub use get_block_header::GetBlockHeaderRequest;
+pub use get_config::GetConfigRequest;
+pub use get_key_references::GetKeyReferencesRequest;
+pub use get_limit_orders::{DEFAULT_GET_LIMIT_ORDERS_LIMIT, GetLimitOrdersRequest};
+pub use get_objects::GetObjectsRequest;
+pub use get_ticker::{GetTickerRequest, Ticker};
 pub use global_properties::GlobalPropertiesRequest;
+pub use list_assets::{DEFAULT_LIST_ASSETS_LIMIT, ListAssetsRequest};
+pub use lookup_accounts::{DEFAULT_LOOKUP_ACCOUNTS_LIMIT, LookupAccountsRequest};
 pub use string_list::IntoStringList;
 
 pub(crate) use account_balances_by_id::{
