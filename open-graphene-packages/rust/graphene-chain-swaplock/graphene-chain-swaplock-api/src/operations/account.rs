@@ -177,6 +177,8 @@ pub struct AccountCreateRequest<'session> {
     name: String,
     owner_key: Option<String>,
     active_key: Option<String>,
+    owner_authority: Option<Authority>,
+    active_authority: Option<Authority>,
     memo_key: Option<String>,
     referrer: Option<String>,
     referrer_percent: u16,
@@ -194,10 +196,27 @@ impl<'session> AccountCreateRequest<'session> {
             name: name.into(),
             owner_key: None,
             active_key: None,
+            owner_authority: None,
+            active_authority: None,
             memo_key: None,
             referrer: None,
             referrer_percent: 0,
         }
+    }
+
+    /// Set a full weighted owner authority (accounts and/or keys). Takes precedence
+    /// over `owner_key`/`keys`. With account-based authorities remember to also set
+    /// `memo_key` explicitly — there is no key to default it from.
+    pub fn owner_authority(mut self, authority: Authority) -> Self {
+        self.owner_authority = Some(authority);
+        self
+    }
+
+    /// Set a full weighted active authority (accounts and/or keys). Takes precedence
+    /// over `active_key`/`keys`.
+    pub fn active_authority(mut self, authority: Authority) -> Self {
+        self.active_authority = Some(authority);
+        self
     }
 
     /// Set owner and active (and, unless overridden, memo) to this one public key.
@@ -234,15 +253,24 @@ impl<'session> AccountCreateRequest<'session> {
     }
 
     pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
-        let owner_key = self
-            .owner_key
-            .ok_or(SwaplockApiError::MissingTransferField { field: "owner_key" })?;
-        let active_key = self
-            .active_key
-            .ok_or(SwaplockApiError::MissingTransferField {
-                field: "active_key",
-            })?;
-        let memo_key = self.memo_key.unwrap_or_else(|| active_key.clone());
+        let owner = match self.owner_authority {
+            Some(authority) => authority,
+            None => single_key_authority(self.owner_key.ok_or(
+                SwaplockApiError::MissingTransferField { field: "owner_key" },
+            )?),
+        };
+        let active = match self.active_authority {
+            Some(authority) => authority,
+            None => single_key_authority(self.active_key.clone().ok_or(
+                SwaplockApiError::MissingTransferField {
+                    field: "active_key",
+                },
+            )?),
+        };
+        let memo_key = self
+            .memo_key
+            .or(self.active_key)
+            .ok_or(SwaplockApiError::MissingTransferField { field: "memo_key" })?;
         let referrer = self.referrer.unwrap_or_else(|| self.registrar.clone());
 
         let operation = Operation::account_create(AccountCreateOperation {
@@ -251,8 +279,8 @@ impl<'session> AccountCreateRequest<'session> {
             referrer: AccountId(referrer),
             referrer_percent: self.referrer_percent,
             name: self.name,
-            owner: single_key_authority(owner_key),
-            active: single_key_authority(active_key),
+            owner,
+            active,
             options: AccountOptions {
                 memo_key,
                 voting_account: AccountId("1.2.5".to_string()),
