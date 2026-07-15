@@ -46,6 +46,7 @@ use super::get_ticker::GetTickerRequest;
 use super::global_properties::{GlobalPropertiesRequest, get_global_properties};
 use super::list_assets::{DEFAULT_LIST_ASSETS_LIMIT, ListAssetsRequest};
 use super::lookup_accounts::{DEFAULT_LOOKUP_ACCOUNTS_LIMIT, LookupAccountsRequest};
+use super::proposed_transactions::ProposedTransactionsRequest;
 use super::string_list::IntoStringList;
 
 pub struct DatabaseApi<'session> {
@@ -218,6 +219,20 @@ impl<'session> DatabaseApi<'session> {
         DataRoomByIdRequest {
             session: self.session,
             room_id: room_id.into(),
+        }
+    }
+
+    /// Live proposals relevant to an account: proposed by it or awaiting its approval.
+    pub fn proposed_transactions<S>(
+        self,
+        account_name_or_id: S,
+    ) -> ProposedTransactionsRequest<'session>
+    where
+        S: Into<String>,
+    {
+        ProposedTransactionsRequest {
+            session: self.session,
+            account_name_or_id: account_name_or_id.into(),
         }
     }
 

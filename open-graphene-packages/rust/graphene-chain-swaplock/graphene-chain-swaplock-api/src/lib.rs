@@ -113,7 +113,8 @@ pub use database::{
     DataRoomsBySubjectRequest, DatabaseApi, DynamicGlobalPropertiesRequest,
     DynamicGlobalPropertiesSubscription, GetBlockHeaderRequest, GetBlockRequest, GetConfigRequest,
     GetKeyReferencesRequest, GetLimitOrdersRequest, GetObjectsRequest, GetTickerRequest,
-    GlobalPropertiesRequest, IntoStringList, ListAssetsRequest, LookupAccountsRequest, Ticker,
+    GlobalPropertiesRequest, IntoStringList, ListAssetsRequest, LookupAccountsRequest,
+    ProposedTransactionsRequest, Ticker,
 };
 
 pub const SWAPLOCK_CHAIN_ID: &str =

@@ -35,6 +35,7 @@ mod global_properties;
 mod list_assets;
 mod lookup_accounts;
 mod objects;
+mod proposed_transactions;
 mod string_list;
 
 pub use account_balances::AccountBalancesRequest;
@@ -73,6 +74,7 @@ pub use get_ticker::{GetTickerRequest, Ticker};
 pub use global_properties::GlobalPropertiesRequest;
 pub use list_assets::{DEFAULT_LIST_ASSETS_LIMIT, ListAssetsRequest};
 pub use lookup_accounts::{DEFAULT_LOOKUP_ACCOUNTS_LIMIT, LookupAccountsRequest};
+pub use proposed_transactions::ProposedTransactionsRequest;
 pub use string_list::IntoStringList;
 
 pub(crate) use account_balances_by_id::{

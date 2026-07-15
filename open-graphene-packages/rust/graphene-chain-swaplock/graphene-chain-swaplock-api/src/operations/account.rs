@@ -27,6 +27,8 @@ use super::transaction::{PreparedTransaction, TransactionBuilder};
 pub struct AccountUpdateRequest<'session> {
     session: &'session mut GrapheneSession,
     account: String,
+    owner: Option<Authority>,
+    active: Option<Authority>,
     memo_key: Option<String>,
     voting_account: Option<String>,
     num_witness: Option<u16>,
@@ -39,12 +41,28 @@ impl<'session> AccountUpdateRequest<'session> {
         Self {
             session,
             account: account.into(),
+            owner: None,
+            active: None,
             memo_key: None,
             voting_account: None,
             num_witness: None,
             num_committee: None,
             votes: None,
         }
+    }
+
+    /// Replace the owner authority (weighted keys/accounts). The transaction must be
+    /// signed with the account's OWNER authority, not active.
+    pub fn owner(mut self, authority: Authority) -> Self {
+        self.owner = Some(authority);
+        self
+    }
+
+    /// Replace the active authority (weighted keys/accounts). Signable by the account's
+    /// active or owner authority.
+    pub fn active(mut self, authority: Authority) -> Self {
+        self.active = Some(authority);
+        self
     }
 
     /// Set the memo key (used to encrypt memos, not for spending or authority).
@@ -82,35 +100,49 @@ impl<'session> AccountUpdateRequest<'session> {
     }
 
     pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
-        let mut options = DatabaseApi {
-            session: &mut *self.session,
-        }
-        .get_account_by_id(&self.account)
-        .await?
-        .options;
+        let has_option_changes = self.memo_key.is_some()
+            || self.voting_account.is_some()
+            || self.num_witness.is_some()
+            || self.num_committee.is_some()
+            || self.votes.is_some();
+        let has_authority_changes = self.owner.is_some() || self.active.is_some();
 
-        if let Some(memo_key) = self.memo_key {
-            options.memo_key = memo_key;
-        }
-        if let Some(voting_account) = self.voting_account {
-            options.voting_account = AccountId(voting_account);
-        }
-        if let Some(num_witness) = self.num_witness {
-            options.num_witness = num_witness;
-        }
-        if let Some(num_committee) = self.num_committee {
-            options.num_committee = num_committee;
-        }
-        if let Some(votes) = self.votes {
-            options.votes = votes;
-        }
+        // Options round-trip only when they change (or nothing was set at all,
+        // preserving the historical no-op-update behaviour of this builder).
+        let new_options = if has_option_changes || !has_authority_changes {
+            let mut options = DatabaseApi {
+                session: &mut *self.session,
+            }
+            .get_account_by_id(&self.account)
+            .await?
+            .options;
+
+            if let Some(memo_key) = self.memo_key {
+                options.memo_key = memo_key;
+            }
+            if let Some(voting_account) = self.voting_account {
+                options.voting_account = AccountId(voting_account);
+            }
+            if let Some(num_witness) = self.num_witness {
+                options.num_witness = num_witness;
+            }
+            if let Some(num_committee) = self.num_committee {
+                options.num_committee = num_committee;
+            }
+            if let Some(votes) = self.votes {
+                options.votes = votes;
+            }
+            Some(options)
+        } else {
+            None
+        };
 
         let operation = Operation::account_update(AccountUpdateOperation {
             fee: Asset::new(0, AssetId("1.3.0".to_string())),
             account: AccountId(self.account),
-            owner: None,
-            active: None,
-            new_options: Some(options),
+            owner: self.owner,
+            active: self.active,
+            new_options,
             extensions: AccountUpdateOperationExt {
                 null_ext: None,
                 owner_special_authority: None,
