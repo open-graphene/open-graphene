@@ -34,6 +34,7 @@ pub struct ProposalCreateRequest<'session> {
     session: &'session mut GrapheneSession,
     fee_paying_account: String,
     proposed: Vec<Operation>,
+    companions: Vec<Operation>,
     expiration: Duration,
     review_period: Option<Duration>,
 }
@@ -47,9 +48,19 @@ impl<'session> ProposalCreateRequest<'session> {
             session,
             fee_paying_account: fee_paying_account.into(),
             proposed: Vec::new(),
+            companions: Vec::new(),
             expiration: DEFAULT_PROPOSAL_EXPIRATION,
             review_period: None,
         }
+    }
+
+    /// Add a top-level companion operation to the SAME transaction, executed
+    /// immediately (not wrapped in the proposal) — e.g. a content card
+    /// notarizing the proposal's justification atomically with it. Priced and
+    /// signed together with the proposal_create.
+    pub fn companion(mut self, operation: Operation) -> Self {
+        self.companions.push(operation);
+        self
     }
 
     /// Add an operation to the proposal. Call more than once to propose several at once. Build the
@@ -109,10 +120,11 @@ impl<'session> ProposalCreateRequest<'session> {
             review_period_seconds: self.review_period.map(|period| period.as_secs() as u32),
             extensions: vec![],
         });
-        TransactionBuilder::new(self.session)
-            .add_operation(operation)
-            .prepare()
-            .await
+        let mut builder = TransactionBuilder::new(self.session);
+        for companion in self.companions {
+            builder = builder.add_operation(companion);
+        }
+        builder.add_operation(operation).prepare().await
     }
 }
 
