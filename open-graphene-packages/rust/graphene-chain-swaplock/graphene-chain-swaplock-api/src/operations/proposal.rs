@@ -200,24 +200,51 @@ impl<'session> ProposalUpdateRequest<'session> {
     }
 
     pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
-        let to_accounts = |names: Vec<String>| names.into_iter().map(AccountId).collect();
+        let mut database = DatabaseApi {
+            session: self.session,
+        };
+        let active_approvals_to_add =
+            resolve_approval_accounts(&mut database, self.active_to_add).await?;
+        let active_approvals_to_remove =
+            resolve_approval_accounts(&mut database, self.active_to_remove).await?;
+        let owner_approvals_to_add =
+            resolve_approval_accounts(&mut database, self.owner_to_add).await?;
+        let owner_approvals_to_remove =
+            resolve_approval_accounts(&mut database, self.owner_to_remove).await?;
         let operation = Operation::proposal_update(ProposalUpdateOperation {
             fee: core_fee(),
             fee_paying_account: AccountId(self.fee_paying_account),
             proposal: ProposalId(self.proposal),
-            active_approvals_to_add: to_accounts(self.active_to_add),
-            active_approvals_to_remove: to_accounts(self.active_to_remove),
-            owner_approvals_to_add: to_accounts(self.owner_to_add),
-            owner_approvals_to_remove: to_accounts(self.owner_to_remove),
+            active_approvals_to_add,
+            active_approvals_to_remove,
+            owner_approvals_to_add,
+            owner_approvals_to_remove,
             key_approvals_to_add: self.key_to_add,
             key_approvals_to_remove: self.key_to_remove,
             extensions: vec![],
         });
-        TransactionBuilder::new(self.session)
+        TransactionBuilder::new(database.session)
             .add_operation(operation)
             .prepare()
             .await
     }
+}
+
+/// The wire type wants `1.2.x` ids; approvals routinely arrive as account
+/// names, so anything without the id prefix is looked up on the node.
+async fn resolve_approval_accounts(
+    database: &mut DatabaseApi<'_>,
+    accounts: Vec<String>,
+) -> Result<Vec<AccountId>, SwaplockApiError> {
+    let mut ids = Vec::with_capacity(accounts.len());
+    for account in accounts {
+        if account.starts_with("1.2.") {
+            ids.push(AccountId(account));
+        } else {
+            ids.push(database.get_account_by_name(&account).await?.id);
+        }
+    }
+    Ok(ids)
 }
 
 /// Builder for `proposal_delete`: drop a proposal before it executes.
