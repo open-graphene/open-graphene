@@ -235,7 +235,9 @@ pub mod crypto {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let params = vec![serde_json::to_value(&self.proof)?];
+                let params = vec![
+                    serde_json::to_value(&self.proof)?,
+                ];
                 Ok(serde_json::Value::Array(params))
             }
         }
@@ -380,6 +382,7 @@ pub mod crypto {
             serde_json::from_value(value)
         }
     }
+
 }
 
 /// RPC methods on the `database` API.
@@ -430,11 +433,15 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let mut params = vec![serde_json::to_value(&self.account_names_or_ids)?];
-                let tail: [Option<serde_json::Value>; 1] = [match &self.subscribe {
-                    Some(value) => Some(serde_json::to_value(value)?),
-                    None => None,
-                }];
+                let mut params = vec![
+                    serde_json::to_value(&self.account_names_or_ids)?,
+                ];
+                let tail: [Option<serde_json::Value>; 1] = [
+                    match &self.subscribe {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                ];
                 if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
                     for value in tail.into_iter().take(last_provided + 1) {
                         params.push(value.unwrap_or(serde_json::Value::Null));
@@ -467,11 +474,15 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let mut params = vec![serde_json::to_value(&self.asset_symbols_or_ids)?];
-                let tail: [Option<serde_json::Value>; 1] = [match &self.subscribe {
-                    Some(value) => Some(serde_json::to_value(value)?),
-                    None => None,
-                }];
+                let mut params = vec![
+                    serde_json::to_value(&self.asset_symbols_or_ids)?,
+                ];
+                let tail: [Option<serde_json::Value>; 1] = [
+                    match &self.subscribe {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                ];
                 if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
                     for value in tail.into_iter().take(last_provided + 1) {
                         params.push(value.unwrap_or(serde_json::Value::Null));
@@ -502,7 +513,9 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let params = vec![serde_json::to_value(self.block_num)?];
+                let params = vec![
+                    serde_json::to_value(self.block_num)?,
+                ];
                 Ok(serde_json::Value::Array(params))
             }
         }
@@ -530,11 +543,15 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let mut params = vec![serde_json::to_value(self.block_num)?];
-                let tail: [Option<serde_json::Value>; 1] = [match &self.with_witness_signature {
-                    Some(value) => Some(serde_json::to_value(value)?),
-                    None => None,
-                }];
+                let mut params = vec![
+                    serde_json::to_value(self.block_num)?,
+                ];
+                let tail: [Option<serde_json::Value>; 1] = [
+                    match &self.with_witness_signature {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                ];
                 if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
                     for value in tail.into_iter().take(last_provided + 1) {
                         params.push(value.unwrap_or(serde_json::Value::Null));
@@ -558,7 +575,8 @@ pub mod database {
 
         /// Positional parameters for `database.get_chain_id`.
         #[derive(Debug, Clone, PartialEq)]
-        pub struct Params {}
+        pub struct Params {
+        }
 
         impl Params {
             /// The positional JSON parameter list for this call.
@@ -581,7 +599,8 @@ pub mod database {
 
         /// Positional parameters for `database.get_chain_properties`.
         #[derive(Debug, Clone, PartialEq)]
-        pub struct Params {}
+        pub struct Params {
+        }
 
         impl Params {
             /// The positional JSON parameter list for this call.
@@ -604,7 +623,8 @@ pub mod database {
 
         /// Positional parameters for `database.get_config`.
         #[derive(Debug, Clone, PartialEq)]
-        pub struct Params {}
+        pub struct Params {
+        }
 
         impl Params {
             /// The positional JSON parameter list for this call.
@@ -640,7 +660,9 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let params = vec![serde_json::to_value(&self.content_id)?];
+                let params = vec![
+                    serde_json::to_value(&self.content_id)?,
+                ];
                 Ok(serde_json::Value::Array(params))
             }
         }
@@ -670,7 +692,9 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let mut params = vec![serde_json::to_value(&self.account_name_or_id)?];
+                let mut params = vec![
+                    serde_json::to_value(&self.account_name_or_id)?,
+                ];
                 let tail: [Option<serde_json::Value>; 2] = [
                     match &self.limit {
                         Some(value) => Some(serde_json::to_value(value)?),
@@ -715,7 +739,9 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let mut params = vec![serde_json::to_value(&self.room_id)?];
+                let mut params = vec![
+                    serde_json::to_value(&self.room_id)?,
+                ];
                 let tail: [Option<serde_json::Value>; 2] = [
                     match &self.limit {
                         Some(value) => Some(serde_json::to_value(value)?),
@@ -756,7 +782,9 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let params = vec![serde_json::to_value(&self.room_id)?];
+                let params = vec![
+                    serde_json::to_value(&self.room_id)?,
+                ];
                 Ok(serde_json::Value::Array(params))
             }
         }
@@ -897,7 +925,9 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let mut params = vec![serde_json::to_value(&self.room_id)?];
+                let mut params = vec![
+                    serde_json::to_value(&self.room_id)?,
+                ];
                 let tail: [Option<serde_json::Value>; 2] = [
                     match &self.limit {
                         Some(value) => Some(serde_json::to_value(value)?),
@@ -942,7 +972,9 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let mut params = vec![serde_json::to_value(&self.account_name_or_id)?];
+                let mut params = vec![
+                    serde_json::to_value(&self.account_name_or_id)?,
+                ];
                 let tail: [Option<serde_json::Value>; 2] = [
                     match &self.limit {
                         Some(value) => Some(serde_json::to_value(value)?),
@@ -987,7 +1019,9 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let mut params = vec![serde_json::to_value(&self.account_name_or_id)?];
+                let mut params = vec![
+                    serde_json::to_value(&self.account_name_or_id)?,
+                ];
                 let tail: [Option<serde_json::Value>; 2] = [
                     match &self.limit {
                         Some(value) => Some(serde_json::to_value(value)?),
@@ -1032,7 +1066,9 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let mut params = vec![serde_json::to_value(&self.asset_or_account)?];
+                let mut params = vec![
+                    serde_json::to_value(&self.asset_or_account)?,
+                ];
                 let tail: [Option<serde_json::Value>; 2] = [
                     match &self.limit {
                         Some(value) => Some(serde_json::to_value(value)?),
@@ -1066,7 +1102,8 @@ pub mod database {
 
         /// Positional parameters for `database.get_dynamic_global_properties`.
         #[derive(Debug, Clone, PartialEq)]
-        pub struct Params {}
+        pub struct Params {
+        }
 
         impl Params {
             /// The positional JSON parameter list for this call.
@@ -1098,11 +1135,15 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let mut params = vec![serde_json::to_value(&self.names_or_ids)?];
-                let tail: [Option<serde_json::Value>; 1] = [match &self.subscribe {
-                    Some(value) => Some(serde_json::to_value(value)?),
-                    None => None,
-                }];
+                let mut params = vec![
+                    serde_json::to_value(&self.names_or_ids)?,
+                ];
+                let tail: [Option<serde_json::Value>; 1] = [
+                    match &self.subscribe {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                ];
                 if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
                     for value in tail.into_iter().take(last_provided + 1) {
                         params.push(value.unwrap_or(serde_json::Value::Null));
@@ -1126,7 +1167,8 @@ pub mod database {
 
         /// Positional parameters for `database.get_global_properties`.
         #[derive(Debug, Clone, PartialEq)]
-        pub struct Params {}
+        pub struct Params {
+        }
 
         impl Params {
             /// The positional JSON parameter list for this call.
@@ -1156,7 +1198,9 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let params = vec![serde_json::to_value(&self.keys)?];
+                let params = vec![
+                    serde_json::to_value(&self.keys)?,
+                ];
                 Ok(serde_json::Value::Array(params))
             }
         }
@@ -1216,11 +1260,15 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let mut params = vec![serde_json::to_value(&self.ids)?];
-                let tail: [Option<serde_json::Value>; 1] = [match &self.subscribe {
-                    Some(value) => Some(serde_json::to_value(value)?),
-                    None => None,
-                }];
+                let mut params = vec![
+                    serde_json::to_value(&self.ids)?,
+                ];
+                let tail: [Option<serde_json::Value>; 1] = [
+                    match &self.subscribe {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                ];
                 if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
                     for value in tail.into_iter().take(last_provided + 1) {
                         params.push(value.unwrap_or(serde_json::Value::Null));
@@ -1273,7 +1321,10 @@ pub mod database {
 
         /// Recursive fee shape for `proposal_create_operation`: `[proposal_fee, nested_fees]`.
         #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-        pub struct ProposalRequiredFee(pub crate::generated::types::Asset, pub Vec<RequiredFee>);
+        pub struct ProposalRequiredFee(
+            pub crate::generated::types::Asset,
+            pub Vec<RequiredFee>,
+        );
 
         pub type Returns = Vec<crate::generated::rpc::database::get_required_fees::RequiredFee>;
 
@@ -1363,10 +1414,12 @@ pub mod database {
                     serde_json::to_value(&self.lower_bound_name)?,
                     serde_json::to_value(self.limit)?,
                 ];
-                let tail: [Option<serde_json::Value>; 1] = [match &self.subscribe {
-                    Some(value) => Some(serde_json::to_value(value)?),
-                    None => None,
-                }];
+                let tail: [Option<serde_json::Value>; 1] = [
+                    match &self.subscribe {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                ];
                 if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
                     for value in tail.into_iter().take(last_provided + 1) {
                         params.push(value.unwrap_or(serde_json::Value::Null));
@@ -1397,7 +1450,9 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let params = vec![serde_json::to_value(&self.symbols_or_ids)?];
+                let params = vec![
+                    serde_json::to_value(&self.symbols_or_ids)?,
+                ];
                 Ok(serde_json::Value::Array(params))
             }
         }
@@ -1408,6 +1463,7 @@ pub mod database {
             serde_json::from_value(value)
         }
     }
+
 }
 
 /// RPC methods on the `history` API.
@@ -1432,7 +1488,9 @@ pub mod history {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let mut params = vec![serde_json::to_value(&self.account_name_or_id)?];
+                let mut params = vec![
+                    serde_json::to_value(&self.account_name_or_id)?,
+                ];
                 let tail: [Option<serde_json::Value>; 3] = [
                     match &self.stop {
                         Some(value) => Some(serde_json::to_value(value)?),
@@ -1530,6 +1588,7 @@ pub mod history {
             serde_json::from_value(value)
         }
     }
+
 }
 
 /// RPC methods on the `network_broadcast` API.
@@ -1548,7 +1607,9 @@ pub mod network_broadcast {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let params = vec![serde_json::to_value(&self.trx)?];
+                let params = vec![
+                    serde_json::to_value(&self.trx)?,
+                ];
                 Ok(serde_json::Value::Array(params))
             }
         }
@@ -1561,6 +1622,7 @@ pub mod network_broadcast {
             Ok(())
         }
     }
+
 }
 
 /// RPC methods on the `orders` API.
@@ -1608,7 +1670,8 @@ pub mod orders {
 
         /// Positional parameters for `orders.get_tracked_groups`.
         #[derive(Debug, Clone, PartialEq)]
-        pub struct Params {}
+        pub struct Params {
+        }
 
         impl Params {
             /// The positional JSON parameter list for this call.
@@ -1623,4 +1686,5 @@ pub mod orders {
             serde_json::from_value(value)
         }
     }
+
 }

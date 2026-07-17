@@ -8,27 +8,21 @@ pub(crate) use open_graphene_core::deserialize_i64_from_number_or_decimal_string
 
 use open_graphene_core::deserialize_fixed_bytes_from_hex_string_or_byte_array;
 
-pub(crate) fn deserialize_fixed_bytes_20_from_hex_string_or_byte_array<'de, D>(
-    deserializer: D,
-) -> Result<Vec<u8>, D::Error>
+pub(crate) fn deserialize_fixed_bytes_20_from_hex_string_or_byte_array<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
     deserialize_fixed_bytes_from_hex_string_or_byte_array(deserializer, 20)
 }
 
-pub(crate) fn deserialize_fixed_bytes_32_from_hex_string_or_byte_array<'de, D>(
-    deserializer: D,
-) -> Result<Vec<u8>, D::Error>
+pub(crate) fn deserialize_fixed_bytes_32_from_hex_string_or_byte_array<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
     deserialize_fixed_bytes_from_hex_string_or_byte_array(deserializer, 32)
 }
 
-pub(crate) fn deserialize_fixed_bytes_33_from_hex_string_or_byte_array<'de, D>(
-    deserializer: D,
-) -> Result<Vec<u8>, D::Error>
+pub(crate) fn deserialize_fixed_bytes_33_from_hex_string_or_byte_array<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
@@ -40,10 +34,7 @@ where
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockSignature, value_type = String)]
 pub struct Signature(
-    #[serde(
-        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
-        deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array"
-    )]
+    #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array")]
     pub Vec<u8>,
 );
 
@@ -246,9 +237,7 @@ pub struct AccountBalanceObject {
     pub id: crate::generated::ids::AccountBalanceId,
     pub owner: crate::generated::ids::AccountId,
     pub asset_type: crate::generated::ids::AssetId,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub balance: i64,
     pub maintenance_flag: bool,
 }
@@ -333,33 +322,19 @@ pub struct AccountStatisticsObject {
     pub most_recent_op: crate::generated::ids::AccountHistoryId,
     pub total_ops: u64,
     pub removed_ops: u64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub total_core_in_orders: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub total_core_inactive: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub total_core_pob: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub total_core_pol: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub total_pob_value: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub total_pol_value: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub core_in_balance: i64,
     pub has_cashback_vb: bool,
     pub is_voting: bool,
@@ -370,17 +345,11 @@ pub struct AccountStatisticsObject {
     pub vp_witness: u64,
     pub vp_worker: u64,
     pub vote_tally_time: String,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub lifetime_fees_paid: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub pending_fees: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub pending_vested_fees: i64,
 }
 
@@ -404,9 +373,7 @@ pub struct AccountUpdateOperationExt {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAccountUpdateOperationFeeParamsT)]
 pub struct AccountUpdateOperationFeeParamsT {
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub fee: i64,
     pub price_per_kbyte: u32,
 }
@@ -423,9 +390,7 @@ pub struct AccountUpgradeOperationFeeParamsT {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAccountWhitelistOperationFeeParamsT)]
 pub struct AccountWhitelistOperationFeeParamsT {
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub fee: i64,
 }
 
@@ -449,9 +414,7 @@ pub struct AssertOperationFeeParamsT {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAsset)]
 pub struct Asset {
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub amount: i64,
     pub asset_id: crate::generated::ids::AssetId,
 }
@@ -498,25 +461,15 @@ pub struct AssetCreateOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockAssetDynamicDataObject)]
 pub struct AssetDynamicDataObject {
     pub id: crate::generated::ids::AssetDynamicDataId,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub current_supply: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub confidential_supply: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub accumulated_fees: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub accumulated_collateral_fees: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub fee_pool: i64,
 }
 
@@ -563,14 +516,10 @@ pub struct AssetObject {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAssetOptions)]
 pub struct AssetOptions {
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub max_supply: i64,
     pub market_fee_percent: u16,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub max_market_fee: i64,
     pub issuer_permissions: u16,
     pub flags: u16,
@@ -607,7 +556,8 @@ pub struct AssetReserveOperationFeeParamsT {
 /// Raw protocol struct `asset_settle_cancel_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAssetSettleCancelOperationFeeParamsT)]
-pub struct AssetSettleCancelOperationFeeParamsT {}
+pub struct AssetSettleCancelOperationFeeParamsT {
+}
 
 /// Raw protocol struct `asset_settle_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
@@ -674,7 +624,8 @@ pub struct Authority {
 /// Raw protocol struct `balance_claim_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockBalanceClaimOperationFeeParamsT)]
-pub struct BalanceClaimOperationFeeParamsT {}
+pub struct BalanceClaimOperationFeeParamsT {
+}
 
 /// Raw protocol struct `bid_collateral_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
@@ -712,10 +663,7 @@ pub struct BitassetOptionsExt {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockBlindInput)]
 pub struct BlindInput {
-    #[serde(
-        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
-        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array"
-    )]
+    #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array")]
     #[schema(value_type = String)]
     pub commitment: Vec<u8>,
     pub owner: crate::generated::types::Authority,
@@ -725,16 +673,10 @@ pub struct BlindInput {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockBlindOutput)]
 pub struct BlindOutput {
-    #[serde(
-        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
-        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array"
-    )]
+    #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_33_from_hex_string_or_byte_array")]
     #[schema(value_type = String)]
     pub commitment: Vec<u8>,
-    #[serde(
-        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
-        deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array"
-    )]
+    #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array")]
     #[schema(value_type = String)]
     pub range_proof: Vec<u8>,
     pub owner: crate::generated::types::Authority,
@@ -753,10 +695,7 @@ pub struct BlindTransferOperationFeeParamsT {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockBlockIdPredicate)]
 pub struct BlockIdPredicate {
-    #[serde(
-        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
-        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array"
-    )]
+    #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
     #[schema(value_type = String)]
     pub id: Vec<u8>,
 }
@@ -767,52 +706,33 @@ pub struct BlockIdPredicate {
 pub struct BucketObject {
     pub id: crate::generated::ids::ObjectId,
     pub key: serde_json::Value,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub high_base: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub high_quote: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub low_base: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub low_quote: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub open_base: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub open_quote: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub close_base: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub close_quote: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub base_volume: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub quote_volume: i64,
 }
 
 /// Raw protocol struct `burn_worker_initializer`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockBurnWorkerInitializer)]
-pub struct BurnWorkerInitializer {}
+pub struct BurnWorkerInitializer {
+}
 
 /// Raw protocol struct `buyback_account_options`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
@@ -829,13 +749,9 @@ pub struct BuybackAccountOptions {
 pub struct CallOrderObject {
     pub id: crate::generated::ids::CallOrderId,
     pub borrower: crate::generated::ids::AccountId,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub collateral: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub debt: i64,
     pub call_price: crate::generated::types::Price,
     pub target_collateral_ratio: Option<u16>,
@@ -878,24 +794,16 @@ pub struct ChainParameters {
     pub network_percent_of_fee: u16,
     pub lifetime_referrer_percent_of_fee: u16,
     pub cashback_vesting_period_seconds: u32,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub cashback_vesting_threshold: i64,
     pub count_non_member_votes: bool,
     pub allow_non_member_whitelists: bool,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub witness_pay_per_block: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub worker_budget_per_day: i64,
     pub max_predicate_opcode: u16,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub fee_liquidation_threshold: i64,
     pub accounts_per_fee_scale: u16,
     pub account_fee_scale_bitshifts: u8,
@@ -999,7 +907,8 @@ pub struct CreateTakeProfitOrderAction {
 /// Raw protocol struct `credit_deal_expired_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockCreditDealExpiredOperationFeeParamsT)]
-pub struct CreditDealExpiredOperationFeeParamsT {}
+pub struct CreditDealExpiredOperationFeeParamsT {
+}
 
 /// Raw protocol struct `credit_deal_repay_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
@@ -1187,10 +1096,7 @@ pub struct DataRoomUpdateOperationFeeParamsT {
 pub struct DynamicGlobalPropertyObject {
     pub id: crate::generated::ids::DynamicGlobalPropertyId,
     pub head_block_number: u32,
-    #[serde(
-        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
-        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array"
-    )]
+    #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
     #[schema(value_type = String)]
     pub head_block_id: Vec<u8>,
     pub time: String,
@@ -1198,17 +1104,11 @@ pub struct DynamicGlobalPropertyObject {
     pub next_maintenance_time: String,
     pub last_vote_tally_time: String,
     pub last_budget_time: String,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub witness_budget: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub total_pob: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub total_inactive: i64,
     pub accounts_registered_this_interval: u32,
     pub recently_missed_count: u32,
@@ -1221,7 +1121,8 @@ pub struct DynamicGlobalPropertyObject {
 /// Raw protocol struct `execute_bid_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockExecuteBidOperationFeeParamsT)]
-pub struct ExecuteBidOperationFeeParamsT {}
+pub struct ExecuteBidOperationFeeParamsT {
+}
 
 /// Raw protocol struct `extendable_operation_result_dtl`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
@@ -1257,7 +1158,8 @@ pub struct ExtendedAssetObject {
 /// Raw protocol struct `fba_distribute_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockFbaDistributeOperationFeeParamsT)]
-pub struct FbaDistributeOperationFeeParamsT {}
+pub struct FbaDistributeOperationFeeParamsT {
+}
 
 /// Raw protocol struct `fee_schedule`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
@@ -1270,7 +1172,8 @@ pub struct FeeSchedule {
 /// Raw protocol struct `fill_order_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockFillOrderOperationFeeParamsT)]
-pub struct FillOrderOperationFeeParamsT {}
+pub struct FillOrderOperationFeeParamsT {
+}
 
 /// Raw protocol struct `force_settlement_object`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
@@ -1389,12 +1292,14 @@ pub struct HtlcRedeemOperationFeeParamsT {
 /// Raw protocol struct `htlc_redeemed_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockHtlcRedeemedOperationFeeParamsT)]
-pub struct HtlcRedeemedOperationFeeParamsT {}
+pub struct HtlcRedeemedOperationFeeParamsT {
+}
 
 /// Raw protocol struct `htlc_refund_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockHtlcRefundOperationFeeParamsT)]
-pub struct HtlcRefundOperationFeeParamsT {}
+pub struct HtlcRefundOperationFeeParamsT {
+}
 
 /// Raw protocol struct `immutable_chain_parameters`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
@@ -1409,7 +1314,8 @@ pub struct ImmutableChainParameters {
 /// Raw protocol struct `instant_vesting_policy_initializer`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockInstantVestingPolicyInitializer)]
-pub struct InstantVestingPolicyInitializer {}
+pub struct InstantVestingPolicyInitializer {
+}
 
 /// Raw protocol struct `limit_order_cancel_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
@@ -1431,9 +1337,7 @@ pub struct LimitOrderCreateOperationFeeParamsT {
 pub struct LimitOrderGroup {
     pub min_price: crate::generated::types::Price,
     pub max_price: crate::generated::types::Price,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub total_for_sale: i64,
 }
 
@@ -1444,15 +1348,11 @@ pub struct LimitOrderObject {
     pub id: crate::generated::ids::LimitOrderId,
     pub expiration: String,
     pub seller: crate::generated::ids::AccountId,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub for_sale: i64,
     pub sell_price: crate::generated::types::Price,
     pub filled_amount: String,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub deferred_fee: i64,
     pub deferred_paid_fee: crate::generated::types::Asset,
     pub is_settled_debt: bool,
@@ -1542,18 +1442,12 @@ pub struct MarketTicker {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockMaybeSignedBlockHeader)]
 pub struct MaybeSignedBlockHeader {
-    #[serde(
-        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
-        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array"
-    )]
+    #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
     #[schema(value_type = String)]
     pub previous: Vec<u8>,
     pub timestamp: String,
     pub witness: crate::generated::ids::WitnessId,
-    #[serde(
-        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
-        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array"
-    )]
+    #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
     #[schema(value_type = String)]
     pub transaction_merkle_root: Vec<u8>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
@@ -1567,10 +1461,7 @@ pub struct MemoData {
     pub from: String,
     pub to: String,
     pub nonce: u64,
-    #[serde(
-        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
-        deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array"
-    )]
+    #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array")]
     #[schema(value_type = String)]
     pub message: Vec<u8>,
 }
@@ -1578,7 +1469,8 @@ pub struct MemoData {
 /// Raw protocol struct `no_special_authority`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockNoSpecialAuthority)]
-pub struct NoSpecialAuthority {}
+pub struct NoSpecialAuthority {
+}
 
 /// Raw protocol struct `op_wrapper`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
@@ -1630,10 +1522,7 @@ pub struct Price {
 }
 
 impl Price {
-    pub fn new(
-        base: crate::generated::types::Asset,
-        quote: crate::generated::types::Asset,
-    ) -> Self {
+    pub fn new(base: crate::generated::types::Asset, quote: crate::generated::types::Asset) -> Self {
         Self { base, quote }
     }
 }
@@ -1714,7 +1603,8 @@ pub struct RangeProofInfo {
 /// Raw protocol struct `refund_worker_initializer`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockRefundWorkerInitializer)]
-pub struct RefundWorkerInitializer {}
+pub struct RefundWorkerInitializer {
+}
 
 /// Raw protocol struct `restriction`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
@@ -1765,18 +1655,12 @@ pub struct SametFundUpdateOperationFeeParamsT {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockSignedBlock)]
 pub struct SignedBlock {
-    #[serde(
-        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
-        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array"
-    )]
+    #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
     #[schema(value_type = String)]
     pub previous: Vec<u8>,
     pub timestamp: String,
     pub witness: crate::generated::ids::WitnessId,
-    #[serde(
-        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
-        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array"
-    )]
+    #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
     #[schema(value_type = String)]
     pub transaction_merkle_root: Vec<u8>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
@@ -1802,10 +1686,7 @@ pub struct SignedTransaction {
 pub struct StealthConfirmation {
     pub one_time_key: String,
     pub to: Option<String>,
-    #[serde(
-        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
-        deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array"
-    )]
+    #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array")]
     #[schema(value_type = String)]
     pub encrypted_memo: Vec<u8>,
 }
@@ -1874,10 +1755,7 @@ pub struct VerifyRangeProofRewindResult {
     pub min_val: u64,
     pub max_val: u64,
     pub value_out: u64,
-    #[serde(
-        serialize_with = "open_graphene_core::serialize_bytes_as_hex",
-        deserialize_with = "crate::generated::types::deserialize_fixed_bytes_32_from_hex_string_or_byte_array"
-    )]
+    #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_32_from_hex_string_or_byte_array")]
     #[schema(value_type = String)]
     pub blind_out: Vec<u8>,
     pub message_out: String,
@@ -1927,7 +1805,8 @@ pub struct VestingBalanceWorkerInitializer {
 /// Raw protocol struct `void_result`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockVoidResult)]
-pub struct VoidResult {}
+pub struct VoidResult {
+}
 
 /// Raw protocol struct `withdraw_permission_claim_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
@@ -1962,9 +1841,7 @@ pub struct WithdrawPermissionObject {
     pub withdrawal_period_sec: u32,
     pub period_start_time: String,
     pub expiration: String,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub claimed_this_period: i64,
 }
 
@@ -1986,9 +1863,7 @@ pub struct WitnessCreateOperationFeeParamsT {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockWitnessUpdateOperationFeeParamsT)]
 pub struct WitnessUpdateOperationFeeParamsT {
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
+    #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub fee: i64,
 }
 

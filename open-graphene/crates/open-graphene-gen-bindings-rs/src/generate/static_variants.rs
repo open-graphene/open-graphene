@@ -6,6 +6,7 @@ pub(crate) fn render_static_variants(
 ) -> Result<String> {
     let mut out = generated_header(protocol, "static variant enums");
     out.push_str("// Static variants use Graphene JSON wire format: [tag, value].\n\n");
+    render_static_variant_schema_helpers(&mut out);
 
     let mut emitted = BTreeSet::new();
     for variant in sorted_static_variants(&protocol.static_variants) {
@@ -28,11 +29,10 @@ pub(crate) fn render_static_variant(
         "/// Static variant `{}` serialized as Graphene `[tag, value]`.\n",
         variant.name
     ));
-    out.push_str("#[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]\n");
-    out.push_str(&format!(
-        "#[schema(as = {})]\n",
-        openapi_schema_name(protocol, &enum_name)
-    ));
+    // ToSchema ręcznie (niżej), nie z derive: wire format to krotka
+    // `[tag, value]`, a derive na enumie opisałby unię obiektów — klienci
+    // walidujący odpowiedzi (zod) odrzucaliby poprawne payloady.
+    out.push_str("#[derive(Debug, Clone, PartialEq)]\n");
     out.push_str(&format!("pub enum {enum_name} {{\n"));
 
     let mut variants = variant.variants.clone();
@@ -41,24 +41,22 @@ pub(crate) fn render_static_variant(
     let mut method_names = BTreeSet::new();
     let mut rendered_arms = Vec::new();
     let mut spec_arm_names = Vec::new();
+    let mut schema_arms = Vec::new();
     for arm in variants {
         let variant_name = rust_variant_name(&arm.name);
         ensure_unique(&mut emitted, &variant_name, "static variant arm")?;
         let method_name =
             static_variant_constructor_name(&enum_name, &arm.name, &mut method_names)?;
         let ty = render_type_ref(protocol, &arm.ty)?;
-        if no_recursion_cuts.variants.contains(&SchemaVariantKey {
-            owner: enum_name.clone(),
-            variant: variant_name.clone(),
-        }) {
-            out.push_str("    #[schema(no_recursion)]\n");
-        }
+        let _ = no_recursion_cuts;
         out.push_str(&format!("    {variant_name}(Box<{ty}>),\n"));
-        spec_arm_names.push((variant_name.clone(), arm.name));
+        spec_arm_names.push((variant_name.clone(), arm.name.clone()));
+        schema_arms.push((arm.tag, arm.name, ty.clone()));
         rendered_arms.push((arm.tag, variant_name, ty, method_name));
     }
 
     out.push_str("}\n\n");
+    render_static_variant_schema_impl(out, protocol, &enum_name, &schema_arms);
     if enum_name == "Operation" {
         render_static_variant_constructor_impl(out, &enum_name, &rendered_arms);
         render_static_variant_accessor_impl(out, &enum_name, &rendered_arms);
@@ -70,6 +68,92 @@ pub(crate) fn render_static_variant(
     render_static_variant_serialize_impl(out, &enum_name, &rendered_arms);
     render_static_variant_deserialize_impl(out, &enum_name, &rendered_arms);
     Ok(())
+}
+
+/// Shared runtime scaffolding for the manual static-variant schemas: one
+/// `[tag, value]` tuple schema per arm, with payloads either `$ref`ed (named
+/// protocol types, wrapped in `allOf` because `prefixItems` holds plain
+/// schemas) or inlined (primitives).
+pub(crate) fn render_static_variant_schema_helpers(out: &mut String) {
+    out.push_str(
+        "#[allow(dead_code)]\nfn static_variant_arm_schema(\n    tag: u32,\n    arm_name: &str,\n    payload: utoipa::openapi::schema::Schema,\n) -> utoipa::openapi::schema::Schema {\n    utoipa::openapi::schema::Schema::Array(\n        utoipa::openapi::schema::ArrayBuilder::new()\n            .items(utoipa::openapi::schema::ArrayItems::False)\n            .prefix_items([\n                utoipa::openapi::schema::Schema::Object(\n                    utoipa::openapi::schema::ObjectBuilder::new()\n                        .schema_type(utoipa::openapi::schema::SchemaType::Type(\n                            utoipa::openapi::schema::Type::Integer,\n                        ))\n                        .enum_values(Some([tag]))\n                        .description(Some(format!(\"`{arm_name}` tag\")))\n                        .build(),\n                ),\n                payload,\n            ])\n            .min_items(Some(2))\n            .max_items(Some(2))\n            .description(Some(format!(\"`{arm_name}` as `[{tag}, value]`\")))\n            .build(),\n    )\n}\n\n#[allow(dead_code)]\nfn static_variant_ref_payload<T: utoipa::ToSchema>() -> utoipa::openapi::schema::Schema {\n    utoipa::openapi::schema::Schema::AllOf(\n        utoipa::openapi::schema::AllOfBuilder::new()\n            .item(utoipa::openapi::Ref::from_schema_name(T::name()))\n            .build(),\n    )\n}\n\n#[allow(dead_code)]\nfn static_variant_inline_payload<T: utoipa::PartialSchema>() -> utoipa::openapi::schema::Schema {\n    match T::schema() {\n        utoipa::openapi::RefOr::T(schema) => schema,\n        utoipa::openapi::RefOr::Ref(reference) => utoipa::openapi::schema::Schema::AllOf(\n            utoipa::openapi::schema::AllOfBuilder::new()\n                .item(reference)\n                .build(),\n        ),\n    }\n}\n\n#[allow(dead_code)]\nfn static_variant_any_payload() -> utoipa::openapi::schema::Schema {\n    utoipa::openapi::schema::Schema::Object(\n        utoipa::openapi::schema::ObjectBuilder::new()\n            .schema_type(utoipa::openapi::schema::SchemaType::AnyValue)\n            .build(),\n    )\n}\n\n",
+    );
+}
+
+/// The Rust expression producing the OpenAPI schema for one arm payload.
+fn static_variant_payload_expr(ty: &str) -> String {
+    if ty == "()" || ty == "serde_json::Value" || ty.starts_with('(') {
+        // Void, free-form JSON and pair payloads have no precise schema.
+        "static_variant_any_payload()".to_string()
+    } else if ty == "Vec<u8>" {
+        // Byte payloads are hex strings on the wire (see the Serialize impl).
+        "static_variant_inline_payload::<String>()".to_string()
+    } else if ty.starts_with("crate::generated::") {
+        format!("static_variant_ref_payload::<{ty}>()")
+    } else {
+        format!("static_variant_inline_payload::<{ty}>()")
+    }
+}
+
+/// Named component types mentioned anywhere in a rendered arm type (also
+/// inside `Vec<...>` / pairs); these must be registered as schema
+/// dependencies because the tuple schema only references them.
+fn named_schema_dependencies(ty: &str) -> Vec<String> {
+    let mut found = Vec::new();
+    let mut rest = ty;
+    while let Some(position) = rest.find("crate::generated::") {
+        let tail = &rest[position..];
+        let end = tail
+            .find(|c: char| !(c.is_alphanumeric() || c == '_' || c == ':'))
+            .unwrap_or(tail.len());
+        found.push(tail[..end].to_string());
+        rest = &tail[end..];
+    }
+    found
+}
+
+pub(crate) fn render_static_variant_schema_impl(
+    out: &mut String,
+    protocol: &Protocol,
+    enum_name: &str,
+    schema_arms: &[(u32, String, String)],
+) {
+    let schema_name = openapi_schema_name(protocol, enum_name);
+
+    out.push_str(&format!(
+        "impl utoipa::PartialSchema for {enum_name} {{\n    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {{\n"
+    ));
+    if schema_arms.is_empty() {
+        out.push_str("        utoipa::openapi::schema::Schema::Array(\n            utoipa::openapi::schema::ArrayBuilder::new()\n                .items(\n                    utoipa::openapi::schema::ObjectBuilder::new()\n                        .schema_type(utoipa::openapi::schema::SchemaType::AnyValue)\n                        .build(),\n                )\n                .description(Some(\"Graphene static variant wire tuple: [tag, value].\"))\n                .build(),\n        )\n        .into()\n    }\n}\n\n");
+    } else {
+        out.push_str("        utoipa::openapi::schema::Schema::OneOf(\n            utoipa::openapi::schema::OneOfBuilder::new()\n                .description(Some(\n                    \"Graphene static variant wire tuple: [tag, value].\",\n                ))\n");
+        for (tag, spec_name, ty) in schema_arms {
+            let payload = static_variant_payload_expr(ty);
+            out.push_str(&format!(
+                "                .item(static_variant_arm_schema(\n                    {tag},\n                    {},\n                    {payload},\n                ))\n",
+                rust_string_literal(spec_name)
+            ));
+        }
+        out.push_str("                .build(),\n        )\n        .into()\n    }\n}\n\n");
+    }
+
+    out.push_str(&format!(
+        "impl utoipa::ToSchema for {enum_name} {{\n    fn name() -> std::borrow::Cow<'static, str> {{\n        std::borrow::Cow::Borrowed(\"{schema_name}\")\n    }}\n"
+    ));
+    let mut dependencies = BTreeSet::new();
+    for (_, _, ty) in schema_arms {
+        dependencies.extend(named_schema_dependencies(ty));
+    }
+    if !dependencies.is_empty() {
+        out.push_str("\n    fn schemas(\n        schemas: &mut Vec<(\n            String,\n            utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,\n        )>,\n    ) {\n        // The tuple schema only references payload components; register them\n        // here. The guard cuts self-referential dependency walks (proposal\n        // operations embed operations again).\n        thread_local! {\n            static WALKING: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };\n        }\n        if WALKING.replace(true) {\n            return;\n        }\n");
+        for dependency in &dependencies {
+            out.push_str(&format!(
+                "        schemas.push((\n            <{dependency} as utoipa::ToSchema>::name().to_string(),\n            <{dependency} as utoipa::PartialSchema>::schema(),\n        ));\n        <{dependency} as utoipa::ToSchema>::schemas(schemas);\n"
+            ));
+        }
+        out.push_str("        WALKING.set(false);\n    }\n");
+    }
+    out.push_str("}\n\n");
 }
 
 pub(crate) fn render_static_variant_constructor_impl(

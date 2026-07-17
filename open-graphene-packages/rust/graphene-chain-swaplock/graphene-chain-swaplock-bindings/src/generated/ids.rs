@@ -17,9 +17,7 @@ pub const OBJECT_TYPE_COUNT: usize = 46;
 pub const RPC_API_COUNT: usize = 5;
 pub const RPC_METHOD_COUNT: usize = 43;
 
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockObjectId)]
 #[serde(transparent)]
 pub struct ObjectId(pub String);
@@ -43,9 +41,7 @@ impl From<&str> for ObjectId {
 }
 
 /// Object ID for `account` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAccountId)]
 #[serde(transparent)]
 pub struct AccountId(pub String);
@@ -74,9 +70,7 @@ impl AccountId {
 }
 
 /// Object ID for `account_balance` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAccountBalanceId)]
 #[serde(transparent)]
 pub struct AccountBalanceId(pub String);
@@ -105,9 +99,7 @@ impl AccountBalanceId {
 }
 
 /// Object ID for `account_history` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAccountHistoryId)]
 #[serde(transparent)]
 pub struct AccountHistoryId(pub String);
@@ -136,9 +128,7 @@ impl AccountHistoryId {
 }
 
 /// Object ID for `account_statistics` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAccountStatisticsId)]
 #[serde(transparent)]
 pub struct AccountStatisticsId(pub String);
@@ -167,9 +157,7 @@ impl AccountStatisticsId {
 }
 
 /// Object ID for `asset` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAssetId)]
 #[serde(transparent)]
 pub struct AssetId(pub String);
@@ -198,9 +186,7 @@ impl AssetId {
 }
 
 /// Object ID for `asset_bitasset_data` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAssetBitassetDataId)]
 #[serde(transparent)]
 pub struct AssetBitassetDataId(pub String);
@@ -229,9 +215,7 @@ impl AssetBitassetDataId {
 }
 
 /// Object ID for `asset_dynamic_data` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAssetDynamicDataId)]
 #[serde(transparent)]
 pub struct AssetDynamicDataId(pub String);
@@ -260,9 +244,7 @@ impl AssetDynamicDataId {
 }
 
 /// Object ID for `balance` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockBalanceId)]
 #[serde(transparent)]
 pub struct BalanceId(pub String);
@@ -291,9 +273,7 @@ impl BalanceId {
 }
 
 /// Object ID for `base` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockBaseId)]
 #[serde(transparent)]
 pub struct BaseId(pub String);
@@ -322,9 +302,7 @@ impl BaseId {
 }
 
 /// Object ID for `blinded_balance` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockBlindedBalanceId)]
 #[serde(transparent)]
 pub struct BlindedBalanceId(pub String);
@@ -353,9 +331,7 @@ impl BlindedBalanceId {
 }
 
 /// Object ID for `block_summary` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockBlockSummaryId)]
 #[serde(transparent)]
 pub struct BlockSummaryId(pub String);
@@ -384,9 +360,7 @@ impl BlockSummaryId {
 }
 
 /// Object ID for `budget_record` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockBudgetRecordId)]
 #[serde(transparent)]
 pub struct BudgetRecordId(pub String);
@@ -415,9 +389,7 @@ impl BudgetRecordId {
 }
 
 /// Object ID for `buyback` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockBuybackId)]
 #[serde(transparent)]
 pub struct BuybackId(pub String);
@@ -446,9 +418,7 @@ impl BuybackId {
 }
 
 /// Object ID for `call_order` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockCallOrderId)]
 #[serde(transparent)]
 pub struct CallOrderId(pub String);
@@ -477,9 +447,7 @@ impl CallOrderId {
 }
 
 /// Object ID for `chain_property` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockChainPropertyId)]
 #[serde(transparent)]
 pub struct ChainPropertyId(pub String);
@@ -508,9 +476,7 @@ impl ChainPropertyId {
 }
 
 /// Object ID for `collateral_bid` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockCollateralBidId)]
 #[serde(transparent)]
 pub struct CollateralBidId(pub String);
@@ -539,9 +505,7 @@ impl CollateralBidId {
 }
 
 /// Object ID for `committee_member` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockCommitteeMemberId)]
 #[serde(transparent)]
 pub struct CommitteeMemberId(pub String);
@@ -570,9 +534,7 @@ impl CommitteeMemberId {
 }
 
 /// Object ID for `content_card` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockContentCardId)]
 #[serde(transparent)]
 pub struct ContentCardId(pub String);
@@ -601,9 +563,7 @@ impl ContentCardId {
 }
 
 /// Object ID for `credit_deal` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockCreditDealId)]
 #[serde(transparent)]
 pub struct CreditDealId(pub String);
@@ -632,9 +592,7 @@ impl CreditDealId {
 }
 
 /// Object ID for `credit_deal_summary` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockCreditDealSummaryId)]
 #[serde(transparent)]
 pub struct CreditDealSummaryId(pub String);
@@ -663,9 +621,7 @@ impl CreditDealSummaryId {
 }
 
 /// Object ID for `credit_offer` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockCreditOfferId)]
 #[serde(transparent)]
 pub struct CreditOfferId(pub String);
@@ -694,9 +650,7 @@ impl CreditOfferId {
 }
 
 /// Object ID for `custom` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockCustomId)]
 #[serde(transparent)]
 pub struct CustomId(pub String);
@@ -725,9 +679,7 @@ impl CustomId {
 }
 
 /// Object ID for `custom_authority` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockCustomAuthorityId)]
 #[serde(transparent)]
 pub struct CustomAuthorityId(pub String);
@@ -756,9 +708,7 @@ impl CustomAuthorityId {
 }
 
 /// Object ID for `data_room` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockDataRoomId)]
 #[serde(transparent)]
 pub struct DataRoomId(pub String);
@@ -787,9 +737,7 @@ impl DataRoomId {
 }
 
 /// Object ID for `data_room_key_epoch` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockDataRoomKeyEpochId)]
 #[serde(transparent)]
 pub struct DataRoomKeyEpochId(pub String);
@@ -818,9 +766,7 @@ impl DataRoomKeyEpochId {
 }
 
 /// Object ID for `data_room_member` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockDataRoomMemberId)]
 #[serde(transparent)]
 pub struct DataRoomMemberId(pub String);
@@ -849,9 +795,7 @@ impl DataRoomMemberId {
 }
 
 /// Object ID for `dynamic_global_property` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockDynamicGlobalPropertyId)]
 #[serde(transparent)]
 pub struct DynamicGlobalPropertyId(pub String);
@@ -880,9 +824,7 @@ impl DynamicGlobalPropertyId {
 }
 
 /// Object ID for `fba_accumulator` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockFbaAccumulatorId)]
 #[serde(transparent)]
 pub struct FbaAccumulatorId(pub String);
@@ -911,9 +853,7 @@ impl FbaAccumulatorId {
 }
 
 /// Object ID for `force_settlement` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockForceSettlementId)]
 #[serde(transparent)]
 pub struct ForceSettlementId(pub String);
@@ -942,9 +882,7 @@ impl ForceSettlementId {
 }
 
 /// Object ID for `global_property` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockGlobalPropertyId)]
 #[serde(transparent)]
 pub struct GlobalPropertyId(pub String);
@@ -973,9 +911,7 @@ impl GlobalPropertyId {
 }
 
 /// Object ID for `htlc` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockHtlcId)]
 #[serde(transparent)]
 pub struct HtlcId(pub String);
@@ -1004,9 +940,7 @@ impl HtlcId {
 }
 
 /// Object ID for `limit_order` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockLimitOrderId)]
 #[serde(transparent)]
 pub struct LimitOrderId(pub String);
@@ -1035,9 +969,7 @@ impl LimitOrderId {
 }
 
 /// Object ID for `liquidity_pool` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockLiquidityPoolId)]
 #[serde(transparent)]
 pub struct LiquidityPoolId(pub String);
@@ -1066,9 +998,7 @@ impl LiquidityPoolId {
 }
 
 /// Object ID for `null` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockNullId)]
 #[serde(transparent)]
 pub struct NullId(pub String);
@@ -1097,9 +1027,7 @@ impl NullId {
 }
 
 /// Object ID for `operation_history` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockOperationHistoryId)]
 #[serde(transparent)]
 pub struct OperationHistoryId(pub String);
@@ -1128,9 +1056,7 @@ impl OperationHistoryId {
 }
 
 /// Object ID for `proposal` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockProposalId)]
 #[serde(transparent)]
 pub struct ProposalId(pub String);
@@ -1159,9 +1085,7 @@ impl ProposalId {
 }
 
 /// Object ID for `reserved0` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockReserved0Id)]
 #[serde(transparent)]
 pub struct Reserved0Id(pub String);
@@ -1190,9 +1114,7 @@ impl Reserved0Id {
 }
 
 /// Object ID for `samet_fund` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockSametFundId)]
 #[serde(transparent)]
 pub struct SametFundId(pub String);
@@ -1221,9 +1143,7 @@ impl SametFundId {
 }
 
 /// Object ID for `special_authority` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockSpecialAuthorityId)]
 #[serde(transparent)]
 pub struct SpecialAuthorityId(pub String);
@@ -1252,9 +1172,7 @@ impl SpecialAuthorityId {
 }
 
 /// Object ID for `ticket` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockTicketId)]
 #[serde(transparent)]
 pub struct TicketId(pub String);
@@ -1283,9 +1201,7 @@ impl TicketId {
 }
 
 /// Object ID for `transaction_history` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockTransactionHistoryId)]
 #[serde(transparent)]
 pub struct TransactionHistoryId(pub String);
@@ -1314,9 +1230,7 @@ impl TransactionHistoryId {
 }
 
 /// Object ID for `vesting_balance` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockVestingBalanceId)]
 #[serde(transparent)]
 pub struct VestingBalanceId(pub String);
@@ -1345,9 +1259,7 @@ impl VestingBalanceId {
 }
 
 /// Object ID for `withdraw_permission` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockWithdrawPermissionId)]
 #[serde(transparent)]
 pub struct WithdrawPermissionId(pub String);
@@ -1376,9 +1288,7 @@ impl WithdrawPermissionId {
 }
 
 /// Object ID for `witness` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockWitnessId)]
 #[serde(transparent)]
 pub struct WitnessId(pub String);
@@ -1407,9 +1317,7 @@ impl WitnessId {
 }
 
 /// Object ID for `witness_schedule` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockWitnessScheduleId)]
 #[serde(transparent)]
 pub struct WitnessScheduleId(pub String);
@@ -1438,9 +1346,7 @@ impl WitnessScheduleId {
 }
 
 /// Object ID for `worker` protocol objects.
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockWorkerId)]
 #[serde(transparent)]
 pub struct WorkerId(pub String);
