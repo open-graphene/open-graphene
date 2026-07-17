@@ -229,7 +229,11 @@ pub fn decode_public_key(value: &str, expected_prefix: Option<&str>) -> Result<[
     }
 
     let (key, checksum) = decoded.split_at(33);
-    if !matches!(key.first(), Some(0x02 | 0x03)) {
+    // GRAPHENE_NULL_KEY (33 zero bytes) is not a curve point but is legal on
+    // chain — the canonical memo key of accounts that never receive memos
+    // (e.g. gateway accounts governed purely by other accounts).
+    let is_null_key = key.iter().all(|byte| *byte == 0);
+    if !is_null_key && !matches!(key.first(), Some(0x02 | 0x03)) {
         return Err(invalid_public_key(
             value,
             expected_prefix,
@@ -726,6 +730,19 @@ impl<T: FcSerialize> FcSerialize for Vec<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn decodes_the_canonical_null_public_key() {
+        // GRAPHENE_NULL_KEY: 33 zero bytes + RIPEMD160 checksum. Legal on
+        // chain as a memo key despite not being a curve point.
+        let digest = ripemd::Ripemd160::digest([0u8; 33]);
+        let mut data = vec![0u8; 33];
+        data.extend_from_slice(&digest[..4]);
+        let encoded = format!("TEST{}", bs58::encode(data).into_string());
+
+        let decoded = decode_public_key(&encoded, Some("TEST")).expect("null key decodes");
+        assert_eq!(decoded, [0u8; 33]);
+    }
 
     #[test]
     fn varint_writes_single_and_multi_byte_values() {
