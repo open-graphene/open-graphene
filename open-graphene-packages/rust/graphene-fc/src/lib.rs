@@ -495,13 +495,22 @@ pub fn sign_digest_compact(digest: [u8; 32], private_key: [u8; 32]) -> Result<[u
     })
 }
 
+/// `(n-1)/2` krzywej secp256k1 — granica low-S z BIP-62/BIP-146.
+const SECP256K1_HALF_ORDER: [u8; 32] = [
+    0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0x5d, 0x57, 0x6e, 0x73, 0x57, 0xa4, 0x50, 0x1d, 0xdf, 0xe9, 0x2f, 0x46, 0x68, 0x1b,
+    0x20, 0xa0,
+];
+
+/// Kanoniczność jak w Bitcoinie (BIP-62/BIP-146): wyłącznie low-S
+/// (`s <= n/2`), `r` bez ograniczeń — lustrzane odbicie
+/// `fc::ecc::public_key::is_canonical` w swaplock-fc. Historyczna reguła
+/// Graphene odrzucała też wysoki bit pierwszego bajtu `r`/`s`, czego
+/// deterministyczne podpisy HSM (WebAuthn/DFNS) nie są w stanie ominąć.
 pub fn is_graphene_canonical_compact_signature(signature: &[u8]) -> bool {
     signature.len() == 65
         && (31..=34).contains(&signature[0])
-        && (signature[1] & 0x80) == 0
-        && !(signature[1] == 0 && (signature[2] & 0x80) == 0)
-        && (signature[33] & 0x80) == 0
-        && !(signature[33] == 0 && (signature[34] & 0x80) == 0)
+        && signature[33..65] <= SECP256K1_HALF_ORDER[..]
 }
 
 pub fn sign_digest_compact_with_wif(digest: [u8; 32], wif: &str) -> Result<[u8; 65]> {
