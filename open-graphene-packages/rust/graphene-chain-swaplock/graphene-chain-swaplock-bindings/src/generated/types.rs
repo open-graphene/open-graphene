@@ -257,9 +257,13 @@ pub struct AccountBalanceObject {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAccountCreateOperationExt)]
 pub struct AccountCreateOperationExt {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub null_ext: Option<()>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub owner_special_authority: Option<crate::generated::static_variants::SpecialAuthority>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub active_special_authority: Option<crate::generated::static_variants::SpecialAuthority>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub buyback_options: Option<crate::generated::types::BuybackAccountOptions>,
 }
 
@@ -303,10 +307,12 @@ pub struct AccountObject {
     pub blacklisting_accounts: Vec<crate::generated::ids::AccountId>,
     pub whitelisted_accounts: Vec<crate::generated::ids::AccountId>,
     pub blacklisted_accounts: Vec<crate::generated::ids::AccountId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub cashback_vb: Option<crate::generated::ids::VestingBalanceId>,
     pub owner_special_authority: crate::generated::static_variants::SpecialAuthority,
     pub active_special_authority: crate::generated::static_variants::SpecialAuthority,
     pub top_n_control_flags: u8,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub allowed_assets: Option<Vec<crate::generated::ids::AssetId>>,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub creation_block_num: u32,
@@ -377,8 +383,11 @@ pub struct AccountTransferOperationFeeParamsT {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAccountUpdateOperationExt)]
 pub struct AccountUpdateOperationExt {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub null_ext: Option<()>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub owner_special_authority: Option<crate::generated::static_variants::SpecialAuthority>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub active_special_authority: Option<crate::generated::static_variants::SpecialAuthority>,
 }
 
@@ -412,8 +421,11 @@ pub struct AccountWhitelistOperationFeeParamsT {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAdditionalAssetOptions)]
 pub struct AdditionalAssetOptions {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub reward_percent: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub whitelist_market_fee_sharing: Option<Vec<crate::generated::ids::AccountId>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub taker_fee_percent: Option<u16>,
 }
 
@@ -443,6 +455,7 @@ impl Asset {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAssetClaimFeesOperationAdditionalOptionsType)]
 pub struct AssetClaimFeesOperationAdditionalOptionsType {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub claim_from_asset_id: Option<crate::generated::ids::AssetId>,
 }
 
@@ -521,8 +534,11 @@ pub struct AssetObject {
     pub issuer: crate::generated::ids::AccountId,
     pub options: crate::generated::types::AssetOptions,
     pub dynamic_asset_data_id: crate::generated::ids::AssetDynamicDataId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub bitasset_data_id: Option<crate::generated::ids::AssetBitassetDataId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub buyback_account: Option<crate::generated::ids::AccountId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub for_liquidity_pool: Option<crate::generated::ids::LiquidityPoolId>,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub creation_block_num: u32,
@@ -553,6 +569,7 @@ pub struct AssetOptions {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAssetPublishFeedOperationExt)]
 pub struct AssetPublishFeedOperationExt {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub initial_collateral_ratio: Option<u16>,
 }
 
@@ -616,7 +633,9 @@ pub struct AssetUpdateIssuerOperationFeeParamsT {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAssetUpdateOperationExt)]
 pub struct AssetUpdateOperationExt {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_precision: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub skip_core_exchange_rate: Option<bool>,
 }
 
@@ -672,11 +691,17 @@ pub struct BitassetOptions {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockBitassetOptionsExt)]
 pub struct BitassetOptionsExt {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub initial_collateral_ratio: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub maintenance_collateral_ratio: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub maximum_short_squeeze_ratio: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub margin_call_fee_ratio: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub force_settle_fee_percent: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub black_swan_response_method: Option<u8>,
 }
 
@@ -701,6 +726,7 @@ pub struct BlindOutput {
     #[schema(value_type = String)]
     pub range_proof: Vec<u8>,
     pub owner: crate::generated::types::Authority,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub stealth_memo: Option<crate::generated::types::StealthConfirmation>,
 }
 
@@ -776,6 +802,7 @@ pub struct CallOrderObject {
     #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub debt: i64,
     pub call_price: crate::generated::types::Price,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub target_collateral_ratio: Option<u16>,
 }
 
@@ -845,9 +872,13 @@ pub struct ChainParameters {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockChainParametersExt)]
 pub struct ChainParametersExt {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub updatable_htlc_options: Option<crate::generated::types::HtlcOptions>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub custom_authority_options: Option<crate::generated::types::CustomAuthorityOptionsType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub market_fee_network_percent: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub maker_fee_discount_percent: Option<u16>,
 }
 
@@ -962,6 +993,7 @@ pub struct CreditDealUpdateOperationFeeParamsT {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockCreditOfferAcceptOperationExt)]
 pub struct CreditOfferAcceptOperationExt {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub auto_repay: Option<u8>,
 }
 
@@ -1116,6 +1148,7 @@ pub struct DataRoomObject {
     pub name: String,
     pub description: String,
     pub subject: crate::generated::static_variants::DataRoomSubject,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub room_key: Option<String>,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub current_epoch: u32,
@@ -1181,12 +1214,19 @@ pub struct ExecuteBidOperationFeeParamsT {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockExtendableOperationResultDtl)]
 pub struct ExtendableOperationResultDtl {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub impacted_accounts: Option<Vec<crate::generated::ids::AccountId>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_objects: Option<Vec<crate::generated::ids::ObjectId>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub updated_objects: Option<Vec<crate::generated::ids::ObjectId>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub removed_objects: Option<Vec<crate::generated::ids::ObjectId>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub paid: Option<Vec<crate::generated::types::Asset>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub received: Option<Vec<crate::generated::types::Asset>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub fees: Option<Vec<crate::generated::types::Asset>>,
 }
 
@@ -1199,13 +1239,18 @@ pub struct ExtendedAssetObject {
     pub issuer: crate::generated::ids::AccountId,
     pub options: crate::generated::types::AssetOptions,
     pub dynamic_asset_data_id: crate::generated::ids::AssetDynamicDataId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub bitasset_data_id: Option<crate::generated::ids::AssetBitassetDataId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub buyback_account: Option<crate::generated::ids::AccountId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub for_liquidity_pool: Option<crate::generated::ids::LiquidityPoolId>,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub creation_block_num: u32,
     pub creation_time: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub total_in_collateral: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub total_backing_collateral: Option<i64>,
 }
 
@@ -1250,6 +1295,7 @@ pub struct FullAccount {
     pub referrer_name: String,
     pub lifetime_referrer_name: String,
     pub votes: Vec<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub cashback_balance: Option<crate::generated::types::VestingBalanceObject>,
     pub balances: Vec<crate::generated::types::AccountBalanceObject>,
     pub vesting_balances: Vec<crate::generated::types::VestingBalanceObject>,
@@ -1289,6 +1335,7 @@ pub struct GenericOperationResult {
 pub struct GlobalPropertyObject {
     pub id: crate::generated::ids::GlobalPropertyId,
     pub parameters: crate::generated::types::ChainParameters,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pending_parameters: Option<crate::generated::types::ChainParameters>,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub next_available_vote_id: u32,
@@ -1300,6 +1347,7 @@ pub struct GlobalPropertyObject {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockHtlcCreateOperationAdditionalOptionsType)]
 pub struct HtlcCreateOperationAdditionalOptionsType {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub memo: Option<crate::generated::types::MemoData>,
 }
 
@@ -1326,6 +1374,7 @@ pub struct HtlcObject {
     pub id: crate::generated::ids::HtlcId,
     pub transfer: serde_json::Value,
     pub conditions: serde_json::Value,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub memo: Option<crate::generated::types::MemoData>,
 }
 
@@ -1417,6 +1466,7 @@ pub struct LimitOrderObject {
     pub deferred_paid_fee: crate::generated::types::Asset,
     pub is_settled_debt: bool,
     pub on_fill: Vec<crate::generated::static_variants::LimitOrderAutoAction>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub take_profit_order_id: Option<crate::generated::ids::LimitOrderId>,
 }
 
@@ -1497,6 +1547,7 @@ pub struct MarketTicker {
     pub percent_change: String,
     pub base_volume: String,
     pub quote_volume: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub mto_id: Option<crate::generated::ids::ObjectId>,
 }
 
@@ -1513,6 +1564,7 @@ pub struct MaybeSignedBlockHeader {
     #[schema(value_type = String)]
     pub transaction_merkle_root: Vec<u8>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub witness_signature: Option<crate::generated::types::Signature>,
 }
 
@@ -1638,6 +1690,7 @@ pub struct ProposalDeleteOperationFeeParamsT {
 pub struct ProposalObject {
     pub id: crate::generated::ids::ProposalId,
     pub expiration_time: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub review_period_time: Option<String>,
     pub proposed_transaction: crate::generated::types::Transaction,
     pub required_active_approvals: Vec<crate::generated::ids::AccountId>,
@@ -1756,6 +1809,7 @@ pub struct SignedTransaction {
 #[schema(as = GrapheneSwaplockStealthConfirmation)]
 pub struct StealthConfirmation {
     pub one_time_key: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub to: Option<String>,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "open_graphene_core::deserialize_bytes_from_hex_string_or_byte_array")]
     #[schema(value_type = String)]

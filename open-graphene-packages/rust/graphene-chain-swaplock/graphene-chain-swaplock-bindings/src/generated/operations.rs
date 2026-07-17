@@ -14,6 +14,7 @@ pub struct TransferOperation {
     pub from: crate::generated::ids::AccountId,
     pub to: crate::generated::ids::AccountId,
     pub amount: crate::generated::types::Asset,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub memo: Option<crate::generated::types::MemoData>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
@@ -98,8 +99,11 @@ pub const ACCOUNT_UPDATE_OPERATION_ID: u32 = 6;
 pub struct AccountUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub owner: Option<crate::generated::types::Authority>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub active: Option<crate::generated::types::Authority>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_options: Option<crate::generated::types::AccountOptions>,
     pub extensions: crate::generated::types::AccountUpdateOperationExt,
 }
@@ -152,6 +156,7 @@ pub struct AssetCreateOperation {
     pub symbol: String,
     pub precision: u8,
     pub common_options: crate::generated::types::AssetOptions,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub bitasset_opts: Option<crate::generated::types::BitassetOptions>,
     pub is_prediction_market: bool,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
@@ -166,6 +171,7 @@ pub struct AssetUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub issuer: crate::generated::ids::AccountId,
     pub asset_to_update: crate::generated::ids::AssetId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_issuer: Option<crate::generated::ids::AccountId>,
     pub new_options: crate::generated::types::AssetOptions,
     pub extensions: crate::generated::types::AssetUpdateOperationExt,
@@ -207,6 +213,7 @@ pub struct AssetIssueOperation {
     pub issuer: crate::generated::ids::AccountId,
     pub asset_to_issue: crate::generated::types::Asset,
     pub issue_to_account: crate::generated::ids::AccountId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub memo: Option<crate::generated::types::MemoData>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
@@ -296,7 +303,9 @@ pub struct WitnessUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub witness: crate::generated::ids::WitnessId,
     pub witness_account: crate::generated::ids::AccountId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_signing_key: Option<String>,
 }
 
@@ -311,6 +320,7 @@ pub struct ProposalCreateOperation {
     pub expiration_time: String,
     pub proposed_ops: Vec<crate::generated::types::OpWrapper>,
     #[schema(schema_with = crate::generated::types::u32_schema)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub review_period_seconds: Option<u32>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
@@ -392,6 +402,7 @@ pub struct WithdrawPermissionClaimOperation {
     pub withdraw_from_account: crate::generated::ids::AccountId,
     pub withdraw_to_account: crate::generated::ids::AccountId,
     pub amount_to_withdraw: crate::generated::types::Asset,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub memo: Option<crate::generated::types::MemoData>,
 }
 
@@ -427,6 +438,7 @@ pub struct CommitteeMemberUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub committee_member: crate::generated::ids::CommitteeMemberId,
     pub committee_member_account: crate::generated::ids::AccountId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_url: Option<String>,
 }
 
@@ -534,6 +546,7 @@ pub struct OverrideTransferOperation {
     pub from: crate::generated::ids::AccountId,
     pub to: crate::generated::ids::AccountId,
     pub amount: crate::generated::types::Asset,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub memo: Option<crate::generated::types::MemoData>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
@@ -774,9 +787,13 @@ pub struct CustomAuthorityUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
     pub authority_to_update: crate::generated::ids::CustomAuthorityId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_enabled: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_valid_from: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_valid_to: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_auth: Option<crate::generated::types::Authority>,
     pub restrictions_to_remove: Vec<u16>,
     pub restrictions_to_add: Vec<crate::generated::types::Restriction>,
@@ -820,6 +837,7 @@ pub struct TicketUpdateOperation {
     pub account: crate::generated::ids::AccountId,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub target_type: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub amount_for_new_target: Option<crate::generated::types::Asset>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
@@ -930,8 +948,10 @@ pub struct SametFundUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub owner_account: crate::generated::ids::AccountId,
     pub fund_id: crate::generated::ids::SametFundId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub delta_amount: Option<crate::generated::types::Asset>,
     #[schema(schema_with = crate::generated::types::u32_schema)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_fee_rate: Option<u32>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
@@ -1008,15 +1028,23 @@ pub struct CreditOfferUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub owner_account: crate::generated::ids::AccountId,
     pub offer_id: crate::generated::ids::CreditOfferId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub delta_amount: Option<crate::generated::types::Asset>,
     #[schema(schema_with = crate::generated::types::u32_schema)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub fee_rate: Option<u32>,
     #[schema(schema_with = crate::generated::types::u32_schema)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub max_duration_seconds: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub min_deal_amount: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub enabled: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub auto_disable_time: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub acceptable_collateral: Option<Vec<(crate::generated::ids::AssetId, crate::generated::types::Price)>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub acceptable_borrowers: Option<Vec<(crate::generated::ids::AccountId, i64)>>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
@@ -1079,7 +1107,9 @@ pub struct LiquidityPoolUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
     pub pool: crate::generated::ids::LiquidityPoolId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub taker_fee_percent: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub withdrawal_fee_percent: Option<u16>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
@@ -1106,9 +1136,13 @@ pub struct LimitOrderUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub seller: crate::generated::ids::AccountId,
     pub order: crate::generated::ids::LimitOrderId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_price: Option<crate::generated::types::Price>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub delta_amount_to_sell: Option<crate::generated::types::Asset>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_expiration: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub on_fill: Option<Vec<crate::generated::static_variants::LimitOrderAutoAction>>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
@@ -1124,6 +1158,7 @@ pub struct DataRoomCreateOperation {
     pub name: String,
     pub description: String,
     pub subject: crate::generated::static_variants::DataRoomSubject,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub room_key: Option<String>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
@@ -1137,9 +1172,13 @@ pub struct DataRoomUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub caller: crate::generated::ids::AccountId,
     pub room: crate::generated::ids::DataRoomId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_subject: Option<crate::generated::static_variants::DataRoomSubject>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_owner: Option<crate::generated::ids::AccountId>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
@@ -1242,11 +1281,17 @@ pub struct ContentCardUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub caller: crate::generated::ids::AccountId,
     pub content_id: crate::generated::ids::ContentCardId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_hash: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_type: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_content_key: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub new_storage_data: Option<String>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }

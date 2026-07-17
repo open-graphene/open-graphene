@@ -354,12 +354,8 @@ mod tests {
                 "fee": {"amount": 0, "asset_id": "1.3.0"},
                 "caller": "1.2.100",
                 "content_id": "1.26.4",
-                "new_hash": null,
                 "new_url": "ipfs://Qm456",
-                "new_type": null,
                 "new_description": "v2",
-                "new_content_key": null,
-                "new_storage_data": null,
                 "extensions": []
             }])
         );

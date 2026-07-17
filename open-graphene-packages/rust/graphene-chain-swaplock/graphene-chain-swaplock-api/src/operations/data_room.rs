@@ -601,7 +601,6 @@ mod tests {
                 "name": "deal-room",
                 "description": "",
                 "subject": [0, null],
-                "room_key": null,
                 "extensions": []
             }])
         );

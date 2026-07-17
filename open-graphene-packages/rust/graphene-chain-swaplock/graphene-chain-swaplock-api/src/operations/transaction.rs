@@ -286,7 +286,6 @@ mod tests {
                 "from": "1.2.100",
                 "to": "1.2.101",
                 "amount": {"amount": 100000, "asset_id": "1.3.0"},
-                "memo": null,
                 "extensions": []
             }])
         );

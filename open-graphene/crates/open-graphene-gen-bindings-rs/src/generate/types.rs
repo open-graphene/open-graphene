@@ -271,6 +271,12 @@ pub(crate) fn render_fields(
         if is_u32 {
             out.push_str("    #[schema(schema_with = crate::generated::types::u32_schema)]\n");
         }
+        // Graphene JSON omits absent optionals (fc treats missing and null the
+        // same); emitting `null` breaks OpenAPI clients, which describe these
+        // fields as absent-or-value.
+        if matches!(field.ty, TypeRef::Optional { .. }) {
+            out.push_str("    #[serde(skip_serializing_if = \"Option::is_none\")]\n");
+        }
         // Byte fields are hex strings on the Graphene wire: decode hex-or-array, encode as hex.
         if let TypeRef::FixedBytes { bytes } = field.ty {
             out.push_str(&format!(
