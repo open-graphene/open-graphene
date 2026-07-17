@@ -310,6 +310,7 @@ pub struct ProposalCreateOperation {
     pub fee_paying_account: crate::generated::ids::AccountId,
     pub expiration_time: String,
     pub proposed_ops: Vec<crate::generated::types::OpWrapper>,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub review_period_seconds: Option<u32>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
@@ -355,7 +356,9 @@ pub struct WithdrawPermissionCreateOperation {
     pub withdraw_from_account: crate::generated::ids::AccountId,
     pub authorized_account: crate::generated::ids::AccountId,
     pub withdrawal_limit: crate::generated::types::Asset,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub withdrawal_period_sec: u32,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub periods_until_expiration: u32,
     pub period_start_time: String,
 }
@@ -371,8 +374,10 @@ pub struct WithdrawPermissionUpdateOperation {
     pub authorized_account: crate::generated::ids::AccountId,
     pub permission_to_update: crate::generated::ids::WithdrawPermissionId,
     pub withdrawal_limit: crate::generated::types::Asset,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub withdrawal_period_sec: u32,
     pub period_start_time: String,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub periods_until_expiration: u32,
 }
 
@@ -674,6 +679,7 @@ pub struct HtlcCreateOperation {
     pub amount: crate::generated::types::Asset,
     pub preimage_hash: crate::generated::static_variants::HtlcHash,
     pub preimage_size: u16,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub claim_period_seconds: u32,
     pub extensions: crate::generated::types::HtlcCreateOperationAdditionalOptionsType,
 }
@@ -721,6 +727,7 @@ pub struct HtlcExtendOperation {
     pub fee: crate::generated::types::Asset,
     pub htlc_id: crate::generated::ids::HtlcId,
     pub update_issuer: crate::generated::ids::AccountId,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub seconds_to_add: u32,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
@@ -751,6 +758,7 @@ pub struct CustomAuthorityCreateOperation {
     pub enabled: bool,
     pub valid_from: String,
     pub valid_to: String,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub operation_type: u32,
     pub auth: crate::generated::types::Authority,
     pub restrictions: Vec<crate::generated::types::Restriction>,
@@ -795,6 +803,7 @@ pub const TICKET_CREATE_OPERATION_ID: u32 = 57;
 pub struct TicketCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub target_type: u32,
     pub amount: crate::generated::types::Asset,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
@@ -809,6 +818,7 @@ pub struct TicketUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub ticket: crate::generated::ids::TicketId,
     pub account: crate::generated::ids::AccountId,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub target_type: u32,
     pub amount_for_new_target: Option<crate::generated::types::Asset>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
@@ -894,6 +904,7 @@ pub struct SametFundCreateOperation {
     pub asset_type: crate::generated::ids::AssetId,
     #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub balance: i64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub fee_rate: u32,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
@@ -920,6 +931,7 @@ pub struct SametFundUpdateOperation {
     pub owner_account: crate::generated::ids::AccountId,
     pub fund_id: crate::generated::ids::SametFundId,
     pub delta_amount: Option<crate::generated::types::Asset>,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub new_fee_rate: Option<u32>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
@@ -962,7 +974,9 @@ pub struct CreditOfferCreateOperation {
     pub asset_type: crate::generated::ids::AssetId,
     #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub balance: i64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub fee_rate: u32,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub max_duration_seconds: u32,
     #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub min_deal_amount: i64,
@@ -995,7 +1009,9 @@ pub struct CreditOfferUpdateOperation {
     pub owner_account: crate::generated::ids::AccountId,
     pub offer_id: crate::generated::ids::CreditOfferId,
     pub delta_amount: Option<crate::generated::types::Asset>,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub fee_rate: Option<u32>,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub max_duration_seconds: Option<u32>,
     pub min_deal_amount: Option<i64>,
     pub enabled: Option<bool>,
@@ -1016,7 +1032,9 @@ pub struct CreditOfferAcceptOperation {
     pub offer_id: crate::generated::ids::CreditOfferId,
     pub borrow_amount: crate::generated::types::Asset,
     pub collateral: crate::generated::types::Asset,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub max_fee_rate: u32,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub min_duration_seconds: u32,
     pub extensions: crate::generated::types::CreditOfferAcceptOperationExt,
 }
@@ -1048,6 +1066,7 @@ pub struct CreditDealExpiredOperation {
     pub borrower: crate::generated::ids::AccountId,
     pub unpaid_amount: crate::generated::types::Asset,
     pub collateral: crate::generated::types::Asset,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub fee_rate: u32,
 }
 
@@ -1149,6 +1168,7 @@ pub struct DataRoomMemberAddOperation {
     pub account: crate::generated::ids::AccountId,
     pub member_key: String,
     pub epoch_keys: Vec<(u32, String)>,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub permissions: u32,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
@@ -1163,6 +1183,7 @@ pub struct DataRoomMemberUpdateOperation {
     pub caller: crate::generated::ids::AccountId,
     pub room: crate::generated::ids::DataRoomId,
     pub account: crate::generated::ids::AccountId,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub permissions: u32,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }

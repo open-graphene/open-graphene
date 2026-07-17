@@ -6,6 +6,17 @@ use serde::{Deserialize, Serialize};
 
 pub(crate) use open_graphene_core::deserialize_i64_from_number_or_decimal_string;
 
+#[allow(dead_code)]
+pub(crate) fn u32_schema() -> utoipa::openapi::schema::Object {
+    utoipa::openapi::schema::ObjectBuilder::new()
+        .schema_type(utoipa::openapi::schema::SchemaType::Type(
+            utoipa::openapi::schema::Type::Integer,
+        ))
+        .minimum(Some(0u32))
+        .maximum(Some(4294967295u64))
+        .build()
+}
+
 use open_graphene_core::deserialize_fixed_bytes_from_hex_string_or_byte_array;
 
 pub(crate) fn deserialize_fixed_bytes_20_from_hex_string_or_byte_array<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
@@ -258,6 +269,7 @@ pub struct AccountCreateOperationExt {
 pub struct AccountCreateOperationFeeParamsT {
     pub basic_fee: u64,
     pub premium_fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
 }
 
@@ -296,6 +308,7 @@ pub struct AccountObject {
     pub active_special_authority: crate::generated::static_variants::SpecialAuthority,
     pub top_n_control_flags: u8,
     pub allowed_assets: Option<Vec<crate::generated::ids::AssetId>>,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub creation_block_num: u32,
     pub creation_time: String,
 }
@@ -375,6 +388,7 @@ pub struct AccountUpdateOperationExt {
 pub struct AccountUpdateOperationFeeParamsT {
     #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub fee: i64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
 }
 
@@ -453,6 +467,7 @@ pub struct AssetCreateOperationFeeParamsT {
     pub symbol3: u64,
     pub symbol4: u64,
     pub long_symbol: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
 }
 
@@ -492,6 +507,7 @@ pub struct AssetGlobalSettleOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockAssetIssueOperationFeeParamsT)]
 pub struct AssetIssueOperationFeeParamsT {
     pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
 }
 
@@ -508,6 +524,7 @@ pub struct AssetObject {
     pub bitasset_data_id: Option<crate::generated::ids::AssetBitassetDataId>,
     pub buyback_account: Option<crate::generated::ids::AccountId>,
     pub for_liquidity_pool: Option<crate::generated::ids::LiquidityPoolId>,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub creation_block_num: u32,
     pub creation_time: String,
 }
@@ -608,6 +625,7 @@ pub struct AssetUpdateOperationExt {
 #[schema(as = GrapheneSwaplockAssetUpdateOperationFeeParamsT)]
 pub struct AssetUpdateOperationFeeParamsT {
     pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
 }
 
@@ -615,6 +633,7 @@ pub struct AssetUpdateOperationFeeParamsT {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockAuthority)]
 pub struct Authority {
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub weight_threshold: u32,
     pub account_auths: Vec<(crate::generated::ids::AccountId, u16)>,
     pub key_auths: Vec<(String, u16)>,
@@ -638,8 +657,10 @@ pub struct BidCollateralOperationFeeParamsT {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockBitassetOptions)]
 pub struct BitassetOptions {
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub feed_lifetime_sec: u32,
     pub minimum_feeds: u8,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub force_settlement_delay_sec: u32,
     pub force_settlement_offset_percent: u16,
     pub maximum_force_settlement_volume: u16,
@@ -688,6 +709,7 @@ pub struct BlindOutput {
 #[schema(as = GrapheneSwaplockBlindTransferOperationFeeParamsT)]
 pub struct BlindTransferOperationFeeParamsT {
     pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_output: u32,
 }
 
@@ -769,6 +791,7 @@ pub struct CallOrderUpdateOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockCddVestingPolicyInitializer)]
 pub struct CddVestingPolicyInitializer {
     pub start_claim: String,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub vesting_seconds: u32,
 }
 
@@ -778,12 +801,18 @@ pub struct CddVestingPolicyInitializer {
 pub struct ChainParameters {
     pub current_fees: crate::generated::types::FeeSchedule,
     pub block_interval: u8,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub maintenance_interval: u32,
     pub maintenance_skip_slots: u8,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub committee_proposal_review_period: u32,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub maximum_transaction_size: u32,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub maximum_block_size: u32,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub maximum_time_until_expiration: u32,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub maximum_proposal_lifetime: u32,
     pub maximum_asset_whitelist_authorities: u8,
     pub maximum_asset_feed_publishers: u8,
@@ -793,6 +822,7 @@ pub struct ChainParameters {
     pub reserve_percent_of_fee: u16,
     pub network_percent_of_fee: u16,
     pub lifetime_referrer_percent_of_fee: u16,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub cashback_vesting_period_seconds: u32,
     #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub cashback_vesting_threshold: i64,
@@ -856,6 +886,7 @@ pub struct CommitteeMemberUpdateOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockContentCardCreateOperationFeeParamsT)]
 pub struct ContentCardCreateOperationFeeParamsT {
     pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
 }
 
@@ -872,6 +903,7 @@ pub struct ContentCardObject {
     pub description: String,
     pub content_key: String,
     pub storage_data: String,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub key_epoch: u32,
     pub created: String,
     pub updated: String,
@@ -889,6 +921,7 @@ pub struct ContentCardRemoveOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockContentCardUpdateOperationFeeParamsT)]
 pub struct ContentCardUpdateOperationFeeParamsT {
     pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
 }
 
@@ -899,6 +932,7 @@ pub struct CreateTakeProfitOrderAction {
     pub fee_asset_id: crate::generated::ids::AssetId,
     pub spread_percent: u16,
     pub size_percent: u16,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub expiration_seconds: u32,
     pub repeat: bool,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
@@ -943,6 +977,7 @@ pub struct CreditOfferAcceptOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockCreditOfferCreateOperationFeeParamsT)]
 pub struct CreditOfferCreateOperationFeeParamsT {
     pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
 }
 
@@ -958,6 +993,7 @@ pub struct CreditOfferDeleteOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockCreditOfferUpdateOperationFeeParamsT)]
 pub struct CreditOfferUpdateOperationFeeParamsT {
     pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
 }
 
@@ -966,6 +1002,7 @@ pub struct CreditOfferUpdateOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockCustomAuthorityCreateOperationFeeParamsT)]
 pub struct CustomAuthorityCreateOperationFeeParamsT {
     pub basic_fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_byte: u32,
 }
 
@@ -980,9 +1017,13 @@ pub struct CustomAuthorityDeleteOperationFeeParamsT {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockCustomAuthorityOptionsType)]
 pub struct CustomAuthorityOptionsType {
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub max_custom_authority_lifetime_seconds: u32,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub max_custom_authorities_per_account: u32,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub max_custom_authorities_per_account_op: u32,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub max_custom_authority_restrictions: u32,
 }
 
@@ -991,6 +1032,7 @@ pub struct CustomAuthorityOptionsType {
 #[schema(as = GrapheneSwaplockCustomAuthorityUpdateOperationFeeParamsT)]
 pub struct CustomAuthorityUpdateOperationFeeParamsT {
     pub basic_fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_byte: u32,
 }
 
@@ -999,6 +1041,7 @@ pub struct CustomAuthorityUpdateOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockCustomOperationFeeParamsT)]
 pub struct CustomOperationFeeParamsT {
     pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
 }
 
@@ -1022,6 +1065,7 @@ pub struct DataRoomDeleteOperationFeeParamsT {
 pub struct DataRoomKeyEpochObject {
     pub id: crate::generated::ids::DataRoomKeyEpochId,
     pub room: crate::generated::ids::DataRoomId,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub epoch: u32,
     pub account: crate::generated::ids::AccountId,
     pub key: String,
@@ -1032,6 +1076,7 @@ pub struct DataRoomKeyEpochObject {
 #[schema(as = GrapheneSwaplockDataRoomMemberAddOperationFeeParamsT)]
 pub struct DataRoomMemberAddOperationFeeParamsT {
     pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
 }
 
@@ -1043,6 +1088,7 @@ pub struct DataRoomMemberObject {
     pub room: crate::generated::ids::DataRoomId,
     pub account: crate::generated::ids::AccountId,
     pub member_key: String,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub permissions: u32,
     pub added: String,
 }
@@ -1071,6 +1117,7 @@ pub struct DataRoomObject {
     pub description: String,
     pub subject: crate::generated::static_variants::DataRoomSubject,
     pub room_key: Option<String>,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub current_epoch: u32,
     pub created: String,
 }
@@ -1080,6 +1127,7 @@ pub struct DataRoomObject {
 #[schema(as = GrapheneSwaplockDataRoomRotateKeyOperationFeeParamsT)]
 pub struct DataRoomRotateKeyOperationFeeParamsT {
     pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
 }
 
@@ -1095,6 +1143,7 @@ pub struct DataRoomUpdateOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockDynamicGlobalPropertyObject)]
 pub struct DynamicGlobalPropertyObject {
     pub id: crate::generated::ids::DynamicGlobalPropertyId,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub head_block_number: u32,
     #[serde(serialize_with = "open_graphene_core::serialize_bytes_as_hex", deserialize_with = "crate::generated::types::deserialize_fixed_bytes_20_from_hex_string_or_byte_array")]
     #[schema(value_type = String)]
@@ -1110,11 +1159,15 @@ pub struct DynamicGlobalPropertyObject {
     pub total_pob: i64,
     #[serde(deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string")]
     pub total_inactive: i64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub accounts_registered_this_interval: u32,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub recently_missed_count: u32,
     pub current_aslot: u64,
     pub recent_slots_filled: String,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub dynamic_flags: u32,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub last_irreversible_block_num: u32,
 }
 
@@ -1149,6 +1202,7 @@ pub struct ExtendedAssetObject {
     pub bitasset_data_id: Option<crate::generated::ids::AssetBitassetDataId>,
     pub buyback_account: Option<crate::generated::ids::AccountId>,
     pub for_liquidity_pool: Option<crate::generated::ids::LiquidityPoolId>,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub creation_block_num: u32,
     pub creation_time: String,
     pub total_in_collateral: Option<i64>,
@@ -1166,6 +1220,7 @@ pub struct FbaDistributeOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockFeeSchedule)]
 pub struct FeeSchedule {
     pub parameters: Vec<crate::generated::static_variants::FeeParameters>,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub scale: u32,
 }
 
@@ -1235,6 +1290,7 @@ pub struct GlobalPropertyObject {
     pub id: crate::generated::ids::GlobalPropertyId,
     pub parameters: crate::generated::types::ChainParameters,
     pub pending_parameters: Option<crate::generated::types::ChainParameters>,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub next_available_vote_id: u32,
     pub active_committee_members: Vec<crate::generated::ids::CommitteeMemberId>,
     pub active_witnesses: Vec<crate::generated::ids::WitnessId>,
@@ -1277,7 +1333,9 @@ pub struct HtlcObject {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockHtlcOptions)]
 pub struct HtlcOptions {
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub max_timeout_secs: u32,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub max_preimage_size: u32,
 }
 
@@ -1307,7 +1365,9 @@ pub struct HtlcRefundOperationFeeParamsT {
 pub struct ImmutableChainParameters {
     pub min_committee_member_count: u16,
     pub min_witness_count: u16,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub num_special_accounts: u32,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub num_special_assets: u32,
 }
 
@@ -1372,7 +1432,9 @@ pub struct LimitOrderUpdateOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockLinearVestingPolicyInitializer)]
 pub struct LinearVestingPolicyInitializer {
     pub begin_timestamp: String,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub vesting_cliff_seconds: u32,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub vesting_duration_seconds: u32,
 }
 
@@ -1487,9 +1549,11 @@ pub struct OperationHistoryObject {
     pub id: crate::generated::ids::OperationHistoryId,
     pub op: crate::generated::static_variants::Operation,
     pub result: crate::generated::static_variants::OperationResult,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub block_num: u32,
     pub trx_in_block: u16,
     pub op_in_trx: u16,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub virtual_op: u32,
     pub is_virtual: bool,
     pub block_time: String,
@@ -1510,6 +1574,7 @@ pub struct OrderHistoryObject {
 #[schema(as = GrapheneSwaplockOverrideTransferOperationFeeParamsT)]
 pub struct OverrideTransferOperationFeeParamsT {
     pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
 }
 
@@ -1542,6 +1607,7 @@ pub struct PriceFeed {
 #[schema(as = GrapheneSwaplockProcessedTransaction)]
 pub struct ProcessedTransaction {
     pub ref_block_num: u16,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub ref_block_prefix: u32,
     pub expiration: String,
     pub operations: Vec<crate::generated::static_variants::Operation>,
@@ -1555,6 +1621,7 @@ pub struct ProcessedTransaction {
 #[schema(as = GrapheneSwaplockProposalCreateOperationFeeParamsT)]
 pub struct ProposalCreateOperationFeeParamsT {
     pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
 }
 
@@ -1587,6 +1654,7 @@ pub struct ProposalObject {
 #[schema(as = GrapheneSwaplockProposalUpdateOperationFeeParamsT)]
 pub struct ProposalUpdateOperationFeeParamsT {
     pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
 }
 
@@ -1610,7 +1678,9 @@ pub struct RefundWorkerInitializer {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockRestriction)]
 pub struct Restriction {
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub member_index: u32,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub restriction_type: u32,
     pub argument: crate::generated::static_variants::ArgumentType,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
@@ -1673,6 +1743,7 @@ pub struct SignedBlock {
 #[schema(as = GrapheneSwaplockSignedTransaction)]
 pub struct SignedTransaction {
     pub ref_block_num: u16,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub ref_block_prefix: u32,
     pub expiration: String,
     pub operations: Vec<crate::generated::static_variants::Operation>,
@@ -1718,6 +1789,7 @@ pub struct TopHoldersSpecialAuthority {
 #[schema(as = GrapheneSwaplockTransaction)]
 pub struct Transaction {
     pub ref_block_num: u16,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub ref_block_prefix: u32,
     pub expiration: String,
     pub operations: Vec<crate::generated::static_variants::Operation>,
@@ -1736,6 +1808,7 @@ pub struct TransferFromBlindOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockTransferOperationFeeParamsT)]
 pub struct TransferOperationFeeParamsT {
     pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
 }
 
@@ -1744,6 +1817,7 @@ pub struct TransferOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockTransferToBlindOperationFeeParamsT)]
 pub struct TransferToBlindOperationFeeParamsT {
     pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_output: u32,
 }
 
@@ -1813,6 +1887,7 @@ pub struct VoidResult {
 #[schema(as = GrapheneSwaplockWithdrawPermissionClaimOperationFeeParamsT)]
 pub struct WithdrawPermissionClaimOperationFeeParamsT {
     pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
 }
 
@@ -1838,6 +1913,7 @@ pub struct WithdrawPermissionObject {
     pub withdraw_from_account: crate::generated::ids::AccountId,
     pub authorized_account: crate::generated::ids::AccountId,
     pub withdrawal_limit: crate::generated::types::Asset,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
     pub withdrawal_period_sec: u32,
     pub period_start_time: String,
     pub expiration: String,

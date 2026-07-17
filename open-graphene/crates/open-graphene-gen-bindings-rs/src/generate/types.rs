@@ -12,6 +12,11 @@ pub(crate) fn render_types(
     out.push_str(
         "pub(crate) use open_graphene_core::deserialize_i64_from_number_or_decimal_string;\n\n",
     );
+    // OpenAPI has no unsigned 32-bit format and `int32` caps values at 2^31-1,
+    // which real u32 wire values (e.g. TaPoS `ref_block_prefix`) exceed.
+    out.push_str(
+        "#[allow(dead_code)]\npub(crate) fn u32_schema() -> utoipa::openapi::schema::Object {\n    utoipa::openapi::schema::ObjectBuilder::new()\n        .schema_type(utoipa::openapi::schema::SchemaType::Type(\n            utoipa::openapi::schema::Type::Integer,\n        ))\n        .minimum(Some(0u32))\n        .maximum(Some(4294967295u64))\n        .build()\n}\n\n",
+    );
     if protocol_uses_fixed_bytes(protocol) {
         // The generic hex-or-byte-array decoder is shared typing; it lives in graphene-core.
         // Only the per-length wrappers below (which lengths a chain uses) stay generated.
@@ -259,6 +264,12 @@ pub(crate) fn render_fields(
             out.push_str(
                 "    #[serde(deserialize_with = \"crate::generated::types::deserialize_i64_from_number_or_decimal_string\")]\n",
             );
+        }
+        // u32 must not inherit utoipa's `int32` format; see u32_schema.
+        let is_u32 = matches!(field.ty, TypeRef::Uint32)
+            || matches!(&field.ty, TypeRef::Optional { inner } if matches!(**inner, TypeRef::Uint32));
+        if is_u32 {
+            out.push_str("    #[schema(schema_with = crate::generated::types::u32_schema)]\n");
         }
         // Byte fields are hex strings on the Graphene wire: decode hex-or-array, encode as hex.
         if let TypeRef::FixedBytes { bytes } = field.ty {
