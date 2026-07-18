@@ -824,7 +824,7 @@ mod tests {
     #[test]
     fn chain_id_hex_decodes_exact_32_byte_lowercase_hex() {
         let decoded =
-            decode_chain_id_hex("2267f694d96b7ffdcba1a98c63c09e720a18a85ad34954e299c66d5a42234098")
+            decode_chain_id_hex("f2491c85896bb49f936152d59b850ca05bb8e09d9027eb630267697ee483b05e")
                 .expect("decode valid chain id");
         assert_eq!(decoded[0..4], [0x22, 0x67, 0xf6, 0x94]);
         assert_eq!(decoded[28..32], [0x42, 0x23, 0x40, 0x98]);
@@ -840,7 +840,7 @@ mod tests {
             })
         ));
         assert!(matches!(
-            decode_chain_id_hex("2267F694d96b7ffdcba1a98c63c09e720a18a85ad34954e299c66d5a42234098"),
+            decode_chain_id_hex("f2491c85896bb49f936152d59b850ca05bb8e09d9027eb630267697ee483b05e"),
             Err(FcSerializeError::InvalidChainId {
                 reason: "chain id must be lowercase hex",
                 ..
