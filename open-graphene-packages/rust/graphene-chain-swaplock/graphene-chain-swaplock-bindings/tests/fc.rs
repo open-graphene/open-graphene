@@ -2084,7 +2084,7 @@ fn transaction_signature_digest_matches_bitsharesjs_signature_fixture_digest() {
             .signature_preimage_bytes()
             .expect("build fixture signature preimage"),
         decode_hex(
-            "f2491c85896bb49f936152d59b850ca05bb8e09d9027eb630267697ee483b05e0100020000000300000001000000000000000000000102a08601000000000000000000",
+            "f990ce83af5cf2d55c180ca4bd4b34161ccff2b2f8cc7d4987eea9555153930e0100020000000300000001000000000000000000000102a08601000000000000000000",
         )
     );
     let expected_digest: [u8; 32] =
