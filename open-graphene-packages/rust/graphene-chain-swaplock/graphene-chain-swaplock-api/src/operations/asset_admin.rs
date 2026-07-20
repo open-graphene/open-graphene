@@ -93,7 +93,9 @@ impl<'session> AssetCreateRequest<'session> {
                 max_market_fee: 0,
                 issuer_permissions: 0,
                 flags: 0,
-                core_exchange_rate: Price::new(core(), core()),
+                // base = tworzony asset (placeholder 1.3.1, nadpisywany przez ewaluator na next_asset_id),
+                // quote = core. Graphene wymaga base.asset_id != quote.asset_id i jedna strona = core.
+                core_exchange_rate: Price::new(Asset::new(1, AssetId("1.3.1".to_string())), core()),
                 whitelist_authorities: vec![],
                 blacklist_authorities: vec![],
                 whitelist_markets: vec![],
