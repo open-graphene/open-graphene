@@ -1042,10 +1042,19 @@ pub(crate) fn render_fc_transfer_operation_impl(
     out.push_str("        self.from.fc_serialize(out)?;\n");
     out.push_str("        self.to.fc_serialize(out)?;\n");
     out.push_str("        self.amount.fc_serialize(out)?;\n");
-    out.push_str("        if self.memo.is_some() {\n");
-    out.push_str("            return Err(FcSerializeError::UnsupportedValue { type_name: \"MemoData\", reason: \"memo FC serialization is not implemented in the minimal transfer slice\" });\n");
+    // optional<memo_data>: 0x00 when absent, 0x01 followed by the memo when present.
+    // MemoData has a full FcSerialize impl of its own (see the struct templates), so
+    // refusing to serialise a present memo would only force callers to hand-patch the
+    // generated file — which is exactly how this output drifted from the generator before.
+    out.push_str("        match &self.memo {\n");
+    out.push_str("            Some(memo) => {\n");
+    out.push_str("                out.push(1);\n");
+    out.push_str("                memo.fc_serialize(out)?;\n");
+    out.push_str("            }\n");
+    out.push_str("            None => {\n");
+    out.push_str("                out.push(0);\n");
+    out.push_str("            }\n");
     out.push_str("        }\n");
-    out.push_str("        out.push(0);\n");
     out.push_str("        self.extensions.fc_serialize(out)?;\n");
     out.push_str("        Ok(())\n");
     out.push_str("    }\n");

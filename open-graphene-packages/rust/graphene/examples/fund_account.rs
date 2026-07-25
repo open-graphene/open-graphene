@@ -27,8 +27,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .max_fee_raw(1_000_000)
         .prepare()
         .await?;
-    let signed = api.operations().sign_transfer_with_wif(prepared, &wif).await?;
-    let confirmation = api.network_broadcast().broadcast_signed_transfer(signed).await?;
+    let signed = api
+        .operations()
+        .sign_transfer_with_wif(prepared, &wif)
+        .await?;
+    let confirmation = api
+        .network_broadcast()
+        .broadcast_signed_transfer(signed)
+        .await?;
 
     println!("sent {amount} core to {to}: {confirmation:?}");
     Ok(())

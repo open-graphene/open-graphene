@@ -11,12 +11,14 @@ pub mod keys;
 pub mod login;
 pub mod memo;
 pub mod signature;
+pub mod void;
 pub use address::Address;
 pub use brainkey::{BrainKey, SUGGESTED_BRAIN_KEY_WORDS};
 pub use keys::{PrivateKey, PublicKey};
 pub use login::{AccountKeys, account_role_key};
 pub use memo::{decrypt_with_checksum, encrypt_with_checksum, unique_nonce};
 pub use signature::Signature;
+pub use void::VoidT;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FcSerializeError {
@@ -497,9 +499,8 @@ pub fn sign_digest_compact(digest: [u8; 32], private_key: [u8; 32]) -> Result<[u
 
 /// `(n-1)/2` krzywej secp256k1 — granica low-S z BIP-62/BIP-146.
 const SECP256K1_HALF_ORDER: [u8; 32] = [
-    0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-    0xff, 0x5d, 0x57, 0x6e, 0x73, 0x57, 0xa4, 0x50, 0x1d, 0xdf, 0xe9, 0x2f, 0x46, 0x68, 0x1b,
-    0x20, 0xa0,
+    0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0x5d, 0x57, 0x6e, 0x73, 0x57, 0xa4, 0x50, 0x1d, 0xdf, 0xe9, 0x2f, 0x46, 0x68, 0x1b, 0x20, 0xa0,
 ];
 
 /// Kanoniczność jak w Bitcoinie (BIP-62/BIP-146): wyłącznie low-S
@@ -821,13 +822,20 @@ mod tests {
         ));
     }
 
+    /// A synthetic id, deliberately not the deployed chain's.
+    ///
+    /// These tests exercise hex decoding, not a particular network. They used to embed the
+    /// live chain id, and when it changed a find-and-replace swapped the input while leaving
+    /// the expected bytes of the previous one — so the suite failed while the decoder was
+    /// correct. Nothing here should move when a chain is re-genesised.
+    const SAMPLE_CHAIN_ID_HEX: &str =
+        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+
     #[test]
     fn chain_id_hex_decodes_exact_32_byte_lowercase_hex() {
-        let decoded =
-            decode_chain_id_hex("f990ce83af5cf2d55c180ca4bd4b34161ccff2b2f8cc7d4987eea9555153930e")
-                .expect("decode valid chain id");
-        assert_eq!(decoded[0..4], [0x22, 0x67, 0xf6, 0x94]);
-        assert_eq!(decoded[28..32], [0x42, 0x23, 0x40, 0x98]);
+        let decoded = decode_chain_id_hex(SAMPLE_CHAIN_ID_HEX).expect("decode valid chain id");
+        assert_eq!(decoded[0..4], [0x01, 0x23, 0x45, 0x67]);
+        assert_eq!(decoded[28..32], [0x89, 0xab, 0xcd, 0xef]);
     }
 
     #[test]
@@ -839,8 +847,11 @@ mod tests {
                 ..
             })
         ));
+        // Uppercase is rejected even though it is valid hex — Graphene chain ids are
+        // canonically lowercase, and accepting both would let two spellings of one chain
+        // produce two different-looking configurations.
         assert!(matches!(
-            decode_chain_id_hex("f990ce83af5cf2d55c180ca4bd4b34161ccff2b2f8cc7d4987eea9555153930e"),
+            decode_chain_id_hex(&SAMPLE_CHAIN_ID_HEX.to_uppercase()),
             Err(FcSerializeError::InvalidChainId {
                 reason: "chain id must be lowercase hex",
                 ..

@@ -304,7 +304,9 @@ pub(crate) fn render_fields(
 
 pub(crate) fn render_type_ref(protocol: &Protocol, ty: &TypeRef) -> Result<String> {
     Ok(match ty {
-        TypeRef::Void => "()".to_string(),
+        // Not `()`: that serialises to JSON `null`, which nodes reject with "Bad Cast".
+        // `VoidT` writes `{}` in JSON and, like `()`, nothing at all in FC binary.
+        TypeRef::Void => "open_graphene_fc::VoidT".to_string(),
         TypeRef::Bool => "bool".to_string(),
         TypeRef::Uint8 => "u8".to_string(),
         TypeRef::Uint16 => "u16".to_string(),

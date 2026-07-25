@@ -170,7 +170,7 @@ impl<'session> DataRoomCreateRequest<'session> {
             owner: owner.into(),
             name: name.into(),
             description: String::new(),
-            subject: DataRoomSubject::VoidT(Box::new(())),
+            subject: DataRoomSubject::VoidT(Box::new(open_graphene_fc::VoidT)),
             room_key: None,
         }
     }
@@ -263,7 +263,7 @@ impl<'session> DataRoomUpdateRequest<'session> {
 
     /// Detach the room from its subject (owner only).
     pub fn new_subject_none(mut self) -> Self {
-        self.new_subject = Some(DataRoomSubject::VoidT(Box::new(())));
+        self.new_subject = Some(DataRoomSubject::VoidT(Box::new(open_graphene_fc::VoidT)));
         self
     }
 
@@ -581,6 +581,11 @@ mod tests {
         );
     }
 
+    /// A `void_t` subject must go out as `[0, {}]`, never `[0, null]`.
+    ///
+    /// This asserted `null` until 2026-07-25 — which is what serialising `()` produces, and
+    /// what a node rejects with `Bad Cast: Invalid cast from type 'null_type' to Object`,
+    /// making the builder's own default unusable. See `open_graphene_fc::VoidT`.
     #[test]
     fn data_room_create_defaults_to_a_public_room_without_subject() {
         let operation = Operation::data_room_create(DataRoomCreateOperation {
@@ -588,7 +593,7 @@ mod tests {
             owner: AccountId("1.2.100".to_string()),
             name: "deal-room".to_string(),
             description: String::new(),
-            subject: DataRoomSubject::VoidT(Box::new(())),
+            subject: DataRoomSubject::VoidT(Box::new(open_graphene_fc::VoidT)),
             room_key: None,
             extensions: vec![],
         });
@@ -600,7 +605,7 @@ mod tests {
                 "owner": "1.2.100",
                 "name": "deal-room",
                 "description": "",
-                "subject": [0, null],
+                "subject": [0, {}],
                 "extensions": []
             }])
         );

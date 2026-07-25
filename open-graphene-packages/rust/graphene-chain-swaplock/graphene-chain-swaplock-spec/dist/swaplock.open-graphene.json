@@ -3,7 +3,7 @@
   "chain": {
     "id": "swaplock",
     "publicKeyPrefix": "BTS",
-    "chainId": "2267f694d96b7ffdcba1a98c63c09e720a18a85ad34954e299c66d5a42234098"
+    "chainId": "f990ce83af5cf2d55c180ca4bd4b34161ccff2b2f8cc7d4987eea9555153930e"
   },
   "structs": [
     {

@@ -80,9 +80,12 @@ pub(crate) fn render_static_variant_schema_helpers(out: &mut String) {
     );
 }
 
+/// Rust type the generator emits for Graphene's `void_t` (see `render_type_ref`).
+const VOID_TYPE: &str = "open_graphene_fc::VoidT";
+
 /// The Rust expression producing the OpenAPI schema for one arm payload.
 fn static_variant_payload_expr(ty: &str) -> String {
-    if ty == "()" || ty == "serde_json::Value" || ty.starts_with('(') {
+    if ty == VOID_TYPE || ty == "serde_json::Value" || ty.starts_with('(') {
         // Void, free-form JSON and pair payloads have no precise schema.
         "static_variant_any_payload()".to_string()
     } else if ty == "Vec<u8>" {
@@ -279,11 +282,11 @@ pub(crate) fn render_future_extensions_empty_impl(
 ) {
     if arms
         .iter()
-        .any(|(_, variant_name, ty, _)| variant_name == "VoidT" && ty == "()")
+        .any(|(_, variant_name, ty, _)| variant_name == "VoidT" && ty == VOID_TYPE)
     {
         out.push_str("impl FutureExtensions {\n");
         out.push_str("    pub fn empty() -> Self {\n");
-        out.push_str("        Self::VoidT(Box::new(()))\n");
+        out.push_str("        Self::VoidT(Box::new(open_graphene_fc::VoidT))\n");
         out.push_str("    }\n");
         out.push_str("}\n\n");
     }
@@ -565,7 +568,7 @@ mod tests {
 
         assert!(out.contains("impl FutureExtensions"));
         assert!(out.contains("pub fn empty() -> Self"));
-        assert!(out.contains("Self::VoidT(Box::new(()))"));
+        assert!(out.contains("Self::VoidT(Box::new(open_graphene_fc::VoidT))"));
         assert!(!out.contains("pub fn void_t"));
     }
 }

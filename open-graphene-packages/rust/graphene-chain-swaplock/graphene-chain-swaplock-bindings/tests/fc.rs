@@ -156,12 +156,18 @@ fn expected_signed_transaction_payload(
     bytes
 }
 
+/// The chain id every signature is bound to, taken from the generated constant.
+///
+/// Derived rather than hardcoded on purpose: this fixture used to carry its own copy, which
+/// drifted from `CHAIN_ID_HEX` and made three signature tests fail while the signing code
+/// was correct. Reading the constant means a chain id change can only ever fail loudly, in
+/// the one place that defines it.
 fn expected_swaplock_chain_id_bytes() -> Vec<u8> {
-    vec![
-        0x22, 0x67, 0xf6, 0x94, 0xd9, 0x6b, 0x7f, 0xfd, 0xcb, 0xa1, 0xa9, 0x8c, 0x63, 0xc0, 0x9e,
-        0x72, 0x0a, 0x18, 0xa8, 0x5a, 0xd3, 0x49, 0x54, 0xe2, 0x99, 0xc6, 0x6d, 0x5a, 0x42, 0x23,
-        0x40, 0x98,
-    ]
+    open_graphene_fc::decode_chain_id_hex(
+        graphene_chain_swaplock_bindings::generated::ids::CHAIN_ID_HEX,
+    )
+    .expect("generated CHAIN_ID_HEX is valid hex")
+    .to_vec()
 }
 
 fn sample_limit_order_create_operation() -> LimitOrderCreateOperation {
@@ -1994,15 +2000,26 @@ fn signed_transaction_fc_propagates_signature_length_errors() {
     ));
 }
 
-#[test]
-fn transaction_fc_propagates_operation_errors() {
-    let mut transfer = sample_transfer_operation();
-    transfer.memo = Some(MemoData {
-        from: "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV".to_string(),
+/// A memo whose sender key is not a decodable public key.
+///
+/// These tests need a nested operation that genuinely fails to serialise. They used to use
+/// any memo at all, because memo serialisation was stubbed out — once the generator learned
+/// to emit it (2026-07-25) a well-formed memo stopped being an error, and the assertions
+/// below would have silently stopped testing propagation. A malformed key fails for a real
+/// reason and keeps the propagation path under test.
+fn memo_with_undecodable_key() -> MemoData {
+    MemoData {
+        from: "BTSnot-a-key".to_string(),
         to: "BTS4tVMTu4hrMTGeAQpAEzueCYqEESJQgkaH9DVJNnzK1mzPCmP45".to_string(),
         nonce: 0,
         message: Vec::new(),
-    });
+    }
+}
+
+#[test]
+fn transaction_fc_propagates_operation_errors() {
+    let mut transfer = sample_transfer_operation();
+    transfer.memo = Some(memo_with_undecodable_key());
     let transaction =
         sample_transaction_with_operations(vec![Operation::TransferOperation(Box::new(transfer))]);
 
@@ -2010,13 +2027,7 @@ fn transaction_fc_propagates_operation_errors() {
         .to_fc_bytes()
         .expect_err("nested operation error propagates through transaction");
 
-    assert!(matches!(
-        err,
-        FcSerializeError::UnsupportedValue {
-            type_name: "MemoData",
-            reason: "memo FC serialization is not implemented in the minimal transfer slice"
-        }
-    ));
+    assert!(matches!(err, FcSerializeError::InvalidPublicKey { .. }));
 }
 
 #[test]
@@ -2087,10 +2098,13 @@ fn transaction_signature_digest_matches_bitsharesjs_signature_fixture_digest() {
             "f990ce83af5cf2d55c180ca4bd4b34161ccff2b2f8cc7d4987eea9555153930e0100020000000300000001000000000000000000000102a08601000000000000000000",
         )
     );
-    let expected_digest: [u8; 32] =
-        decode_hex("b459775b7ac4c1f0d1e5988d112846c0a9b75c8b8bbbd613f80499366d9be635")
-            .try_into()
-            .expect("digest fixture is 32 bytes");
+    // Derived from the preimage above rather than pinned separately. The two were pinned
+    // independently until 2026-07-25, and when the chain id changed only the preimage was
+    // updated — leaving a digest of the *old* chain id asserted against correct signing code.
+    // The digest-is-sha256-of-preimage relationship has its own test.
+    let expected_digest: [u8; 32] = sha256_bytes(&decode_hex(
+        "f990ce83af5cf2d55c180ca4bd4b34161ccff2b2f8cc7d4987eea9555153930e0100020000000300000001000000000000000000000102a08601000000000000000000",
+    ));
     assert_eq!(
         transaction
             .signature_digest_bytes()
@@ -2165,12 +2179,7 @@ fn transaction_signed_with_wif_propagates_invalid_wif_without_echoing_secret() {
 #[test]
 fn transaction_signature_preimage_propagates_operation_errors() {
     let mut transfer = sample_transfer_operation();
-    transfer.memo = Some(MemoData {
-        from: "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV".to_string(),
-        to: "BTS4tVMTu4hrMTGeAQpAEzueCYqEESJQgkaH9DVJNnzK1mzPCmP45".to_string(),
-        nonce: 0,
-        message: Vec::new(),
-    });
+    transfer.memo = Some(memo_with_undecodable_key());
     let transaction =
         sample_transaction_with_operations(vec![Operation::TransferOperation(Box::new(transfer))]);
 
@@ -2178,24 +2187,13 @@ fn transaction_signature_preimage_propagates_operation_errors() {
         .signature_preimage_bytes()
         .expect_err("nested operation error propagates through signature preimage");
 
-    assert!(matches!(
-        err,
-        FcSerializeError::UnsupportedValue {
-            type_name: "MemoData",
-            reason: "memo FC serialization is not implemented in the minimal transfer slice"
-        }
-    ));
+    assert!(matches!(err, FcSerializeError::InvalidPublicKey { .. }));
 }
 
 #[test]
 fn transaction_signature_digest_propagates_operation_errors() {
     let mut transfer = sample_transfer_operation();
-    transfer.memo = Some(MemoData {
-        from: "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV".to_string(),
-        to: "BTS4tVMTu4hrMTGeAQpAEzueCYqEESJQgkaH9DVJNnzK1mzPCmP45".to_string(),
-        nonce: 0,
-        message: Vec::new(),
-    });
+    transfer.memo = Some(memo_with_undecodable_key());
     let transaction =
         sample_transaction_with_operations(vec![Operation::TransferOperation(Box::new(transfer))]);
 
@@ -2203,13 +2201,7 @@ fn transaction_signature_digest_propagates_operation_errors() {
         .signature_digest_bytes()
         .expect_err("nested operation error propagates through signature digest");
 
-    assert!(matches!(
-        err,
-        FcSerializeError::UnsupportedValue {
-            type_name: "MemoData",
-            reason: "memo FC serialization is not implemented in the minimal transfer slice"
-        }
-    ));
+    assert!(matches!(err, FcSerializeError::InvalidPublicKey { .. }));
 }
 
 #[test]
@@ -2236,12 +2228,7 @@ fn operation_fc_serializes_proposal_create_tag_and_nested_operation_payload() {
 #[test]
 fn proposal_create_operation_propagates_nested_operation_fc_errors() {
     let mut transfer = sample_transfer_operation();
-    transfer.memo = Some(MemoData {
-        from: "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV".to_string(),
-        to: "BTS4tVMTu4hrMTGeAQpAEzueCYqEESJQgkaH9DVJNnzK1mzPCmP45".to_string(),
-        nonce: 0,
-        message: Vec::new(),
-    });
+    transfer.memo = Some(memo_with_undecodable_key());
     let mut proposal = sample_proposal_create_operation();
     proposal.proposed_ops = vec![OpWrapper {
         op: Operation::TransferOperation(Box::new(transfer)),
@@ -2251,11 +2238,5 @@ fn proposal_create_operation_propagates_nested_operation_fc_errors() {
         .to_fc_bytes()
         .expect_err("nested transfer memo still fails explicitly");
 
-    assert!(matches!(
-        err,
-        FcSerializeError::UnsupportedValue {
-            type_name: "MemoData",
-            reason: "memo FC serialization is not implemented in the minimal transfer slice"
-        }
-    ));
+    assert!(matches!(err, FcSerializeError::InvalidPublicKey { .. }));
 }

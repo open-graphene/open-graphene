@@ -255,9 +255,10 @@ impl<'session> AccountCreateRequest<'session> {
     pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
         let owner = match self.owner_authority {
             Some(authority) => authority,
-            None => single_key_authority(self.owner_key.ok_or(
-                SwaplockApiError::MissingTransferField { field: "owner_key" },
-            )?),
+            None => single_key_authority(
+                self.owner_key
+                    .ok_or(SwaplockApiError::MissingTransferField { field: "owner_key" })?,
+            ),
         };
         let active = match self.active_authority {
             Some(authority) => authority,

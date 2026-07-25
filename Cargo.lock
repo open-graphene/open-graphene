@@ -425,6 +425,7 @@ dependencies = [
  "graphene-chain-swaplock-bindings",
  "hex",
  "open-graphene-core",
+ "open-graphene-fc",
  "open-graphene-transport",
  "serde",
  "serde_json",
@@ -647,8 +648,11 @@ dependencies = [
  "hmac",
  "ripemd",
  "secp256k1",
+ "serde",
+ "serde_json",
  "sha1",
  "sha2",
+ "utoipa",
  "zeroize",
 ]
 
