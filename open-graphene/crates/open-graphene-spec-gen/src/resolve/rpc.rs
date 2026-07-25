@@ -388,6 +388,7 @@ mod tests {
             },
             source: SourceConfig {
                 chain_repo: "../../blockchains/bitshares/bitshares-core".to_string(),
+                chain_repo_env: None,
             },
             output: OutputConfig {
                 dist: "./dist/bitshares.open-graphene.json".to_string(),

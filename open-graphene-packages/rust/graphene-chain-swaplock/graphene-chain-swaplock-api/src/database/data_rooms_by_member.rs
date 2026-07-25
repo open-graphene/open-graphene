@@ -13,7 +13,7 @@ use crate::SwaplockApiError;
 /// unset.
 pub struct DataRoomsByMemberRequest<'session> {
     pub(super) session: &'session mut GrapheneSession,
-    pub(super) account_name_or_id: String,
+    pub(super) member_name_key_or_id: String,
     pub(super) limit: Option<u32>,
     pub(super) start_id: Option<String>,
 }
@@ -36,7 +36,7 @@ impl DataRoomsByMemberRequest<'_> {
 
     pub async fn get(self) -> Result<Vec<DataRoomMemberObject>, SwaplockApiError> {
         let params = rpc_get_data_rooms_by_member::Params {
-            account_name_or_id: self.account_name_or_id,
+            member_name_key_or_id: self.member_name_key_or_id,
             limit: self.limit,
             start_id: self.start_id.map(DataRoomMemberId),
         }

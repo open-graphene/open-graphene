@@ -601,7 +601,8 @@ mod tests {
             "last_irreversible_block_num": 120,
             "last_vote_tally_time": "2026-01-01T00:00:00",
             "total_pob": 0,
-            "total_inactive": 0
+            "total_inactive": 0,
+            "maintenance_seed": 0
         }]]))
         .unwrap();
 

@@ -1239,7 +1239,7 @@ pub struct DataRoomMemberAddOperation {
     pub fee: crate::generated::types::Asset,
     pub caller: crate::generated::ids::AccountId,
     pub room: crate::generated::ids::DataRoomId,
-    pub account: crate::generated::ids::AccountId,
+    pub member: crate::generated::static_variants::DataRoomMemberRef,
     pub member_key: String,
     pub epoch_keys: Vec<(u32, String)>,
     #[schema(schema_with = crate::generated::types::u32_schema)]
@@ -1256,7 +1256,7 @@ pub struct DataRoomMemberUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub caller: crate::generated::ids::AccountId,
     pub room: crate::generated::ids::DataRoomId,
-    pub account: crate::generated::ids::AccountId,
+    pub member: crate::generated::static_variants::DataRoomMemberRef,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub permissions: u32,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
@@ -1271,7 +1271,7 @@ pub struct DataRoomMemberRemoveOperation {
     pub fee: crate::generated::types::Asset,
     pub caller: crate::generated::ids::AccountId,
     pub room: crate::generated::ids::DataRoomId,
-    pub account: crate::generated::ids::AccountId,
+    pub member: crate::generated::static_variants::DataRoomMemberRef,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
@@ -1285,7 +1285,7 @@ pub struct DataRoomRotateKeyOperation {
     pub caller: crate::generated::ids::AccountId,
     pub room: crate::generated::ids::DataRoomId,
     pub new_room_key: String,
-    pub member_keys: Vec<(crate::generated::ids::AccountId, String)>,
+    pub member_keys: Vec<(crate::generated::static_variants::DataRoomMemberRef, String)>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
@@ -1296,7 +1296,8 @@ pub const CONTENT_CARD_CREATE_OPERATION_ID: u32 = 85;
 #[schema(as = GrapheneSwaplockContentCardCreateOperation)]
 pub struct ContentCardCreateOperation {
     pub fee: crate::generated::types::Asset,
-    pub author: crate::generated::ids::AccountId,
+    pub payer: crate::generated::ids::AccountId,
+    pub author: crate::generated::static_variants::DataRoomMemberRef,
     pub room: crate::generated::ids::DataRoomId,
     pub hash: String,
     pub url: String,
@@ -1314,7 +1315,8 @@ pub const CONTENT_CARD_UPDATE_OPERATION_ID: u32 = 86;
 #[schema(as = GrapheneSwaplockContentCardUpdateOperation)]
 pub struct ContentCardUpdateOperation {
     pub fee: crate::generated::types::Asset,
-    pub caller: crate::generated::ids::AccountId,
+    pub payer: crate::generated::ids::AccountId,
+    pub caller: crate::generated::static_variants::DataRoomMemberRef,
     pub content_id: crate::generated::ids::ContentCardId,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub new_hash: Option<String>,
@@ -1338,7 +1340,36 @@ pub const CONTENT_CARD_REMOVE_OPERATION_ID: u32 = 87;
 #[schema(as = GrapheneSwaplockContentCardRemoveOperation)]
 pub struct ContentCardRemoveOperation {
     pub fee: crate::generated::types::Asset,
-    pub caller: crate::generated::ids::AccountId,
+    pub payer: crate::generated::ids::AccountId,
+    pub caller: crate::generated::static_variants::DataRoomMemberRef,
     pub content_id: crate::generated::ids::ContentCardId,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const COMMIT_CREATE_OPERATION_ID: u32 = 88;
+
+/// Protocol operation `commit_create_operation` with wire tag 88.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockCommitCreateOperation)]
+pub struct CommitCreateOperation {
+    pub fee: crate::generated::types::Asset,
+    pub account: crate::generated::ids::AccountId,
+    pub hash: String,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    pub maintenance_time: u32,
+    pub witness_key: String,
+}
+
+pub const REVEAL_CREATE_OPERATION_ID: u32 = 89;
+
+/// Protocol operation `reveal_create_operation` with wire tag 89.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockRevealCreateOperation)]
+pub struct RevealCreateOperation {
+    pub fee: crate::generated::types::Asset,
+    pub account: crate::generated::ids::AccountId,
+    pub value: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    pub maintenance_time: u32,
+    pub witness_key: String,
 }

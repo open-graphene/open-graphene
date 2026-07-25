@@ -17,7 +17,14 @@ public_key_prefix = "BTS"
 chain_id = "f990ce83af5cf2d55c180ca4bd4b34161ccff2b2f8cc7d4987eea9555153930e"
 
 [source]
+# Domyślnie klon przypięty na commit, który CI pobiera pod blockchains/ - to on sprawia, że
+# sprawdzenie „zacommitowany output zgadza się z generatorem" cokolwiek znaczy.
 chain_repo = "../../../../blockchains/swaplock/swaplock-core"
+# Pracując nad łańcuchem ustaw to na roboczy klon, np.
+#   export SWAPLOCK_CORE_REPO=~/workspaces/globalmarketchain/boards/boards-swaplock/swaplock-core
+# Przypięta kopia z definicji zostaje w tyle, a spec generowany ze starego źródła cicho
+# rozjeżdża się z tym, co robi węzeł.
+chain_repo_env = "SWAPLOCK_CORE_REPO"
 
 [output]
 dist = "./dist/swaplock.open-graphene.json"

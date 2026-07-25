@@ -326,11 +326,14 @@ fn sample_chain_parameters() -> ChainParameters {
         accounts_per_fee_scale: 0,
         account_fee_scale_bitshifts: 0,
         max_authority_depth: 0,
+        swaplock_witnesses_top_max: 0,
+        swaplock_witnesses_active_max: 0,
         extensions: ChainParametersExt {
             updatable_htlc_options: None,
             custom_authority_options: None,
             market_fee_network_percent: None,
             maker_fee_discount_percent: None,
+            electoral_threshold: None,
         },
     }
 }
@@ -689,8 +692,9 @@ fn expected_fee_schedule_payload() -> Vec<u8> {
 fn expected_chain_parameters_payload() -> Vec<u8> {
     let mut bytes = expected_fee_schedule_payload();
     // remaining scalar chain_parameters fields are zero in sample_chain_parameters, then the empty
-    // chain_parameters_ext extension set is a single varint 0.
-    bytes.extend(vec![0; 85]);
+    // chain_parameters_ext extension set is a single varint 0. Two of those bytes are the rdPOS
+    // witness caps (swaplock_witnesses_top_max / _active_max), both uint8_t.
+    bytes.extend(vec![0; 87]);
     bytes
 }
 

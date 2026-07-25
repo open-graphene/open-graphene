@@ -13,7 +13,7 @@ use crate::SwaplockApiError;
 pub struct DataRoomKeyEpochsRequest<'session> {
     pub(super) session: &'session mut GrapheneSession,
     pub(super) room_id: String,
-    pub(super) account_name_or_id: String,
+    pub(super) member_name_key_or_id: String,
     pub(super) limit: Option<u32>,
     pub(super) start_id: Option<String>,
 }
@@ -37,7 +37,7 @@ impl DataRoomKeyEpochsRequest<'_> {
     pub async fn get(self) -> Result<Vec<DataRoomKeyEpochObject>, SwaplockApiError> {
         let params = rpc_get_data_room_key_epochs::Params {
             room_id: DataRoomId(self.room_id),
-            account_name_or_id: self.account_name_or_id,
+            member_name_key_or_id: self.member_name_key_or_id,
             limit: self.limit,
             start_id: self.start_id.map(DataRoomKeyEpochId),
         }

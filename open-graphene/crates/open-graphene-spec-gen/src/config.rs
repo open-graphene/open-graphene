@@ -26,6 +26,14 @@ pub struct ChainConfig {
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 pub struct SourceConfig {
     pub chain_repo: String,
+    /// Name of an environment variable that, when set, replaces @ref chain_repo.
+    ///
+    /// CI pins the chain to a known commit and fetches it under `blockchains/`, which is what
+    /// makes "committed output must match the generators" a meaningful check. A developer
+    /// working on the chain wants the opposite - the live working copy, which the pinned clone
+    /// can never match - so the override exists to point there without touching the default.
+    #[serde(default)]
+    pub chain_repo_env: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]

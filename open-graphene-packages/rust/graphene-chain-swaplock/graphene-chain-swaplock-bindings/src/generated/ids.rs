@@ -9,11 +9,11 @@ pub const CHAIN_ID: &str = "swaplock";
 pub const CHAIN_ID_HEX: &str = "f990ce83af5cf2d55c180ca4bd4b34161ccff2b2f8cc7d4987eea9555153930e";
 pub const PUBLIC_KEY_PREFIX: &str = "BTS";
 
-pub const STRUCT_COUNT: usize = 255;
+pub const STRUCT_COUNT: usize = 259;
 pub const ENUM_COUNT: usize = 11;
-pub const STATIC_VARIANT_COUNT: usize = 12;
-pub const OPERATION_COUNT: usize = 88;
-pub const OBJECT_TYPE_COUNT: usize = 46;
+pub const STATIC_VARIANT_COUNT: usize = 13;
+pub const OPERATION_COUNT: usize = 90;
+pub const OBJECT_TYPE_COUNT: usize = 47;
 pub const RPC_API_COUNT: usize = 5;
 pub const RPC_METHOD_COUNT: usize = 43;
 
@@ -536,6 +536,37 @@ impl From<&str> for CollateralBidId {
 impl CollateralBidId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 17;
+}
+
+/// Object ID for `commit_reveal` protocol objects.
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
+)]
+#[schema(as = GrapheneSwaplockCommitRevealId)]
+#[serde(transparent)]
+pub struct CommitRevealId(pub String);
+
+impl CommitRevealId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for CommitRevealId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for CommitRevealId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
+impl CommitRevealId {
+    pub const SPACE_ID: u32 = 1;
+    pub const TYPE_ID: u32 = 27;
 }
 
 /// Object ID for `committee_member` protocol objects.

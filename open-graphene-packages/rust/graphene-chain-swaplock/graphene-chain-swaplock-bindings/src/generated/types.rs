@@ -957,6 +957,8 @@ pub struct ChainParameters {
     pub accounts_per_fee_scale: u16,
     pub account_fee_scale_bitshifts: u8,
     pub max_authority_depth: u8,
+    pub swaplock_witnesses_top_max: u8,
+    pub swaplock_witnesses_active_max: u8,
     pub extensions: crate::generated::types::ChainParametersExt,
 }
 
@@ -972,6 +974,8 @@ pub struct ChainParametersExt {
     pub market_fee_network_percent: Option<u16>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub maker_fee_discount_percent: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub electoral_threshold: Option<u16>,
 }
 
 /// Raw protocol struct `chain_property_object`.
@@ -982,6 +986,11 @@ pub struct ChainPropertyObject {
     pub chain_id: String,
     pub immutable_parameters: crate::generated::types::ImmutableChainParameters,
 }
+
+/// Raw protocol struct `commit_create_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockCommitCreateOperationFeeParamsT)]
+pub struct CommitCreateOperationFeeParamsT {}
 
 /// Raw protocol struct `committee_member_create_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
@@ -1018,7 +1027,7 @@ pub struct ContentCardCreateOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockContentCardObject)]
 pub struct ContentCardObject {
     pub id: crate::generated::ids::ContentCardId,
-    pub author: crate::generated::ids::AccountId,
+    pub author: crate::generated::static_variants::DataRoomMemberRef,
     pub room: crate::generated::ids::DataRoomId,
     pub hash: String,
     pub url: String,
@@ -1190,7 +1199,7 @@ pub struct DataRoomKeyEpochObject {
     pub room: crate::generated::ids::DataRoomId,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub epoch: u32,
-    pub account: crate::generated::ids::AccountId,
+    pub member: crate::generated::static_variants::DataRoomMemberRef,
     pub key: String,
 }
 
@@ -1209,7 +1218,7 @@ pub struct DataRoomMemberAddOperationFeeParamsT {
 pub struct DataRoomMemberObject {
     pub id: crate::generated::ids::DataRoomMemberId,
     pub room: crate::generated::ids::DataRoomId,
-    pub account: crate::generated::ids::AccountId,
+    pub member: crate::generated::static_variants::DataRoomMemberRef,
     pub member_key: String,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub permissions: u32,
@@ -1302,6 +1311,7 @@ pub struct DynamicGlobalPropertyObject {
     pub dynamic_flags: u32,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub last_irreversible_block_num: u32,
+    pub maintenance_seed: u64,
 }
 
 /// Raw protocol struct `execute_bid_operation_fee_params_t`.
@@ -1848,6 +1858,11 @@ pub struct Restriction {
     pub argument: crate::generated::static_variants::ArgumentType,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
+
+/// Raw protocol struct `reveal_create_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockRevealCreateOperationFeeParamsT)]
+pub struct RevealCreateOperationFeeParamsT {}
 
 /// Raw protocol struct `samet_fund_borrow_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]

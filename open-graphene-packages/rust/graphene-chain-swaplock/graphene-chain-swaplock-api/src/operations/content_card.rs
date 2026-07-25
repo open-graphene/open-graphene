@@ -11,11 +11,13 @@ use graphene_chain_swaplock_bindings::generated::ids::{
 use graphene_chain_swaplock_bindings::generated::operations::{
     ContentCardCreateOperation, ContentCardRemoveOperation, ContentCardUpdateOperation,
 };
+use graphene_chain_swaplock_bindings::generated::static_variants::DataRoomMemberRef;
 use graphene_chain_swaplock_bindings::generated::static_variants::Operation;
 use graphene_chain_swaplock_bindings::generated::types::Asset;
 use open_graphene_transport::GrapheneSession;
 
 use crate::SwaplockApiError;
+use crate::member::member_ref;
 
 use super::transaction::{PreparedTransaction, TransactionBuilder};
 
@@ -25,7 +27,28 @@ fn core_fee() -> Asset {
     Asset::new(0, AssetId(CORE_ASSET_ID.to_string()))
 }
 
+/// Who pays for a card operation whose subject may be a bare key.
+///
+/// An account subject pays for itself unless told otherwise. A key cannot pay at all - the
+/// chain's `fee_payer()` always returns an account - so it must be given a payer explicitly.
+fn resolve_payer(
+    subject: &DataRoomMemberRef,
+    payer: Option<String>,
+    operation: &'static str,
+) -> Result<AccountId, SwaplockApiError> {
+    if let Some(payer) = payer {
+        return Ok(AccountId(payer));
+    }
+    match subject {
+        DataRoomMemberRef::AccountIdType(account) => Ok((**account).clone()),
+        DataRoomMemberRef::PublicKeyType(_) => {
+            Err(SwaplockApiError::KeyMemberNeedsPayer { operation })
+        }
+    }
+}
+
 struct ContentCardCreateFields {
+    payer: Option<String>,
     author: String,
     room: String,
     hash: Option<String>,
@@ -49,9 +72,12 @@ impl ContentCardCreateFields {
             .ok_or(SwaplockApiError::MissingTransferField {
                 field: "storage_data",
             })?;
+        let author = member_ref(self.author);
+        let payer = resolve_payer(&author, self.payer, "content_card_create")?;
         Ok(Operation::content_card_create(ContentCardCreateOperation {
             fee: core_fee(),
-            author: AccountId(self.author),
+            payer,
+            author,
             room: DataRoomId(self.room),
             hash,
             url,
@@ -84,6 +110,7 @@ impl<'session> ContentCardCreateRequest<'session> {
         Self {
             session,
             fields: ContentCardCreateFields {
+                payer: None,
                 author: author.into(),
                 room: room.into(),
                 hash: None,
@@ -94,6 +121,15 @@ impl<'session> ContentCardCreateRequest<'session> {
                 storage_data: None,
             },
         }
+    }
+
+    /// The account paying the fee, when it is not the author.
+    ///
+    /// Required when the author is a bare public key: a key cannot pay. The payer only pays -
+    /// authorship still rests on the author's own signature, so a payer cannot forge a card.
+    pub fn payer(mut self, payer: impl Into<String>) -> Self {
+        self.fields.payer = Some(payer.into());
+        self
     }
 
     /// Content hash, unique within the room.
@@ -156,6 +192,7 @@ pub struct ContentCardUpdateRequest<'session> {
     new_description: Option<String>,
     new_content_key: Option<String>,
     new_storage_data: Option<String>,
+    payer: Option<String>,
 }
 
 impl<'session> ContentCardUpdateRequest<'session> {
@@ -174,6 +211,7 @@ impl<'session> ContentCardUpdateRequest<'session> {
             new_description: None,
             new_content_key: None,
             new_storage_data: None,
+            payer: None,
         }
     }
 
@@ -213,10 +251,19 @@ impl<'session> ContentCardUpdateRequest<'session> {
         self
     }
 
+    /// The account paying the fee, when it is not the caller. Required for a key caller.
+    pub fn payer(mut self, payer: impl Into<String>) -> Self {
+        self.payer = Some(payer.into());
+        self
+    }
+
     pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
+        let caller = member_ref(self.caller);
+        let payer = resolve_payer(&caller, self.payer, "content_card_update")?;
         let operation = Operation::content_card_update(ContentCardUpdateOperation {
             fee: core_fee(),
-            caller: AccountId(self.caller),
+            payer,
+            caller,
             content_id: ContentCardId(self.content_id),
             new_hash: self.new_hash,
             new_url: self.new_url,
@@ -241,6 +288,7 @@ pub struct ContentCardRemoveRequest<'session> {
     session: &'session mut GrapheneSession,
     caller: String,
     content_id: String,
+    payer: Option<String>,
 }
 
 impl<'session> ContentCardRemoveRequest<'session> {
@@ -253,13 +301,23 @@ impl<'session> ContentCardRemoveRequest<'session> {
             session,
             caller: caller.into(),
             content_id: content_id.into(),
+            payer: None,
         }
     }
 
+    /// The account paying the fee, when it is not the caller. Required for a key caller.
+    pub fn payer(mut self, payer: impl Into<String>) -> Self {
+        self.payer = Some(payer.into());
+        self
+    }
+
     pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
+        let caller = member_ref(self.caller);
+        let payer = resolve_payer(&caller, self.payer, "content_card_remove")?;
         let operation = Operation::content_card_remove(ContentCardRemoveOperation {
             fee: core_fee(),
-            caller: AccountId(self.caller),
+            payer,
+            caller,
             content_id: ContentCardId(self.content_id),
             extensions: vec![],
         });
@@ -277,6 +335,7 @@ mod tests {
 
     fn fixture_fields() -> ContentCardCreateFields {
         ContentCardCreateFields {
+            payer: None,
             author: "1.2.100".to_string(),
             room: "1.23.7".to_string(),
             hash: Some("abc123".to_string()),
@@ -296,7 +355,8 @@ mod tests {
             serde_json::to_value(&operation).unwrap(),
             json!([85, {
                 "fee": {"amount": 0, "asset_id": "1.3.0"},
-                "author": "1.2.100",
+                "payer": "1.2.100",
+                "author": [0, "1.2.100"],
                 "room": "1.23.7",
                 "hash": "abc123",
                 "url": "ipfs://Qm123",
@@ -337,7 +397,8 @@ mod tests {
     fn content_card_update_serializes_partial_fields_with_tag_eighty_six() {
         let operation = Operation::content_card_update(ContentCardUpdateOperation {
             fee: core_fee(),
-            caller: AccountId("1.2.100".to_string()),
+            payer: AccountId("1.2.100".to_string()),
+            caller: member_ref("1.2.100"),
             content_id: ContentCardId("1.26.4".to_string()),
             new_hash: None,
             new_url: Some("ipfs://Qm456".to_string()),
@@ -352,7 +413,8 @@ mod tests {
             serde_json::to_value(&operation).unwrap(),
             json!([86, {
                 "fee": {"amount": 0, "asset_id": "1.3.0"},
-                "caller": "1.2.100",
+                "payer": "1.2.100",
+                "caller": [0, "1.2.100"],
                 "content_id": "1.26.4",
                 "new_url": "ipfs://Qm456",
                 "new_description": "v2",
@@ -365,7 +427,8 @@ mod tests {
     fn content_card_remove_serializes_with_tag_eighty_seven() {
         let operation = Operation::content_card_remove(ContentCardRemoveOperation {
             fee: core_fee(),
-            caller: AccountId("1.2.100".to_string()),
+            payer: AccountId("1.2.100".to_string()),
+            caller: member_ref("1.2.100"),
             content_id: ContentCardId("1.26.4".to_string()),
             extensions: vec![],
         });
@@ -374,7 +437,8 @@ mod tests {
             serde_json::to_value(&operation).unwrap(),
             json!([87, {
                 "fee": {"amount": 0, "asset_id": "1.3.0"},
-                "caller": "1.2.100",
+                "payer": "1.2.100",
+                "caller": [0, "1.2.100"],
                 "content_id": "1.26.4",
                 "extensions": []
             }])

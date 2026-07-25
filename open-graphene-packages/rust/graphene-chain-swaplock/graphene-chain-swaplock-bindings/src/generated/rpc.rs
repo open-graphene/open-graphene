@@ -660,7 +660,7 @@ pub mod database {
         /// Positional parameters for `database.get_content_cards_by_author`.
         #[derive(Debug, Clone, PartialEq)]
         pub struct Params {
-            pub account_name_or_id: String,
+            pub author_name_key_or_id: String,
             /// Omitted from the call when `None`; the node applies its default.
             pub limit: Option<u32>,
             /// Omitted from the call when `None`; the node applies its default.
@@ -670,7 +670,7 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let mut params = vec![serde_json::to_value(&self.account_name_or_id)?];
+                let mut params = vec![serde_json::to_value(&self.author_name_key_or_id)?];
                 let tail: [Option<serde_json::Value>; 2] = [
                     match &self.limit {
                         Some(value) => Some(serde_json::to_value(value)?),
@@ -778,7 +778,7 @@ pub mod database {
         pub struct Params {
             pub room_id: crate::generated::ids::DataRoomId,
             pub epoch: u32,
-            pub account_name_or_id: String,
+            pub member_name_key_or_id: String,
         }
 
         impl Params {
@@ -787,7 +787,7 @@ pub mod database {
                 let params = vec![
                     serde_json::to_value(&self.room_id)?,
                     serde_json::to_value(self.epoch)?,
-                    serde_json::to_value(&self.account_name_or_id)?,
+                    serde_json::to_value(&self.member_name_key_or_id)?,
                 ];
                 Ok(serde_json::Value::Array(params))
             }
@@ -809,7 +809,7 @@ pub mod database {
         #[derive(Debug, Clone, PartialEq)]
         pub struct Params {
             pub room_id: crate::generated::ids::DataRoomId,
-            pub account_name_or_id: String,
+            pub member_name_key_or_id: String,
             /// Omitted from the call when `None`; the node applies its default.
             pub limit: Option<u32>,
             /// Omitted from the call when `None`; the node applies its default.
@@ -821,7 +821,7 @@ pub mod database {
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
                 let mut params = vec![
                     serde_json::to_value(&self.room_id)?,
-                    serde_json::to_value(&self.account_name_or_id)?,
+                    serde_json::to_value(&self.member_name_key_or_id)?,
                 ];
                 let tail: [Option<serde_json::Value>; 2] = [
                     match &self.limit {
@@ -858,7 +858,7 @@ pub mod database {
         #[derive(Debug, Clone, PartialEq)]
         pub struct Params {
             pub room_id: crate::generated::ids::DataRoomId,
-            pub account_name_or_id: String,
+            pub member_name_key_or_id: String,
         }
 
         impl Params {
@@ -866,7 +866,7 @@ pub mod database {
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
                 let params = vec![
                     serde_json::to_value(&self.room_id)?,
-                    serde_json::to_value(&self.account_name_or_id)?,
+                    serde_json::to_value(&self.member_name_key_or_id)?,
                 ];
                 Ok(serde_json::Value::Array(params))
             }
@@ -932,7 +932,7 @@ pub mod database {
         /// Positional parameters for `database.get_data_rooms_by_member`.
         #[derive(Debug, Clone, PartialEq)]
         pub struct Params {
-            pub account_name_or_id: String,
+            pub member_name_key_or_id: String,
             /// Omitted from the call when `None`; the node applies its default.
             pub limit: Option<u32>,
             /// Omitted from the call when `None`; the node applies its default.
@@ -942,7 +942,7 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let mut params = vec![serde_json::to_value(&self.account_name_or_id)?];
+                let mut params = vec![serde_json::to_value(&self.member_name_key_or_id)?];
                 let tail: [Option<serde_json::Value>; 2] = [
                     match &self.limit {
                         Some(value) => Some(serde_json::to_value(value)?),

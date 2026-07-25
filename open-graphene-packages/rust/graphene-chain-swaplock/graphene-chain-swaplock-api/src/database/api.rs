@@ -180,18 +180,18 @@ impl<'session> DatabaseApi<'session> {
         }
     }
 
-    /// The content cards authored by an account (name or id), pageable with
-    /// `.limit(..)` / `.start_id(..)`.
+    /// The content cards authored by a member - an account (name or id) or a bare public key -
+    /// pageable with `.limit(..)` / `.start_id(..)`.
     pub fn content_cards_by_author<S>(
         self,
-        account_name_or_id: S,
+        author_name_key_or_id: S,
     ) -> ContentCardsByAuthorRequest<'session>
     where
         S: Into<String>,
     {
         ContentCardsByAuthorRequest {
             session: self.session,
-            account_name_or_id: account_name_or_id.into(),
+            author_name_key_or_id: author_name_key_or_id.into(),
             limit: None,
             start_id: None,
         }
@@ -241,7 +241,7 @@ impl<'session> DatabaseApi<'session> {
         self,
         room_id: R,
         epoch: u32,
-        account_name_or_id: A,
+        member_name_key_or_id: A,
     ) -> DataRoomKeyEpochRequest<'session>
     where
         R: Into<String>,
@@ -251,16 +251,16 @@ impl<'session> DatabaseApi<'session> {
             session: self.session,
             room_id: room_id.into(),
             epoch,
-            account_name_or_id: account_name_or_id.into(),
+            member_name_key_or_id: member_name_key_or_id.into(),
         }
     }
 
-    /// One account's key epoch records in a data room, pageable with
-    /// `.limit(..)` / `.start_id(..)`.
+    /// One member's key epoch records in a data room, pageable with
+    /// `.limit(..)` / `.start_id(..)`. The member may be an account or a bare public key.
     pub fn data_room_key_epochs<R, A>(
         self,
         room_id: R,
-        account_name_or_id: A,
+        member_name_key_or_id: A,
     ) -> DataRoomKeyEpochsRequest<'session>
     where
         R: Into<String>,
@@ -269,17 +269,18 @@ impl<'session> DatabaseApi<'session> {
         DataRoomKeyEpochsRequest {
             session: self.session,
             room_id: room_id.into(),
-            account_name_or_id: account_name_or_id.into(),
+            member_name_key_or_id: member_name_key_or_id.into(),
             limit: None,
             start_id: None,
         }
     }
 
-    /// One account's member record in a data room; `None` when the account is not a member.
+    /// One member's record in a data room; `None` when not a member. The member may be an
+    /// account (name or id) or a bare public key.
     pub fn data_room_member<R, A>(
         self,
         room_id: R,
-        account_name_or_id: A,
+        member_name_key_or_id: A,
     ) -> DataRoomMemberRequest<'session>
     where
         R: Into<String>,
@@ -288,7 +289,7 @@ impl<'session> DatabaseApi<'session> {
         DataRoomMemberRequest {
             session: self.session,
             room_id: room_id.into(),
-            account_name_or_id: account_name_or_id.into(),
+            member_name_key_or_id: member_name_key_or_id.into(),
         }
     }
 
@@ -306,18 +307,21 @@ impl<'session> DatabaseApi<'session> {
         }
     }
 
-    /// The data room memberships of an account (name or id), pageable with
-    /// `.limit(..)` / `.start_id(..)`; each member record carries the room id inside.
+    /// The data room memberships of a member, pageable with `.limit(..)` / `.start_id(..)`;
+    /// each member record carries the room id inside.
+    ///
+    /// The member may be an account (name or id) or a bare public key. A process holding only
+    /// a key uses this to discover every room it may read, without being told which rooms exist.
     pub fn data_rooms_by_member<S>(
         self,
-        account_name_or_id: S,
+        member_name_key_or_id: S,
     ) -> DataRoomsByMemberRequest<'session>
     where
         S: Into<String>,
     {
         DataRoomsByMemberRequest {
             session: self.session,
-            account_name_or_id: account_name_or_id.into(),
+            member_name_key_or_id: member_name_key_or_id.into(),
             limit: None,
             start_id: None,
         }

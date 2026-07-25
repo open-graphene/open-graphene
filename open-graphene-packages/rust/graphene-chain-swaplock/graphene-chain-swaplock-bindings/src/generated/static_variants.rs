@@ -107,6 +107,10 @@ pub enum ArgumentType {
     VectorRestriction(Box<Vec<crate::generated::types::Restriction>>),
     VectorVectorRestriction(Box<Vec<Vec<crate::generated::types::Restriction>>>),
     VariantAssertArgumentType(Box<(i64, Vec<crate::generated::types::Restriction>)>),
+    DataRoomIdType(Box<crate::generated::ids::DataRoomId>),
+    ContentCardIdType(Box<crate::generated::ids::ContentCardId>),
+    FlatSetDataRoomIdType(Box<Vec<crate::generated::ids::DataRoomId>>),
+    FlatSetContentCardIdType(Box<Vec<crate::generated::ids::ContentCardId>>),
 }
 
 impl utoipa::PartialSchema for ArgumentType {
@@ -326,6 +330,26 @@ impl utoipa::PartialSchema for ArgumentType {
                     "variant_assert_argument_type",
                     static_variant_any_payload(),
                 ))
+                .item(static_variant_arm_schema(
+                    42,
+                    "data_room_id_type",
+                    static_variant_ref_payload::<crate::generated::ids::DataRoomId>(),
+                ))
+                .item(static_variant_arm_schema(
+                    43,
+                    "content_card_id_type",
+                    static_variant_ref_payload::<crate::generated::ids::ContentCardId>(),
+                ))
+                .item(static_variant_arm_schema(
+                    44,
+                    "flat_set<data_room_id_type>",
+                    static_variant_inline_payload::<Vec<crate::generated::ids::DataRoomId>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    45,
+                    "flat_set<content_card_id_type>",
+                    static_variant_inline_payload::<Vec<crate::generated::ids::ContentCardId>>(),
+                ))
                 .build(),
         )
         .into()
@@ -378,10 +402,20 @@ impl utoipa::ToSchema for ArgumentType {
         ));
         <crate::generated::ids::CommitteeMemberId as utoipa::ToSchema>::schemas(schemas);
         schemas.push((
+            <crate::generated::ids::ContentCardId as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::ids::ContentCardId as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::ids::ContentCardId as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
             <crate::generated::ids::CustomId as utoipa::ToSchema>::name().to_string(),
             <crate::generated::ids::CustomId as utoipa::PartialSchema>::schema(),
         ));
         <crate::generated::ids::CustomId as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::ids::DataRoomId as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::ids::DataRoomId as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::ids::DataRoomId as utoipa::ToSchema>::schemas(schemas);
         schemas.push((
             <crate::generated::ids::ForceSettlementId as utoipa::ToSchema>::name().to_string(),
             <crate::generated::ids::ForceSettlementId as utoipa::PartialSchema>::schema(),
@@ -602,6 +636,22 @@ impl serde::Serialize for ArgumentType {
                 seq.serialize_element(&41u32)?;
                 seq.serialize_element(value.as_ref())?;
             }
+            Self::DataRoomIdType(value) => {
+                seq.serialize_element(&42u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::ContentCardIdType(value) => {
+                seq.serialize_element(&43u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::FlatSetDataRoomIdType(value) => {
+                seq.serialize_element(&44u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::FlatSetContentCardIdType(value) => {
+                seq.serialize_element(&45u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
         }
         seq.end()
     }
@@ -755,8 +805,129 @@ impl<'de> serde::Deserialize<'de> for ArgumentType {
                     .map(|value| Self::VariantAssertArgumentType(Box::new(value)))
                     .map_err(serde::de::Error::custom)
             }
+            42 => serde_json::from_value::<crate::generated::ids::DataRoomId>(payload)
+                .map(|value| Self::DataRoomIdType(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            43 => serde_json::from_value::<crate::generated::ids::ContentCardId>(payload)
+                .map(|value| Self::ContentCardIdType(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            44 => serde_json::from_value::<Vec<crate::generated::ids::DataRoomId>>(payload)
+                .map(|value| Self::FlatSetDataRoomIdType(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            45 => serde_json::from_value::<Vec<crate::generated::ids::ContentCardId>>(payload)
+                .map(|value| Self::FlatSetContentCardIdType(Box::new(value)))
+                .map_err(serde::de::Error::custom),
             other => Err(serde::de::Error::custom(format!(
                 "unknown static variant ArgumentType tag {other}"
+            ))),
+        }
+    }
+}
+
+/// Static variant `data_room_member_ref` serialized as Graphene `[tag, value]`.
+#[derive(Debug, Clone, PartialEq)]
+pub enum DataRoomMemberRef {
+    AccountIdType(Box<crate::generated::ids::AccountId>),
+    PublicKeyType(Box<String>),
+}
+
+impl utoipa::PartialSchema for DataRoomMemberRef {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        utoipa::openapi::schema::Schema::OneOf(
+            utoipa::openapi::schema::OneOfBuilder::new()
+                .description(Some("Graphene static variant wire tuple: [tag, value]."))
+                .item(static_variant_arm_schema(
+                    0,
+                    "account_id_type",
+                    static_variant_ref_payload::<crate::generated::ids::AccountId>(),
+                ))
+                .item(static_variant_arm_schema(
+                    1,
+                    "public_key_type",
+                    static_variant_inline_payload::<String>(),
+                ))
+                .build(),
+        )
+        .into()
+    }
+}
+
+impl utoipa::ToSchema for DataRoomMemberRef {
+    fn name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("GrapheneSwaplockDataRoomMemberRef")
+    }
+
+    fn schemas(
+        schemas: &mut Vec<(
+            String,
+            utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
+        )>,
+    ) {
+        // The tuple schema only references payload components; register them
+        // here. The guard cuts self-referential dependency walks (proposal
+        // operations embed operations again).
+        thread_local! {
+            static WALKING: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+        }
+        if WALKING.replace(true) {
+            return;
+        }
+        schemas.push((
+            <crate::generated::ids::AccountId as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::ids::AccountId as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::ids::AccountId as utoipa::ToSchema>::schemas(schemas);
+        WALKING.set(false);
+    }
+}
+
+impl serde::Serialize for DataRoomMemberRef {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeSeq;
+        let mut seq = serializer.serialize_seq(Some(2))?;
+        match self {
+            Self::AccountIdType(value) => {
+                seq.serialize_element(&0u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::PublicKeyType(value) => {
+                seq.serialize_element(&1u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+        }
+        seq.end()
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for DataRoomMemberRef {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let mut values = <Vec<serde_json::Value> as serde::Deserialize>::deserialize(deserializer)?;
+        if values.len() != 2 {
+            return Err(serde::de::Error::custom(format!(
+                "expected static variant DataRoomMemberRef as [tag, value], got {} elements",
+                values.len()
+            )));
+        }
+        let payload = values.pop().expect("length checked");
+        let tag_value = values.pop().expect("length checked");
+        let tag = tag_value.as_u64().ok_or_else(|| {
+            serde::de::Error::custom("expected numeric tag for static variant DataRoomMemberRef")
+        })? as u32;
+        match tag {
+            0 => serde_json::from_value::<crate::generated::ids::AccountId>(payload)
+                .map(|value| Self::AccountIdType(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            1 => serde_json::from_value::<String>(payload)
+                .map(|value| Self::PublicKeyType(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            other => Err(serde::de::Error::custom(format!(
+                "unknown static variant DataRoomMemberRef tag {other}"
             ))),
         }
     }
@@ -1118,6 +1289,8 @@ pub enum FeeParameters {
     ContentCardRemoveOperationFeeParamsT(
         Box<crate::generated::types::ContentCardRemoveOperationFeeParamsT>,
     ),
+    CommitCreateOperationFeeParamsT(Box<crate::generated::types::CommitCreateOperationFeeParamsT>),
+    RevealCreateOperationFeeParamsT(Box<crate::generated::types::RevealCreateOperationFeeParamsT>),
 }
 
 impl utoipa::PartialSchema for FeeParameters {
@@ -1567,6 +1740,16 @@ impl utoipa::PartialSchema for FeeParameters {
                     "content_card_remove_operation_fee_params_t",
                     static_variant_ref_payload::<crate::generated::types::ContentCardRemoveOperationFeeParamsT>(),
                 ))
+                .item(static_variant_arm_schema(
+                    88,
+                    "commit_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::CommitCreateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    89,
+                    "reveal_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::RevealCreateOperationFeeParamsT>(),
+                ))
                 .build(),
         )
         .into()
@@ -1748,6 +1931,13 @@ impl utoipa::ToSchema for FeeParameters {
             <crate::generated::types::CallOrderUpdateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
         ));
         <crate::generated::types::CallOrderUpdateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::CommitCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::CommitCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::CommitCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(
             schemas,
         );
         schemas.push((
@@ -2014,6 +2204,13 @@ impl utoipa::ToSchema for FeeParameters {
             <crate::generated::types::ProposalUpdateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
         ));
         <crate::generated::types::ProposalUpdateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::RevealCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::RevealCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::RevealCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(
             schemas,
         );
         schemas.push((
@@ -2501,6 +2698,14 @@ impl serde::Serialize for FeeParameters {
                 seq.serialize_element(&87u32)?;
                 seq.serialize_element(value.as_ref())?;
             }
+            Self::CommitCreateOperationFeeParamsT(value) => {
+                seq.serialize_element(&88u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::RevealCreateOperationFeeParamsT(value) => {
+                seq.serialize_element(&89u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
         }
         seq.end()
     }
@@ -2787,6 +2992,12 @@ impl<'de> serde::Deserialize<'de> for FeeParameters {
                 .map_err(serde::de::Error::custom),
             87 => serde_json::from_value::<crate::generated::types::ContentCardRemoveOperationFeeParamsT>(payload)
                 .map(|value| Self::ContentCardRemoveOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            88 => serde_json::from_value::<crate::generated::types::CommitCreateOperationFeeParamsT>(payload)
+                .map(|value| Self::CommitCreateOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            89 => serde_json::from_value::<crate::generated::types::RevealCreateOperationFeeParamsT>(payload)
+                .map(|value| Self::RevealCreateOperationFeeParamsT(Box::new(value)))
                 .map_err(serde::de::Error::custom),
             other => Err(serde::de::Error::custom(format!("unknown static variant FeeParameters tag {other}"))),
         }
@@ -3207,6 +3418,8 @@ pub enum Operation {
     ContentCardCreateOperation(Box<crate::generated::operations::ContentCardCreateOperation>),
     ContentCardUpdateOperation(Box<crate::generated::operations::ContentCardUpdateOperation>),
     ContentCardRemoveOperation(Box<crate::generated::operations::ContentCardRemoveOperation>),
+    CommitCreateOperation(Box<crate::generated::operations::CommitCreateOperation>),
+    RevealCreateOperation(Box<crate::generated::operations::RevealCreateOperation>),
 }
 
 impl utoipa::PartialSchema for Operation {
@@ -3656,6 +3869,16 @@ impl utoipa::PartialSchema for Operation {
                     "content_card_remove_operation",
                     static_variant_ref_payload::<crate::generated::operations::ContentCardRemoveOperation>(),
                 ))
+                .item(static_variant_arm_schema(
+                    88,
+                    "commit_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::CommitCreateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    89,
+                    "reveal_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::RevealCreateOperation>(),
+                ))
                 .build(),
         )
         .into()
@@ -3850,6 +4073,13 @@ impl utoipa::ToSchema for Operation {
         <crate::generated::operations::CallOrderUpdateOperation as utoipa::ToSchema>::schemas(
             schemas,
         );
+        schemas.push((
+            <crate::generated::operations::CommitCreateOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::CommitCreateOperation as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::operations::CommitCreateOperation as utoipa::ToSchema>::schemas(schemas);
         schemas.push((
             <crate::generated::operations::CommitteeMemberCreateOperation as utoipa::ToSchema>::name().to_string(),
             <crate::generated::operations::CommitteeMemberCreateOperation as utoipa::PartialSchema>::schema(),
@@ -4157,6 +4387,13 @@ impl utoipa::ToSchema for Operation {
         <crate::generated::operations::ProposalUpdateOperation as utoipa::ToSchema>::schemas(
             schemas,
         );
+        schemas.push((
+            <crate::generated::operations::RevealCreateOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::RevealCreateOperation as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::operations::RevealCreateOperation as utoipa::ToSchema>::schemas(schemas);
         schemas.push((
             <crate::generated::operations::SametFundBorrowOperation as utoipa::ToSchema>::name().to_string(),
             <crate::generated::operations::SametFundBorrowOperation as utoipa::PartialSchema>::schema(),
@@ -4740,6 +4977,14 @@ impl Operation {
         value: crate::generated::operations::ContentCardRemoveOperation,
     ) -> Self {
         Self::ContentCardRemoveOperation(Box::new(value))
+    }
+
+    pub fn commit_create(value: crate::generated::operations::CommitCreateOperation) -> Self {
+        Self::CommitCreateOperation(Box::new(value))
+    }
+
+    pub fn reveal_create(value: crate::generated::operations::RevealCreateOperation) -> Self {
+        Self::RevealCreateOperation(Box::new(value))
     }
 }
 
@@ -5497,6 +5742,20 @@ impl Operation {
             _ => None,
         }
     }
+
+    pub fn as_commit_create(&self) -> Option<&crate::generated::operations::CommitCreateOperation> {
+        match self {
+            Self::CommitCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_reveal_create(&self) -> Option<&crate::generated::operations::RevealCreateOperation> {
+        match self {
+            Self::RevealCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
 }
 
 impl Operation {
@@ -5593,6 +5852,8 @@ impl Operation {
             Self::ContentCardCreateOperation(_) => "content_card_create",
             Self::ContentCardUpdateOperation(_) => "content_card_update",
             Self::ContentCardRemoveOperation(_) => "content_card_remove",
+            Self::CommitCreateOperation(_) => "commit_create",
+            Self::RevealCreateOperation(_) => "reveal_create",
         }
     }
 
@@ -5687,6 +5948,8 @@ impl Operation {
             Self::ContentCardCreateOperation(_) => false,
             Self::ContentCardUpdateOperation(_) => false,
             Self::ContentCardRemoveOperation(_) => false,
+            Self::CommitCreateOperation(_) => false,
+            Self::RevealCreateOperation(_) => false,
         }
     }
 
@@ -5781,6 +6044,8 @@ impl Operation {
             Self::ContentCardCreateOperation(value) => &value.fee,
             Self::ContentCardUpdateOperation(value) => &value.fee,
             Self::ContentCardRemoveOperation(value) => &value.fee,
+            Self::CommitCreateOperation(value) => &value.fee,
+            Self::RevealCreateOperation(value) => &value.fee,
         }
     }
 
@@ -5875,6 +6140,8 @@ impl Operation {
             Self::ContentCardCreateOperation(value) => value.fee = fee,
             Self::ContentCardUpdateOperation(value) => value.fee = fee,
             Self::ContentCardRemoveOperation(value) => value.fee = fee,
+            Self::CommitCreateOperation(value) => value.fee = fee,
+            Self::RevealCreateOperation(value) => value.fee = fee,
         }
     }
 }
@@ -6237,6 +6504,14 @@ impl serde::Serialize for Operation {
             }
             Self::ContentCardRemoveOperation(value) => {
                 seq.serialize_element(&87u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::CommitCreateOperation(value) => {
+                seq.serialize_element(&88u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::RevealCreateOperation(value) => {
+                seq.serialize_element(&89u32)?;
                 seq.serialize_element(value.as_ref())?;
             }
         }
@@ -6734,6 +7009,16 @@ impl<'de> serde::Deserialize<'de> for Operation {
                 .map(|value| Self::ContentCardRemoveOperation(Box::new(value)))
                 .map_err(serde::de::Error::custom)
             }
+            88 => serde_json::from_value::<crate::generated::operations::CommitCreateOperation>(
+                payload,
+            )
+            .map(|value| Self::CommitCreateOperation(Box::new(value)))
+            .map_err(serde::de::Error::custom),
+            89 => serde_json::from_value::<crate::generated::operations::RevealCreateOperation>(
+                payload,
+            )
+            .map(|value| Self::RevealCreateOperation(Box::new(value)))
+            .map_err(serde::de::Error::custom),
             other => Err(serde::de::Error::custom(format!(
                 "unknown static variant Operation tag {other}"
             ))),

@@ -6647,6 +6647,38 @@
         },
         {
           "index": 28,
+          "name": "swaplock_witnesses_top_max",
+          "type": {
+            "kind": "uint8"
+          },
+          "source": {
+            "name": "swaplock_witnesses_top_max",
+            "file": "libraries/protocol/include/graphene/protocol/chain_parameters.hpp",
+            "line": 79
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 29,
+          "name": "swaplock_witnesses_active_max",
+          "type": {
+            "kind": "uint8"
+          },
+          "source": {
+            "name": "swaplock_witnesses_active_max",
+            "file": "libraries/protocol/include/graphene/protocol/chain_parameters.hpp",
+            "line": 80
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 30,
           "name": "extensions",
           "type": {
             "kind": "ref",
@@ -6655,7 +6687,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/chain_parameters.hpp",
-            "line": 87
+            "line": 90
           },
           "support": {
             "status": "provisional",
@@ -6686,7 +6718,7 @@
           "source": {
             "name": "updatable_htlc_options",
             "file": "libraries/protocol/include/graphene/protocol/chain_parameters.hpp",
-            "line": 81
+            "line": 83
           },
           "support": {
             "status": "provisional",
@@ -6706,7 +6738,7 @@
           "source": {
             "name": "custom_authority_options",
             "file": "libraries/protocol/include/graphene/protocol/chain_parameters.hpp",
-            "line": 82
+            "line": 84
           },
           "support": {
             "status": "provisional",
@@ -6725,7 +6757,7 @@
           "source": {
             "name": "market_fee_network_percent",
             "file": "libraries/protocol/include/graphene/protocol/chain_parameters.hpp",
-            "line": 83
+            "line": 85
           },
           "support": {
             "status": "provisional",
@@ -6744,7 +6776,26 @@
           "source": {
             "name": "maker_fee_discount_percent",
             "file": "libraries/protocol/include/graphene/protocol/chain_parameters.hpp",
-            "line": 84
+            "line": 86
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "electoral_threshold",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "uint16"
+            }
+          },
+          "source": {
+            "name": "electoral_threshold",
+            "file": "libraries/protocol/include/graphene/protocol/chain_parameters.hpp",
+            "line": 87
           },
           "support": {
             "status": "provisional",
@@ -6816,6 +6867,109 @@
       "support": {
         "status": "provisional",
         "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
+      "name": "commit_create_operation",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 40
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "account",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "account",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 42
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "hash",
+          "type": {
+            "kind": "string"
+          },
+          "source": {
+            "name": "hash",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 44
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "maintenance_time",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "maintenance_time",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 45
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "witness_key",
+          "type": {
+            "kind": "public_key",
+            "prefixRef": "chain.publicKeyPrefix"
+          },
+          "source": {
+            "name": "witness_key",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 46
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
+      "name": "commit_create_operation_fee_params_t",
+      "sourceName": "graphene::protocol::commit_create_operation::fee_params_t",
+      "kind": "struct",
+      "fields": [],
+      "support": {
+        "status": "provisional",
+        "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
       }
     },
     {
@@ -7097,7 +7251,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 42
+            "line": 52
           },
           "support": {
             "status": "provisional",
@@ -7106,15 +7260,15 @@
         },
         {
           "index": 1,
-          "name": "author",
+          "name": "payer",
           "type": {
             "kind": "protocol_object_id",
             "objectType": "account"
           },
           "source": {
-            "name": "author",
+            "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 44
+            "line": 54
           },
           "support": {
             "status": "provisional",
@@ -7123,15 +7277,15 @@
         },
         {
           "index": 2,
-          "name": "room",
+          "name": "author",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "data_room"
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
           },
           "source": {
-            "name": "room",
+            "name": "author",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 45
+            "line": 55
           },
           "support": {
             "status": "provisional",
@@ -7140,14 +7294,15 @@
         },
         {
           "index": 3,
-          "name": "hash",
+          "name": "room",
           "type": {
-            "kind": "string"
+            "kind": "protocol_object_id",
+            "objectType": "data_room"
           },
           "source": {
-            "name": "hash",
+            "name": "room",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 46
+            "line": 56
           },
           "support": {
             "status": "provisional",
@@ -7156,14 +7311,14 @@
         },
         {
           "index": 4,
-          "name": "url",
+          "name": "hash",
           "type": {
             "kind": "string"
           },
           "source": {
-            "name": "url",
+            "name": "hash",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 47
+            "line": 57
           },
           "support": {
             "status": "provisional",
@@ -7172,14 +7327,14 @@
         },
         {
           "index": 5,
-          "name": "type",
+          "name": "url",
           "type": {
             "kind": "string"
           },
           "source": {
-            "name": "type",
+            "name": "url",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 48
+            "line": 58
           },
           "support": {
             "status": "provisional",
@@ -7188,14 +7343,14 @@
         },
         {
           "index": 6,
-          "name": "description",
+          "name": "type",
           "type": {
             "kind": "string"
           },
           "source": {
-            "name": "description",
+            "name": "type",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 49
+            "line": 59
           },
           "support": {
             "status": "provisional",
@@ -7204,14 +7359,14 @@
         },
         {
           "index": 7,
-          "name": "content_key",
+          "name": "description",
           "type": {
             "kind": "string"
           },
           "source": {
-            "name": "content_key",
+            "name": "description",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 50
+            "line": 60
           },
           "support": {
             "status": "provisional",
@@ -7220,14 +7375,14 @@
         },
         {
           "index": 8,
-          "name": "storage_data",
+          "name": "content_key",
           "type": {
             "kind": "string"
           },
           "source": {
-            "name": "storage_data",
+            "name": "content_key",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 51
+            "line": 61
           },
           "support": {
             "status": "provisional",
@@ -7236,6 +7391,22 @@
         },
         {
           "index": 9,
+          "name": "storage_data",
+          "type": {
+            "kind": "string"
+          },
+          "source": {
+            "name": "storage_data",
+            "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
+            "line": 62
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 10,
           "name": "extensions",
           "type": {
             "kind": "set",
@@ -7248,7 +7419,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 52
+            "line": 63
           },
           "support": {
             "status": "provisional",
@@ -7275,7 +7446,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 39
+            "line": 49
           },
           "support": {
             "status": "provisional",
@@ -7291,7 +7462,7 @@
           "source": {
             "name": "price_per_kbyte",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 40
+            "line": 50
           },
           "support": {
             "status": "provisional",
@@ -7318,7 +7489,7 @@
           "source": {
             "name": "id",
             "file": "libraries/chain/include/graphene/chain/content_card_object.hpp",
-            "line": 39
+            "line": 40
           },
           "support": {
             "status": "provisional",
@@ -7329,13 +7500,13 @@
           "index": 1,
           "name": "author",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "account"
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
           },
           "source": {
             "name": "author",
             "file": "libraries/chain/include/graphene/chain/content_card_object.hpp",
-            "line": 39
+            "line": 40
           },
           "support": {
             "status": "provisional",
@@ -7352,7 +7523,7 @@
           "source": {
             "name": "room",
             "file": "libraries/chain/include/graphene/chain/content_card_object.hpp",
-            "line": 41
+            "line": 42
           },
           "support": {
             "status": "provisional",
@@ -7368,7 +7539,7 @@
           "source": {
             "name": "hash",
             "file": "libraries/chain/include/graphene/chain/content_card_object.hpp",
-            "line": 42
+            "line": 43
           },
           "support": {
             "status": "provisional",
@@ -7384,7 +7555,7 @@
           "source": {
             "name": "url",
             "file": "libraries/chain/include/graphene/chain/content_card_object.hpp",
-            "line": 43
+            "line": 44
           },
           "support": {
             "status": "provisional",
@@ -7400,7 +7571,7 @@
           "source": {
             "name": "type",
             "file": "libraries/chain/include/graphene/chain/content_card_object.hpp",
-            "line": 44
+            "line": 45
           },
           "support": {
             "status": "provisional",
@@ -7416,7 +7587,7 @@
           "source": {
             "name": "description",
             "file": "libraries/chain/include/graphene/chain/content_card_object.hpp",
-            "line": 45
+            "line": 46
           },
           "support": {
             "status": "provisional",
@@ -7432,7 +7603,7 @@
           "source": {
             "name": "content_key",
             "file": "libraries/chain/include/graphene/chain/content_card_object.hpp",
-            "line": 46
+            "line": 47
           },
           "support": {
             "status": "provisional",
@@ -7448,7 +7619,7 @@
           "source": {
             "name": "storage_data",
             "file": "libraries/chain/include/graphene/chain/content_card_object.hpp",
-            "line": 47
+            "line": 48
           },
           "support": {
             "status": "provisional",
@@ -7464,7 +7635,7 @@
           "source": {
             "name": "key_epoch",
             "file": "libraries/chain/include/graphene/chain/content_card_object.hpp",
-            "line": 48
+            "line": 49
           },
           "support": {
             "status": "provisional",
@@ -7480,7 +7651,7 @@
           "source": {
             "name": "created",
             "file": "libraries/chain/include/graphene/chain/content_card_object.hpp",
-            "line": 49
+            "line": 50
           },
           "support": {
             "status": "provisional",
@@ -7496,7 +7667,7 @@
           "source": {
             "name": "updated",
             "file": "libraries/chain/include/graphene/chain/content_card_object.hpp",
-            "line": 50
+            "line": 51
           },
           "support": {
             "status": "provisional",
@@ -7523,7 +7694,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 103
+            "line": 139
           },
           "support": {
             "status": "provisional",
@@ -7532,15 +7703,15 @@
         },
         {
           "index": 1,
-          "name": "caller",
+          "name": "payer",
           "type": {
             "kind": "protocol_object_id",
             "objectType": "account"
           },
           "source": {
-            "name": "caller",
+            "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 105
+            "line": 141
           },
           "support": {
             "status": "provisional",
@@ -7549,15 +7720,15 @@
         },
         {
           "index": 2,
-          "name": "content_id",
+          "name": "caller",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "content_card"
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
           },
           "source": {
-            "name": "content_id",
+            "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 106
+            "line": 142
           },
           "support": {
             "status": "provisional",
@@ -7566,6 +7737,23 @@
         },
         {
           "index": 3,
+          "name": "content_id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "content_card"
+          },
+          "source": {
+            "name": "content_id",
+            "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
+            "line": 143
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
           "name": "extensions",
           "type": {
             "kind": "set",
@@ -7578,7 +7766,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 107
+            "line": 144
           },
           "support": {
             "status": "provisional",
@@ -7605,7 +7793,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 101
+            "line": 137
           },
           "support": {
             "status": "provisional",
@@ -7632,7 +7820,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 73
+            "line": 97
           },
           "support": {
             "status": "provisional",
@@ -7641,15 +7829,15 @@
         },
         {
           "index": 1,
-          "name": "caller",
+          "name": "payer",
           "type": {
             "kind": "protocol_object_id",
             "objectType": "account"
           },
           "source": {
-            "name": "caller",
+            "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 75
+            "line": 99
           },
           "support": {
             "status": "provisional",
@@ -7658,15 +7846,15 @@
         },
         {
           "index": 2,
-          "name": "content_id",
+          "name": "caller",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "content_card"
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
           },
           "source": {
-            "name": "content_id",
+            "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 76
+            "line": 100
           },
           "support": {
             "status": "provisional",
@@ -7675,6 +7863,23 @@
         },
         {
           "index": 3,
+          "name": "content_id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "content_card"
+          },
+          "source": {
+            "name": "content_id",
+            "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
+            "line": 101
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
           "name": "new_hash",
           "type": {
             "kind": "optional",
@@ -7685,7 +7890,7 @@
           "source": {
             "name": "new_hash",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 77
+            "line": 102
           },
           "support": {
             "status": "provisional",
@@ -7693,7 +7898,7 @@
           }
         },
         {
-          "index": 4,
+          "index": 5,
           "name": "new_url",
           "type": {
             "kind": "optional",
@@ -7704,7 +7909,7 @@
           "source": {
             "name": "new_url",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 78
+            "line": 103
           },
           "support": {
             "status": "provisional",
@@ -7712,7 +7917,7 @@
           }
         },
         {
-          "index": 5,
+          "index": 6,
           "name": "new_type",
           "type": {
             "kind": "optional",
@@ -7723,7 +7928,7 @@
           "source": {
             "name": "new_type",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 79
+            "line": 104
           },
           "support": {
             "status": "provisional",
@@ -7731,7 +7936,7 @@
           }
         },
         {
-          "index": 6,
+          "index": 7,
           "name": "new_description",
           "type": {
             "kind": "optional",
@@ -7742,7 +7947,7 @@
           "source": {
             "name": "new_description",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 80
+            "line": 105
           },
           "support": {
             "status": "provisional",
@@ -7750,7 +7955,7 @@
           }
         },
         {
-          "index": 7,
+          "index": 8,
           "name": "new_content_key",
           "type": {
             "kind": "optional",
@@ -7761,7 +7966,7 @@
           "source": {
             "name": "new_content_key",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 81
+            "line": 106
           },
           "support": {
             "status": "provisional",
@@ -7769,7 +7974,7 @@
           }
         },
         {
-          "index": 8,
+          "index": 9,
           "name": "new_storage_data",
           "type": {
             "kind": "optional",
@@ -7780,7 +7985,7 @@
           "source": {
             "name": "new_storage_data",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 82
+            "line": 107
           },
           "support": {
             "status": "provisional",
@@ -7788,7 +7993,7 @@
           }
         },
         {
-          "index": 9,
+          "index": 10,
           "name": "extensions",
           "type": {
             "kind": "set",
@@ -7801,7 +8006,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 83
+            "line": 108
           },
           "support": {
             "status": "provisional",
@@ -7828,7 +8033,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 70
+            "line": 94
           },
           "support": {
             "status": "provisional",
@@ -7844,7 +8049,7 @@
           "source": {
             "name": "price_per_kbyte",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 71
+            "line": 95
           },
           "support": {
             "status": "provisional",
@@ -10055,7 +10260,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 59
+            "line": 91
           },
           "support": {
             "status": "provisional",
@@ -10072,7 +10277,7 @@
           "source": {
             "name": "owner",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 61
+            "line": 93
           },
           "support": {
             "status": "provisional",
@@ -10088,7 +10293,7 @@
           "source": {
             "name": "name",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 62
+            "line": 94
           },
           "support": {
             "status": "provisional",
@@ -10104,7 +10309,7 @@
           "source": {
             "name": "description",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 63
+            "line": 95
           },
           "support": {
             "status": "provisional",
@@ -10121,7 +10326,7 @@
           "source": {
             "name": "subject",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 64
+            "line": 96
           },
           "support": {
             "status": "provisional",
@@ -10140,7 +10345,7 @@
           "source": {
             "name": "room_key",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 65
+            "line": 97
           },
           "support": {
             "status": "provisional",
@@ -10161,7 +10366,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 66
+            "line": 98
           },
           "support": {
             "status": "provisional",
@@ -10188,7 +10393,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 57
+            "line": 89
           },
           "support": {
             "status": "provisional",
@@ -10215,7 +10420,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 112
+            "line": 144
           },
           "support": {
             "status": "provisional",
@@ -10232,7 +10437,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 114
+            "line": 146
           },
           "support": {
             "status": "provisional",
@@ -10249,7 +10454,7 @@
           "source": {
             "name": "room",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 115
+            "line": 147
           },
           "support": {
             "status": "provisional",
@@ -10270,7 +10475,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 116
+            "line": 148
           },
           "support": {
             "status": "provisional",
@@ -10297,7 +10502,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 110
+            "line": 142
           },
           "support": {
             "status": "provisional",
@@ -10324,7 +10529,7 @@
           "source": {
             "name": "id",
             "file": "libraries/chain/include/graphene/chain/data_room_object.hpp",
-            "line": 168
+            "line": 173
           },
           "support": {
             "status": "provisional",
@@ -10341,7 +10546,7 @@
           "source": {
             "name": "room",
             "file": "libraries/chain/include/graphene/chain/data_room_object.hpp",
-            "line": 168
+            "line": 173
           },
           "support": {
             "status": "provisional",
@@ -10357,7 +10562,7 @@
           "source": {
             "name": "epoch",
             "file": "libraries/chain/include/graphene/chain/data_room_object.hpp",
-            "line": 170
+            "line": 175
           },
           "support": {
             "status": "provisional",
@@ -10366,15 +10571,15 @@
         },
         {
           "index": 3,
-          "name": "account",
+          "name": "member",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "account"
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
           },
           "source": {
-            "name": "account",
+            "name": "member",
             "file": "libraries/chain/include/graphene/chain/data_room_object.hpp",
-            "line": 171
+            "line": 176
           },
           "support": {
             "status": "provisional",
@@ -10390,7 +10595,7 @@
           "source": {
             "name": "key",
             "file": "libraries/chain/include/graphene/chain/data_room_object.hpp",
-            "line": 172
+            "line": 177
           },
           "support": {
             "status": "provisional",
@@ -10417,7 +10622,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 138
+            "line": 174
           },
           "support": {
             "status": "provisional",
@@ -10434,7 +10639,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 140
+            "line": 176
           },
           "support": {
             "status": "provisional",
@@ -10451,7 +10656,7 @@
           "source": {
             "name": "room",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 141
+            "line": 177
           },
           "support": {
             "status": "provisional",
@@ -10460,15 +10665,15 @@
         },
         {
           "index": 3,
-          "name": "account",
+          "name": "member",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "account"
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
           },
           "source": {
-            "name": "account",
+            "name": "member",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 142
+            "line": 178
           },
           "support": {
             "status": "provisional",
@@ -10484,7 +10689,7 @@
           "source": {
             "name": "member_key",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 143
+            "line": 179
           },
           "support": {
             "status": "provisional",
@@ -10507,7 +10712,7 @@
           "source": {
             "name": "epoch_keys",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 144
+            "line": 180
           },
           "support": {
             "status": "provisional",
@@ -10523,7 +10728,7 @@
           "source": {
             "name": "permissions",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 146
+            "line": 182
           },
           "support": {
             "status": "provisional",
@@ -10544,7 +10749,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 147
+            "line": 183
           },
           "support": {
             "status": "provisional",
@@ -10571,7 +10776,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 135
+            "line": 171
           },
           "support": {
             "status": "provisional",
@@ -10587,7 +10792,7 @@
           "source": {
             "name": "price_per_kbyte",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 136
+            "line": 172
           },
           "support": {
             "status": "provisional",
@@ -10614,7 +10819,7 @@
           "source": {
             "name": "id",
             "file": "libraries/chain/include/graphene/chain/data_room_object.hpp",
-            "line": 111
+            "line": 112
           },
           "support": {
             "status": "provisional",
@@ -10631,7 +10836,7 @@
           "source": {
             "name": "room",
             "file": "libraries/chain/include/graphene/chain/data_room_object.hpp",
-            "line": 111
+            "line": 112
           },
           "support": {
             "status": "provisional",
@@ -10640,15 +10845,15 @@
         },
         {
           "index": 2,
-          "name": "account",
+          "name": "member",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "account"
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
           },
           "source": {
-            "name": "account",
+            "name": "member",
             "file": "libraries/chain/include/graphene/chain/data_room_object.hpp",
-            "line": 113
+            "line": 114
           },
           "support": {
             "status": "provisional",
@@ -10664,7 +10869,7 @@
           "source": {
             "name": "member_key",
             "file": "libraries/chain/include/graphene/chain/data_room_object.hpp",
-            "line": 114
+            "line": 115
           },
           "support": {
             "status": "provisional",
@@ -10680,7 +10885,7 @@
           "source": {
             "name": "permissions",
             "file": "libraries/chain/include/graphene/chain/data_room_object.hpp",
-            "line": 115
+            "line": 116
           },
           "support": {
             "status": "provisional",
@@ -10696,7 +10901,7 @@
           "source": {
             "name": "added",
             "file": "libraries/chain/include/graphene/chain/data_room_object.hpp",
-            "line": 116
+            "line": 117
           },
           "support": {
             "status": "provisional",
@@ -10723,7 +10928,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 193
+            "line": 229
           },
           "support": {
             "status": "provisional",
@@ -10740,7 +10945,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 195
+            "line": 231
           },
           "support": {
             "status": "provisional",
@@ -10757,7 +10962,7 @@
           "source": {
             "name": "room",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 196
+            "line": 232
           },
           "support": {
             "status": "provisional",
@@ -10766,15 +10971,15 @@
         },
         {
           "index": 3,
-          "name": "account",
+          "name": "member",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "account"
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
           },
           "source": {
-            "name": "account",
+            "name": "member",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 197
+            "line": 233
           },
           "support": {
             "status": "provisional",
@@ -10795,7 +11000,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 198
+            "line": 234
           },
           "support": {
             "status": "provisional",
@@ -10822,7 +11027,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 191
+            "line": 227
           },
           "support": {
             "status": "provisional",
@@ -10849,7 +11054,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 167
+            "line": 203
           },
           "support": {
             "status": "provisional",
@@ -10866,7 +11071,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 169
+            "line": 205
           },
           "support": {
             "status": "provisional",
@@ -10883,7 +11088,7 @@
           "source": {
             "name": "room",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 170
+            "line": 206
           },
           "support": {
             "status": "provisional",
@@ -10892,15 +11097,15 @@
         },
         {
           "index": 3,
-          "name": "account",
+          "name": "member",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "account"
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
           },
           "source": {
-            "name": "account",
+            "name": "member",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 171
+            "line": 207
           },
           "support": {
             "status": "provisional",
@@ -10916,7 +11121,7 @@
           "source": {
             "name": "permissions",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 172
+            "line": 208
           },
           "support": {
             "status": "provisional",
@@ -10937,7 +11142,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 173
+            "line": 209
           },
           "support": {
             "status": "provisional",
@@ -10964,7 +11169,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 165
+            "line": 201
           },
           "support": {
             "status": "provisional",
@@ -11135,7 +11340,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 219
+            "line": 255
           },
           "support": {
             "status": "provisional",
@@ -11152,7 +11357,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 221
+            "line": 257
           },
           "support": {
             "status": "provisional",
@@ -11169,7 +11374,7 @@
           "source": {
             "name": "room",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 222
+            "line": 258
           },
           "support": {
             "status": "provisional",
@@ -11185,7 +11390,7 @@
           "source": {
             "name": "new_room_key",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 223
+            "line": 259
           },
           "support": {
             "status": "provisional",
@@ -11198,8 +11403,8 @@
           "type": {
             "kind": "flat_map",
             "key": {
-              "kind": "protocol_object_id",
-              "objectType": "account"
+              "kind": "static_variant_ref",
+              "name": "data_room_member_ref"
             },
             "value": {
               "kind": "string"
@@ -11209,7 +11414,7 @@
           "source": {
             "name": "member_keys",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 224
+            "line": 260
           },
           "support": {
             "status": "provisional",
@@ -11230,7 +11435,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 226
+            "line": 262
           },
           "support": {
             "status": "provisional",
@@ -11257,7 +11462,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 216
+            "line": 252
           },
           "support": {
             "status": "provisional",
@@ -11273,7 +11478,7 @@
           "source": {
             "name": "price_per_kbyte",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 217
+            "line": 253
           },
           "support": {
             "status": "provisional",
@@ -11300,7 +11505,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 86
+            "line": 118
           },
           "support": {
             "status": "provisional",
@@ -11317,7 +11522,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 88
+            "line": 120
           },
           "support": {
             "status": "provisional",
@@ -11334,7 +11539,7 @@
           "source": {
             "name": "room",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 89
+            "line": 121
           },
           "support": {
             "status": "provisional",
@@ -11353,7 +11558,7 @@
           "source": {
             "name": "new_name",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 90
+            "line": 122
           },
           "support": {
             "status": "provisional",
@@ -11372,7 +11577,7 @@
           "source": {
             "name": "new_description",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 91
+            "line": 123
           },
           "support": {
             "status": "provisional",
@@ -11392,7 +11597,7 @@
           "source": {
             "name": "new_subject",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 92
+            "line": 124
           },
           "support": {
             "status": "provisional",
@@ -11412,7 +11617,7 @@
           "source": {
             "name": "new_owner",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 93
+            "line": 125
           },
           "support": {
             "status": "provisional",
@@ -11433,7 +11638,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 94
+            "line": 126
           },
           "support": {
             "status": "provisional",
@@ -11460,7 +11665,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 84
+            "line": 116
           },
           "support": {
             "status": "provisional",
@@ -11747,6 +11952,22 @@
             "name": "last_irreversible_block_num",
             "file": "libraries/chain/include/graphene/chain/global_property_object.hpp",
             "line": 100
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 17,
+          "name": "maintenance_seed",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "maintenance_seed",
+            "file": "libraries/chain/include/graphene/chain/global_property_object.hpp",
+            "line": 102
           },
           "support": {
             "status": "provisional",
@@ -16306,7 +16527,7 @@
           "source": {
             "name": "op",
             "file": "libraries/protocol/include/graphene/protocol/operations.hpp",
-            "line": 166
+            "line": 169
           },
           "support": {
             "status": "provisional",
@@ -17822,7 +18043,7 @@
           "source": {
             "name": "member_index",
             "file": "libraries/protocol/include/graphene/protocol/restriction.hpp",
-            "line": 99
+            "line": 104
           },
           "support": {
             "status": "provisional",
@@ -17838,7 +18059,7 @@
           "source": {
             "name": "restriction_type",
             "file": "libraries/protocol/include/graphene/protocol/restriction.hpp",
-            "line": 101
+            "line": 106
           },
           "support": {
             "status": "provisional",
@@ -17855,7 +18076,7 @@
           "source": {
             "name": "argument",
             "file": "libraries/protocol/include/graphene/protocol/restriction.hpp",
-            "line": 102
+            "line": 107
           },
           "support": {
             "status": "provisional",
@@ -17876,7 +18097,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/restriction.hpp",
-            "line": 103
+            "line": 108
           },
           "support": {
             "status": "provisional",
@@ -17887,6 +18108,109 @@
       "support": {
         "status": "provisional",
         "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
+      "name": "reveal_create_operation",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 66
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "account",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "account",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 68
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "value",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "value",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 70
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "maintenance_time",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "maintenance_time",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 71
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "witness_key",
+          "type": {
+            "kind": "public_key",
+            "prefixRef": "chain.publicKeyPrefix"
+          },
+          "source": {
+            "name": "witness_key",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 72
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
+      "name": "reveal_create_operation_fee_params_t",
+      "sourceName": "graphene::protocol::reveal_create_operation::fee_params_t",
+      "kind": "struct",
+      "fields": [],
+      "support": {
+        "status": "provisional",
+        "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
       }
     },
     {
@@ -21469,7 +21793,7 @@
       "source": {
         "name": "graphene::protocol::asset_issuer_permission_flags",
         "file": "libraries/protocol/include/graphene/protocol/types.hpp",
-        "line": 398
+        "line": 399
       },
       "support": {
         "status": "provisional",
@@ -21589,7 +21913,7 @@
       "source": {
         "name": "graphene::protocol::restriction::function_type",
         "file": "libraries/protocol/include/graphene/protocol/restriction.hpp",
-        "line": 117
+        "line": 122
       },
       "support": {
         "status": "provisional",
@@ -22388,12 +22712,109 @@
             "status": "provisional",
             "reason": "static variant arm extracted from C++ type list"
           }
+        },
+        {
+          "tag": 42,
+          "name": "data_room_id_type",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "data_room"
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "static variant arm extracted from C++ type list"
+          }
+        },
+        {
+          "tag": 43,
+          "name": "content_card_id_type",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "content_card"
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "static variant arm extracted from C++ type list"
+          }
+        },
+        {
+          "tag": 44,
+          "name": "flat_set<data_room_id_type>",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "data_room"
+            },
+            "ordering": "unresolved"
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "static variant arm extracted from C++ type list"
+          }
+        },
+        {
+          "tag": 45,
+          "name": "flat_set<content_card_id_type>",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "content_card"
+            },
+            "ordering": "unresolved"
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "static variant arm extracted from C++ type list"
+          }
         }
       ],
       "source": {
         "name": "argument_type",
         "file": "libraries/protocol/include/graphene/protocol/restriction.hpp",
-        "line": 99
+        "line": 104
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "static variant extracted from C++ type list"
+      }
+    },
+    {
+      "name": "data_room_member_ref",
+      "kind": "fc_static_variant",
+      "json": "tagged_tuple",
+      "fc": "static_variant",
+      "variants": [
+        {
+          "tag": 0,
+          "name": "account_id_type",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "static variant arm extracted from C++ type list"
+          }
+        },
+        {
+          "tag": 1,
+          "name": "public_key_type",
+          "type": {
+            "kind": "public_key",
+            "prefixRef": "chain.publicKeyPrefix"
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "static variant arm extracted from C++ type list"
+          }
+        }
+      ],
+      "source": {
+        "name": "data_room_member_ref",
+        "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
+        "line": 45
       },
       "support": {
         "status": "provisional",
@@ -23513,12 +23934,36 @@
             "status": "provisional",
             "reason": "fee_parameters arm synthesized from operation static_variant arm and nested fee_params_t"
           }
+        },
+        {
+          "tag": 88,
+          "name": "commit_create_operation_fee_params_t",
+          "type": {
+            "kind": "ref",
+            "name": "commit_create_operation_fee_params_t"
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "fee_parameters arm synthesized from operation static_variant arm and nested fee_params_t"
+          }
+        },
+        {
+          "tag": 89,
+          "name": "reveal_create_operation_fee_params_t",
+          "type": {
+            "kind": "ref",
+            "name": "reveal_create_operation_fee_params_t"
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "fee_parameters arm synthesized from operation static_variant arm and nested fee_params_t"
+          }
         }
       ],
       "source": {
         "name": "fee_parameters",
         "file": "libraries/protocol/include/graphene/protocol/operations.hpp",
-        "line": 57
+        "line": 58
       },
       "support": {
         "status": "provisional",
@@ -24708,12 +25153,36 @@
             "status": "provisional",
             "reason": "static variant arm extracted from C++ type list"
           }
+        },
+        {
+          "tag": 88,
+          "name": "commit_create_operation",
+          "type": {
+            "kind": "ref",
+            "name": "commit_create_operation"
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "static variant arm extracted from C++ type list"
+          }
+        },
+        {
+          "tag": 89,
+          "name": "reveal_create_operation",
+          "type": {
+            "kind": "ref",
+            "name": "reveal_create_operation"
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "static variant arm extracted from C++ type list"
+          }
         }
       ],
       "source": {
         "name": "operation",
         "file": "libraries/protocol/include/graphene/protocol/operations.hpp",
-        "line": 57
+        "line": 58
       },
       "support": {
         "status": "provisional",
@@ -33845,7 +34314,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 59
+            "line": 91
           },
           "support": {
             "status": "provisional",
@@ -33862,7 +34331,7 @@
           "source": {
             "name": "owner",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 61
+            "line": 93
           },
           "support": {
             "status": "provisional",
@@ -33878,7 +34347,7 @@
           "source": {
             "name": "name",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 62
+            "line": 94
           },
           "support": {
             "status": "provisional",
@@ -33894,7 +34363,7 @@
           "source": {
             "name": "description",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 63
+            "line": 95
           },
           "support": {
             "status": "provisional",
@@ -33911,7 +34380,7 @@
           "source": {
             "name": "subject",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 64
+            "line": 96
           },
           "support": {
             "status": "provisional",
@@ -33930,7 +34399,7 @@
           "source": {
             "name": "room_key",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 65
+            "line": 97
           },
           "support": {
             "status": "provisional",
@@ -33951,7 +34420,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 66
+            "line": 98
           },
           "support": {
             "status": "provisional",
@@ -33979,7 +34448,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 86
+            "line": 118
           },
           "support": {
             "status": "provisional",
@@ -33996,7 +34465,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 88
+            "line": 120
           },
           "support": {
             "status": "provisional",
@@ -34013,7 +34482,7 @@
           "source": {
             "name": "room",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 89
+            "line": 121
           },
           "support": {
             "status": "provisional",
@@ -34032,7 +34501,7 @@
           "source": {
             "name": "new_name",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 90
+            "line": 122
           },
           "support": {
             "status": "provisional",
@@ -34051,7 +34520,7 @@
           "source": {
             "name": "new_description",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 91
+            "line": 123
           },
           "support": {
             "status": "provisional",
@@ -34071,7 +34540,7 @@
           "source": {
             "name": "new_subject",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 92
+            "line": 124
           },
           "support": {
             "status": "provisional",
@@ -34091,7 +34560,7 @@
           "source": {
             "name": "new_owner",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 93
+            "line": 125
           },
           "support": {
             "status": "provisional",
@@ -34112,7 +34581,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 94
+            "line": 126
           },
           "support": {
             "status": "provisional",
@@ -34140,7 +34609,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 112
+            "line": 144
           },
           "support": {
             "status": "provisional",
@@ -34157,7 +34626,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 114
+            "line": 146
           },
           "support": {
             "status": "provisional",
@@ -34174,7 +34643,7 @@
           "source": {
             "name": "room",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 115
+            "line": 147
           },
           "support": {
             "status": "provisional",
@@ -34195,7 +34664,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 116
+            "line": 148
           },
           "support": {
             "status": "provisional",
@@ -34223,7 +34692,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 138
+            "line": 174
           },
           "support": {
             "status": "provisional",
@@ -34240,7 +34709,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 140
+            "line": 176
           },
           "support": {
             "status": "provisional",
@@ -34257,7 +34726,7 @@
           "source": {
             "name": "room",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 141
+            "line": 177
           },
           "support": {
             "status": "provisional",
@@ -34266,15 +34735,15 @@
         },
         {
           "index": 3,
-          "name": "account",
+          "name": "member",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "account"
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
           },
           "source": {
-            "name": "account",
+            "name": "member",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 142
+            "line": 178
           },
           "support": {
             "status": "provisional",
@@ -34290,7 +34759,7 @@
           "source": {
             "name": "member_key",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 143
+            "line": 179
           },
           "support": {
             "status": "provisional",
@@ -34313,7 +34782,7 @@
           "source": {
             "name": "epoch_keys",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 144
+            "line": 180
           },
           "support": {
             "status": "provisional",
@@ -34329,7 +34798,7 @@
           "source": {
             "name": "permissions",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 146
+            "line": 182
           },
           "support": {
             "status": "provisional",
@@ -34350,7 +34819,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 147
+            "line": 183
           },
           "support": {
             "status": "provisional",
@@ -34378,7 +34847,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 167
+            "line": 203
           },
           "support": {
             "status": "provisional",
@@ -34395,7 +34864,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 169
+            "line": 205
           },
           "support": {
             "status": "provisional",
@@ -34412,7 +34881,7 @@
           "source": {
             "name": "room",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 170
+            "line": 206
           },
           "support": {
             "status": "provisional",
@@ -34421,15 +34890,15 @@
         },
         {
           "index": 3,
-          "name": "account",
+          "name": "member",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "account"
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
           },
           "source": {
-            "name": "account",
+            "name": "member",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 171
+            "line": 207
           },
           "support": {
             "status": "provisional",
@@ -34445,7 +34914,7 @@
           "source": {
             "name": "permissions",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 172
+            "line": 208
           },
           "support": {
             "status": "provisional",
@@ -34466,7 +34935,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 173
+            "line": 209
           },
           "support": {
             "status": "provisional",
@@ -34494,7 +34963,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 193
+            "line": 229
           },
           "support": {
             "status": "provisional",
@@ -34511,7 +34980,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 195
+            "line": 231
           },
           "support": {
             "status": "provisional",
@@ -34528,7 +34997,7 @@
           "source": {
             "name": "room",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 196
+            "line": 232
           },
           "support": {
             "status": "provisional",
@@ -34537,15 +35006,15 @@
         },
         {
           "index": 3,
-          "name": "account",
+          "name": "member",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "account"
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
           },
           "source": {
-            "name": "account",
+            "name": "member",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 197
+            "line": 233
           },
           "support": {
             "status": "provisional",
@@ -34566,7 +35035,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 198
+            "line": 234
           },
           "support": {
             "status": "provisional",
@@ -34594,7 +35063,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 219
+            "line": 255
           },
           "support": {
             "status": "provisional",
@@ -34611,7 +35080,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 221
+            "line": 257
           },
           "support": {
             "status": "provisional",
@@ -34628,7 +35097,7 @@
           "source": {
             "name": "room",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 222
+            "line": 258
           },
           "support": {
             "status": "provisional",
@@ -34644,7 +35113,7 @@
           "source": {
             "name": "new_room_key",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 223
+            "line": 259
           },
           "support": {
             "status": "provisional",
@@ -34657,8 +35126,8 @@
           "type": {
             "kind": "flat_map",
             "key": {
-              "kind": "protocol_object_id",
-              "objectType": "account"
+              "kind": "static_variant_ref",
+              "name": "data_room_member_ref"
             },
             "value": {
               "kind": "string"
@@ -34668,7 +35137,7 @@
           "source": {
             "name": "member_keys",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 224
+            "line": 260
           },
           "support": {
             "status": "provisional",
@@ -34689,7 +35158,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/data_room.hpp",
-            "line": 226
+            "line": 262
           },
           "support": {
             "status": "provisional",
@@ -34717,7 +35186,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 42
+            "line": 52
           },
           "support": {
             "status": "provisional",
@@ -34726,15 +35195,15 @@
         },
         {
           "index": 1,
-          "name": "author",
+          "name": "payer",
           "type": {
             "kind": "protocol_object_id",
             "objectType": "account"
           },
           "source": {
-            "name": "author",
+            "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 44
+            "line": 54
           },
           "support": {
             "status": "provisional",
@@ -34743,15 +35212,15 @@
         },
         {
           "index": 2,
-          "name": "room",
+          "name": "author",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "data_room"
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
           },
           "source": {
-            "name": "room",
+            "name": "author",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 45
+            "line": 55
           },
           "support": {
             "status": "provisional",
@@ -34760,14 +35229,15 @@
         },
         {
           "index": 3,
-          "name": "hash",
+          "name": "room",
           "type": {
-            "kind": "string"
+            "kind": "protocol_object_id",
+            "objectType": "data_room"
           },
           "source": {
-            "name": "hash",
+            "name": "room",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 46
+            "line": 56
           },
           "support": {
             "status": "provisional",
@@ -34776,14 +35246,14 @@
         },
         {
           "index": 4,
-          "name": "url",
+          "name": "hash",
           "type": {
             "kind": "string"
           },
           "source": {
-            "name": "url",
+            "name": "hash",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 47
+            "line": 57
           },
           "support": {
             "status": "provisional",
@@ -34792,14 +35262,14 @@
         },
         {
           "index": 5,
-          "name": "type",
+          "name": "url",
           "type": {
             "kind": "string"
           },
           "source": {
-            "name": "type",
+            "name": "url",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 48
+            "line": 58
           },
           "support": {
             "status": "provisional",
@@ -34808,14 +35278,14 @@
         },
         {
           "index": 6,
-          "name": "description",
+          "name": "type",
           "type": {
             "kind": "string"
           },
           "source": {
-            "name": "description",
+            "name": "type",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 49
+            "line": 59
           },
           "support": {
             "status": "provisional",
@@ -34824,14 +35294,14 @@
         },
         {
           "index": 7,
-          "name": "content_key",
+          "name": "description",
           "type": {
             "kind": "string"
           },
           "source": {
-            "name": "content_key",
+            "name": "description",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 50
+            "line": 60
           },
           "support": {
             "status": "provisional",
@@ -34840,14 +35310,14 @@
         },
         {
           "index": 8,
-          "name": "storage_data",
+          "name": "content_key",
           "type": {
             "kind": "string"
           },
           "source": {
-            "name": "storage_data",
+            "name": "content_key",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 51
+            "line": 61
           },
           "support": {
             "status": "provisional",
@@ -34856,6 +35326,22 @@
         },
         {
           "index": 9,
+          "name": "storage_data",
+          "type": {
+            "kind": "string"
+          },
+          "source": {
+            "name": "storage_data",
+            "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
+            "line": 62
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 10,
           "name": "extensions",
           "type": {
             "kind": "set",
@@ -34868,7 +35354,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 52
+            "line": 63
           },
           "support": {
             "status": "provisional",
@@ -34896,7 +35382,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 73
+            "line": 97
           },
           "support": {
             "status": "provisional",
@@ -34905,15 +35391,15 @@
         },
         {
           "index": 1,
-          "name": "caller",
+          "name": "payer",
           "type": {
             "kind": "protocol_object_id",
             "objectType": "account"
           },
           "source": {
-            "name": "caller",
+            "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 75
+            "line": 99
           },
           "support": {
             "status": "provisional",
@@ -34922,15 +35408,15 @@
         },
         {
           "index": 2,
-          "name": "content_id",
+          "name": "caller",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "content_card"
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
           },
           "source": {
-            "name": "content_id",
+            "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 76
+            "line": 100
           },
           "support": {
             "status": "provisional",
@@ -34939,6 +35425,23 @@
         },
         {
           "index": 3,
+          "name": "content_id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "content_card"
+          },
+          "source": {
+            "name": "content_id",
+            "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
+            "line": 101
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
           "name": "new_hash",
           "type": {
             "kind": "optional",
@@ -34949,7 +35452,7 @@
           "source": {
             "name": "new_hash",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 77
+            "line": 102
           },
           "support": {
             "status": "provisional",
@@ -34957,7 +35460,7 @@
           }
         },
         {
-          "index": 4,
+          "index": 5,
           "name": "new_url",
           "type": {
             "kind": "optional",
@@ -34968,7 +35471,7 @@
           "source": {
             "name": "new_url",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 78
+            "line": 103
           },
           "support": {
             "status": "provisional",
@@ -34976,7 +35479,7 @@
           }
         },
         {
-          "index": 5,
+          "index": 6,
           "name": "new_type",
           "type": {
             "kind": "optional",
@@ -34987,7 +35490,7 @@
           "source": {
             "name": "new_type",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 79
+            "line": 104
           },
           "support": {
             "status": "provisional",
@@ -34995,7 +35498,7 @@
           }
         },
         {
-          "index": 6,
+          "index": 7,
           "name": "new_description",
           "type": {
             "kind": "optional",
@@ -35006,7 +35509,7 @@
           "source": {
             "name": "new_description",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 80
+            "line": 105
           },
           "support": {
             "status": "provisional",
@@ -35014,7 +35517,7 @@
           }
         },
         {
-          "index": 7,
+          "index": 8,
           "name": "new_content_key",
           "type": {
             "kind": "optional",
@@ -35025,7 +35528,7 @@
           "source": {
             "name": "new_content_key",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 81
+            "line": 106
           },
           "support": {
             "status": "provisional",
@@ -35033,7 +35536,7 @@
           }
         },
         {
-          "index": 8,
+          "index": 9,
           "name": "new_storage_data",
           "type": {
             "kind": "optional",
@@ -35044,7 +35547,7 @@
           "source": {
             "name": "new_storage_data",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 82
+            "line": 107
           },
           "support": {
             "status": "provisional",
@@ -35052,7 +35555,7 @@
           }
         },
         {
-          "index": 9,
+          "index": 10,
           "name": "extensions",
           "type": {
             "kind": "set",
@@ -35065,7 +35568,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 83
+            "line": 108
           },
           "support": {
             "status": "provisional",
@@ -35093,7 +35596,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 103
+            "line": 139
           },
           "support": {
             "status": "provisional",
@@ -35102,15 +35605,15 @@
         },
         {
           "index": 1,
-          "name": "caller",
+          "name": "payer",
           "type": {
             "kind": "protocol_object_id",
             "objectType": "account"
           },
           "source": {
-            "name": "caller",
+            "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 105
+            "line": 141
           },
           "support": {
             "status": "provisional",
@@ -35119,15 +35622,15 @@
         },
         {
           "index": 2,
-          "name": "content_id",
+          "name": "caller",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "content_card"
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
           },
           "source": {
-            "name": "content_id",
+            "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 106
+            "line": 142
           },
           "support": {
             "status": "provisional",
@@ -35136,6 +35639,23 @@
         },
         {
           "index": 3,
+          "name": "content_id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "content_card"
+          },
+          "source": {
+            "name": "content_id",
+            "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
+            "line": 143
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
           "name": "extensions",
           "type": {
             "kind": "set",
@@ -35148,7 +35668,195 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/content_card.hpp",
-            "line": 107
+            "line": 144
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "isVirtual": false,
+      "support": {
+        "status": "provisional",
+        "reason": "operation derived from operation static_variant arm and matching struct fields"
+      }
+    },
+    {
+      "name": "commit_create_operation",
+      "wireTag": 88,
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 40
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "account",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "account",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 42
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "hash",
+          "type": {
+            "kind": "string"
+          },
+          "source": {
+            "name": "hash",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 44
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "maintenance_time",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "maintenance_time",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 45
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "witness_key",
+          "type": {
+            "kind": "public_key",
+            "prefixRef": "chain.publicKeyPrefix"
+          },
+          "source": {
+            "name": "witness_key",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 46
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "isVirtual": false,
+      "support": {
+        "status": "provisional",
+        "reason": "operation derived from operation static_variant arm and matching struct fields"
+      }
+    },
+    {
+      "name": "reveal_create_operation",
+      "wireTag": 89,
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 66
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "account",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "account",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 68
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "value",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "value",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 70
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "maintenance_time",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "maintenance_time",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 71
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "witness_key",
+          "type": {
+            "kind": "public_key",
+            "prefixRef": "chain.publicKeyPrefix"
+          },
+          "source": {
+            "name": "witness_key",
+            "file": "libraries/protocol/include/graphene/protocol/commit_reveal.hpp",
+            "line": 72
           },
           "support": {
             "status": "provisional",
@@ -35584,6 +36292,21 @@
       }
     },
     {
+      "objectType": "commit_reveal",
+      "cppAlias": "commit_reveal_id_type",
+      "objectSpace": 1,
+      "typeId": 27,
+      "source": {
+        "name": "commit_reveal",
+        "file": "libraries/protocol/include/graphene/protocol/types.hpp",
+        "line": 362
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "object type extracted from GRAPHENE_DEFINE_IDS in namespace `protocol` as `commit_reveal_object_type` from space `protocol_ids`"
+      }
+    },
+    {
       "objectType": "global_property",
       "cppAlias": "global_property_id_type",
       "objectSpace": 2,
@@ -35988,6 +36711,7 @@
               "data_room_member",
               "data_room_key_epoch",
               "content_card",
+              "commit_reveal",
               "global_property",
               "dynamic_global_property",
               "reserved0",
@@ -36860,7 +37584,7 @@
           "source": {
             "name": "ops",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1457
+            "line": 1463
           },
           "support": {
             "status": "provisional",
@@ -36876,7 +37600,7 @@
           "source": {
             "name": "asset_symbol_or_id",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1457
+            "line": 1463
           },
           "support": {
             "status": "provisional",
@@ -36895,7 +37619,7 @@
       "source": {
         "name": "get_required_fees",
         "file": "libraries/app/include/graphene/app/database_api.hpp",
-        "line": 1457
+        "line": 1463
       },
       "support": {
         "status": "provisional",
@@ -37217,12 +37941,12 @@
         },
         {
           "index": 1,
-          "name": "account_name_or_id",
+          "name": "member_name_key_or_id",
           "type": {
             "kind": "string"
           },
           "source": {
-            "name": "account_name_or_id",
+            "name": "member_name_key_or_id",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
             "line": 1182
           },
@@ -37257,14 +37981,14 @@
       "params": [
         {
           "index": 0,
-          "name": "account_name_or_id",
+          "name": "member_name_key_or_id",
           "type": {
             "kind": "string"
           },
           "source": {
-            "name": "account_name_or_id",
+            "name": "member_name_key_or_id",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1192
+            "line": 1194
           },
           "support": {
             "status": "provisional",
@@ -37285,7 +38009,7 @@
           "source": {
             "name": "limit",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1192
+            "line": 1194
           },
           "support": {
             "status": "provisional",
@@ -37307,7 +38031,7 @@
           "source": {
             "name": "start_id",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1192
+            "line": 1194
           },
           "support": {
             "status": "provisional",
@@ -37326,7 +38050,7 @@
       "source": {
         "name": "get_data_rooms_by_member",
         "file": "libraries/app/include/graphene/app/database_api.hpp",
-        "line": 1192
+        "line": 1194
       },
       "support": {
         "status": "provisional",
@@ -37348,7 +38072,7 @@
           "source": {
             "name": "room_id",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1205
+            "line": 1210
           },
           "support": {
             "status": "provisional",
@@ -37357,14 +38081,14 @@
         },
         {
           "index": 1,
-          "name": "account_name_or_id",
+          "name": "member_name_key_or_id",
           "type": {
             "kind": "string"
           },
           "source": {
-            "name": "account_name_or_id",
+            "name": "member_name_key_or_id",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1205
+            "line": 1210
           },
           "support": {
             "status": "provisional",
@@ -37385,7 +38109,7 @@
           "source": {
             "name": "limit",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1205
+            "line": 1210
           },
           "support": {
             "status": "provisional",
@@ -37407,7 +38131,7 @@
           "source": {
             "name": "start_id",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1205
+            "line": 1210
           },
           "support": {
             "status": "provisional",
@@ -37426,7 +38150,7 @@
       "source": {
         "name": "get_data_room_key_epochs",
         "file": "libraries/app/include/graphene/app/database_api.hpp",
-        "line": 1205
+        "line": 1210
       },
       "support": {
         "status": "provisional",
@@ -37448,7 +38172,7 @@
           "source": {
             "name": "room_id",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1221
+            "line": 1226
           },
           "support": {
             "status": "provisional",
@@ -37464,7 +38188,7 @@
           "source": {
             "name": "epoch",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1221
+            "line": 1226
           },
           "support": {
             "status": "provisional",
@@ -37473,14 +38197,14 @@
         },
         {
           "index": 2,
-          "name": "account_name_or_id",
+          "name": "member_name_key_or_id",
           "type": {
             "kind": "string"
           },
           "source": {
-            "name": "account_name_or_id",
+            "name": "member_name_key_or_id",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1221
+            "line": 1226
           },
           "support": {
             "status": "provisional",
@@ -37499,7 +38223,7 @@
       "source": {
         "name": "get_data_room_key_epoch",
         "file": "libraries/app/include/graphene/app/database_api.hpp",
-        "line": 1221
+        "line": 1226
       },
       "support": {
         "status": "provisional",
@@ -37521,7 +38245,7 @@
           "source": {
             "name": "content_id",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1233
+            "line": 1238
           },
           "support": {
             "status": "provisional",
@@ -37540,7 +38264,7 @@
       "source": {
         "name": "get_content_card_by_id",
         "file": "libraries/app/include/graphene/app/database_api.hpp",
-        "line": 1233
+        "line": 1238
       },
       "support": {
         "status": "provisional",
@@ -37562,7 +38286,7 @@
           "source": {
             "name": "room_id",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1240
+            "line": 1245
           },
           "support": {
             "status": "provisional",
@@ -37583,7 +38307,7 @@
           "source": {
             "name": "limit",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1240
+            "line": 1245
           },
           "support": {
             "status": "provisional",
@@ -37605,7 +38329,7 @@
           "source": {
             "name": "start_id",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1240
+            "line": 1245
           },
           "support": {
             "status": "provisional",
@@ -37624,7 +38348,7 @@
       "source": {
         "name": "get_content_cards_by_room",
         "file": "libraries/app/include/graphene/app/database_api.hpp",
-        "line": 1240
+        "line": 1245
       },
       "support": {
         "status": "provisional",
@@ -37638,14 +38362,14 @@
       "params": [
         {
           "index": 0,
-          "name": "account_name_or_id",
+          "name": "author_name_key_or_id",
           "type": {
             "kind": "string"
           },
           "source": {
-            "name": "account_name_or_id",
+            "name": "author_name_key_or_id",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1253
+            "line": 1258
           },
           "support": {
             "status": "provisional",
@@ -37666,7 +38390,7 @@
           "source": {
             "name": "limit",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1253
+            "line": 1258
           },
           "support": {
             "status": "provisional",
@@ -37688,7 +38412,7 @@
           "source": {
             "name": "start_id",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1253
+            "line": 1258
           },
           "support": {
             "status": "provisional",
@@ -37707,7 +38431,7 @@
       "source": {
         "name": "get_content_cards_by_author",
         "file": "libraries/app/include/graphene/app/database_api.hpp",
-        "line": 1253
+        "line": 1258
       },
       "support": {
         "status": "provisional",

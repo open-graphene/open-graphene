@@ -13,7 +13,7 @@ pub struct DataRoomKeyEpochRequest<'session> {
     pub(super) session: &'session mut GrapheneSession,
     pub(super) room_id: String,
     pub(super) epoch: u32,
-    pub(super) account_name_or_id: String,
+    pub(super) member_name_key_or_id: String,
 }
 
 impl DataRoomKeyEpochRequest<'_> {
@@ -21,7 +21,7 @@ impl DataRoomKeyEpochRequest<'_> {
         let params = rpc_get_data_room_key_epoch::Params {
             room_id: DataRoomId(self.room_id),
             epoch: self.epoch,
-            account_name_or_id: self.account_name_or_id,
+            member_name_key_or_id: self.member_name_key_or_id,
         }
         .to_params_value()
         .map_err(SwaplockApiError::unexpected(

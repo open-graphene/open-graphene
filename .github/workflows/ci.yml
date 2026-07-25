@@ -8,7 +8,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   # Pinned vendored-source revisions used to regenerate the committed specs.
-  SWAPLOCK_CORE_COMMIT: a79b40ef48dcc4ea2bd39d5302f414247c834c09
+  SWAPLOCK_CORE_COMMIT: b12818f24b76607b1abae3e8f91b8fc385fc512f
   BITSHARES_CORE_COMMIT: b92b82ba3e57381d111f28383e8cfa89a8356966
 
 jobs:

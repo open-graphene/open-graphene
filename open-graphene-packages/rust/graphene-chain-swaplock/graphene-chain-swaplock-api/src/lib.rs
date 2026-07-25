@@ -3,6 +3,7 @@ mod crypto;
 mod database;
 mod history;
 mod live;
+mod member;
 mod network_broadcast;
 mod operations;
 mod orders;
@@ -15,6 +16,9 @@ use thiserror::Error;
 // Chain-agnostic account-name validation lives in core; re-exported here so it sits on the SDK
 // surface next to the calls that take account names.
 pub use open_graphene_core::{is_account_name, is_account_name_allow_short, is_cheap_name};
+
+// A data room member may be an account or a bare public key; these read one from a string.
+pub use member::{is_public_key, member_ref};
 
 pub use open_graphene_transport::{
     ChainIdMismatch, ConnectionStrategy, ReconnectPolicy, ServerConnectFailure, ServerLatency,
@@ -146,6 +150,12 @@ pub enum SwaplockApiError {
 
     #[error("missing transfer field `{field}`")]
     MissingTransferField { field: &'static str },
+
+    #[error(
+        "a key member cannot pay a fee, so `{operation}` needs an explicit payer account \
+         alongside the public key"
+    )]
+    KeyMemberNeedsPayer { operation: &'static str },
 
     #[error("invalid transfer: {message}")]
     InvalidTransfer { message: String },

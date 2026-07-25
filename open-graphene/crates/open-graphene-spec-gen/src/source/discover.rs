@@ -27,7 +27,13 @@ pub enum SourceFileKind {
 }
 
 pub fn discover_sources(config_path: &Path, source: &SourceConfig) -> Result<SourceSet> {
-    let chain_repo = resolve_chain_repo(config_path, &source.chain_repo)?;
+    let configured = source
+        .chain_repo_env
+        .as_deref()
+        .and_then(|name| std::env::var(name).ok())
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or_else(|| source.chain_repo.clone());
+    let chain_repo = resolve_chain_repo(config_path, &configured)?;
     if !chain_repo.is_dir() {
         return Err(SpecGenError::SourceRootMissing { path: chain_repo });
     }

@@ -5,18 +5,24 @@
 //! key at creation for a public room; encryption can be bootstrapped later with
 //! `data_room_rotate_key`.
 
-use graphene_chain_swaplock_bindings::generated::ids::{AccountId, AssetId, DataRoomId};
+use graphene_chain_swaplock_bindings::generated::ids::{
+    AccountId, AssetId, DataRoomId, PUBLIC_KEY_PREFIX,
+};
 use graphene_chain_swaplock_bindings::generated::operations::{
     DataRoomCreateOperation, DataRoomDeleteOperation, DataRoomMemberAddOperation,
     DataRoomMemberRemoveOperation, DataRoomMemberUpdateOperation, DataRoomRotateKeyOperation,
     DataRoomUpdateOperation,
 };
-use graphene_chain_swaplock_bindings::generated::static_variants::{DataRoomSubject, Operation};
+use graphene_chain_swaplock_bindings::generated::static_variants::{
+    DataRoomMemberRef, DataRoomSubject, Operation,
+};
 use graphene_chain_swaplock_bindings::generated::types::Asset;
 use open_graphene_core::ObjectId;
+use open_graphene_fc::decode_public_key;
 use open_graphene_transport::GrapheneSession;
 
 use crate::SwaplockApiError;
+use crate::member::{is_public_key, member_ref};
 
 use super::transaction::{PreparedTransaction, TransactionBuilder};
 
@@ -69,29 +75,46 @@ fn sorted_epoch_keys(
     Ok(epoch_keys)
 }
 
-/// Sort member keys by the numeric instance of the `1.2.N` account id, as the chain's flat_map
-/// wire format requires; reject a malformed account id or a duplicate account.
+/// Sort order of a member reference, matching the chain's `operator<` for
+/// `data_room_member_ref`: variant tag first, then value.
+///
+/// Accounts order by object id instance. Keys order by their **raw 33 bytes**, which is what
+/// `public_key_type::operator<` compares - not by the base58 text, whose ordering differs. Get
+/// this wrong and the flat_map goes out on the wire unsorted.
+fn member_sort_key(member: &str) -> Result<(u8, u64, [u8; 33]), SwaplockApiError> {
+    if is_public_key(member) {
+        let bytes = decode_public_key(member, Some(PUBLIC_KEY_PREFIX)).map_err(|error| {
+            SwaplockApiError::InvalidTransfer {
+                message: format!("invalid member public key `{member}`: {error}"),
+            }
+        })?;
+        Ok((1, 0, bytes))
+    } else {
+        let instance = ObjectId::parse(member)?.require_type(1, 2)?.instance;
+        Ok((0, instance, [0u8; 33]))
+    }
+}
+
+/// Sort member keys as the chain's flat_map wire format requires; reject a malformed member or
+/// a duplicate one. Members may be accounts or bare public keys.
 fn sorted_member_keys(
     member_keys: Vec<(String, String)>,
-) -> Result<Vec<(AccountId, String)>, SwaplockApiError> {
+) -> Result<Vec<(DataRoomMemberRef, String)>, SwaplockApiError> {
     let mut keyed = member_keys
         .into_iter()
-        .map(|(account, key)| {
-            let instance = ObjectId::parse(&account)?.require_type(1, 2)?.instance;
-            Ok((instance, account, key))
-        })
+        .map(|(member, key)| Ok((member_sort_key(&member)?, member, key)))
         .collect::<Result<Vec<_>, SwaplockApiError>>()?;
-    keyed.sort_by_key(|(instance, _, _)| *instance);
+    keyed.sort_by(|left, right| left.0.cmp(&right.0));
     for pair in keyed.windows(2) {
         if pair[0].0 == pair[1].0 {
             return Err(SwaplockApiError::InvalidTransfer {
-                message: format!("duplicate member key for account `{}`", pair[1].1),
+                message: format!("duplicate member key for member `{}`", pair[1].1),
             });
         }
     }
     Ok(keyed
         .into_iter()
-        .map(|(_, account, key)| (AccountId(account), key))
+        .map(|(_, member, key)| (member_ref(member), key))
         .collect())
 }
 
@@ -109,7 +132,7 @@ fn member_add_operation(
             fee: core_fee(),
             caller: AccountId(caller),
             room: DataRoomId(room),
-            account: AccountId(account),
+            member: member_ref(account),
             member_key,
             epoch_keys: sorted_epoch_keys(epoch_keys)?,
             permissions,
@@ -446,7 +469,7 @@ impl<'session> DataRoomMemberUpdateRequest<'session> {
             fee: core_fee(),
             caller: AccountId(self.caller),
             room: DataRoomId(self.room),
-            account: AccountId(self.account),
+            member: member_ref(self.account),
             permissions: self.permissions,
             extensions: vec![],
         });
@@ -489,7 +512,7 @@ impl<'session> DataRoomMemberRemoveRequest<'session> {
             fee: core_fee(),
             caller: AccountId(self.caller),
             room: DataRoomId(self.room),
-            account: AccountId(self.account),
+            member: member_ref(self.account),
             extensions: vec![],
         });
         TransactionBuilder::new(self.session)
@@ -629,7 +652,7 @@ mod tests {
                 "fee": {"amount": 0, "asset_id": "1.3.0"},
                 "caller": "1.2.100",
                 "room": "1.23.7",
-                "account": "1.2.101",
+                "member": [0, "1.2.101"],
                 "member_key": "ENC_MEMBER",
                 "epoch_keys": [[1, "K1"], [3, "K3"]],
                 "permissions": 17,
@@ -694,9 +717,78 @@ mod tests {
                 "caller": "1.2.100",
                 "room": "1.23.7",
                 "new_room_key": "NEW_OWNER_KEY",
-                "member_keys": [["1.2.9", "K9"], ["1.2.10", "K10"]],
+                "member_keys": [[[0, "1.2.9"], "K9"], [[0, "1.2.10"], "K10"]],
                 "extensions": []
             }])
+        );
+    }
+
+    /// The chain orders `data_room_member_ref` by variant tag first, then by value - and for a
+    /// key, "value" means its raw 33 bytes, which `public_key_type::operator<` compares. Sorting
+    /// keys by their base58 text instead would put the flat_map on the wire out of order.
+    #[test]
+    fn rotate_key_orders_accounts_before_keys_and_keys_by_raw_bytes() {
+        const KEY_A: &str = "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV";
+        const KEY_B: &str = "BTS7jDPoMwyjVH5obFmqzFNp4Ffp7G2nvC7FKFkrMBpo7Sy4uq5Mj";
+
+        let operation = rotate_key_operation(
+            "1.2.100".to_string(),
+            "1.23.7".to_string(),
+            Some("NEW_OWNER_KEY".to_string()),
+            vec![
+                (KEY_B.to_string(), "KB".to_string()),
+                ("1.2.10".to_string(), "K10".to_string()),
+                (KEY_A.to_string(), "KA".to_string()),
+                ("1.2.9".to_string(), "K9".to_string()),
+            ],
+        )
+        .unwrap();
+
+        // What the chain's comparator would produce, derived rather than hand-written: accounts
+        // first, keys after, and the keys ordered by their decoded bytes.
+        let mut keys = [KEY_A, KEY_B];
+        keys.sort_by_key(|key| decode_public_key(key, Some(PUBLIC_KEY_PREFIX)).unwrap());
+        let key_values: Vec<&str> = keys
+            .iter()
+            .map(|key| if *key == KEY_A { "KA" } else { "KB" })
+            .collect();
+
+        assert_eq!(
+            serde_json::to_value(&operation).unwrap(),
+            json!([84, {
+                "fee": {"amount": 0, "asset_id": "1.3.0"},
+                "caller": "1.2.100",
+                "room": "1.23.7",
+                "new_room_key": "NEW_OWNER_KEY",
+                "member_keys": [
+                    [[0, "1.2.9"], "K9"],
+                    [[0, "1.2.10"], "K10"],
+                    [[1, keys[0]], key_values[0]],
+                    [[1, keys[1]], key_values[1]],
+                ],
+                "extensions": []
+            }])
+        );
+    }
+
+    /// The same key cannot appear twice, exactly as for an account.
+    #[test]
+    fn rotate_key_rejects_a_duplicate_key_member() {
+        const KEY_A: &str = "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV";
+
+        let duplicate = rotate_key_operation(
+            "1.2.100".to_string(),
+            "1.23.7".to_string(),
+            Some("NEW_OWNER_KEY".to_string()),
+            vec![
+                (KEY_A.to_string(), "KA".to_string()),
+                (KEY_A.to_string(), "KA-again".to_string()),
+            ],
+        );
+
+        assert_eq!(
+            duplicate.unwrap_err().to_string(),
+            format!("invalid transfer: duplicate member key for member `{KEY_A}`")
         );
     }
 
@@ -741,7 +833,7 @@ mod tests {
         .unwrap_err();
         assert_eq!(
             duplicate.to_string(),
-            "invalid transfer: duplicate member key for account `1.2.9`"
+            "invalid transfer: duplicate member key for member `1.2.9`"
         );
 
         let malformed = rotate_key_operation(

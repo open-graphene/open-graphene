@@ -12,7 +12,7 @@ use crate::SwaplockApiError;
 /// own defaults when either is unset.
 pub struct ContentCardsByAuthorRequest<'session> {
     pub(super) session: &'session mut GrapheneSession,
-    pub(super) account_name_or_id: String,
+    pub(super) author_name_key_or_id: String,
     pub(super) limit: Option<u32>,
     pub(super) start_id: Option<String>,
 }
@@ -35,7 +35,7 @@ impl ContentCardsByAuthorRequest<'_> {
 
     pub async fn get(self) -> Result<Vec<ContentCardObject>, SwaplockApiError> {
         let params = rpc_get_content_cards_by_author::Params {
-            account_name_or_id: self.account_name_or_id,
+            author_name_key_or_id: self.author_name_key_or_id,
             limit: self.limit,
             start_id: self.start_id.map(ContentCardId),
         }
