@@ -133,15 +133,27 @@ impl PreparedTransaction {
     ///
     /// Order does not matter to the chain, but note it rejects a signature it did not need
     /// (`tx_irrelevant_sig`), so pass only the keys the operation actually requires.
-    pub fn sign_with_wifs<I, S>(self, keys: I) -> Result<SignedTransactionEnvelope, SwaplockApiError>
+    pub fn sign_with_wifs<I, S>(
+        self,
+        keys: I,
+    ) -> Result<SignedTransactionEnvelope, SwaplockApiError>
     where
         I: IntoIterator<Item = (S, S)>,
         S: AsRef<str>,
     {
+        // The same key may legitimately appear twice - a balance claim where the account paying
+        // the fee also owns the balance, say - but the chain rejects a repeated signature
+        // outright (tx_duplicate_sig), so sign once per distinct key.
+        let mut seen = Vec::new();
         let mut signatures = Vec::new();
         for (wif, expected_public_key) in keys {
-            let signed = sign_checked(&self.transaction, wif.as_ref(), expected_public_key.as_ref())?;
+            let public_key = expected_public_key.as_ref().to_string();
+            if seen.contains(&public_key) {
+                continue;
+            }
+            let signed = sign_checked(&self.transaction, wif.as_ref(), &public_key)?;
             signatures.extend(signed.signatures);
+            seen.push(public_key);
         }
         if signatures.is_empty() {
             return Err(SwaplockApiError::InvalidTransfer {
