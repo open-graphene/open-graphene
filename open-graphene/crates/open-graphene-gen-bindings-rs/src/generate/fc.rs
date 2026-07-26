@@ -1944,7 +1944,7 @@ mod tests {
     fn renders_transaction_type_and_fc_impl() {
         let mut protocol = minimal_protocol();
         protocol.chain.chain_id =
-            Some("f990ce83af5cf2d55c180ca4bd4b34161ccff2b2f8cc7d4987eea9555153930e".to_string());
+            Some("9118895266b1e75e8c30b0e8433cf6cfab32ac59b6b1e1107fe2f58affc216f9".to_string());
         protocol.structs.push(StructDef {
             name: "transaction".to_string(),
             source_name: None,
@@ -2101,7 +2101,7 @@ mod tests {
 
         let ids = render_ids(&protocol).expect("render ids");
         assert!(ids.contains(
-            "pub const CHAIN_ID_HEX: &str = \"f990ce83af5cf2d55c180ca4bd4b34161ccff2b2f8cc7d4987eea9555153930e\";"
+            "pub const CHAIN_ID_HEX: &str = \"9118895266b1e75e8c30b0e8433cf6cfab32ac59b6b1e1107fe2f58affc216f9\";"
         ));
 
         let types = render_types(&protocol, &detect_schema_no_recursion_cuts(&protocol))
