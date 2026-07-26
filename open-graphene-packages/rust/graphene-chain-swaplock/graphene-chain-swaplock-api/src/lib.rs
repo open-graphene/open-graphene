@@ -122,7 +122,7 @@ pub use database::{
 };
 
 pub const SWAPLOCK_CHAIN_ID: &str =
-    "9118895266b1e75e8c30b0e8433cf6cfab32ac59b6b1e1107fe2f58affc216f9";
+    "95acb1f01e4afd0dd8b61f99377911a2f0ac6e6420925e01630f1d3580c89758";
 
 #[derive(Debug, Error)]
 pub enum SwaplockApiError {
