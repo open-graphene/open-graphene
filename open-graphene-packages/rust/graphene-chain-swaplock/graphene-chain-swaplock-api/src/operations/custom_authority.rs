@@ -23,7 +23,11 @@ use super::transaction::{PreparedTransaction, TransactionBuilder};
 
 const CORE_ASSET_ID: &str = "1.3.0";
 
-/// How long a custom authority stays valid when the caller does not set a window (one year).
+/// How long a custom authority stays valid when the caller does not set a window.
+///
+/// Capped by the chain's own `max_custom_authority_lifetime_seconds` before use: the evaluator
+/// rejects anything longer outright, so a fixed default would simply fail on every chain
+/// configured below it rather than degrade.
 const DEFAULT_VALID_AHEAD: Duration = Duration::from_secs(365 * 24 * 60 * 60);
 
 fn core_fee() -> Asset {
@@ -103,12 +107,25 @@ impl<'session> CustomAuthorityCreateRequest<'session> {
             (Some(from), Some(to)) => (from, to),
             _ => {
                 let head = DatabaseApi {
-                    session: self.session,
+                    session: &mut *self.session,
                 }
                 .get_dynamic_global_properties()
                 .await?
                 .time;
-                let valid_to = expiration_from_head_time(&head, DEFAULT_VALID_AHEAD)?;
+                let limit = DatabaseApi {
+                    session: &mut *self.session,
+                }
+                .get_global_properties()
+                .await?
+                .parameters
+                .extensions
+                .custom_authority_options
+                .map(|options| {
+                    Duration::from_secs(u64::from(options.max_custom_authority_lifetime_seconds))
+                })
+                .unwrap_or(DEFAULT_VALID_AHEAD);
+                let valid_to =
+                    expiration_from_head_time(&head, DEFAULT_VALID_AHEAD.min(limit))?;
                 (head, valid_to)
             }
         };

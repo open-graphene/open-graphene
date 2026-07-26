@@ -129,6 +129,7 @@ pub(crate) fn render_fc_transfer_path_impls(out: &mut String, protocol: &Protoco
         "worker_initializer",
         "limit_order_auto_action",
         "data_room_subject",
+        "data_room_member_ref",
     ] {
         render_fc_tagged_static_variant_impl(out, protocol, spec_name)?;
     }
@@ -351,6 +352,13 @@ pub(crate) fn render_fc_tagged_static_variant_impl(
                 "write_fixed_bytes(value.as_ref(), {bytes}, {}, out)",
                 rust_string_literal(&format!("{spec_name}::{}", arm.name))
             ),
+            // The generated payload is a String holding a base58 key, not text. Letting it fall
+            // through to the generic arm would write length-prefixed UTF-8 instead of the 33
+            // compressed bytes the chain reads.
+            TypeRef::PublicKey { .. } => {
+                let prefix = render_public_key_prefix_expr(&arm.ty)?;
+                format!("write_public_key(value.as_ref(), {prefix}, out)")
+            }
             _ => {
                 return Err(GenBindingsRsError::Render {
                     message: format!(
@@ -1108,6 +1116,7 @@ pub(crate) fn is_fc_supported_type(ty: &TypeRef, supported_structs: &BTreeSet<St
                 || name == "argument_type"
                 || name == "operation"
                 || name == "data_room_subject"
+                || name == "data_room_member_ref"
         }
         TypeRef::Optional { inner } | TypeRef::Vector { inner } => {
             is_fc_supported_type(inner, supported_structs)

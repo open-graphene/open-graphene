@@ -7,7 +7,8 @@ use graphene_chain_swaplock_bindings::generated::{
     CommitteeMemberUpdateGlobalParametersOperationFeeParamsT, CreateTakeProfitOrderAction,
     CreditOfferCreateOperation, CreditOfferId, CreditOfferUpdateOperation,
     CustomAuthorityCreateOperation, CustomAuthorityId, CustomAuthorityUpdateOperation,
-    CustomOperation, FcSerialize, FcSerializeError, FeeParameters, FeeSchedule, HtlcHash, HtlcId,
+    CustomOperation, DataRoomId, DataRoomMemberAddOperation, DataRoomMemberRef, FcSerialize,
+    FcSerializeError, FeeParameters, FeeSchedule, HtlcHash, HtlcId,
     HtlcRefundOperation, InstantVestingPolicyInitializer, LimitOrderAutoAction,
     LimitOrderCancelOperation, LimitOrderCreateOperation, LimitOrderId, LimitOrderUpdateOperation,
     LinearVestingPolicyInitializer, MemoData, NoSpecialAuthority, OpWrapper, Operation, Predicate,
@@ -2300,4 +2301,58 @@ fn restriction_fc_writes_member_index_and_type_as_varints() {
 
     assert_eq!(bytes[0], 0x01, "member_index is one varint byte");
     assert_eq!(bytes[1], 0x00, "restriction_type is one varint byte");
+}
+
+#[test]
+fn data_room_member_ref_fc_writes_a_key_as_compressed_bytes() {
+    // The public-key arm is a String in Rust but a 33-byte compressed key on the wire. Serializing
+    // it as an ordinary length-prefixed string would be the kind of plausible-but-wrong output the
+    // generator is meant to refuse, so pin the real shape.
+    let key = "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV".to_string();
+
+    let bytes = DataRoomMemberRef::PublicKeyType(Box::new(key))
+        .to_fc_bytes()
+        .expect("serialize key member ref");
+
+    assert_eq!(bytes.len(), 34, "one varint tag plus 33 compressed bytes");
+    assert_eq!(bytes[0], 0x01, "public_key_type is tag 1");
+    assert!(
+        bytes[1] == 0x02 || bytes[1] == 0x03,
+        "a compressed secp256k1 key starts 0x02 or 0x03, got {:#x}",
+        bytes[1]
+    );
+
+    let account = DataRoomMemberRef::AccountIdType(Box::new(AccountId("1.2.100".to_string())))
+        .to_fc_bytes()
+        .expect("serialize account member ref");
+    assert_eq!(account, vec![0x00, 0x64], "tag 0 then the account instance");
+}
+
+#[test]
+fn data_room_member_add_fc_serializes_a_key_member() {
+    // The operation had no FcSerialize impl at all while data_room_member_ref was unaudited, so
+    // every key-member write was unsignable from the SDK. This asserts the whole operation now
+    // reaches the wire, key member and all.
+    let operation = DataRoomMemberAddOperation {
+        fee: Asset {
+            amount: 0,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        caller: AccountId("1.2.100".to_string()),
+        room: DataRoomId("1.23.0".to_string()),
+        member: DataRoomMemberRef::PublicKeyType(Box::new(
+            "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV".to_string(),
+        )),
+        member_key: String::new(),
+        epoch_keys: vec![],
+        permissions: 4,
+        extensions: vec![],
+    };
+
+    let bytes = operation.to_fc_bytes().expect("serialize member add");
+
+    // fee(8+1) + caller(1) + room(1) + member(34) + member_key(1) + epoch_keys(1)
+    //   + permissions(4) + extensions(1)
+    assert_eq!(bytes.len(), 52);
+    assert_eq!(bytes[11], 0x01, "the member arm is the public key one");
 }
