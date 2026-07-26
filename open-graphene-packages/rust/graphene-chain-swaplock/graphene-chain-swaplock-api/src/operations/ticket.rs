@@ -59,7 +59,7 @@ impl<'session> TicketCreateRequest<'session> {
         let operation = Operation::ticket_create(TicketCreateOperation {
             fee: core_fee(),
             account: AccountId(self.account),
-            target_type: self.target_type,
+            target_type: u64::from(self.target_type),
             amount: Asset::new(amount, AssetId(asset)),
             extensions: vec![],
         });
@@ -109,7 +109,7 @@ impl<'session> TicketUpdateRequest<'session> {
             fee: core_fee(),
             ticket: TicketId(self.ticket),
             account: AccountId(self.account),
-            target_type: self.target_type,
+            target_type: u64::from(self.target_type),
             amount_for_new_target: self
                 .amount_for_new_target
                 .map(|(amount, asset)| Asset::new(amount, AssetId(asset))),

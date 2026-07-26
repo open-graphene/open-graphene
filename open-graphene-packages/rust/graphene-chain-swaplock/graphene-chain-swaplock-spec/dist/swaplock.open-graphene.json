@@ -9562,7 +9562,7 @@
           "index": 5,
           "name": "operation_type",
           "type": {
-            "kind": "uint32"
+            "kind": "unsigned_varint"
           },
           "source": {
             "name": "operation_type",
@@ -18038,7 +18038,7 @@
           "index": 0,
           "name": "member_index",
           "type": {
-            "kind": "uint32"
+            "kind": "unsigned_varint"
           },
           "source": {
             "name": "member_index",
@@ -18054,7 +18054,7 @@
           "index": 1,
           "name": "restriction_type",
           "type": {
-            "kind": "uint32"
+            "kind": "unsigned_varint"
           },
           "source": {
             "name": "restriction_type",
@@ -19237,7 +19237,7 @@
           "index": 2,
           "name": "target_type",
           "type": {
-            "kind": "uint32"
+            "kind": "unsigned_varint"
           },
           "source": {
             "name": "target_type",
@@ -19379,7 +19379,7 @@
           "index": 3,
           "name": "target_type",
           "type": {
-            "kind": "uint32"
+            "kind": "unsigned_varint"
           },
           "source": {
             "name": "target_type",
@@ -31262,7 +31262,7 @@
           "index": 5,
           "name": "operation_type",
           "type": {
-            "kind": "uint32"
+            "kind": "unsigned_varint"
           },
           "source": {
             "name": "operation_type",
@@ -31664,7 +31664,7 @@
           "index": 2,
           "name": "target_type",
           "type": {
-            "kind": "uint32"
+            "kind": "unsigned_varint"
           },
           "source": {
             "name": "target_type",
@@ -31780,7 +31780,7 @@
           "index": 3,
           "name": "target_type",
           "type": {
-            "kind": "uint32"
+            "kind": "unsigned_varint"
           },
           "source": {
             "name": "target_type",

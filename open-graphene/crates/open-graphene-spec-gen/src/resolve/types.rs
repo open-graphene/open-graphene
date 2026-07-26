@@ -110,7 +110,13 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         "char" => TypeRef::String,
         "uint8_t" => TypeRef::Uint8,
         "uint16_t" | "weight_type" => TypeRef::Uint16,
-        "uint32_t" | "unsigned" | "unsigned int" | "unsigned_int" => TypeRef::Uint32,
+        "uint32_t" | "unsigned" | "unsigned int" => TypeRef::Uint32,
+        // `unsigned_int` is fc's varint wrapper, not a fixed-width integer: it is a distinct C++
+        // type whose pack/unpack writes a base-128 varint. Resolving it to `uint32` produced four
+        // little-endian bytes where the chain reads one, so a transaction carrying one of these
+        // fields hashed differently on either side and the node rejected the signature as coming
+        // from the wrong key. The two spellings must not share an arm.
+        "unsigned_int" => TypeRef::UnsignedVarint,
         "int32_t" | "int" => TypeRef::Int32 {
             fc: None,
             source: None,
@@ -671,7 +677,8 @@ mod tests {
                 name: "linear_vesting_policy_initializer".to_string()
             }
         );
-        assert_eq!(resolve_cpp_type("unsigned_int"), TypeRef::Uint32);
+        // fc's varint wrapper, deliberately not the same as uint32_t below.
+        assert_eq!(resolve_cpp_type("unsigned_int"), TypeRef::UnsignedVarint);
         assert_eq!(
             resolve_cpp_type("fc::uint128_t"),
             TypeRef::Uint128 {

@@ -2086,10 +2086,8 @@ pub struct RefundWorkerInitializer {}
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockRestriction)]
 pub struct Restriction {
-    #[schema(schema_with = crate::generated::types::u32_schema)]
-    pub member_index: u32,
-    #[schema(schema_with = crate::generated::types::u32_schema)]
-    pub restriction_type: u32,
+    pub member_index: u64,
+    pub restriction_type: u64,
     pub argument: crate::generated::static_variants::ArgumentType,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }

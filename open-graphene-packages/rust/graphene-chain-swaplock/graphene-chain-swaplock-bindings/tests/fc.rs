@@ -13,7 +13,8 @@ use graphene_chain_swaplock_bindings::generated::{
     LinearVestingPolicyInitializer, MemoData, NoSpecialAuthority, OpWrapper, Operation, Predicate,
     Price, ProposalCreateOperation, RefundWorkerInitializer, Restriction, Signature,
     SignedTransaction, SpecialAuthority, TopHoldersSpecialAuthority, Transaction,
-    TransferOperation, TransferOperationFeeParamsT, VestingBalanceCreateOperation,
+    TicketCreateOperation, TransferOperation, TransferOperationFeeParamsT,
+    VestingBalanceCreateOperation,
     VestingBalanceWorkerInitializer, VestingPolicyInitializer, WithdrawPermissionCreateOperation,
     WorkerCreateOperation, WorkerInitializer, sha256_bytes,
 };
@@ -708,8 +709,9 @@ fn expected_committee_member_update_global_parameters_payload() -> Vec<u8> {
 
 fn expected_restriction_payload() -> Vec<u8> {
     let mut bytes = Vec::new();
-    // member_index 2, restriction_type 1
-    bytes.extend_from_slice(&[2, 0, 0, 0, 1, 0, 0, 0]);
+    // member_index 2, restriction_type 1 - both `unsigned_int` in restriction.hpp, so one varint
+    // byte each rather than four little-endian ones
+    bytes.extend_from_slice(&[2, 1]);
     // argument_type Bool tag 1, true
     bytes.extend_from_slice(&[1, 1]);
     // extensions tag 0
@@ -721,8 +723,9 @@ fn expected_custom_authority_create_payload() -> Vec<u8> {
     let mut bytes = Vec::new();
     // fee amount 0 + asset instance 0, account instance 1, enabled true
     bytes.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]);
-    // valid_from 1, valid_to 2, operation_type 0
-    bytes.extend_from_slice(&[1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0]);
+    // valid_from 1 and valid_to 2 as little-endian time_point_sec, then operation_type 0 as a
+    // varint - `unsigned_int` in custom_authority.hpp, so one byte and not four
+    bytes.extend_from_slice(&[1, 0, 0, 0, 2, 0, 0, 0, 0]);
     bytes.extend(expected_empty_authority_payload());
     // restrictions vec length 1
     bytes.push(1);
@@ -2243,4 +2246,58 @@ fn proposal_create_operation_propagates_nested_operation_fc_errors() {
         .expect_err("nested transfer memo still fails explicitly");
 
     assert!(matches!(err, FcSerializeError::InvalidPublicKey { .. }));
+}
+
+#[test]
+fn ticket_create_fc_writes_target_type_as_a_varint() {
+    // `target_type` is `unsigned_int` in ticket.hpp, which is fc's varint wrapper rather than a
+    // fixed-width integer. It was resolved to `uint32` for a while, which wrote four little-endian
+    // bytes where the chain reads one; the transaction then hashed differently on either side and
+    // the node rejected an otherwise valid signature as `tx_missing_active_auth`.
+    let ticket = TicketCreateOperation {
+        fee: Asset {
+            amount: 500_000,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        account: AccountId("1.2.100".to_string()),
+        target_type: 1,
+        amount: Asset {
+            amount: 1_000_000_000,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        extensions: vec![],
+    };
+
+    let bytes = ticket.to_fc_bytes().expect("serialize ticket_create");
+
+    // fee(8+varint asset) + account(varint) + target_type(varint) + amount(8+varint) + extensions
+    assert_eq!(
+        bytes,
+        vec![
+            0x20, 0xa1, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, // fee.amount = 500_000
+            0x00, // fee.asset_id = 1.3.0
+            0x64, // account = 1.2.100
+            0x01, // target_type = lock_180_days, one byte and not four
+            0x00, 0xca, 0x9a, 0x3b, 0x00, 0x00, 0x00, 0x00, // amount.amount = 1_000_000_000
+            0x00, // amount.asset_id = 1.3.0
+            0x00, // extensions
+        ]
+    );
+}
+
+#[test]
+fn restriction_fc_writes_member_index_and_type_as_varints() {
+    // Same `unsigned_int` story as ticket_create, on the type the custom-authority fleet grant is
+    // built out of - a restriction that serialized wrongly would break every pod grant.
+    let restriction = Restriction {
+        member_index: 1,
+        restriction_type: 0,
+        argument: ArgumentType::Bool(Box::new(true)),
+        extensions: vec![],
+    };
+
+    let bytes = restriction.to_fc_bytes().expect("serialize restriction");
+
+    assert_eq!(bytes[0], 0x01, "member_index is one varint byte");
+    assert_eq!(bytes[1], 0x00, "restriction_type is one varint byte");
 }

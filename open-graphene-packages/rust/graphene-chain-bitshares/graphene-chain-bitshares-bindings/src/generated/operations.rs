@@ -792,8 +792,7 @@ pub struct CustomAuthorityCreateOperation {
     pub enabled: bool,
     pub valid_from: String,
     pub valid_to: String,
-    #[schema(schema_with = crate::generated::types::u32_schema)]
-    pub operation_type: u32,
+    pub operation_type: u64,
     pub auth: crate::generated::types::Authority,
     pub restrictions: Vec<crate::generated::types::Restriction>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
@@ -841,8 +840,7 @@ pub const TICKET_CREATE_OPERATION_ID: u32 = 57;
 pub struct TicketCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
-    #[schema(schema_with = crate::generated::types::u32_schema)]
-    pub target_type: u32,
+    pub target_type: u64,
     pub amount: crate::generated::types::Asset,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
@@ -856,8 +854,7 @@ pub struct TicketUpdateOperation {
     pub fee: crate::generated::types::Asset,
     pub ticket: crate::generated::ids::TicketId,
     pub account: crate::generated::ids::AccountId,
-    #[schema(schema_with = crate::generated::types::u32_schema)]
-    pub target_type: u32,
+    pub target_type: u64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub amount_for_new_target: Option<crate::generated::types::Asset>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,

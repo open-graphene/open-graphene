@@ -1329,8 +1329,8 @@ impl FcSerialize for crate::generated::types::RefundWorkerInitializer {
 
 impl FcSerialize for crate::generated::types::Restriction {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        self.member_index.fc_serialize(out)?;
-        self.restriction_type.fc_serialize(out)?;
+        write_varint(self.member_index, out);
+        write_varint(self.restriction_type, out);
         self.argument.fc_serialize(out)?;
         write_varint(self.extensions.len() as u64, out);
         let mut previous_key: Option<u64> = None;
@@ -3610,7 +3610,7 @@ impl FcSerialize for crate::generated::operations::CustomAuthorityCreateOperatio
         self.enabled.fc_serialize(out)?;
         write_time_point_sec(&self.valid_from, out)?;
         write_time_point_sec(&self.valid_to, out)?;
-        self.operation_type.fc_serialize(out)?;
+        write_varint(self.operation_type, out);
         self.auth.fc_serialize(out)?;
         self.restrictions.fc_serialize(out)?;
         write_varint(self.extensions.len() as u64, out);
@@ -3707,7 +3707,7 @@ impl FcSerialize for crate::generated::operations::TicketCreateOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
         self.account.fc_serialize(out)?;
-        self.target_type.fc_serialize(out)?;
+        write_varint(self.target_type, out);
         self.amount.fc_serialize(out)?;
         write_varint(self.extensions.len() as u64, out);
         let mut previous_key: Option<u64> = None;
@@ -3731,7 +3731,7 @@ impl FcSerialize for crate::generated::operations::TicketUpdateOperation {
         self.fee.fc_serialize(out)?;
         self.ticket.fc_serialize(out)?;
         self.account.fc_serialize(out)?;
-        self.target_type.fc_serialize(out)?;
+        write_varint(self.target_type, out);
         self.amount_for_new_target.fc_serialize(out)?;
         write_varint(self.extensions.len() as u64, out);
         let mut previous_key: Option<u64> = None;

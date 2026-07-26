@@ -567,6 +567,10 @@ pub(crate) fn render_fc_value_serialize_lines(
             "{indent}write_vote_id({}, out)?;\n",
             render_vote_id_arg(value_expr, borrowed_expr, ty)?
         )),
+        // fc's `unsigned_int`: a base-128 varint, not a fixed-width integer. The generated field
+        // is a plain `u64`, so without this arm it would fall through to `fc_serialize` and be
+        // written as eight little-endian bytes.
+        TypeRef::UnsignedVarint => Ok(format!("{indent}write_varint({value_expr}, out);\n")),
         TypeRef::Bytes => Ok(format!("{indent}write_bytes({borrowed_expr}, out)?;\n")),
         TypeRef::FixedBytes { bytes } => Ok(format!(
             "{indent}write_fixed_bytes({borrowed_expr}, {bytes}, {}, out)?;\n",
@@ -1079,6 +1083,7 @@ pub(crate) fn is_fc_supported_type(ty: &TypeRef, supported_structs: &BTreeSet<St
         | TypeRef::Uint8
         | TypeRef::Uint16
         | TypeRef::Uint32
+        | TypeRef::UnsignedVarint
         | TypeRef::Int32 { .. }
         | TypeRef::Int64 { json: None, .. }
         | TypeRef::Uint64 { json: None, .. }
@@ -1127,7 +1132,6 @@ pub(crate) fn is_fc_supported_type(ty: &TypeRef, supported_structs: &BTreeSet<St
         | TypeRef::Int64 { .. }
         | TypeRef::Uint64 { .. }
         | TypeRef::Uint128 { .. }
-        | TypeRef::UnsignedVarint
         | TypeRef::CallbackHandle
         | TypeRef::FixedHex { .. }
         | TypeRef::TimePoint

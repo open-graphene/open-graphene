@@ -118,7 +118,7 @@ impl<'session> CustomAuthorityCreateRequest<'session> {
             enabled: self.enabled,
             valid_from,
             valid_to,
-            operation_type: self.operation_type,
+            operation_type: u64::from(self.operation_type),
             auth,
             restrictions: self.restrictions,
             extensions: vec![],
