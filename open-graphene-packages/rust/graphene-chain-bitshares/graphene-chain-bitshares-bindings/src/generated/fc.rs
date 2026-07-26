@@ -2560,13 +2560,15 @@ impl FcSerialize for crate::generated::operations::TransferOperation {
         self.from.fc_serialize(out)?;
         self.to.fc_serialize(out)?;
         self.amount.fc_serialize(out)?;
-        if self.memo.is_some() {
-            return Err(FcSerializeError::UnsupportedValue {
-                type_name: "MemoData",
-                reason: "memo FC serialization is not implemented in the minimal transfer slice",
-            });
+        match &self.memo {
+            Some(memo) => {
+                out.push(1);
+                memo.fc_serialize(out)?;
+            }
+            None => {
+                out.push(0);
+            }
         }
-        out.push(0);
         self.extensions.fc_serialize(out)?;
         Ok(())
     }

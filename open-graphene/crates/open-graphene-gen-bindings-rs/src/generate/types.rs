@@ -6,11 +6,15 @@ pub(crate) fn render_types(
 ) -> Result<String> {
     let mut out = generated_header(protocol, "raw structs and enums");
     out.push_str("use serde::{Deserialize, Serialize};\n\n");
-    // `share_type` (i64-as-number-or-decimal-string) is decoded the same way on every
-    // chain, so the helper lives in graphene-core and is re-exported here rather than
+    // 64-bit integers arrive as a number or as a decimal string, depending on whether the value
+    // fits in a double - fc decides per value, not per field. Decoding is the same on every
+    // chain, so the helpers live in graphene-core and are re-exported here rather than
     // re-emitted per chain.
     out.push_str(
-        "pub(crate) use open_graphene_core::deserialize_i64_from_number_or_decimal_string;\n\n",
+        "pub(crate) use open_graphene_core::deserialize_i64_from_number_or_decimal_string;\n",
+    );
+    out.push_str(
+        "pub(crate) use open_graphene_core::deserialize_u64_from_number_or_decimal_string;\n\n",
     );
     // OpenAPI has no unsigned 32-bit format and `int32` caps values at 2^31-1,
     // which real u32 wire values (e.g. TaPoS `ref_block_prefix`) exceed.
@@ -260,9 +264,16 @@ pub(crate) fn render_fields(
         ensure_unique(&mut emitted, &field_name, "field")?;
         let ty = render_type_ref(protocol, &field.ty)?;
         out.push_str(&serde_rename_attr("    ", &field.name, &field_name));
+        // fc renders integers past 2^53 as strings, so a 64-bit field can arrive either way
+        // depending on its value. Accept both rather than guessing per field.
         if matches!(field.ty, TypeRef::Int64 { .. }) {
             out.push_str(
                 "    #[serde(deserialize_with = \"crate::generated::types::deserialize_i64_from_number_or_decimal_string\")]\n",
+            );
+        }
+        if matches!(field.ty, TypeRef::Uint64 { .. }) {
+            out.push_str(
+                "    #[serde(deserialize_with = \"crate::generated::types::deserialize_u64_from_number_or_decimal_string\")]\n",
             );
         }
         // u32 must not inherit utoipa's `int32` format; see u32_schema.

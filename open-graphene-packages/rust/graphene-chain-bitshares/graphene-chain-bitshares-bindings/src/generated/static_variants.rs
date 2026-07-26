@@ -4,11 +4,68 @@
 
 // Static variants use Graphene JSON wire format: [tag, value].
 
+#[allow(dead_code)]
+fn static_variant_arm_schema(
+    tag: u32,
+    arm_name: &str,
+    payload: utoipa::openapi::schema::Schema,
+) -> utoipa::openapi::schema::Schema {
+    utoipa::openapi::schema::Schema::Array(
+        utoipa::openapi::schema::ArrayBuilder::new()
+            .items(utoipa::openapi::schema::ArrayItems::False)
+            .prefix_items([
+                utoipa::openapi::schema::Schema::Object(
+                    utoipa::openapi::schema::ObjectBuilder::new()
+                        .schema_type(utoipa::openapi::schema::SchemaType::Type(
+                            utoipa::openapi::schema::Type::Integer,
+                        ))
+                        .enum_values(Some([tag]))
+                        .description(Some(format!("`{arm_name}` tag")))
+                        .build(),
+                ),
+                payload,
+            ])
+            .min_items(Some(2))
+            .max_items(Some(2))
+            .description(Some(format!("`{arm_name}` as `[{tag}, value]`")))
+            .build(),
+    )
+}
+
+#[allow(dead_code)]
+fn static_variant_ref_payload<T: utoipa::ToSchema>() -> utoipa::openapi::schema::Schema {
+    utoipa::openapi::schema::Schema::AllOf(
+        utoipa::openapi::schema::AllOfBuilder::new()
+            .item(utoipa::openapi::Ref::from_schema_name(T::name()))
+            .build(),
+    )
+}
+
+#[allow(dead_code)]
+fn static_variant_inline_payload<T: utoipa::PartialSchema>() -> utoipa::openapi::schema::Schema {
+    match T::schema() {
+        utoipa::openapi::RefOr::T(schema) => schema,
+        utoipa::openapi::RefOr::Ref(reference) => utoipa::openapi::schema::Schema::AllOf(
+            utoipa::openapi::schema::AllOfBuilder::new()
+                .item(reference)
+                .build(),
+        ),
+    }
+}
+
+#[allow(dead_code)]
+fn static_variant_any_payload() -> utoipa::openapi::schema::Schema {
+    utoipa::openapi::schema::Schema::Object(
+        utoipa::openapi::schema::ObjectBuilder::new()
+            .schema_type(utoipa::openapi::schema::SchemaType::AnyValue)
+            .build(),
+    )
+}
+
 /// Static variant `argument_type` serialized as Graphene `[tag, value]`.
-#[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
-#[schema(as = GrapheneBitsharesArgumentType)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ArgumentType {
-    VoidT(Box<()>),
+    VoidT(Box<open_graphene_fc::VoidT>),
     Bool(Box<bool>),
     Int64T(Box<i64>),
     String(Box<String>),
@@ -47,12 +104,326 @@ pub enum ArgumentType {
     FlatSetVestingBalanceIdType(Box<Vec<crate::generated::ids::VestingBalanceId>>),
     FlatSetWorkerIdType(Box<Vec<crate::generated::ids::WorkerId>>),
     FlatSetBalanceIdType(Box<Vec<crate::generated::ids::BalanceId>>),
-    #[schema(no_recursion)]
     VectorRestriction(Box<Vec<crate::generated::types::Restriction>>),
-    #[schema(no_recursion)]
     VectorVectorRestriction(Box<Vec<Vec<crate::generated::types::Restriction>>>),
-    #[schema(no_recursion)]
     VariantAssertArgumentType(Box<(i64, Vec<crate::generated::types::Restriction>)>),
+}
+
+impl utoipa::PartialSchema for ArgumentType {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        utoipa::openapi::schema::Schema::OneOf(
+            utoipa::openapi::schema::OneOfBuilder::new()
+                .description(Some(
+                    "Graphene static variant wire tuple: [tag, value].",
+                ))
+                .item(static_variant_arm_schema(
+                    0,
+                    "void_t",
+                    static_variant_any_payload(),
+                ))
+                .item(static_variant_arm_schema(
+                    1,
+                    "bool",
+                    static_variant_inline_payload::<bool>(),
+                ))
+                .item(static_variant_arm_schema(
+                    2,
+                    "int64_t",
+                    static_variant_inline_payload::<i64>(),
+                ))
+                .item(static_variant_arm_schema(
+                    3,
+                    "string",
+                    static_variant_inline_payload::<String>(),
+                ))
+                .item(static_variant_arm_schema(
+                    4,
+                    "time_point_sec",
+                    static_variant_inline_payload::<String>(),
+                ))
+                .item(static_variant_arm_schema(
+                    5,
+                    "public_key_type",
+                    static_variant_inline_payload::<String>(),
+                ))
+                .item(static_variant_arm_schema(
+                    6,
+                    "fc::sha256",
+                    static_variant_inline_payload::<String>(),
+                ))
+                .item(static_variant_arm_schema(
+                    7,
+                    "account_id_type",
+                    static_variant_ref_payload::<crate::generated::ids::AccountId>(),
+                ))
+                .item(static_variant_arm_schema(
+                    8,
+                    "asset_id_type",
+                    static_variant_ref_payload::<crate::generated::ids::AssetId>(),
+                ))
+                .item(static_variant_arm_schema(
+                    9,
+                    "force_settlement_id_type",
+                    static_variant_ref_payload::<crate::generated::ids::ForceSettlementId>(),
+                ))
+                .item(static_variant_arm_schema(
+                    10,
+                    "committee_member_id_type",
+                    static_variant_ref_payload::<crate::generated::ids::CommitteeMemberId>(),
+                ))
+                .item(static_variant_arm_schema(
+                    11,
+                    "witness_id_type",
+                    static_variant_ref_payload::<crate::generated::ids::WitnessId>(),
+                ))
+                .item(static_variant_arm_schema(
+                    12,
+                    "limit_order_id_type",
+                    static_variant_ref_payload::<crate::generated::ids::LimitOrderId>(),
+                ))
+                .item(static_variant_arm_schema(
+                    13,
+                    "call_order_id_type",
+                    static_variant_ref_payload::<crate::generated::ids::CallOrderId>(),
+                ))
+                .item(static_variant_arm_schema(
+                    14,
+                    "custom_id_type",
+                    static_variant_ref_payload::<crate::generated::ids::CustomId>(),
+                ))
+                .item(static_variant_arm_schema(
+                    15,
+                    "proposal_id_type",
+                    static_variant_ref_payload::<crate::generated::ids::ProposalId>(),
+                ))
+                .item(static_variant_arm_schema(
+                    16,
+                    "withdraw_permission_id_type",
+                    static_variant_ref_payload::<crate::generated::ids::WithdrawPermissionId>(),
+                ))
+                .item(static_variant_arm_schema(
+                    17,
+                    "vesting_balance_id_type",
+                    static_variant_ref_payload::<crate::generated::ids::VestingBalanceId>(),
+                ))
+                .item(static_variant_arm_schema(
+                    18,
+                    "worker_id_type",
+                    static_variant_ref_payload::<crate::generated::ids::WorkerId>(),
+                ))
+                .item(static_variant_arm_schema(
+                    19,
+                    "balance_id_type",
+                    static_variant_ref_payload::<crate::generated::ids::BalanceId>(),
+                ))
+                .item(static_variant_arm_schema(
+                    20,
+                    "flat_set<bool>",
+                    static_variant_inline_payload::<Vec<bool>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    21,
+                    "flat_set<int64_t>",
+                    static_variant_inline_payload::<Vec<i64>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    22,
+                    "flat_set<string>",
+                    static_variant_inline_payload::<Vec<String>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    23,
+                    "flat_set<time_point_sec>",
+                    static_variant_inline_payload::<Vec<String>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    24,
+                    "flat_set<public_key_type>",
+                    static_variant_inline_payload::<Vec<String>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    25,
+                    "flat_set<fc::sha256>",
+                    static_variant_inline_payload::<Vec<Vec<u8>>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    26,
+                    "flat_set<account_id_type>",
+                    static_variant_inline_payload::<Vec<crate::generated::ids::AccountId>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    27,
+                    "flat_set<asset_id_type>",
+                    static_variant_inline_payload::<Vec<crate::generated::ids::AssetId>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    28,
+                    "flat_set<force_settlement_id_type>",
+                    static_variant_inline_payload::<Vec<crate::generated::ids::ForceSettlementId>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    29,
+                    "flat_set<committee_member_id_type>",
+                    static_variant_inline_payload::<Vec<crate::generated::ids::CommitteeMemberId>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    30,
+                    "flat_set<witness_id_type>",
+                    static_variant_inline_payload::<Vec<crate::generated::ids::WitnessId>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    31,
+                    "flat_set<limit_order_id_type>",
+                    static_variant_inline_payload::<Vec<crate::generated::ids::LimitOrderId>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    32,
+                    "flat_set<call_order_id_type>",
+                    static_variant_inline_payload::<Vec<crate::generated::ids::CallOrderId>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    33,
+                    "flat_set<custom_id_type>",
+                    static_variant_inline_payload::<Vec<crate::generated::ids::CustomId>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    34,
+                    "flat_set<proposal_id_type>",
+                    static_variant_inline_payload::<Vec<crate::generated::ids::ProposalId>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    35,
+                    "flat_set<withdraw_permission_id_type>",
+                    static_variant_inline_payload::<Vec<crate::generated::ids::WithdrawPermissionId>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    36,
+                    "flat_set<vesting_balance_id_type>",
+                    static_variant_inline_payload::<Vec<crate::generated::ids::VestingBalanceId>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    37,
+                    "flat_set<worker_id_type>",
+                    static_variant_inline_payload::<Vec<crate::generated::ids::WorkerId>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    38,
+                    "flat_set<balance_id_type>",
+                    static_variant_inline_payload::<Vec<crate::generated::ids::BalanceId>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    39,
+                    "vector<restriction>",
+                    static_variant_inline_payload::<Vec<crate::generated::types::Restriction>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    40,
+                    "vector<vector<restriction>>",
+                    static_variant_inline_payload::<Vec<Vec<crate::generated::types::Restriction>>>(),
+                ))
+                .item(static_variant_arm_schema(
+                    41,
+                    "variant_assert_argument_type",
+                    static_variant_any_payload(),
+                ))
+                .build(),
+        )
+        .into()
+    }
+}
+
+impl utoipa::ToSchema for ArgumentType {
+    fn name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("GrapheneBitsharesArgumentType")
+    }
+
+    fn schemas(
+        schemas: &mut Vec<(
+            String,
+            utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
+        )>,
+    ) {
+        // The tuple schema only references payload components; register them
+        // here. The guard cuts self-referential dependency walks (proposal
+        // operations embed operations again).
+        thread_local! {
+            static WALKING: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+        }
+        if WALKING.replace(true) {
+            return;
+        }
+        schemas.push((
+            <crate::generated::ids::AccountId as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::ids::AccountId as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::ids::AccountId as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::ids::AssetId as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::ids::AssetId as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::ids::AssetId as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::ids::BalanceId as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::ids::BalanceId as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::ids::BalanceId as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::ids::CallOrderId as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::ids::CallOrderId as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::ids::CallOrderId as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::ids::CommitteeMemberId as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::ids::CommitteeMemberId as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::ids::CommitteeMemberId as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::ids::CustomId as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::ids::CustomId as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::ids::CustomId as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::ids::ForceSettlementId as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::ids::ForceSettlementId as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::ids::ForceSettlementId as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::ids::LimitOrderId as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::ids::LimitOrderId as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::ids::LimitOrderId as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::ids::ProposalId as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::ids::ProposalId as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::ids::ProposalId as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::ids::VestingBalanceId as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::ids::VestingBalanceId as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::ids::VestingBalanceId as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::ids::WithdrawPermissionId as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::ids::WithdrawPermissionId as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::ids::WithdrawPermissionId as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::ids::WitnessId as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::ids::WitnessId as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::ids::WitnessId as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::ids::WorkerId as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::ids::WorkerId as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::ids::WorkerId as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::Restriction as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::Restriction as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::Restriction as utoipa::ToSchema>::schemas(schemas);
+        WALKING.set(false);
+    }
 }
 
 impl serde::Serialize for ArgumentType {
@@ -254,7 +625,7 @@ impl<'de> serde::Deserialize<'de> for ArgumentType {
             serde::de::Error::custom("expected numeric tag for static variant ArgumentType")
         })? as u32;
         match tag {
-            0 => serde_json::from_value::<()>(payload)
+            0 => serde_json::from_value::<open_graphene_fc::VoidT>(payload)
                 .map(|value| Self::VoidT(Box::new(value)))
                 .map_err(serde::de::Error::custom),
             1 => serde_json::from_value::<bool>(payload)
@@ -392,8 +763,7 @@ impl<'de> serde::Deserialize<'de> for ArgumentType {
 }
 
 /// Static variant `fee_parameters` serialized as Graphene `[tag, value]`.
-#[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
-#[schema(as = GrapheneBitsharesFeeParameters)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum FeeParameters {
     TransferOperationFeeParamsT(Box<crate::generated::types::TransferOperationFeeParamsT>),
     LimitOrderCreateOperationFeeParamsT(
@@ -591,6 +961,921 @@ pub enum FeeParameters {
     LimitOrderUpdateOperationFeeParamsT(
         Box<crate::generated::types::LimitOrderUpdateOperationFeeParamsT>,
     ),
+}
+
+impl utoipa::PartialSchema for FeeParameters {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        utoipa::openapi::schema::Schema::OneOf(
+            utoipa::openapi::schema::OneOfBuilder::new()
+                .description(Some(
+                    "Graphene static variant wire tuple: [tag, value].",
+                ))
+                .item(static_variant_arm_schema(
+                    0,
+                    "transfer_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::TransferOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    1,
+                    "limit_order_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::LimitOrderCreateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    2,
+                    "limit_order_cancel_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::LimitOrderCancelOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    3,
+                    "call_order_update_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::CallOrderUpdateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    4,
+                    "fill_order_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::FillOrderOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    5,
+                    "account_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AccountCreateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    6,
+                    "account_update_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AccountUpdateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    7,
+                    "account_whitelist_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AccountWhitelistOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    8,
+                    "account_upgrade_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AccountUpgradeOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    9,
+                    "account_transfer_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AccountTransferOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    10,
+                    "asset_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AssetCreateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    11,
+                    "asset_update_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AssetUpdateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    12,
+                    "asset_update_bitasset_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AssetUpdateBitassetOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    13,
+                    "asset_update_feed_producers_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AssetUpdateFeedProducersOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    14,
+                    "asset_issue_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AssetIssueOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    15,
+                    "asset_reserve_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AssetReserveOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    16,
+                    "asset_fund_fee_pool_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AssetFundFeePoolOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    17,
+                    "asset_settle_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AssetSettleOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    18,
+                    "asset_global_settle_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AssetGlobalSettleOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    19,
+                    "asset_publish_feed_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AssetPublishFeedOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    20,
+                    "witness_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::WitnessCreateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    21,
+                    "witness_update_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::WitnessUpdateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    22,
+                    "proposal_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::ProposalCreateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    23,
+                    "proposal_update_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::ProposalUpdateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    24,
+                    "proposal_delete_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::ProposalDeleteOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    25,
+                    "withdraw_permission_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::WithdrawPermissionCreateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    26,
+                    "withdraw_permission_update_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::WithdrawPermissionUpdateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    27,
+                    "withdraw_permission_claim_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::WithdrawPermissionClaimOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    28,
+                    "withdraw_permission_delete_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::WithdrawPermissionDeleteOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    29,
+                    "committee_member_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::CommitteeMemberCreateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    30,
+                    "committee_member_update_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::CommitteeMemberUpdateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    31,
+                    "committee_member_update_global_parameters_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::CommitteeMemberUpdateGlobalParametersOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    32,
+                    "vesting_balance_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::VestingBalanceCreateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    33,
+                    "vesting_balance_withdraw_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::VestingBalanceWithdrawOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    34,
+                    "worker_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::WorkerCreateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    35,
+                    "custom_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::CustomOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    36,
+                    "assert_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AssertOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    37,
+                    "balance_claim_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::BalanceClaimOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    38,
+                    "override_transfer_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::OverrideTransferOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    39,
+                    "transfer_to_blind_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::TransferToBlindOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    40,
+                    "blind_transfer_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::BlindTransferOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    41,
+                    "transfer_from_blind_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::TransferFromBlindOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    42,
+                    "asset_settle_cancel_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AssetSettleCancelOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    43,
+                    "asset_claim_fees_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AssetClaimFeesOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    44,
+                    "fba_distribute_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::FbaDistributeOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    45,
+                    "bid_collateral_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::BidCollateralOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    46,
+                    "execute_bid_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::ExecuteBidOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    47,
+                    "asset_claim_pool_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AssetClaimPoolOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    48,
+                    "asset_update_issuer_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::AssetUpdateIssuerOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    49,
+                    "htlc_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::HtlcCreateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    50,
+                    "htlc_redeem_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::HtlcRedeemOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    51,
+                    "htlc_redeemed_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::HtlcRedeemedOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    52,
+                    "htlc_extend_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::HtlcExtendOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    53,
+                    "htlc_refund_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::HtlcRefundOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    54,
+                    "custom_authority_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::CustomAuthorityCreateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    55,
+                    "custom_authority_update_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::CustomAuthorityUpdateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    56,
+                    "custom_authority_delete_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::CustomAuthorityDeleteOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    57,
+                    "ticket_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::TicketCreateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    58,
+                    "ticket_update_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::TicketUpdateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    59,
+                    "liquidity_pool_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::LiquidityPoolCreateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    60,
+                    "liquidity_pool_delete_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::LiquidityPoolDeleteOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    61,
+                    "liquidity_pool_deposit_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::LiquidityPoolDepositOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    62,
+                    "liquidity_pool_withdraw_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::LiquidityPoolWithdrawOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    63,
+                    "liquidity_pool_exchange_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::LiquidityPoolExchangeOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    64,
+                    "samet_fund_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::SametFundCreateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    65,
+                    "samet_fund_delete_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::SametFundDeleteOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    66,
+                    "samet_fund_update_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::SametFundUpdateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    67,
+                    "samet_fund_borrow_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::SametFundBorrowOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    68,
+                    "samet_fund_repay_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::SametFundRepayOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    69,
+                    "credit_offer_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::CreditOfferCreateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    70,
+                    "credit_offer_delete_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::CreditOfferDeleteOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    71,
+                    "credit_offer_update_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::CreditOfferUpdateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    72,
+                    "credit_offer_accept_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::CreditOfferAcceptOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    73,
+                    "credit_deal_repay_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::CreditDealRepayOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    74,
+                    "credit_deal_expired_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::CreditDealExpiredOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    75,
+                    "liquidity_pool_update_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::LiquidityPoolUpdateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    76,
+                    "credit_deal_update_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::CreditDealUpdateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    77,
+                    "limit_order_update_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::LimitOrderUpdateOperationFeeParamsT>(),
+                ))
+                .build(),
+        )
+        .into()
+    }
+}
+
+impl utoipa::ToSchema for FeeParameters {
+    fn name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("GrapheneBitsharesFeeParameters")
+    }
+
+    fn schemas(
+        schemas: &mut Vec<(
+            String,
+            utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
+        )>,
+    ) {
+        // The tuple schema only references payload components; register them
+        // here. The guard cuts self-referential dependency walks (proposal
+        // operations embed operations again).
+        thread_local! {
+            static WALKING: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+        }
+        if WALKING.replace(true) {
+            return;
+        }
+        schemas.push((
+            <crate::generated::types::AccountCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AccountCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AccountCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::AccountTransferOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AccountTransferOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AccountTransferOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::AccountUpdateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AccountUpdateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AccountUpdateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::AccountUpgradeOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AccountUpgradeOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AccountUpgradeOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::AccountWhitelistOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AccountWhitelistOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AccountWhitelistOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::AssertOperationFeeParamsT as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::types::AssertOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AssertOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::AssetClaimFeesOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AssetClaimFeesOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AssetClaimFeesOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::AssetClaimPoolOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AssetClaimPoolOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AssetClaimPoolOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::AssetCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AssetCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AssetCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::AssetFundFeePoolOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AssetFundFeePoolOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AssetFundFeePoolOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::AssetGlobalSettleOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AssetGlobalSettleOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AssetGlobalSettleOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::AssetIssueOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AssetIssueOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AssetIssueOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::AssetPublishFeedOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AssetPublishFeedOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AssetPublishFeedOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::AssetReserveOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AssetReserveOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AssetReserveOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::AssetSettleCancelOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AssetSettleCancelOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AssetSettleCancelOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::AssetSettleOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AssetSettleOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AssetSettleOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::AssetUpdateBitassetOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AssetUpdateBitassetOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AssetUpdateBitassetOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::AssetUpdateFeedProducersOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AssetUpdateFeedProducersOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AssetUpdateFeedProducersOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::AssetUpdateIssuerOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AssetUpdateIssuerOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AssetUpdateIssuerOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::AssetUpdateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::AssetUpdateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AssetUpdateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::BalanceClaimOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::BalanceClaimOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::BalanceClaimOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::BidCollateralOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::BidCollateralOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::BidCollateralOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::BlindTransferOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::BlindTransferOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::BlindTransferOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::CallOrderUpdateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::CallOrderUpdateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::CallOrderUpdateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::CommitteeMemberCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::CommitteeMemberCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::CommitteeMemberCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::CommitteeMemberUpdateGlobalParametersOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::CommitteeMemberUpdateGlobalParametersOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::CommitteeMemberUpdateGlobalParametersOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::CommitteeMemberUpdateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::CommitteeMemberUpdateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::CommitteeMemberUpdateOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::CreditDealExpiredOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::CreditDealExpiredOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::CreditDealExpiredOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::CreditDealRepayOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::CreditDealRepayOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::CreditDealRepayOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::CreditDealUpdateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::CreditDealUpdateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::CreditDealUpdateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::CreditOfferAcceptOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::CreditOfferAcceptOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::CreditOfferAcceptOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::CreditOfferCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::CreditOfferCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::CreditOfferCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::CreditOfferDeleteOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::CreditOfferDeleteOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::CreditOfferDeleteOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::CreditOfferUpdateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::CreditOfferUpdateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::CreditOfferUpdateOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::CustomAuthorityCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::CustomAuthorityCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::CustomAuthorityCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::CustomAuthorityDeleteOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::CustomAuthorityDeleteOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::CustomAuthorityDeleteOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::CustomAuthorityUpdateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::CustomAuthorityUpdateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::CustomAuthorityUpdateOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::CustomOperationFeeParamsT as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::types::CustomOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::CustomOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::ExecuteBidOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::ExecuteBidOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::ExecuteBidOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::FbaDistributeOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::FbaDistributeOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::FbaDistributeOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::FillOrderOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::FillOrderOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::FillOrderOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::HtlcCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::HtlcCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::HtlcCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::HtlcExtendOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::HtlcExtendOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::HtlcExtendOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::HtlcRedeemOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::HtlcRedeemOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::HtlcRedeemOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::HtlcRedeemedOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::HtlcRedeemedOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::HtlcRedeemedOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::HtlcRefundOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::HtlcRefundOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::HtlcRefundOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::LimitOrderCancelOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::LimitOrderCancelOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::LimitOrderCancelOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::LimitOrderCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::LimitOrderCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::LimitOrderCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::LimitOrderUpdateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::LimitOrderUpdateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::LimitOrderUpdateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::LiquidityPoolCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::LiquidityPoolCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::LiquidityPoolCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::LiquidityPoolDeleteOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::LiquidityPoolDeleteOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::LiquidityPoolDeleteOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::LiquidityPoolDepositOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::LiquidityPoolDepositOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::LiquidityPoolDepositOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::LiquidityPoolExchangeOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::LiquidityPoolExchangeOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::LiquidityPoolExchangeOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::LiquidityPoolUpdateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::LiquidityPoolUpdateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::LiquidityPoolUpdateOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::LiquidityPoolWithdrawOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::LiquidityPoolWithdrawOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::LiquidityPoolWithdrawOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::OverrideTransferOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::OverrideTransferOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::OverrideTransferOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::ProposalCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::ProposalCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::ProposalCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::ProposalDeleteOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::ProposalDeleteOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::ProposalDeleteOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::ProposalUpdateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::ProposalUpdateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::ProposalUpdateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::SametFundBorrowOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::SametFundBorrowOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::SametFundBorrowOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::SametFundCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::SametFundCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::SametFundCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::SametFundDeleteOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::SametFundDeleteOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::SametFundDeleteOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::SametFundRepayOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::SametFundRepayOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::SametFundRepayOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::SametFundUpdateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::SametFundUpdateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::SametFundUpdateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::TicketCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::TicketCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::TicketCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::TicketUpdateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::TicketUpdateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::TicketUpdateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::TransferFromBlindOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::TransferFromBlindOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::TransferFromBlindOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::TransferOperationFeeParamsT as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::types::TransferOperationFeeParamsT as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::types::TransferOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::TransferToBlindOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::TransferToBlindOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::TransferToBlindOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::VestingBalanceCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::VestingBalanceCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::VestingBalanceCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::VestingBalanceWithdrawOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::VestingBalanceWithdrawOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::VestingBalanceWithdrawOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::WithdrawPermissionClaimOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::WithdrawPermissionClaimOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::WithdrawPermissionClaimOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::WithdrawPermissionCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::WithdrawPermissionCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::WithdrawPermissionCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::WithdrawPermissionDeleteOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::WithdrawPermissionDeleteOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::WithdrawPermissionDeleteOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::WithdrawPermissionUpdateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::WithdrawPermissionUpdateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::WithdrawPermissionUpdateOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::WitnessCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::WitnessCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::WitnessCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::WitnessUpdateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::WitnessUpdateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::WitnessUpdateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::WorkerCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::WorkerCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::WorkerCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        WALKING.set(false);
+    }
 }
 
 impl serde::Serialize for FeeParameters {
@@ -1176,15 +2461,36 @@ impl<'de> serde::Deserialize<'de> for FeeParameters {
 }
 
 /// Static variant `future_extensions` serialized as Graphene `[tag, value]`.
-#[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
-#[schema(as = GrapheneBitsharesFutureExtensions)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum FutureExtensions {
-    VoidT(Box<()>),
+    VoidT(Box<open_graphene_fc::VoidT>),
+}
+
+impl utoipa::PartialSchema for FutureExtensions {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        utoipa::openapi::schema::Schema::OneOf(
+            utoipa::openapi::schema::OneOfBuilder::new()
+                .description(Some("Graphene static variant wire tuple: [tag, value]."))
+                .item(static_variant_arm_schema(
+                    0,
+                    "void_t",
+                    static_variant_any_payload(),
+                ))
+                .build(),
+        )
+        .into()
+    }
+}
+
+impl utoipa::ToSchema for FutureExtensions {
+    fn name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("GrapheneBitsharesFutureExtensions")
+    }
 }
 
 impl FutureExtensions {
     pub fn empty() -> Self {
-        Self::VoidT(Box::new(()))
+        Self::VoidT(Box::new(open_graphene_fc::VoidT))
     }
 }
 
@@ -1223,7 +2529,7 @@ impl<'de> serde::Deserialize<'de> for FutureExtensions {
             serde::de::Error::custom("expected numeric tag for static variant FutureExtensions")
         })? as u32;
         match tag {
-            0 => serde_json::from_value::<()>(payload)
+            0 => serde_json::from_value::<open_graphene_fc::VoidT>(payload)
                 .map(|value| Self::VoidT(Box::new(value)))
                 .map_err(serde::de::Error::custom),
             other => Err(serde::de::Error::custom(format!(
@@ -1234,13 +2540,49 @@ impl<'de> serde::Deserialize<'de> for FutureExtensions {
 }
 
 /// Static variant `htlc_hash` serialized as Graphene `[tag, value]`.
-#[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
-#[schema(as = GrapheneBitsharesHtlcHash)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum HtlcHash {
     HtlcAlgoRipemd160(Box<Vec<u8>>),
     HtlcAlgoSha1(Box<Vec<u8>>),
     HtlcAlgoSha256(Box<Vec<u8>>),
     HtlcAlgoHash160(Box<Vec<u8>>),
+}
+
+impl utoipa::PartialSchema for HtlcHash {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        utoipa::openapi::schema::Schema::OneOf(
+            utoipa::openapi::schema::OneOfBuilder::new()
+                .description(Some("Graphene static variant wire tuple: [tag, value]."))
+                .item(static_variant_arm_schema(
+                    0,
+                    "htlc_algo_ripemd160",
+                    static_variant_inline_payload::<String>(),
+                ))
+                .item(static_variant_arm_schema(
+                    1,
+                    "htlc_algo_sha1",
+                    static_variant_inline_payload::<String>(),
+                ))
+                .item(static_variant_arm_schema(
+                    2,
+                    "htlc_algo_sha256",
+                    static_variant_inline_payload::<String>(),
+                ))
+                .item(static_variant_arm_schema(
+                    3,
+                    "htlc_algo_hash160",
+                    static_variant_inline_payload::<String>(),
+                ))
+                .build(),
+        )
+        .into()
+    }
+}
+
+impl utoipa::ToSchema for HtlcHash {
+    fn name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("GrapheneBitsharesHtlcHash")
+    }
 }
 
 impl serde::Serialize for HtlcHash {
@@ -1310,10 +2652,60 @@ impl<'de> serde::Deserialize<'de> for HtlcHash {
 }
 
 /// Static variant `limit_order_auto_action` serialized as Graphene `[tag, value]`.
-#[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
-#[schema(as = GrapheneBitsharesLimitOrderAutoAction)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum LimitOrderAutoAction {
     CreateTakeProfitOrderAction(Box<crate::generated::types::CreateTakeProfitOrderAction>),
+}
+
+impl utoipa::PartialSchema for LimitOrderAutoAction {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        utoipa::openapi::schema::Schema::OneOf(
+            utoipa::openapi::schema::OneOfBuilder::new()
+                .description(Some("Graphene static variant wire tuple: [tag, value]."))
+                .item(static_variant_arm_schema(
+                    0,
+                    "create_take_profit_order_action",
+                    static_variant_ref_payload::<
+                        crate::generated::types::CreateTakeProfitOrderAction,
+                    >(),
+                ))
+                .build(),
+        )
+        .into()
+    }
+}
+
+impl utoipa::ToSchema for LimitOrderAutoAction {
+    fn name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("GrapheneBitsharesLimitOrderAutoAction")
+    }
+
+    fn schemas(
+        schemas: &mut Vec<(
+            String,
+            utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
+        )>,
+    ) {
+        // The tuple schema only references payload components; register them
+        // here. The guard cuts self-referential dependency walks (proposal
+        // operations embed operations again).
+        thread_local! {
+            static WALKING: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+        }
+        if WALKING.replace(true) {
+            return;
+        }
+        schemas.push((
+            <crate::generated::types::CreateTakeProfitOrderAction as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::types::CreateTakeProfitOrderAction as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::types::CreateTakeProfitOrderAction as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        WALKING.set(false);
+    }
 }
 
 impl serde::Serialize for LimitOrderAutoAction {
@@ -1364,8 +2756,7 @@ impl<'de> serde::Deserialize<'de> for LimitOrderAutoAction {
 }
 
 /// Static variant `operation` serialized as Graphene `[tag, value]`.
-#[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
-#[schema(as = GrapheneBitsharesOperation)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Operation {
     TransferOperation(Box<crate::generated::operations::TransferOperation>),
     LimitOrderCreateOperation(Box<crate::generated::operations::LimitOrderCreateOperation>),
@@ -1473,6 +2864,964 @@ pub enum Operation {
     LiquidityPoolUpdateOperation(Box<crate::generated::operations::LiquidityPoolUpdateOperation>),
     CreditDealUpdateOperation(Box<crate::generated::operations::CreditDealUpdateOperation>),
     LimitOrderUpdateOperation(Box<crate::generated::operations::LimitOrderUpdateOperation>),
+}
+
+impl utoipa::PartialSchema for Operation {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        utoipa::openapi::schema::Schema::OneOf(
+            utoipa::openapi::schema::OneOfBuilder::new()
+                .description(Some(
+                    "Graphene static variant wire tuple: [tag, value].",
+                ))
+                .item(static_variant_arm_schema(
+                    0,
+                    "transfer_operation",
+                    static_variant_ref_payload::<crate::generated::operations::TransferOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    1,
+                    "limit_order_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::LimitOrderCreateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    2,
+                    "limit_order_cancel_operation",
+                    static_variant_ref_payload::<crate::generated::operations::LimitOrderCancelOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    3,
+                    "call_order_update_operation",
+                    static_variant_ref_payload::<crate::generated::operations::CallOrderUpdateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    4,
+                    "fill_order_operation",
+                    static_variant_ref_payload::<crate::generated::operations::FillOrderOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    5,
+                    "account_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AccountCreateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    6,
+                    "account_update_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AccountUpdateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    7,
+                    "account_whitelist_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AccountWhitelistOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    8,
+                    "account_upgrade_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AccountUpgradeOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    9,
+                    "account_transfer_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AccountTransferOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    10,
+                    "asset_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AssetCreateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    11,
+                    "asset_update_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AssetUpdateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    12,
+                    "asset_update_bitasset_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AssetUpdateBitassetOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    13,
+                    "asset_update_feed_producers_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AssetUpdateFeedProducersOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    14,
+                    "asset_issue_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AssetIssueOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    15,
+                    "asset_reserve_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AssetReserveOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    16,
+                    "asset_fund_fee_pool_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AssetFundFeePoolOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    17,
+                    "asset_settle_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AssetSettleOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    18,
+                    "asset_global_settle_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AssetGlobalSettleOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    19,
+                    "asset_publish_feed_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AssetPublishFeedOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    20,
+                    "witness_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::WitnessCreateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    21,
+                    "witness_update_operation",
+                    static_variant_ref_payload::<crate::generated::operations::WitnessUpdateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    22,
+                    "proposal_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::ProposalCreateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    23,
+                    "proposal_update_operation",
+                    static_variant_ref_payload::<crate::generated::operations::ProposalUpdateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    24,
+                    "proposal_delete_operation",
+                    static_variant_ref_payload::<crate::generated::operations::ProposalDeleteOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    25,
+                    "withdraw_permission_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::WithdrawPermissionCreateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    26,
+                    "withdraw_permission_update_operation",
+                    static_variant_ref_payload::<crate::generated::operations::WithdrawPermissionUpdateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    27,
+                    "withdraw_permission_claim_operation",
+                    static_variant_ref_payload::<crate::generated::operations::WithdrawPermissionClaimOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    28,
+                    "withdraw_permission_delete_operation",
+                    static_variant_ref_payload::<crate::generated::operations::WithdrawPermissionDeleteOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    29,
+                    "committee_member_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::CommitteeMemberCreateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    30,
+                    "committee_member_update_operation",
+                    static_variant_ref_payload::<crate::generated::operations::CommitteeMemberUpdateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    31,
+                    "committee_member_update_global_parameters_operation",
+                    static_variant_ref_payload::<crate::generated::operations::CommitteeMemberUpdateGlobalParametersOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    32,
+                    "vesting_balance_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::VestingBalanceCreateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    33,
+                    "vesting_balance_withdraw_operation",
+                    static_variant_ref_payload::<crate::generated::operations::VestingBalanceWithdrawOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    34,
+                    "worker_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::WorkerCreateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    35,
+                    "custom_operation",
+                    static_variant_ref_payload::<crate::generated::operations::CustomOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    36,
+                    "assert_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AssertOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    37,
+                    "balance_claim_operation",
+                    static_variant_ref_payload::<crate::generated::operations::BalanceClaimOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    38,
+                    "override_transfer_operation",
+                    static_variant_ref_payload::<crate::generated::operations::OverrideTransferOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    39,
+                    "transfer_to_blind_operation",
+                    static_variant_ref_payload::<crate::generated::operations::TransferToBlindOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    40,
+                    "blind_transfer_operation",
+                    static_variant_ref_payload::<crate::generated::operations::BlindTransferOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    41,
+                    "transfer_from_blind_operation",
+                    static_variant_ref_payload::<crate::generated::operations::TransferFromBlindOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    42,
+                    "asset_settle_cancel_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AssetSettleCancelOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    43,
+                    "asset_claim_fees_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AssetClaimFeesOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    44,
+                    "fba_distribute_operation",
+                    static_variant_ref_payload::<crate::generated::operations::FbaDistributeOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    45,
+                    "bid_collateral_operation",
+                    static_variant_ref_payload::<crate::generated::operations::BidCollateralOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    46,
+                    "execute_bid_operation",
+                    static_variant_ref_payload::<crate::generated::operations::ExecuteBidOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    47,
+                    "asset_claim_pool_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AssetClaimPoolOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    48,
+                    "asset_update_issuer_operation",
+                    static_variant_ref_payload::<crate::generated::operations::AssetUpdateIssuerOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    49,
+                    "htlc_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::HtlcCreateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    50,
+                    "htlc_redeem_operation",
+                    static_variant_ref_payload::<crate::generated::operations::HtlcRedeemOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    51,
+                    "htlc_redeemed_operation",
+                    static_variant_ref_payload::<crate::generated::operations::HtlcRedeemedOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    52,
+                    "htlc_extend_operation",
+                    static_variant_ref_payload::<crate::generated::operations::HtlcExtendOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    53,
+                    "htlc_refund_operation",
+                    static_variant_ref_payload::<crate::generated::operations::HtlcRefundOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    54,
+                    "custom_authority_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::CustomAuthorityCreateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    55,
+                    "custom_authority_update_operation",
+                    static_variant_ref_payload::<crate::generated::operations::CustomAuthorityUpdateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    56,
+                    "custom_authority_delete_operation",
+                    static_variant_ref_payload::<crate::generated::operations::CustomAuthorityDeleteOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    57,
+                    "ticket_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::TicketCreateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    58,
+                    "ticket_update_operation",
+                    static_variant_ref_payload::<crate::generated::operations::TicketUpdateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    59,
+                    "liquidity_pool_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::LiquidityPoolCreateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    60,
+                    "liquidity_pool_delete_operation",
+                    static_variant_ref_payload::<crate::generated::operations::LiquidityPoolDeleteOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    61,
+                    "liquidity_pool_deposit_operation",
+                    static_variant_ref_payload::<crate::generated::operations::LiquidityPoolDepositOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    62,
+                    "liquidity_pool_withdraw_operation",
+                    static_variant_ref_payload::<crate::generated::operations::LiquidityPoolWithdrawOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    63,
+                    "liquidity_pool_exchange_operation",
+                    static_variant_ref_payload::<crate::generated::operations::LiquidityPoolExchangeOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    64,
+                    "samet_fund_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::SametFundCreateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    65,
+                    "samet_fund_delete_operation",
+                    static_variant_ref_payload::<crate::generated::operations::SametFundDeleteOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    66,
+                    "samet_fund_update_operation",
+                    static_variant_ref_payload::<crate::generated::operations::SametFundUpdateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    67,
+                    "samet_fund_borrow_operation",
+                    static_variant_ref_payload::<crate::generated::operations::SametFundBorrowOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    68,
+                    "samet_fund_repay_operation",
+                    static_variant_ref_payload::<crate::generated::operations::SametFundRepayOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    69,
+                    "credit_offer_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::CreditOfferCreateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    70,
+                    "credit_offer_delete_operation",
+                    static_variant_ref_payload::<crate::generated::operations::CreditOfferDeleteOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    71,
+                    "credit_offer_update_operation",
+                    static_variant_ref_payload::<crate::generated::operations::CreditOfferUpdateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    72,
+                    "credit_offer_accept_operation",
+                    static_variant_ref_payload::<crate::generated::operations::CreditOfferAcceptOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    73,
+                    "credit_deal_repay_operation",
+                    static_variant_ref_payload::<crate::generated::operations::CreditDealRepayOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    74,
+                    "credit_deal_expired_operation",
+                    static_variant_ref_payload::<crate::generated::operations::CreditDealExpiredOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    75,
+                    "liquidity_pool_update_operation",
+                    static_variant_ref_payload::<crate::generated::operations::LiquidityPoolUpdateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    76,
+                    "credit_deal_update_operation",
+                    static_variant_ref_payload::<crate::generated::operations::CreditDealUpdateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    77,
+                    "limit_order_update_operation",
+                    static_variant_ref_payload::<crate::generated::operations::LimitOrderUpdateOperation>(),
+                ))
+                .build(),
+        )
+        .into()
+    }
+}
+
+impl utoipa::ToSchema for Operation {
+    fn name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("GrapheneBitsharesOperation")
+    }
+
+    fn schemas(
+        schemas: &mut Vec<(
+            String,
+            utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
+        )>,
+    ) {
+        // The tuple schema only references payload components; register them
+        // here. The guard cuts self-referential dependency walks (proposal
+        // operations embed operations again).
+        thread_local! {
+            static WALKING: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+        }
+        if WALKING.replace(true) {
+            return;
+        }
+        schemas.push((
+            <crate::generated::operations::AccountCreateOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::AccountCreateOperation as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::operations::AccountCreateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::AccountTransferOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::AccountTransferOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::AccountTransferOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::AccountUpdateOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::AccountUpdateOperation as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::operations::AccountUpdateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::AccountUpgradeOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::AccountUpgradeOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::AccountUpgradeOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::AccountWhitelistOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::AccountWhitelistOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::AccountWhitelistOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::AssertOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::AssertOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::AssertOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::AssetClaimFeesOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::AssetClaimFeesOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::AssetClaimFeesOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::AssetClaimPoolOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::AssetClaimPoolOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::AssetClaimPoolOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::AssetCreateOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::AssetCreateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::AssetCreateOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::AssetFundFeePoolOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::AssetFundFeePoolOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::AssetFundFeePoolOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::AssetGlobalSettleOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::AssetGlobalSettleOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::AssetGlobalSettleOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::AssetIssueOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::AssetIssueOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::AssetIssueOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::AssetPublishFeedOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::AssetPublishFeedOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::AssetPublishFeedOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::AssetReserveOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::AssetReserveOperation as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::operations::AssetReserveOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::AssetSettleCancelOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::AssetSettleCancelOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::AssetSettleCancelOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::AssetSettleOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::AssetSettleOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::AssetSettleOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::AssetUpdateBitassetOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::AssetUpdateBitassetOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::AssetUpdateBitassetOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::AssetUpdateFeedProducersOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::AssetUpdateFeedProducersOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::AssetUpdateFeedProducersOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::AssetUpdateIssuerOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::AssetUpdateIssuerOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::AssetUpdateIssuerOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::AssetUpdateOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::AssetUpdateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::AssetUpdateOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::BalanceClaimOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::BalanceClaimOperation as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::operations::BalanceClaimOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::BidCollateralOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::BidCollateralOperation as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::operations::BidCollateralOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::BlindTransferOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::BlindTransferOperation as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::operations::BlindTransferOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::CallOrderUpdateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::CallOrderUpdateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::CallOrderUpdateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::CommitteeMemberCreateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::CommitteeMemberCreateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::CommitteeMemberCreateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::CommitteeMemberUpdateGlobalParametersOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::CommitteeMemberUpdateGlobalParametersOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::CommitteeMemberUpdateGlobalParametersOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::CommitteeMemberUpdateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::CommitteeMemberUpdateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::CommitteeMemberUpdateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::CreditDealExpiredOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::CreditDealExpiredOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::CreditDealExpiredOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::CreditDealRepayOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::CreditDealRepayOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::CreditDealRepayOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::CreditDealUpdateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::CreditDealUpdateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::CreditDealUpdateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::CreditOfferAcceptOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::CreditOfferAcceptOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::CreditOfferAcceptOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::CreditOfferCreateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::CreditOfferCreateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::CreditOfferCreateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::CreditOfferDeleteOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::CreditOfferDeleteOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::CreditOfferDeleteOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::CreditOfferUpdateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::CreditOfferUpdateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::CreditOfferUpdateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::CustomAuthorityCreateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::CustomAuthorityCreateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::CustomAuthorityCreateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::CustomAuthorityDeleteOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::CustomAuthorityDeleteOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::CustomAuthorityDeleteOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::CustomAuthorityUpdateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::CustomAuthorityUpdateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::CustomAuthorityUpdateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::CustomOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::CustomOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::CustomOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::ExecuteBidOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::ExecuteBidOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::ExecuteBidOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::FbaDistributeOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::FbaDistributeOperation as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::operations::FbaDistributeOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::FillOrderOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::FillOrderOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::FillOrderOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::HtlcCreateOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::HtlcCreateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::HtlcCreateOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::HtlcExtendOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::HtlcExtendOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::HtlcExtendOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::HtlcRedeemOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::HtlcRedeemOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::HtlcRedeemOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::HtlcRedeemedOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::HtlcRedeemedOperation as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::operations::HtlcRedeemedOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::HtlcRefundOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::HtlcRefundOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::HtlcRefundOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::LimitOrderCancelOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::LimitOrderCancelOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::LimitOrderCancelOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::LimitOrderCreateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::LimitOrderCreateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::LimitOrderCreateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::LimitOrderUpdateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::LimitOrderUpdateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::LimitOrderUpdateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::LiquidityPoolCreateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::LiquidityPoolCreateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::LiquidityPoolCreateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::LiquidityPoolDeleteOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::LiquidityPoolDeleteOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::LiquidityPoolDeleteOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::LiquidityPoolDepositOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::LiquidityPoolDepositOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::LiquidityPoolDepositOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::LiquidityPoolExchangeOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::LiquidityPoolExchangeOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::LiquidityPoolExchangeOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::LiquidityPoolUpdateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::LiquidityPoolUpdateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::LiquidityPoolUpdateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::LiquidityPoolWithdrawOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::LiquidityPoolWithdrawOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::LiquidityPoolWithdrawOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::OverrideTransferOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::OverrideTransferOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::OverrideTransferOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::ProposalCreateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::ProposalCreateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::ProposalCreateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::ProposalDeleteOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::ProposalDeleteOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::ProposalDeleteOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::ProposalUpdateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::ProposalUpdateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::ProposalUpdateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::SametFundBorrowOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::SametFundBorrowOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::SametFundBorrowOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::SametFundCreateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::SametFundCreateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::SametFundCreateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::SametFundDeleteOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::SametFundDeleteOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::SametFundDeleteOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::SametFundRepayOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::SametFundRepayOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::SametFundRepayOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::SametFundUpdateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::SametFundUpdateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::SametFundUpdateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::TicketCreateOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::TicketCreateOperation as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::operations::TicketCreateOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::TicketUpdateOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::TicketUpdateOperation as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::operations::TicketUpdateOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::TransferFromBlindOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::TransferFromBlindOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::TransferFromBlindOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::TransferOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::TransferOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::TransferOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::TransferToBlindOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::TransferToBlindOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::TransferToBlindOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::VestingBalanceCreateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::VestingBalanceCreateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::VestingBalanceCreateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::VestingBalanceWithdrawOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::VestingBalanceWithdrawOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::VestingBalanceWithdrawOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::WithdrawPermissionClaimOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::WithdrawPermissionClaimOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::WithdrawPermissionClaimOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::WithdrawPermissionCreateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::WithdrawPermissionCreateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::WithdrawPermissionCreateOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::WithdrawPermissionDeleteOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::WithdrawPermissionDeleteOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::WithdrawPermissionDeleteOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::WithdrawPermissionUpdateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::WithdrawPermissionUpdateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::WithdrawPermissionUpdateOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::WitnessCreateOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::WitnessCreateOperation as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::operations::WitnessCreateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::WitnessUpdateOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::WitnessUpdateOperation as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::operations::WitnessUpdateOperation as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::operations::WorkerCreateOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::WorkerCreateOperation as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::operations::WorkerCreateOperation as utoipa::ToSchema>::schemas(schemas);
+        WALKING.set(false);
+    }
 }
 
 impl Operation {
@@ -3646,8 +5995,7 @@ impl<'de> serde::Deserialize<'de> for Operation {
 }
 
 /// Static variant `operation_result` serialized as Graphene `[tag, value]`.
-#[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
-#[schema(as = GrapheneBitsharesOperationResult)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum OperationResult {
     VoidResult(Box<crate::generated::types::VoidResult>),
     ObjectIdType(Box<crate::generated::ids::ObjectId>),
@@ -3655,6 +6003,110 @@ pub enum OperationResult {
     GenericOperationResult(Box<crate::generated::types::GenericOperationResult>),
     GenericExchangeOperationResult(Box<crate::generated::types::GenericExchangeOperationResult>),
     ExtendableOperationResult(Box<crate::generated::types::ExtendableOperationResultDtl>),
+}
+
+impl utoipa::PartialSchema for OperationResult {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        utoipa::openapi::schema::Schema::OneOf(
+            utoipa::openapi::schema::OneOfBuilder::new()
+                .description(Some("Graphene static variant wire tuple: [tag, value]."))
+                .item(static_variant_arm_schema(
+                    0,
+                    "void_result",
+                    static_variant_ref_payload::<crate::generated::types::VoidResult>(),
+                ))
+                .item(static_variant_arm_schema(
+                    1,
+                    "object_id_type",
+                    static_variant_ref_payload::<crate::generated::ids::ObjectId>(),
+                ))
+                .item(static_variant_arm_schema(
+                    2,
+                    "asset",
+                    static_variant_ref_payload::<crate::generated::types::Asset>(),
+                ))
+                .item(static_variant_arm_schema(
+                    3,
+                    "generic_operation_result",
+                    static_variant_ref_payload::<crate::generated::types::GenericOperationResult>(),
+                ))
+                .item(static_variant_arm_schema(
+                    4,
+                    "generic_exchange_operation_result",
+                    static_variant_ref_payload::<
+                        crate::generated::types::GenericExchangeOperationResult,
+                    >(),
+                ))
+                .item(static_variant_arm_schema(
+                    5,
+                    "extendable_operation_result",
+                    static_variant_ref_payload::<
+                        crate::generated::types::ExtendableOperationResultDtl,
+                    >(),
+                ))
+                .build(),
+        )
+        .into()
+    }
+}
+
+impl utoipa::ToSchema for OperationResult {
+    fn name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("GrapheneBitsharesOperationResult")
+    }
+
+    fn schemas(
+        schemas: &mut Vec<(
+            String,
+            utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
+        )>,
+    ) {
+        // The tuple schema only references payload components; register them
+        // here. The guard cuts self-referential dependency walks (proposal
+        // operations embed operations again).
+        thread_local! {
+            static WALKING: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+        }
+        if WALKING.replace(true) {
+            return;
+        }
+        schemas.push((
+            <crate::generated::ids::ObjectId as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::ids::ObjectId as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::ids::ObjectId as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::Asset as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::Asset as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::Asset as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::ExtendableOperationResultDtl as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::ExtendableOperationResultDtl as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::ExtendableOperationResultDtl as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::GenericExchangeOperationResult as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::GenericExchangeOperationResult as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::GenericExchangeOperationResult as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::GenericOperationResult as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::types::GenericOperationResult as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::GenericOperationResult as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::VoidResult as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::VoidResult as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::VoidResult as utoipa::ToSchema>::schemas(schemas);
+        WALKING.set(false);
+    }
 }
 
 impl serde::Serialize for OperationResult {
@@ -3742,12 +6194,80 @@ impl<'de> serde::Deserialize<'de> for OperationResult {
 }
 
 /// Static variant `predicate` serialized as Graphene `[tag, value]`.
-#[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
-#[schema(as = GrapheneBitsharesPredicate)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Predicate {
     AccountNameEqLitPredicate(Box<crate::generated::types::AccountNameEqLitPredicate>),
     AssetSymbolEqLitPredicate(Box<crate::generated::types::AssetSymbolEqLitPredicate>),
     BlockIdPredicate(Box<crate::generated::types::BlockIdPredicate>),
+}
+
+impl utoipa::PartialSchema for Predicate {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        utoipa::openapi::schema::Schema::OneOf(
+            utoipa::openapi::schema::OneOfBuilder::new()
+                .description(Some(
+                    "Graphene static variant wire tuple: [tag, value].",
+                ))
+                .item(static_variant_arm_schema(
+                    0,
+                    "account_name_eq_lit_predicate",
+                    static_variant_ref_payload::<crate::generated::types::AccountNameEqLitPredicate>(),
+                ))
+                .item(static_variant_arm_schema(
+                    1,
+                    "asset_symbol_eq_lit_predicate",
+                    static_variant_ref_payload::<crate::generated::types::AssetSymbolEqLitPredicate>(),
+                ))
+                .item(static_variant_arm_schema(
+                    2,
+                    "block_id_predicate",
+                    static_variant_ref_payload::<crate::generated::types::BlockIdPredicate>(),
+                ))
+                .build(),
+        )
+        .into()
+    }
+}
+
+impl utoipa::ToSchema for Predicate {
+    fn name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("GrapheneBitsharesPredicate")
+    }
+
+    fn schemas(
+        schemas: &mut Vec<(
+            String,
+            utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
+        )>,
+    ) {
+        // The tuple schema only references payload components; register them
+        // here. The guard cuts self-referential dependency walks (proposal
+        // operations embed operations again).
+        thread_local! {
+            static WALKING: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+        }
+        if WALKING.replace(true) {
+            return;
+        }
+        schemas.push((
+            <crate::generated::types::AccountNameEqLitPredicate as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::types::AccountNameEqLitPredicate as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AccountNameEqLitPredicate as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::AssetSymbolEqLitPredicate as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::types::AssetSymbolEqLitPredicate as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::AssetSymbolEqLitPredicate as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::BlockIdPredicate as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::BlockIdPredicate as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::BlockIdPredicate as utoipa::ToSchema>::schemas(schemas);
+        WALKING.set(false);
+    }
 }
 
 impl serde::Serialize for Predicate {
@@ -3814,11 +6334,69 @@ impl<'de> serde::Deserialize<'de> for Predicate {
 }
 
 /// Static variant `special_authority` serialized as Graphene `[tag, value]`.
-#[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
-#[schema(as = GrapheneBitsharesSpecialAuthority)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum SpecialAuthority {
     NoSpecialAuthority(Box<crate::generated::types::NoSpecialAuthority>),
     TopHoldersSpecialAuthority(Box<crate::generated::types::TopHoldersSpecialAuthority>),
+}
+
+impl utoipa::PartialSchema for SpecialAuthority {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        utoipa::openapi::schema::Schema::OneOf(
+            utoipa::openapi::schema::OneOfBuilder::new()
+                .description(Some(
+                    "Graphene static variant wire tuple: [tag, value].",
+                ))
+                .item(static_variant_arm_schema(
+                    0,
+                    "no_special_authority",
+                    static_variant_ref_payload::<crate::generated::types::NoSpecialAuthority>(),
+                ))
+                .item(static_variant_arm_schema(
+                    1,
+                    "top_holders_special_authority",
+                    static_variant_ref_payload::<crate::generated::types::TopHoldersSpecialAuthority>(),
+                ))
+                .build(),
+        )
+        .into()
+    }
+}
+
+impl utoipa::ToSchema for SpecialAuthority {
+    fn name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("GrapheneBitsharesSpecialAuthority")
+    }
+
+    fn schemas(
+        schemas: &mut Vec<(
+            String,
+            utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
+        )>,
+    ) {
+        // The tuple schema only references payload components; register them
+        // here. The guard cuts self-referential dependency walks (proposal
+        // operations embed operations again).
+        thread_local! {
+            static WALKING: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+        }
+        if WALKING.replace(true) {
+            return;
+        }
+        schemas.push((
+            <crate::generated::types::NoSpecialAuthority as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::NoSpecialAuthority as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::NoSpecialAuthority as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::TopHoldersSpecialAuthority as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::types::TopHoldersSpecialAuthority as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::types::TopHoldersSpecialAuthority as utoipa::ToSchema>::schemas(schemas);
+        WALKING.set(false);
+    }
 }
 
 impl serde::Serialize for SpecialAuthority {
@@ -3876,12 +6454,90 @@ impl<'de> serde::Deserialize<'de> for SpecialAuthority {
 }
 
 /// Static variant `vesting_policy_initializer` serialized as Graphene `[tag, value]`.
-#[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
-#[schema(as = GrapheneBitsharesVestingPolicyInitializer)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum VestingPolicyInitializer {
     LinearVestingPolicyInitializer(Box<crate::generated::types::LinearVestingPolicyInitializer>),
     CddVestingPolicyInitializer(Box<crate::generated::types::CddVestingPolicyInitializer>),
     InstantVestingPolicyInitializer(Box<crate::generated::types::InstantVestingPolicyInitializer>),
+}
+
+impl utoipa::PartialSchema for VestingPolicyInitializer {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        utoipa::openapi::schema::Schema::OneOf(
+            utoipa::openapi::schema::OneOfBuilder::new()
+                .description(Some("Graphene static variant wire tuple: [tag, value]."))
+                .item(static_variant_arm_schema(
+                    0,
+                    "linear_vesting_policy_initializer",
+                    static_variant_ref_payload::<
+                        crate::generated::types::LinearVestingPolicyInitializer,
+                    >(),
+                ))
+                .item(static_variant_arm_schema(
+                    1,
+                    "cdd_vesting_policy_initializer",
+                    static_variant_ref_payload::<
+                        crate::generated::types::CddVestingPolicyInitializer,
+                    >(),
+                ))
+                .item(static_variant_arm_schema(
+                    2,
+                    "instant_vesting_policy_initializer",
+                    static_variant_ref_payload::<
+                        crate::generated::types::InstantVestingPolicyInitializer,
+                    >(),
+                ))
+                .build(),
+        )
+        .into()
+    }
+}
+
+impl utoipa::ToSchema for VestingPolicyInitializer {
+    fn name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("GrapheneBitsharesVestingPolicyInitializer")
+    }
+
+    fn schemas(
+        schemas: &mut Vec<(
+            String,
+            utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
+        )>,
+    ) {
+        // The tuple schema only references payload components; register them
+        // here. The guard cuts self-referential dependency walks (proposal
+        // operations embed operations again).
+        thread_local! {
+            static WALKING: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+        }
+        if WALKING.replace(true) {
+            return;
+        }
+        schemas.push((
+            <crate::generated::types::CddVestingPolicyInitializer as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::types::CddVestingPolicyInitializer as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::types::CddVestingPolicyInitializer as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::InstantVestingPolicyInitializer as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::InstantVestingPolicyInitializer as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::InstantVestingPolicyInitializer as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::LinearVestingPolicyInitializer as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::LinearVestingPolicyInitializer as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::LinearVestingPolicyInitializer as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        WALKING.set(false);
+    }
 }
 
 impl serde::Serialize for VestingPolicyInitializer {
@@ -3954,12 +6610,83 @@ impl<'de> serde::Deserialize<'de> for VestingPolicyInitializer {
 }
 
 /// Static variant `worker_initializer` serialized as Graphene `[tag, value]`.
-#[derive(Debug, Clone, PartialEq, utoipa::ToSchema)]
-#[schema(as = GrapheneBitsharesWorkerInitializer)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum WorkerInitializer {
     RefundWorkerInitializer(Box<crate::generated::types::RefundWorkerInitializer>),
     VestingBalanceWorkerInitializer(Box<crate::generated::types::VestingBalanceWorkerInitializer>),
     BurnWorkerInitializer(Box<crate::generated::types::BurnWorkerInitializer>),
+}
+
+impl utoipa::PartialSchema for WorkerInitializer {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        utoipa::openapi::schema::Schema::OneOf(
+            utoipa::openapi::schema::OneOfBuilder::new()
+                .description(Some("Graphene static variant wire tuple: [tag, value]."))
+                .item(static_variant_arm_schema(
+                    0,
+                    "refund_worker_initializer",
+                    static_variant_ref_payload::<crate::generated::types::RefundWorkerInitializer>(
+                    ),
+                ))
+                .item(static_variant_arm_schema(
+                    1,
+                    "vesting_balance_worker_initializer",
+                    static_variant_ref_payload::<
+                        crate::generated::types::VestingBalanceWorkerInitializer,
+                    >(),
+                ))
+                .item(static_variant_arm_schema(
+                    2,
+                    "burn_worker_initializer",
+                    static_variant_ref_payload::<crate::generated::types::BurnWorkerInitializer>(),
+                ))
+                .build(),
+        )
+        .into()
+    }
+}
+
+impl utoipa::ToSchema for WorkerInitializer {
+    fn name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("GrapheneBitsharesWorkerInitializer")
+    }
+
+    fn schemas(
+        schemas: &mut Vec<(
+            String,
+            utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
+        )>,
+    ) {
+        // The tuple schema only references payload components; register them
+        // here. The guard cuts self-referential dependency walks (proposal
+        // operations embed operations again).
+        thread_local! {
+            static WALKING: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+        }
+        if WALKING.replace(true) {
+            return;
+        }
+        schemas.push((
+            <crate::generated::types::BurnWorkerInitializer as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::types::BurnWorkerInitializer as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::BurnWorkerInitializer as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::RefundWorkerInitializer as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::types::RefundWorkerInitializer as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::RefundWorkerInitializer as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::VestingBalanceWorkerInitializer as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::VestingBalanceWorkerInitializer as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::VestingBalanceWorkerInitializer as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        WALKING.set(false);
+    }
 }
 
 impl serde::Serialize for WorkerInitializer {

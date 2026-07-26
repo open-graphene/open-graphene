@@ -28,6 +28,31 @@ where
     }
 }
 
+/// Deserialize a `u64` that arrives either as a JSON number or as a decimal string.
+///
+/// fc renders large unsigned integers as strings, because past 2^53 a JSON number can no longer
+/// survive a round trip through a double. Which side of that line a value falls on depends on
+/// the value, not the field, so any u64 can arrive either way - `symbol3` in the asset creation
+/// fee is a string on one chain and a number on another purely because of what it was set to.
+pub fn deserialize_u64_from_number_or_decimal_string<'de, D>(
+    deserializer: D,
+) -> Result<u64, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum NumberOrString {
+        Number(u64),
+        Text(String),
+    }
+
+    match NumberOrString::deserialize(deserializer)? {
+        NumberOrString::Number(value) => Ok(value),
+        NumberOrString::Text(text) => text.trim().parse().map_err(serde::de::Error::custom),
+    }
+}
+
 /// Deserialize fixed-length bytes that arrive either as a hex string or a JSON byte array.
 ///
 /// Graphene serializes fixed-byte fields (object ids, keys, hashes) as lowercase hex on the

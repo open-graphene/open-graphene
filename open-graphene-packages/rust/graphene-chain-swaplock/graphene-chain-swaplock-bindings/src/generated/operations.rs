@@ -1368,6 +1368,9 @@ pub const REVEAL_CREATE_OPERATION_ID: u32 = 89;
 pub struct RevealCreateOperation {
     pub fee: crate::generated::types::Asset,
     pub account: crate::generated::ids::AccountId,
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
+    )]
     pub value: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub maintenance_time: u32,
