@@ -123,6 +123,42 @@ impl PreparedTransaction {
         let signed = sign_checked(&self.transaction, wif, expected_public_key)?;
         Ok(SignedTransactionEnvelope { signed })
     }
+
+    /// Sign with several keys at once, as `(wif, expected_public_key)` pairs.
+    ///
+    /// Some operations need more than one signature because they name more than one party: a
+    /// balance claim is authorized by the key that owns the balance but paid for by an account,
+    /// and a content card can be authored by one key and paid for by another. Each signature is
+    /// checked against its expected key, exactly as the single-key path does.
+    ///
+    /// Order does not matter to the chain, but note it rejects a signature it did not need
+    /// (`tx_irrelevant_sig`), so pass only the keys the operation actually requires.
+    pub fn sign_with_wifs<I, S>(self, keys: I) -> Result<SignedTransactionEnvelope, SwaplockApiError>
+    where
+        I: IntoIterator<Item = (S, S)>,
+        S: AsRef<str>,
+    {
+        let mut signatures = Vec::new();
+        for (wif, expected_public_key) in keys {
+            let signed = sign_checked(&self.transaction, wif.as_ref(), expected_public_key.as_ref())?;
+            signatures.extend(signed.signatures);
+        }
+        if signatures.is_empty() {
+            return Err(SwaplockApiError::InvalidTransfer {
+                message: "no signing keys given".to_string(),
+            });
+        }
+        Ok(SignedTransactionEnvelope {
+            signed: SignedTransaction {
+                ref_block_num: self.transaction.ref_block_num,
+                ref_block_prefix: self.transaction.ref_block_prefix,
+                expiration: self.transaction.expiration.clone(),
+                operations: self.transaction.operations.clone(),
+                extensions: self.transaction.extensions.clone(),
+                signatures,
+            },
+        })
+    }
 }
 
 /// A signed transaction, ready for `network_broadcast`.
