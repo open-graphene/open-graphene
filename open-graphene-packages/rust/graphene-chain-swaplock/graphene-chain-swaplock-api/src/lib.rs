@@ -62,6 +62,7 @@ pub use operations::{
     DATA_ROOM_PERM_UPDATE_ROOM, DataRoomCreateRequest, DataRoomDeleteRequest,
     DataRoomMemberAddRequest, DataRoomMemberRemoveRequest, DataRoomMemberUpdateRequest,
     DataRoomRotateKeyRequest, DataRoomUpdateRequest, HtlcCreateRequest, HtlcExtendRequest,
+    member_add_operation, rotate_key_operation,
     HtlcRedeemRequest, LimitOrderCancelRequest, LimitOrderCreateRequest, LimitOrderUpdateRequest,
     LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest,
     LiquidityPoolExchangeRequest, LiquidityPoolUpdateRequest, LiquidityPoolWithdrawRequest,

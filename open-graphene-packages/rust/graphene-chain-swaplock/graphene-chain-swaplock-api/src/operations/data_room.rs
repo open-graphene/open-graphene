@@ -118,7 +118,9 @@ fn sorted_member_keys(
         .collect())
 }
 
-fn member_add_operation(
+/// Build a bare `data_room_member_add` operation — for wrapping in a proposal. The fluent
+/// request uses the same constructor, so wire shape and validation stay identical.
+pub fn member_add_operation(
     caller: String,
     room: String,
     account: String,
@@ -141,7 +143,8 @@ fn member_add_operation(
     ))
 }
 
-fn rotate_key_operation(
+/// Build a bare `data_room_rotate_key` operation — for wrapping in a proposal.
+pub fn rotate_key_operation(
     caller: String,
     room: String,
     new_room_key: Option<String>,

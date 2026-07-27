@@ -55,7 +55,7 @@ pub use data_room::{
     DATA_ROOM_PERM_REMOVE_MEMBERS, DATA_ROOM_PERM_ROTATE_KEYS, DATA_ROOM_PERM_UPDATE_ROOM,
     DataRoomCreateRequest, DataRoomDeleteRequest, DataRoomMemberAddRequest,
     DataRoomMemberRemoveRequest, DataRoomMemberUpdateRequest, DataRoomRotateKeyRequest,
-    DataRoomUpdateRequest,
+    DataRoomUpdateRequest, member_add_operation, rotate_key_operation,
 };
 pub use governance::{
     CommitteeMemberCreateRequest, CommitteeMemberUpdateGlobalParametersRequest,
