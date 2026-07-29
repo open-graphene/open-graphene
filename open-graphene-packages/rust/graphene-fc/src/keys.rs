@@ -111,6 +111,33 @@ impl PublicKey {
         Ok(Self(bytes))
     }
 
+    /// Parse 33 compressed-key bytes given as hex — the shape external signers (HSMs,
+    /// custody APIs) hand back. Rejects anything that isn't a compressed point.
+    pub fn from_hex(value: &str) -> Result<Self> {
+        let decoded = hex::decode(value.trim()).map_err(|_| FcSerializeError::InvalidPublicKey {
+            value: value.to_string(),
+            expected_prefix: None,
+            reason: "public key is not valid hex",
+        })?;
+        let bytes: [u8; 33] =
+            decoded
+                .try_into()
+                .map_err(|_| FcSerializeError::InvalidPublicKey {
+                    value: value.to_string(),
+                    expected_prefix: None,
+                    reason: "expected a 33 byte compressed secp256k1 key",
+                })?;
+        Self::from_bytes(bytes)
+    }
+
+    /// `GRAPHENE_NULL_KEY`: 33 zero bytes. Not a curve point, but legal on chain as the memo
+    /// key of accounts that never receive memos — e.g. accounts governed purely by other
+    /// accounts. [`PublicKey::from_string`] already accepts it, so this is the constructor
+    /// side of the same rule and deliberately skips point validation.
+    pub fn null() -> Self {
+        Self([0u8; 33])
+    }
+
     /// Render as the chain public-key string (e.g. `BTS6MRy...`) under `prefix`.
     pub fn to_prefixed_string(&self, prefix: &str) -> String {
         let checksum = Ripemd160::digest(self.0);
@@ -194,6 +221,40 @@ mod tests {
         assert_eq!(
             public.to_prefixed_string("CBA"),
             "CBA8m5UgaFAAYQRuaNejYdS8FVLVp9Ss3K1qAVk5de6F8s3HnVbvA"
+        );
+    }
+
+    #[test]
+    fn hex_public_key_round_trips_through_the_chain_string() {
+        // Compressed secp256k1 generator point.
+        let hex_key = "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
+
+        let public = PublicKey::from_hex(hex_key).expect("hex decodes");
+        let text = public.to_prefixed_string("BTS");
+
+        assert!(text.starts_with("BTS"));
+        assert_eq!(PublicKey::from_string(&text, Some("BTS")).unwrap(), public);
+        assert_eq!(hex::encode(public.as_bytes()), hex_key);
+    }
+
+    #[test]
+    fn from_hex_rejects_uncompressed_and_malformed_keys() {
+        assert!(PublicKey::from_hex(&format!("04{}", "ab".repeat(64))).is_err());
+        assert!(PublicKey::from_hex("zz").is_err());
+    }
+
+    #[test]
+    fn null_key_matches_the_canonical_graphene_null_key() {
+        // 33 zero bytes are not a curve point, but the chain accepts them as
+        // GRAPHENE_NULL_KEY — the memo key of accounts that never receive memos.
+        assert_eq!(
+            PublicKey::null().to_prefixed_string("BTS"),
+            "BTS1111111111111111111111111111111114T1Anm"
+        );
+        assert_eq!(
+            PublicKey::from_string("BTS1111111111111111111111111111111114T1Anm", Some("BTS"))
+                .unwrap(),
+            PublicKey::null()
         );
     }
 
