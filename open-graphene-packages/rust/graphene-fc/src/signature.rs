@@ -204,6 +204,8 @@ mod tests {
         let signature = Signature::sign(digest, &key).unwrap();
         let (r, s, _) = components(&signature);
 
-        assert!(Signature::from_components(&r, &s, Some(9), digest, &key.to_public_key()).is_none());
+        assert!(
+            Signature::from_components(&r, &s, Some(9), digest, &key.to_public_key()).is_none()
+        );
     }
 }

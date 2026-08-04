@@ -124,8 +124,7 @@ impl<'session> CustomAuthorityCreateRequest<'session> {
                     Duration::from_secs(u64::from(options.max_custom_authority_lifetime_seconds))
                 })
                 .unwrap_or(DEFAULT_VALID_AHEAD);
-                let valid_to =
-                    expiration_from_head_time(&head, DEFAULT_VALID_AHEAD.min(limit))?;
+                let valid_to = expiration_from_head_time(&head, DEFAULT_VALID_AHEAD.min(limit))?;
                 (head, valid_to)
             }
         };

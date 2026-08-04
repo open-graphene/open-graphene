@@ -230,7 +230,12 @@ mod tests {
         );
         assert!(analysis.reachable);
         assert_eq!(analysis.minimal_signer_sets.len(), 3);
-        assert!(analysis.minimal_signer_sets.iter().all(|set| set.len() == 2));
+        assert!(
+            analysis
+                .minimal_signer_sets
+                .iter()
+                .all(|set| set.len() == 2)
+        );
     }
 
     #[test]
@@ -269,9 +274,9 @@ mod tests {
                 .any(|issue| matches!(issue, AuthorityIssue::ZeroThreshold))
         );
         assert!(
-            analysis
-                .errors()
-                .any(|issue| matches!(issue, AuthorityIssue::DuplicateMember { id } if id == "anna"))
+            analysis.errors().any(
+                |issue| matches!(issue, AuthorityIssue::DuplicateMember { id } if id == "anna")
+            )
         );
     }
 

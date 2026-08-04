@@ -114,11 +114,12 @@ impl PublicKey {
     /// Parse 33 compressed-key bytes given as hex — the shape external signers (HSMs,
     /// custody APIs) hand back. Rejects anything that isn't a compressed point.
     pub fn from_hex(value: &str) -> Result<Self> {
-        let decoded = hex::decode(value.trim()).map_err(|_| FcSerializeError::InvalidPublicKey {
-            value: value.to_string(),
-            expected_prefix: None,
-            reason: "public key is not valid hex",
-        })?;
+        let decoded =
+            hex::decode(value.trim()).map_err(|_| FcSerializeError::InvalidPublicKey {
+                value: value.to_string(),
+                expected_prefix: None,
+                reason: "public key is not valid hex",
+            })?;
         let bytes: [u8; 33] =
             decoded
                 .try_into()
