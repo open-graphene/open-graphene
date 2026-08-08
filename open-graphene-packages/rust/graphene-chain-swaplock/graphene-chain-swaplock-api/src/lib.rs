@@ -52,8 +52,10 @@ pub use operations::{
     AssetUpdateFeedProducersRequest, AssetUpdateIssuerRequest, AssetUpdateRequest,
     BalanceClaimRequest, BidCollateralRequest, BlindTransferRequest, CallOrderUpdateRequest,
     CommitteeMemberCreateRequest, CommitteeMemberUpdateGlobalParametersRequest,
-    CommitteeMemberUpdateRequest, ContentCardCreateRequest, ContentCardRemoveRequest,
+    CommitteeMemberUpdateRequest, ContentCardCreateRequest, ContentCardGrantCreateRequest,
+    ContentCardGrantRevokeRequest, ContentCardRemoveRequest,
     ContentCardUpdateRequest, CreditDealRepayRequest, CreditDealUpdateRequest,
+    content_card_grant_create_operation,
     CreditOfferAcceptRequest, CreditOfferCreateRequest, CreditOfferDeleteRequest,
     CreditOfferUpdateRequest, CustomAuthorityCreateRequest, CustomAuthorityDeleteRequest,
     CustomAuthorityUpdateRequest, CustomRequest, DATA_ROOM_PERM_ADD_MEMBERS, DATA_ROOM_PERM_ALL,
@@ -73,7 +75,7 @@ pub use operations::{
     VestingBalanceCreateRequest, VestingBalanceWithdrawRequest, WithdrawPermissionClaimRequest,
     WithdrawPermissionCreateRequest, WithdrawPermissionDeleteRequest,
     WithdrawPermissionUpdateRequest, WitnessCreateRequest, WitnessUpdateRequest,
-    WorkerCreateRequest, member_add_operation, rotate_key_operation,
+    WorkerCreateRequest, member_add_operation, member_remove_operation, rotate_key_operation,
 };
 
 // Binding types callers need to construct operations for `OperationsApi::transaction()`.
@@ -110,7 +112,8 @@ pub use database::{
     AccountByIdRequest, AccountByNameRequest, AccountOrdersByIdRequest, AccountOrdersRequest,
     AccountOrdersSubscription, AccountSubscription, AccountsRequest, AssetByIdRequest,
     AssetBySymbolRequest, AssetSubscription, ChainIdRequest, ChainPropertiesRequest,
-    ContentCardByIdRequest, ContentCardsByAuthorRequest, ContentCardsByRoomRequest,
+    ContentCardByIdRequest, ContentCardGrantRequest, ContentCardGrantsByCardRequest,
+    ContentCardGrantsByGranteeRequest, ContentCardsByAuthorRequest, ContentCardsByRoomRequest,
     DEFAULT_GET_LIMIT_ORDERS_LIMIT, DEFAULT_LIST_ASSETS_LIMIT, DEFAULT_LOOKUP_ACCOUNTS_LIMIT,
     DataRoomByIdRequest, DataRoomKeyEpochRequest, DataRoomKeyEpochsRequest, DataRoomMemberRequest,
     DataRoomMembersRequest, DataRoomsByMemberRequest, DataRoomsByOwnerRequest,

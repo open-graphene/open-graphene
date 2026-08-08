@@ -6,10 +6,11 @@
 //! someone else's card takes `DATA_ROOM_PERM_MANAGE_CONTENT`.
 
 use graphene_chain_swaplock_bindings::generated::ids::{
-    AccountId, AssetId, ContentCardId, DataRoomId,
+    AccountId, AssetId, ContentCardGrantId, ContentCardId, DataRoomId,
 };
 use graphene_chain_swaplock_bindings::generated::operations::{
-    ContentCardCreateOperation, ContentCardRemoveOperation, ContentCardUpdateOperation,
+    ContentCardCreateOperation, ContentCardGrantCreateOperation, ContentCardGrantRevokeOperation,
+    ContentCardRemoveOperation, ContentCardUpdateOperation,
 };
 use graphene_chain_swaplock_bindings::generated::static_variants::DataRoomMemberRef;
 use graphene_chain_swaplock_bindings::generated::static_variants::Operation;
@@ -328,6 +329,125 @@ impl<'session> ContentCardRemoveRequest<'session> {
     }
 }
 
+/// Build a bare `content_card_grant_create` operation — for wrapping in a proposal or
+/// composing into a larger transaction.
+pub fn content_card_grant_create_operation(
+    granter: String,
+    content_id: String,
+    grantee: String,
+    key: String,
+) -> Result<Operation, SwaplockApiError> {
+    if key.is_empty() {
+        return Err(SwaplockApiError::MissingTransferField { field: "key" });
+    }
+    Ok(Operation::content_card_grant_create(
+        ContentCardGrantCreateOperation {
+            fee: core_fee(),
+            granter: AccountId(granter),
+            content_id: ContentCardId(content_id),
+            grantee: member_ref(grantee),
+            key,
+            extensions: vec![],
+        },
+    ))
+}
+
+/// Builder for `content_card_grant_create`: hand ONE card to ONE recipient outside room
+/// membership — the accountable form of disclosure.
+///
+/// Required: the `granter` (room owner or member with `DATA_ROOM_PERM_GRANT_CONTENT`), the
+/// `content_id`, the `.grantee(..)` (an account or a bare public key) and the `.key(..)` — the
+/// card's content key encrypted to the grantee. Grants survive key rotation and disappear with
+/// their card.
+pub struct ContentCardGrantCreateRequest<'session> {
+    session: &'session mut GrapheneSession,
+    granter: String,
+    content_id: String,
+    grantee: Option<String>,
+    key: Option<String>,
+}
+
+impl<'session> ContentCardGrantCreateRequest<'session> {
+    pub(super) fn new(
+        session: &'session mut GrapheneSession,
+        granter: impl Into<String>,
+        content_id: impl Into<String>,
+    ) -> Self {
+        Self {
+            session,
+            granter: granter.into(),
+            content_id: content_id.into(),
+            grantee: None,
+            key: None,
+        }
+    }
+
+    /// The recipient: an account (name or id) or a bare public key.
+    pub fn grantee(mut self, grantee: impl Into<String>) -> Self {
+        self.grantee = Some(grantee.into());
+        self
+    }
+
+    /// The card's content key encrypted to the grantee.
+    pub fn key(mut self, key: impl Into<String>) -> Self {
+        self.key = Some(key.into());
+        self
+    }
+
+    pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
+        let grantee = self.grantee.ok_or(SwaplockApiError::MissingTransferField {
+            field: "grantee",
+        })?;
+        let key = self
+            .key
+            .ok_or(SwaplockApiError::MissingTransferField { field: "key" })?;
+        let operation =
+            content_card_grant_create_operation(self.granter, self.content_id, grantee, key)?;
+        TransactionBuilder::new(self.session)
+            .add_operation(operation)
+            .prepare()
+            .await
+    }
+}
+
+/// Builder for `content_card_grant_revoke`: retract a grant.
+///
+/// Required: the `caller` (the original granter, the room owner, or a member with
+/// `DATA_ROOM_PERM_GRANT_CONTENT`) and the `grant_id`. Revocation removes the on-chain record;
+/// it cannot remove what the grantee has already read.
+pub struct ContentCardGrantRevokeRequest<'session> {
+    session: &'session mut GrapheneSession,
+    caller: String,
+    grant_id: String,
+}
+
+impl<'session> ContentCardGrantRevokeRequest<'session> {
+    pub(super) fn new(
+        session: &'session mut GrapheneSession,
+        caller: impl Into<String>,
+        grant_id: impl Into<String>,
+    ) -> Self {
+        Self {
+            session,
+            caller: caller.into(),
+            grant_id: grant_id.into(),
+        }
+    }
+
+    pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
+        let operation = Operation::content_card_grant_revoke(ContentCardGrantRevokeOperation {
+            fee: core_fee(),
+            caller: AccountId(self.caller),
+            grant_id: ContentCardGrantId(self.grant_id),
+            extensions: vec![],
+        });
+        TransactionBuilder::new(self.session)
+            .add_operation(operation)
+            .prepare()
+            .await
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -443,5 +563,63 @@ mod tests {
                 "extensions": []
             }])
         );
+    }
+}
+
+#[cfg(test)]
+mod grant_tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn grant_create_serializes_with_tag_ninety() {
+        let operation = content_card_grant_create_operation(
+            "1.2.100".to_string(),
+            "1.26.7".to_string(),
+            "1.2.9".to_string(),
+            "DEK_FOR_9".to_string(),
+        )
+        .unwrap();
+
+        assert_eq!(
+            serde_json::to_value(&operation).unwrap(),
+            json!([90, {
+                "fee": {"amount": 0, "asset_id": "1.3.0"},
+                "granter": "1.2.100",
+                "content_id": "1.26.7",
+                "grantee": [0, "1.2.9"],
+                "key": "DEK_FOR_9",
+                "extensions": []
+            }])
+        );
+    }
+
+    #[test]
+    fn grant_create_accepts_a_bare_key_grantee() {
+        const KEY: &str = "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV";
+        let operation = content_card_grant_create_operation(
+            "1.2.100".to_string(),
+            "1.26.7".to_string(),
+            KEY.to_string(),
+            "DEK_FOR_POD".to_string(),
+        )
+        .unwrap();
+
+        assert_eq!(
+            serde_json::to_value(&operation).unwrap()[1]["grantee"],
+            json!([1, KEY])
+        );
+    }
+
+    #[test]
+    fn grant_create_requires_the_key() {
+        let error = content_card_grant_create_operation(
+            "1.2.100".to_string(),
+            "1.26.7".to_string(),
+            "1.2.9".to_string(),
+            String::new(),
+        )
+        .unwrap_err();
+        assert_eq!(error.to_string(), "missing transfer field `key`");
     }
 }

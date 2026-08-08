@@ -22,6 +22,9 @@ use super::asset_by_symbol::{AssetBySymbolRequest, get_asset_by_symbol};
 use super::chain_id::{ChainIdRequest, get_chain_id};
 use super::chain_properties::{ChainPropertiesRequest, get_chain_properties};
 use super::content_card_by_id::ContentCardByIdRequest;
+use super::content_card_grant::ContentCardGrantRequest;
+use super::content_card_grants_by_card::ContentCardGrantsByCardRequest;
+use super::content_card_grants_by_grantee::ContentCardGrantsByGranteeRequest;
 use super::content_cards_by_author::ContentCardsByAuthorRequest;
 use super::content_cards_by_room::ContentCardsByRoomRequest;
 use super::data_room_by_id::DataRoomByIdRequest;
@@ -199,6 +202,55 @@ impl<'session> DatabaseApi<'session> {
 
     /// The content cards of a data room (id like `1.9.0`), pageable with
     /// `.limit(..)` / `.start_id(..)`.
+    /// The grants of one content card, pageable with `.limit(..)` / `.start_id(..)`.
+    pub fn content_card_grants_by_card<S>(
+        self,
+        content_id: S,
+    ) -> ContentCardGrantsByCardRequest<'session>
+    where
+        S: Into<String>,
+    {
+        ContentCardGrantsByCardRequest {
+            session: self.session,
+            content_id: content_id.into(),
+            limit: None,
+            start_id: None,
+        }
+    }
+
+    /// One grant, addressed by card and grantee (account name/id or bare public key).
+    pub fn content_card_grant<C, G>(
+        self,
+        content_id: C,
+        grantee_name_key_or_id: G,
+    ) -> ContentCardGrantRequest<'session>
+    where
+        C: Into<String>,
+        G: Into<String>,
+    {
+        ContentCardGrantRequest {
+            session: self.session,
+            content_id: content_id.into(),
+            grantee_name_key_or_id: grantee_name_key_or_id.into(),
+        }
+    }
+
+    /// What has been shared with one recipient, pageable with `.limit(..)` / `.start_id(..)`.
+    pub fn content_card_grants_by_grantee<S>(
+        self,
+        grantee_name_key_or_id: S,
+    ) -> ContentCardGrantsByGranteeRequest<'session>
+    where
+        S: Into<String>,
+    {
+        ContentCardGrantsByGranteeRequest {
+            session: self.session,
+            grantee_name_key_or_id: grantee_name_key_or_id.into(),
+            limit: None,
+            start_id: None,
+        }
+    }
+
     pub fn content_cards_by_room<S>(self, room_id: S) -> ContentCardsByRoomRequest<'session>
     where
         S: Into<String>,

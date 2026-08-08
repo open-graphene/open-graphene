@@ -1128,6 +1128,40 @@ pub struct ContentCardCreateOperationFeeParamsT {
     pub price_per_kbyte: u32,
 }
 
+/// Raw protocol struct `content_card_grant_create_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardGrantCreateOperationFeeParamsT)]
+pub struct ContentCardGrantCreateOperationFeeParamsT {
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
+    )]
+    pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    pub price_per_kbyte: u32,
+}
+
+/// Raw protocol struct `content_card_grant_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardGrantObject)]
+pub struct ContentCardGrantObject {
+    pub id: crate::generated::ids::ContentCardGrantId,
+    pub card: crate::generated::ids::ContentCardId,
+    pub grantee: crate::generated::static_variants::DataRoomMemberRef,
+    pub key: String,
+    pub granted_by: crate::generated::ids::AccountId,
+    pub created: String,
+}
+
+/// Raw protocol struct `content_card_grant_revoke_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardGrantRevokeOperationFeeParamsT)]
+pub struct ContentCardGrantRevokeOperationFeeParamsT {
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
+    )]
+    pub fee: u64,
+}
+
 /// Raw protocol struct `content_card_object`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockContentCardObject)]
@@ -1405,8 +1439,7 @@ pub struct DataRoomObject {
     pub name: String,
     pub description: String,
     pub subject: crate::generated::static_variants::DataRoomSubject,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub room_key: Option<String>,
+    pub encrypted: bool,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub current_epoch: u32,
     pub created: String,

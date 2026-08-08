@@ -1291,6 +1291,12 @@ pub enum FeeParameters {
     ),
     CommitCreateOperationFeeParamsT(Box<crate::generated::types::CommitCreateOperationFeeParamsT>),
     RevealCreateOperationFeeParamsT(Box<crate::generated::types::RevealCreateOperationFeeParamsT>),
+    ContentCardGrantCreateOperationFeeParamsT(
+        Box<crate::generated::types::ContentCardGrantCreateOperationFeeParamsT>,
+    ),
+    ContentCardGrantRevokeOperationFeeParamsT(
+        Box<crate::generated::types::ContentCardGrantRevokeOperationFeeParamsT>,
+    ),
 }
 
 impl utoipa::PartialSchema for FeeParameters {
@@ -1750,6 +1756,16 @@ impl utoipa::PartialSchema for FeeParameters {
                     "reveal_create_operation_fee_params_t",
                     static_variant_ref_payload::<crate::generated::types::RevealCreateOperationFeeParamsT>(),
                 ))
+                .item(static_variant_arm_schema(
+                    90,
+                    "content_card_grant_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::ContentCardGrantCreateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    91,
+                    "content_card_grant_revoke_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::ContentCardGrantRevokeOperationFeeParamsT>(),
+                ))
                 .build(),
         )
         .into()
@@ -1960,6 +1976,16 @@ impl utoipa::ToSchema for FeeParameters {
             <crate::generated::types::ContentCardCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
         ));
         <crate::generated::types::ContentCardCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::ContentCardGrantCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::ContentCardGrantCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::ContentCardGrantCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::types::ContentCardGrantRevokeOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::ContentCardGrantRevokeOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::ContentCardGrantRevokeOperationFeeParamsT as utoipa::ToSchema>::schemas(schemas);
         schemas.push((
             <crate::generated::types::ContentCardRemoveOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
             <crate::generated::types::ContentCardRemoveOperationFeeParamsT as utoipa::PartialSchema>::schema(),
@@ -2706,6 +2732,14 @@ impl serde::Serialize for FeeParameters {
                 seq.serialize_element(&89u32)?;
                 seq.serialize_element(value.as_ref())?;
             }
+            Self::ContentCardGrantCreateOperationFeeParamsT(value) => {
+                seq.serialize_element(&90u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::ContentCardGrantRevokeOperationFeeParamsT(value) => {
+                seq.serialize_element(&91u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
         }
         seq.end()
     }
@@ -2998,6 +3032,12 @@ impl<'de> serde::Deserialize<'de> for FeeParameters {
                 .map_err(serde::de::Error::custom),
             89 => serde_json::from_value::<crate::generated::types::RevealCreateOperationFeeParamsT>(payload)
                 .map(|value| Self::RevealCreateOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            90 => serde_json::from_value::<crate::generated::types::ContentCardGrantCreateOperationFeeParamsT>(payload)
+                .map(|value| Self::ContentCardGrantCreateOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            91 => serde_json::from_value::<crate::generated::types::ContentCardGrantRevokeOperationFeeParamsT>(payload)
+                .map(|value| Self::ContentCardGrantRevokeOperationFeeParamsT(Box::new(value)))
                 .map_err(serde::de::Error::custom),
             other => Err(serde::de::Error::custom(format!("unknown static variant FeeParameters tag {other}"))),
         }
@@ -3420,6 +3460,12 @@ pub enum Operation {
     ContentCardRemoveOperation(Box<crate::generated::operations::ContentCardRemoveOperation>),
     CommitCreateOperation(Box<crate::generated::operations::CommitCreateOperation>),
     RevealCreateOperation(Box<crate::generated::operations::RevealCreateOperation>),
+    ContentCardGrantCreateOperation(
+        Box<crate::generated::operations::ContentCardGrantCreateOperation>,
+    ),
+    ContentCardGrantRevokeOperation(
+        Box<crate::generated::operations::ContentCardGrantRevokeOperation>,
+    ),
 }
 
 impl utoipa::PartialSchema for Operation {
@@ -3879,6 +3925,16 @@ impl utoipa::PartialSchema for Operation {
                     "reveal_create_operation",
                     static_variant_ref_payload::<crate::generated::operations::RevealCreateOperation>(),
                 ))
+                .item(static_variant_arm_schema(
+                    90,
+                    "content_card_grant_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::ContentCardGrantCreateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    91,
+                    "content_card_grant_revoke_operation",
+                    static_variant_ref_payload::<crate::generated::operations::ContentCardGrantRevokeOperation>(),
+                ))
                 .build(),
         )
         .into()
@@ -4106,6 +4162,16 @@ impl utoipa::ToSchema for Operation {
         <crate::generated::operations::ContentCardCreateOperation as utoipa::ToSchema>::schemas(
             schemas,
         );
+        schemas.push((
+            <crate::generated::operations::ContentCardGrantCreateOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::ContentCardGrantCreateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::ContentCardGrantCreateOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::ContentCardGrantRevokeOperation as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::operations::ContentCardGrantRevokeOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::ContentCardGrantRevokeOperation as utoipa::ToSchema>::schemas(schemas);
         schemas.push((
             <crate::generated::operations::ContentCardRemoveOperation as utoipa::ToSchema>::name().to_string(),
             <crate::generated::operations::ContentCardRemoveOperation as utoipa::PartialSchema>::schema(),
@@ -4986,6 +5052,18 @@ impl Operation {
     pub fn reveal_create(value: crate::generated::operations::RevealCreateOperation) -> Self {
         Self::RevealCreateOperation(Box::new(value))
     }
+
+    pub fn content_card_grant_create(
+        value: crate::generated::operations::ContentCardGrantCreateOperation,
+    ) -> Self {
+        Self::ContentCardGrantCreateOperation(Box::new(value))
+    }
+
+    pub fn content_card_grant_revoke(
+        value: crate::generated::operations::ContentCardGrantRevokeOperation,
+    ) -> Self {
+        Self::ContentCardGrantRevokeOperation(Box::new(value))
+    }
 }
 
 impl Operation {
@@ -5756,6 +5834,24 @@ impl Operation {
             _ => None,
         }
     }
+
+    pub fn as_content_card_grant_create(
+        &self,
+    ) -> Option<&crate::generated::operations::ContentCardGrantCreateOperation> {
+        match self {
+            Self::ContentCardGrantCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_content_card_grant_revoke(
+        &self,
+    ) -> Option<&crate::generated::operations::ContentCardGrantRevokeOperation> {
+        match self {
+            Self::ContentCardGrantRevokeOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
 }
 
 impl Operation {
@@ -5854,6 +5950,8 @@ impl Operation {
             Self::ContentCardRemoveOperation(_) => "content_card_remove",
             Self::CommitCreateOperation(_) => "commit_create",
             Self::RevealCreateOperation(_) => "reveal_create",
+            Self::ContentCardGrantCreateOperation(_) => "content_card_grant_create",
+            Self::ContentCardGrantRevokeOperation(_) => "content_card_grant_revoke",
         }
     }
 
@@ -5950,6 +6048,8 @@ impl Operation {
             Self::ContentCardRemoveOperation(_) => false,
             Self::CommitCreateOperation(_) => false,
             Self::RevealCreateOperation(_) => false,
+            Self::ContentCardGrantCreateOperation(_) => false,
+            Self::ContentCardGrantRevokeOperation(_) => false,
         }
     }
 
@@ -6046,6 +6146,8 @@ impl Operation {
             Self::ContentCardRemoveOperation(value) => &value.fee,
             Self::CommitCreateOperation(value) => &value.fee,
             Self::RevealCreateOperation(value) => &value.fee,
+            Self::ContentCardGrantCreateOperation(value) => &value.fee,
+            Self::ContentCardGrantRevokeOperation(value) => &value.fee,
         }
     }
 
@@ -6142,6 +6244,8 @@ impl Operation {
             Self::ContentCardRemoveOperation(value) => value.fee = fee,
             Self::CommitCreateOperation(value) => value.fee = fee,
             Self::RevealCreateOperation(value) => value.fee = fee,
+            Self::ContentCardGrantCreateOperation(value) => value.fee = fee,
+            Self::ContentCardGrantRevokeOperation(value) => value.fee = fee,
         }
     }
 }
@@ -6512,6 +6616,14 @@ impl serde::Serialize for Operation {
             }
             Self::RevealCreateOperation(value) => {
                 seq.serialize_element(&89u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::ContentCardGrantCreateOperation(value) => {
+                seq.serialize_element(&90u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::ContentCardGrantRevokeOperation(value) => {
+                seq.serialize_element(&91u32)?;
                 seq.serialize_element(value.as_ref())?;
             }
         }
@@ -7018,6 +7130,16 @@ impl<'de> serde::Deserialize<'de> for Operation {
                 payload,
             )
             .map(|value| Self::RevealCreateOperation(Box::new(value)))
+            .map_err(serde::de::Error::custom),
+            90 => serde_json::from_value::<
+                crate::generated::operations::ContentCardGrantCreateOperation,
+            >(payload)
+            .map(|value| Self::ContentCardGrantCreateOperation(Box::new(value)))
+            .map_err(serde::de::Error::custom),
+            91 => serde_json::from_value::<
+                crate::generated::operations::ContentCardGrantRevokeOperation,
+            >(payload)
+            .map(|value| Self::ContentCardGrantRevokeOperation(Box::new(value)))
             .map_err(serde::de::Error::custom),
             other => Err(serde::de::Error::custom(format!(
                 "unknown static variant Operation tag {other}"

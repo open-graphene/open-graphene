@@ -40,7 +40,8 @@ pub use balance_claim::BalanceClaimRequest;
 pub use blind::{BlindTransferRequest, TransferFromBlindRequest, TransferToBlindRequest};
 pub use call_order::{BidCollateralRequest, CallOrderUpdateRequest};
 pub use content_card::{
-    ContentCardCreateRequest, ContentCardRemoveRequest, ContentCardUpdateRequest,
+    ContentCardCreateRequest, ContentCardGrantCreateRequest, ContentCardGrantRevokeRequest,
+    ContentCardRemoveRequest, ContentCardUpdateRequest, content_card_grant_create_operation,
 };
 pub use credit_offer::{
     CreditDealRepayRequest, CreditDealUpdateRequest, CreditOfferAcceptRequest,
@@ -55,7 +56,7 @@ pub use data_room::{
     DATA_ROOM_PERM_REMOVE_MEMBERS, DATA_ROOM_PERM_ROTATE_KEYS, DATA_ROOM_PERM_UPDATE_ROOM,
     DataRoomCreateRequest, DataRoomDeleteRequest, DataRoomMemberAddRequest,
     DataRoomMemberRemoveRequest, DataRoomMemberUpdateRequest, DataRoomRotateKeyRequest,
-    DataRoomUpdateRequest, member_add_operation, rotate_key_operation,
+    DataRoomUpdateRequest, member_add_operation, member_remove_operation, rotate_key_operation,
 };
 pub use governance::{
     CommitteeMemberCreateRequest, CommitteeMemberUpdateGlobalParametersRequest,

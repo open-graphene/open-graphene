@@ -67,7 +67,7 @@ pub use graphene_chain_swaplock_api::{
     WithdrawPermissionCreateRequest, WithdrawPermissionDeleteRequest,
     WithdrawPermissionUpdateRequest, WitnessCreateRequest, WitnessUpdateRequest,
     WorkerCreateRequest, is_account_name, is_account_name_allow_short, is_cheap_name,
-    is_public_key, member_add_operation, member_ref, rotate_key_operation,
+    is_public_key, member_add_operation, member_ref, member_remove_operation, rotate_key_operation,
 };
 pub use open_graphene_fc::hash;
 pub use open_graphene_fc::{

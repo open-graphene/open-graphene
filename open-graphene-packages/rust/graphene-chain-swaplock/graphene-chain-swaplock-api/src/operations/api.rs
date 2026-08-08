@@ -19,7 +19,8 @@ use super::balance_claim::BalanceClaimRequest;
 use super::blind::{BlindTransferRequest, TransferFromBlindRequest, TransferToBlindRequest};
 use super::call_order::{BidCollateralRequest, CallOrderUpdateRequest};
 use super::content_card::{
-    ContentCardCreateRequest, ContentCardRemoveRequest, ContentCardUpdateRequest,
+    ContentCardCreateRequest, ContentCardGrantCreateRequest, ContentCardGrantRevokeRequest,
+    ContentCardRemoveRequest, ContentCardUpdateRequest,
 };
 use super::credit_offer::{
     CreditDealRepayRequest, CreditDealUpdateRequest, CreditOfferAcceptRequest,
@@ -807,6 +808,25 @@ impl<'session> OperationsApi<'session> {
         content_id: impl Into<String>,
     ) -> ContentCardRemoveRequest<'session> {
         ContentCardRemoveRequest::new(self.session, caller, content_id)
+    }
+
+    /// Grant one card to one recipient outside room membership: `granter`, the `content_id`,
+    /// then `.grantee(..)` and `.key(..)` (the card's content key encrypted to the grantee).
+    pub fn content_card_grant_create(
+        self,
+        granter: impl Into<String>,
+        content_id: impl Into<String>,
+    ) -> ContentCardGrantCreateRequest<'session> {
+        ContentCardGrantCreateRequest::new(self.session, granter, content_id)
+    }
+
+    /// Retract a grant: `caller`, the `grant_id`.
+    pub fn content_card_grant_revoke(
+        self,
+        caller: impl Into<String>,
+        grant_id: impl Into<String>,
+    ) -> ContentCardGrantRevokeRequest<'session> {
+        ContentCardGrantRevokeRequest::new(self.session, caller, grant_id)
     }
 
     pub async fn sign_transfer_with_wif(

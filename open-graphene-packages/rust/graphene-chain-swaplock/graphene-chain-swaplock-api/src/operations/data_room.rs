@@ -143,16 +143,33 @@ pub fn member_add_operation(
     ))
 }
 
+/// Build a bare `data_room_member_remove` operation — for composing into a larger
+/// transaction (the remove-and-rotate flow) or wrapping in a proposal.
+pub fn member_remove_operation(
+    caller: String,
+    room: String,
+    member: String,
+) -> Result<Operation, SwaplockApiError> {
+    Ok(Operation::data_room_member_remove(
+        DataRoomMemberRemoveOperation {
+            fee: core_fee(),
+            caller: AccountId(caller),
+            room: DataRoomId(room),
+            member: member_ref(member),
+            extensions: vec![],
+        },
+    ))
+}
+
 /// Build a bare `data_room_rotate_key` operation — for wrapping in a proposal.
+///
+/// The owner's envelope rides in `member_keys` like everyone else's: the owner is a member,
+/// and the chain asserts full coverage of the member set.
 pub fn rotate_key_operation(
     caller: String,
     room: String,
-    new_room_key: Option<String>,
     member_keys: Vec<(String, String)>,
 ) -> Result<Operation, SwaplockApiError> {
-    let new_room_key = new_room_key.ok_or(SwaplockApiError::MissingTransferField {
-        field: "new_room_key",
-    })?;
     if member_keys.is_empty() {
         return Err(SwaplockApiError::MissingTransferField {
             field: "member_keys",
@@ -163,7 +180,6 @@ pub fn rotate_key_operation(
             fee: core_fee(),
             caller: AccountId(caller),
             room: DataRoomId(room),
-            new_room_key,
             member_keys: sorted_member_keys(member_keys)?,
             extensions: vec![],
         },
@@ -527,15 +543,14 @@ impl<'session> DataRoomMemberRemoveRequest<'session> {
 
 /// Builder for `data_room_rotate_key`: rotate a room's encryption key, starting a new key epoch.
 ///
-/// Required: the `caller` (owner or member with [`DATA_ROOM_PERM_ROTATE_KEYS`]), the `room`, the
-/// `.new_room_key(..)` encrypted to the owner and a `.member_key(..)` per member (the chain
-/// requires the set to cover every member, no strangers). Also bootstraps encryption on a
+/// Required: the `caller` (owner or member with [`DATA_ROOM_PERM_ROTATE_KEYS`]), the `room`, and
+/// a `.member_key(..)` per member - the owner included, since the owner is a member and the
+/// chain requires the set to cover every member, no strangers. Also bootstraps encryption on a
 /// previously public room.
 pub struct DataRoomRotateKeyRequest<'session> {
     session: &'session mut GrapheneSession,
     caller: String,
     room: String,
-    new_room_key: Option<String>,
     member_keys: Vec<(String, String)>,
 }
 
@@ -549,15 +564,8 @@ impl<'session> DataRoomRotateKeyRequest<'session> {
             session,
             caller: caller.into(),
             room: room.into(),
-            new_room_key: None,
             member_keys: vec![],
         }
-    }
-
-    /// The new room key encrypted to the owner.
-    pub fn new_room_key(mut self, new_room_key: impl Into<String>) -> Self {
-        self.new_room_key = Some(new_room_key.into());
-        self
     }
 
     /// Add the new room key encrypted to a member `account`. Call once per member.
@@ -567,8 +575,7 @@ impl<'session> DataRoomRotateKeyRequest<'session> {
     }
 
     pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
-        let operation =
-            rotate_key_operation(self.caller, self.room, self.new_room_key, self.member_keys)?;
+        let operation = rotate_key_operation(self.caller, self.room, self.member_keys)?;
         TransactionBuilder::new(self.session)
             .add_operation(operation)
             .prepare()
@@ -705,7 +712,6 @@ mod tests {
         let operation = rotate_key_operation(
             "1.2.100".to_string(),
             "1.23.7".to_string(),
-            Some("NEW_OWNER_KEY".to_string()),
             vec![
                 ("1.2.10".to_string(), "K10".to_string()),
                 ("1.2.9".to_string(), "K9".to_string()),
@@ -719,7 +725,6 @@ mod tests {
                 "fee": {"amount": 0, "asset_id": "1.3.0"},
                 "caller": "1.2.100",
                 "room": "1.23.7",
-                "new_room_key": "NEW_OWNER_KEY",
                 "member_keys": [[[0, "1.2.9"], "K9"], [[0, "1.2.10"], "K10"]],
                 "extensions": []
             }])
@@ -737,7 +742,6 @@ mod tests {
         let operation = rotate_key_operation(
             "1.2.100".to_string(),
             "1.23.7".to_string(),
-            Some("NEW_OWNER_KEY".to_string()),
             vec![
                 (KEY_B.to_string(), "KB".to_string()),
                 ("1.2.10".to_string(), "K10".to_string()),
@@ -762,7 +766,6 @@ mod tests {
                 "fee": {"amount": 0, "asset_id": "1.3.0"},
                 "caller": "1.2.100",
                 "room": "1.23.7",
-                "new_room_key": "NEW_OWNER_KEY",
                 "member_keys": [
                     [[0, "1.2.9"], "K9"],
                     [[0, "1.2.10"], "K10"],
@@ -782,7 +785,6 @@ mod tests {
         let duplicate = rotate_key_operation(
             "1.2.100".to_string(),
             "1.23.7".to_string(),
-            Some("NEW_OWNER_KEY".to_string()),
             vec![
                 (KEY_A.to_string(), "KA".to_string()),
                 (KEY_A.to_string(), "KA-again".to_string()),
@@ -796,23 +798,10 @@ mod tests {
     }
 
     #[test]
-    fn rotate_key_requires_the_new_room_key_and_member_keys() {
-        let missing_key = rotate_key_operation(
-            "1.2.100".to_string(),
-            "1.23.7".to_string(),
-            None,
-            vec![("1.2.9".to_string(), "K9".to_string())],
-        )
-        .unwrap_err();
-        assert_eq!(
-            missing_key.to_string(),
-            "missing transfer field `new_room_key`"
-        );
-
+    fn rotate_key_requires_member_keys() {
         let missing_members = rotate_key_operation(
             "1.2.100".to_string(),
             "1.23.7".to_string(),
-            Some("NEW_OWNER_KEY".to_string()),
             vec![],
         )
         .unwrap_err();

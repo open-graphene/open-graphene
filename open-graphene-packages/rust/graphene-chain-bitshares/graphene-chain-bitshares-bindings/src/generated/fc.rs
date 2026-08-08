@@ -1628,6 +1628,30 @@ impl FcSerialize for crate::generated::static_variants::HtlcHash {
     }
 }
 
+impl crate::generated::static_variants::HtlcHash {
+    /// Ordering key for use as a `flat_map` key: `(tag, order-preserving value bytes)`.
+    pub fn fc_sort_key(&self) -> Result<(u64, Vec<u8>)> {
+        match self {
+            Self::HtlcAlgoRipemd160(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+            Self::HtlcAlgoSha1(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+            Self::HtlcAlgoSha256(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+            Self::HtlcAlgoHash160(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+        }
+    }
+}
+
 impl FcSerialize for crate::generated::static_variants::Predicate {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         match self {
@@ -1643,6 +1667,26 @@ impl FcSerialize for crate::generated::static_variants::Predicate {
                 write_varint(2u64, out);
                 value.as_ref().fc_serialize(out)
             }
+        }
+    }
+}
+
+impl crate::generated::static_variants::Predicate {
+    /// Ordering key for use as a `flat_map` key: `(tag, order-preserving value bytes)`.
+    pub fn fc_sort_key(&self) -> Result<(u64, Vec<u8>)> {
+        match self {
+            Self::AccountNameEqLitPredicate(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+            Self::AssetSymbolEqLitPredicate(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+            Self::BlockIdPredicate(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
         }
     }
 }
@@ -1666,6 +1710,26 @@ impl FcSerialize for crate::generated::static_variants::VestingPolicyInitializer
     }
 }
 
+impl crate::generated::static_variants::VestingPolicyInitializer {
+    /// Ordering key for use as a `flat_map` key: `(tag, order-preserving value bytes)`.
+    pub fn fc_sort_key(&self) -> Result<(u64, Vec<u8>)> {
+        match self {
+            Self::LinearVestingPolicyInitializer(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+            Self::CddVestingPolicyInitializer(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+            Self::InstantVestingPolicyInitializer(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+        }
+    }
+}
+
 impl FcSerialize for crate::generated::static_variants::WorkerInitializer {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         match self {
@@ -1685,6 +1749,26 @@ impl FcSerialize for crate::generated::static_variants::WorkerInitializer {
     }
 }
 
+impl crate::generated::static_variants::WorkerInitializer {
+    /// Ordering key for use as a `flat_map` key: `(tag, order-preserving value bytes)`.
+    pub fn fc_sort_key(&self) -> Result<(u64, Vec<u8>)> {
+        match self {
+            Self::RefundWorkerInitializer(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+            Self::VestingBalanceWorkerInitializer(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+            Self::BurnWorkerInitializer(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+        }
+    }
+}
+
 impl FcSerialize for crate::generated::static_variants::LimitOrderAutoAction {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         match self {
@@ -1692,6 +1776,18 @@ impl FcSerialize for crate::generated::static_variants::LimitOrderAutoAction {
                 write_varint(0u64, out);
                 value.as_ref().fc_serialize(out)
             }
+        }
+    }
+}
+
+impl crate::generated::static_variants::LimitOrderAutoAction {
+    /// Ordering key for use as a `flat_map` key: `(tag, order-preserving value bytes)`.
+    pub fn fc_sort_key(&self) -> Result<(u64, Vec<u8>)> {
+        match self {
+            Self::CreateTakeProfitOrderAction(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
         }
     }
 }

@@ -124,6 +124,12 @@ impl FcSerialize for crate::generated::ids::ContentCardId {
     }
 }
 
+impl FcSerialize for crate::generated::ids::ContentCardGrantId {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_protocol_object_id(&self.0, Some(1), Some(28), out)
+    }
+}
+
 impl FcSerialize for crate::generated::ids::CreditDealId {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         write_protocol_object_id(&self.0, Some(1), Some(22), out)
@@ -1089,6 +1095,33 @@ impl FcSerialize for crate::generated::types::ContentCardCreateOperationFeeParam
     }
 }
 
+impl FcSerialize for crate::generated::types::ContentCardGrantCreateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.price_per_kbyte.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::ContentCardGrantObject {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.id.fc_serialize(out)?;
+        self.card.fc_serialize(out)?;
+        self.grantee.fc_serialize(out)?;
+        self.key.fc_serialize(out)?;
+        self.granted_by.fc_serialize(out)?;
+        write_time_point_sec(&self.created, out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::ContentCardGrantRevokeOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::ContentCardObject {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.id.fc_serialize(out)?;
@@ -1319,7 +1352,7 @@ impl FcSerialize for crate::generated::types::DataRoomObject {
         self.name.fc_serialize(out)?;
         self.description.fc_serialize(out)?;
         self.subject.fc_serialize(out)?;
-        self.room_key.fc_serialize(out)?;
+        self.encrypted.fc_serialize(out)?;
         self.current_epoch.fc_serialize(out)?;
         write_time_point_sec(&self.created, out)?;
         Ok(())
@@ -2176,6 +2209,30 @@ impl FcSerialize for crate::generated::static_variants::HtlcHash {
     }
 }
 
+impl crate::generated::static_variants::HtlcHash {
+    /// Ordering key for use as a `flat_map` key: `(tag, order-preserving value bytes)`.
+    pub fn fc_sort_key(&self) -> Result<(u64, Vec<u8>)> {
+        match self {
+            Self::HtlcAlgoRipemd160(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+            Self::HtlcAlgoSha1(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+            Self::HtlcAlgoSha256(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+            Self::HtlcAlgoHash160(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+        }
+    }
+}
+
 impl FcSerialize for crate::generated::static_variants::Predicate {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         match self {
@@ -2191,6 +2248,26 @@ impl FcSerialize for crate::generated::static_variants::Predicate {
                 write_varint(2u64, out);
                 value.as_ref().fc_serialize(out)
             }
+        }
+    }
+}
+
+impl crate::generated::static_variants::Predicate {
+    /// Ordering key for use as a `flat_map` key: `(tag, order-preserving value bytes)`.
+    pub fn fc_sort_key(&self) -> Result<(u64, Vec<u8>)> {
+        match self {
+            Self::AccountNameEqLitPredicate(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+            Self::AssetSymbolEqLitPredicate(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+            Self::BlockIdPredicate(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
         }
     }
 }
@@ -2214,6 +2291,26 @@ impl FcSerialize for crate::generated::static_variants::VestingPolicyInitializer
     }
 }
 
+impl crate::generated::static_variants::VestingPolicyInitializer {
+    /// Ordering key for use as a `flat_map` key: `(tag, order-preserving value bytes)`.
+    pub fn fc_sort_key(&self) -> Result<(u64, Vec<u8>)> {
+        match self {
+            Self::LinearVestingPolicyInitializer(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+            Self::CddVestingPolicyInitializer(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+            Self::InstantVestingPolicyInitializer(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+        }
+    }
+}
+
 impl FcSerialize for crate::generated::static_variants::WorkerInitializer {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         match self {
@@ -2233,6 +2330,26 @@ impl FcSerialize for crate::generated::static_variants::WorkerInitializer {
     }
 }
 
+impl crate::generated::static_variants::WorkerInitializer {
+    /// Ordering key for use as a `flat_map` key: `(tag, order-preserving value bytes)`.
+    pub fn fc_sort_key(&self) -> Result<(u64, Vec<u8>)> {
+        match self {
+            Self::RefundWorkerInitializer(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+            Self::VestingBalanceWorkerInitializer(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+            Self::BurnWorkerInitializer(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
+        }
+    }
+}
+
 impl FcSerialize for crate::generated::static_variants::LimitOrderAutoAction {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         match self {
@@ -2240,6 +2357,18 @@ impl FcSerialize for crate::generated::static_variants::LimitOrderAutoAction {
                 write_varint(0u64, out);
                 value.as_ref().fc_serialize(out)
             }
+        }
+    }
+}
+
+impl crate::generated::static_variants::LimitOrderAutoAction {
+    /// Ordering key for use as a `flat_map` key: `(tag, order-preserving value bytes)`.
+    pub fn fc_sort_key(&self) -> Result<(u64, Vec<u8>)> {
+        match self {
+            Self::CreateTakeProfitOrderAction(_) => Err(FcSerializeError::UnsupportedValue {
+                type_name: "StaticVariant",
+                reason: "this variant arm has no defined flat_map key ordering",
+            }),
         }
     }
 }
@@ -2263,6 +2392,23 @@ impl FcSerialize for crate::generated::static_variants::DataRoomSubject {
     }
 }
 
+impl crate::generated::static_variants::DataRoomSubject {
+    /// Ordering key for use as a `flat_map` key: `(tag, order-preserving value bytes)`.
+    pub fn fc_sort_key(&self) -> Result<(u64, Vec<u8>)> {
+        match self {
+            Self::VoidT(_) => Ok((0u64, Vec::new())),
+            Self::AssetIdType(value) => {
+                let parts = parse_protocol_object_id(&value.0, None, None)?;
+                Ok((1u64, parts.instance.to_be_bytes().to_vec()))
+            }
+            Self::AccountIdType(value) => {
+                let parts = parse_protocol_object_id(&value.0, None, None)?;
+                Ok((2u64, parts.instance.to_be_bytes().to_vec()))
+            }
+        }
+    }
+}
+
 impl FcSerialize for crate::generated::static_variants::DataRoomMemberRef {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         match self {
@@ -2277,6 +2423,27 @@ impl FcSerialize for crate::generated::static_variants::DataRoomMemberRef {
                     Some(crate::generated::ids::PUBLIC_KEY_PREFIX),
                     out,
                 )
+            }
+        }
+    }
+}
+
+impl crate::generated::static_variants::DataRoomMemberRef {
+    /// Ordering key for use as a `flat_map` key: `(tag, order-preserving value bytes)`.
+    pub fn fc_sort_key(&self) -> Result<(u64, Vec<u8>)> {
+        match self {
+            Self::AccountIdType(value) => {
+                let parts = parse_protocol_object_id(&value.0, None, None)?;
+                Ok((0u64, parts.instance.to_be_bytes().to_vec()))
+            }
+            Self::PublicKeyType(value) => {
+                let mut bytes = Vec::new();
+                write_public_key(
+                    value.as_ref(),
+                    Some(crate::generated::ids::PUBLIC_KEY_PREFIX),
+                    &mut bytes,
+                )?;
+                Ok((1u64, bytes))
             }
         }
     }
@@ -2374,6 +2541,8 @@ fn fee_parameters_tag(value: &crate::generated::static_variants::FeeParameters) 
         crate::generated::static_variants::FeeParameters::ContentCardRemoveOperationFeeParamsT(_) => 87u64,
         crate::generated::static_variants::FeeParameters::CommitCreateOperationFeeParamsT(_) => 88u64,
         crate::generated::static_variants::FeeParameters::RevealCreateOperationFeeParamsT(_) => 89u64,
+        crate::generated::static_variants::FeeParameters::ContentCardGrantCreateOperationFeeParamsT(_) => 90u64,
+        crate::generated::static_variants::FeeParameters::ContentCardGrantRevokeOperationFeeParamsT(_) => 91u64,
     }
 }
 
@@ -2738,6 +2907,14 @@ impl FcSerialize for crate::generated::static_variants::FeeParameters {
             }
             Self::RevealCreateOperationFeeParamsT(value) => {
                 write_varint(89u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ContentCardGrantCreateOperationFeeParamsT(value) => {
+                write_varint(90u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ContentCardGrantRevokeOperationFeeParamsT(value) => {
+                write_varint(91u64, out);
                 value.as_ref().fc_serialize(out)
             }
         }
@@ -5117,6 +5294,45 @@ impl FcSerialize for crate::generated::operations::DataRoomMemberRemoveOperation
     }
 }
 
+impl FcSerialize for crate::generated::operations::DataRoomRotateKeyOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.caller.fc_serialize(out)?;
+        self.room.fc_serialize(out)?;
+        write_varint(self.member_keys.len() as u64, out);
+        let mut previous_key: Option<(u64, Vec<u8>)> = None;
+        for (key, value) in &self.member_keys {
+            let sort_key = key.fc_sort_key()?;
+            if previous_key
+                .as_ref()
+                .is_some_and(|previous| previous >= &sort_key)
+            {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "FlatMap",
+                    reason: "flat_map keys must be sorted and unique",
+                });
+            }
+            previous_key = Some(sort_key);
+            key.fc_serialize(out)?;
+            value.fc_serialize(out)?;
+        }
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::operations::ContentCardCreateOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -5224,6 +5440,52 @@ impl FcSerialize for crate::generated::operations::RevealCreateOperation {
             Some(crate::generated::ids::PUBLIC_KEY_PREFIX),
             out,
         )?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::ContentCardGrantCreateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.granter.fc_serialize(out)?;
+        self.content_id.fc_serialize(out)?;
+        self.grantee.fc_serialize(out)?;
+        self.key.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::ContentCardGrantRevokeOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.caller.fc_serialize(out)?;
+        self.grant_id.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -5567,9 +5829,10 @@ impl FcSerialize for crate::generated::static_variants::Operation {
                 write_varint(83u64, out);
                 value.as_ref().fc_serialize(out)
             }
-            Self::DataRoomRotateKeyOperation(_) => Err(FcSerializeError::UnsupportedVariant {
-                variant: "DataRoomRotateKeyOperation",
-            }),
+            Self::DataRoomRotateKeyOperation(value) => {
+                write_varint(84u64, out);
+                value.as_ref().fc_serialize(out)
+            }
             Self::ContentCardCreateOperation(value) => {
                 write_varint(85u64, out);
                 value.as_ref().fc_serialize(out)
@@ -5588,6 +5851,14 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             }
             Self::RevealCreateOperation(value) => {
                 write_varint(89u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ContentCardGrantCreateOperation(value) => {
+                write_varint(90u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ContentCardGrantRevokeOperation(value) => {
+                write_varint(91u64, out);
                 value.as_ref().fc_serialize(out)
             }
         }

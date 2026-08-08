@@ -378,6 +378,72 @@ pub(crate) fn render_fc_tagged_static_variant_impl(
     out.push_str("        }\n");
     out.push_str("    }\n");
     out.push_str("}\n\n");
+
+    render_fc_static_variant_sort_key_impl(out, &variant.variants, spec_name)?;
+    Ok(())
+}
+
+/// Renders `fc_sort_key`, the ordering a static variant needs when it is used as
+/// a `flat_map` key.
+///
+/// The chain orders `static_variant` by tag first and by the arm's own
+/// `operator<` second, so the sort key has to reproduce both — and the second
+/// part in a form whose byte order matches the value order. An object id
+/// contributes its instance as eight big-endian bytes (varint bytes would not
+/// sort: `255` encodes as `ff 01`, `256` as `80 02`), and a public key
+/// contributes its raw 33 compressed bytes, which is what `public_key_type`
+/// compares — not the base58 text, whose ordering differs.
+fn render_fc_static_variant_sort_key_impl(
+    out: &mut String,
+    arms: &[open_graphene_json_schema::defs::StaticVariantArmDef],
+    spec_name: &str,
+) -> Result<()> {
+    let type_name = rust_type_name(spec_name);
+    out.push_str(&format!(
+        "impl crate::generated::static_variants::{type_name} {{\n"
+    ));
+    out.push_str(
+        "    /// Ordering key for use as a `flat_map` key: `(tag, order-preserving value bytes)`.\n",
+    );
+    out.push_str("    pub fn fc_sort_key(&self) -> Result<(u64, Vec<u8>)> {\n");
+    out.push_str("        match self {\n");
+
+    let mut sorted = arms.to_vec();
+    sorted.sort_by_key(|arm| arm.tag);
+    for arm in sorted {
+        let variant_name = rust_variant_name(&arm.name);
+        let tag = arm.tag;
+        match &arm.ty {
+            TypeRef::ProtocolObjectId { .. } => {
+                out.push_str(&format!(
+                    "            Self::{variant_name}(value) => {{\n                     \u{20}               let parts = parse_protocol_object_id(&value.0, None, None)?;\n                     \u{20}               Ok(({tag}u64, parts.instance.to_be_bytes().to_vec()))\n                     \u{20}           }}\n"
+                ));
+            }
+            TypeRef::PublicKey { .. } => {
+                let prefix = render_public_key_prefix_expr(&arm.ty)?;
+                out.push_str(&format!(
+                    "            Self::{variant_name}(value) => {{\n                     \u{20}               let mut bytes = Vec::new();\n                     \u{20}               write_public_key(value.as_ref(), {prefix}, &mut bytes)?;\n                     \u{20}               Ok(({tag}u64, bytes))\n                     \u{20}           }}\n"
+                ));
+            }
+            // A void arm carries nothing to order by, so every occurrence ties —
+            // which the uniqueness check then rejects, correctly: a flat_map can
+            // hold at most one of them.
+            TypeRef::Void => {
+                out.push_str(&format!(
+                    "            Self::{variant_name}(_) => Ok(({tag}u64, Vec::new())),\n"
+                ));
+            }
+            _ => {
+                out.push_str(&format!(
+                    "            Self::{variant_name}(_) => Err(FcSerializeError::UnsupportedValue {{\n                     \u{20}               type_name: \"StaticVariant\",\n                     \u{20}               reason: \"this variant arm has no defined flat_map key ordering\",\n                     \u{20}           }}),\n"
+                ));
+            }
+        }
+    }
+
+    out.push_str("        }\n");
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
     Ok(())
 }
 
@@ -916,6 +982,19 @@ pub(crate) fn render_fc_flat_map_serialize_lines(
                  {indent}}}\n"
             ))
         }
+        TypeRef::StaticVariantRef { .. } => Ok(format!(
+            "{indent}write_varint({value_expr}.len() as u64, out);\n\
+             {indent}let mut previous_key: Option<(u64, Vec<u8>)> = None;\n\
+             {indent}for (key, value) in {iter_expr} {{\n\
+             {indent}    let sort_key = key.fc_sort_key()?;\n\
+             {indent}    if previous_key.as_ref().is_some_and(|previous| previous >= &sort_key) {{\n\
+             {indent}        return Err(FcSerializeError::UnsupportedValue {{ type_name: \"FlatMap\", reason: \"flat_map keys must be sorted and unique\" }});\n\
+             {indent}    }}\n\
+             {indent}    previous_key = Some(sort_key);\n\
+             {indent}    key.fc_serialize(out)?;\n\
+             {indent}    value.fc_serialize(out)?;\n\
+             {indent}}}\n"
+        )),
         _ => Err(GenBindingsRsError::Render {
             message: "internal error: unsupported flat_map key type".to_string(),
         }),
@@ -953,6 +1032,12 @@ pub(crate) fn is_fc_supported_flat_map(key: &TypeRef, value: &TypeRef) -> bool {
     }
 
     if matches!(key, TypeRef::Uint32) {
+        return matches!(value, TypeRef::String);
+    }
+
+    // A static variant key orders by `fc_sort_key`, which the variant's own impl
+    // provides — see `render_fc_static_variant_sort_key_impl`.
+    if matches!(key, TypeRef::StaticVariantRef { .. }) {
         return matches!(value, TypeRef::String);
     }
 

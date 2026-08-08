@@ -1281,7 +1281,6 @@ pub struct DataRoomRotateKeyOperation {
     pub fee: crate::generated::types::Asset,
     pub caller: crate::generated::ids::AccountId,
     pub room: crate::generated::ids::DataRoomId,
-    pub new_room_key: String,
     pub member_keys: Vec<(crate::generated::static_variants::DataRoomMemberRef, String)>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
@@ -1372,4 +1371,30 @@ pub struct RevealCreateOperation {
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub maintenance_time: u32,
     pub witness_key: String,
+}
+
+pub const CONTENT_CARD_GRANT_CREATE_OPERATION_ID: u32 = 90;
+
+/// Protocol operation `content_card_grant_create_operation` with wire tag 90.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardGrantCreateOperation)]
+pub struct ContentCardGrantCreateOperation {
+    pub fee: crate::generated::types::Asset,
+    pub granter: crate::generated::ids::AccountId,
+    pub content_id: crate::generated::ids::ContentCardId,
+    pub grantee: crate::generated::static_variants::DataRoomMemberRef,
+    pub key: String,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const CONTENT_CARD_GRANT_REVOKE_OPERATION_ID: u32 = 91;
+
+/// Protocol operation `content_card_grant_revoke_operation` with wire tag 91.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardGrantRevokeOperation)]
+pub struct ContentCardGrantRevokeOperation {
+    pub fee: crate::generated::types::Asset,
+    pub caller: crate::generated::ids::AccountId,
+    pub grant_id: crate::generated::ids::ContentCardGrantId,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }

@@ -9,6 +9,7 @@ object_structs = [
   "data_room_member_object",
   "data_room_key_epoch_object",
   "content_card_object",
+  "content_card_grant_object",
 ]
 
 [chain]
@@ -64,6 +65,9 @@ methods = [
   "get_content_card_by_id",
   "get_content_cards_by_room",
   "get_content_cards_by_author",
+  "get_content_card_grants_by_card",
+  "get_content_card_grant",
+  "get_content_card_grants_by_grantee",
 ]
 
 [[rpc_apis]]
