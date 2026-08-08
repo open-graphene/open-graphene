@@ -233,6 +233,15 @@ impl SwaplockApi {
         Ok(Self { session })
     }
 
+    /// The chain this session is connected to — the genesis-derived id that
+    /// distinguishes one Swaplock network from another.
+    ///
+    /// Read from the session established at connect time, so it costs no RPC
+    /// and cannot disagree with the node actually being talked to.
+    pub fn chain_id(&self) -> &str {
+        self.session.chain_id()
+    }
+
     /// Rank `servers` by how fast each completes a connection, fastest first.
     ///
     /// A health check that opens and closes a session per node without holding a connection.
