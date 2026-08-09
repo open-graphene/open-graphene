@@ -7,7 +7,7 @@ use graphene_chain_swaplock_bindings::generated::{
 fn protocol_object_deserializes_by_object_id_type() {
     let known = serde_json::json!({
         "id": "2.11.0",
-        "chain_id": "95acb1f01e4afd0dd8b61f99377911a2f0ac6e6420925e01630f1d3580c89758",
+        "chain_id": "e80d8f63b598759059ca8f8627a6c9252bf6ae13ed404e1afbf4ae51b1781837",
         "immutable_parameters": {
             "min_committee_member_count": 1,
             "min_witness_count": 1,
