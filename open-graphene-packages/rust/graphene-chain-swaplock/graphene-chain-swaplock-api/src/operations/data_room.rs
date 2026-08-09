@@ -799,12 +799,8 @@ mod tests {
 
     #[test]
     fn rotate_key_requires_member_keys() {
-        let missing_members = rotate_key_operation(
-            "1.2.100".to_string(),
-            "1.23.7".to_string(),
-            vec![],
-        )
-        .unwrap_err();
+        let missing_members =
+            rotate_key_operation("1.2.100".to_string(), "1.23.7".to_string(), vec![]).unwrap_err();
         assert_eq!(
             missing_members.to_string(),
             "missing transfer field `member_keys`"

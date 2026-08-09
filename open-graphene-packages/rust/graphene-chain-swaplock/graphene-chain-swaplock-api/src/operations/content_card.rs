@@ -395,9 +395,9 @@ impl<'session> ContentCardGrantCreateRequest<'session> {
     }
 
     pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
-        let grantee = self.grantee.ok_or(SwaplockApiError::MissingTransferField {
-            field: "grantee",
-        })?;
+        let grantee = self
+            .grantee
+            .ok_or(SwaplockApiError::MissingTransferField { field: "grantee" })?;
         let key = self
             .key
             .ok_or(SwaplockApiError::MissingTransferField { field: "key" })?;
