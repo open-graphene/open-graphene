@@ -46,8 +46,16 @@ pub const DATA_ROOM_PERM_CREATE_CONTENT: u32 = 0x0010;
 pub const DATA_ROOM_PERM_MANAGE_CONTENT: u32 = 0x0020;
 /// Member may rotate the room encryption key.
 pub const DATA_ROOM_PERM_ROTATE_KEYS: u32 = 0x0040;
+/// Member may grant single content cards to people outside the room.
+pub const DATA_ROOM_PERM_GRANT_CONTENT: u32 = 0x0080;
 /// All permission flags combined.
-pub const DATA_ROOM_PERM_ALL: u32 = 0x007F;
+///
+/// This is a MIRROR of `DATA_ROOM_PERM_ALL` in the protocol's `data_room.hpp`, and the
+/// validation below refuses anything outside it — so a flag the node has learned and this
+/// constant has not is refused HERE, before the transaction is ever built. That is the
+/// failure mode worth naming: it does not look like a stale mirror, it looks like the chain
+/// rejecting a right the interface just offered.
+pub const DATA_ROOM_PERM_ALL: u32 = 0x00FF;
 
 /// Reject permission flags the chain does not know about (mirrors the node's validation).
 fn validate_permissions(permissions: u32) -> Result<(), SwaplockApiError> {
@@ -812,7 +820,6 @@ mod tests {
         let duplicate = rotate_key_operation(
             "1.2.100".to_string(),
             "1.23.7".to_string(),
-            Some("NEW_OWNER_KEY".to_string()),
             vec![
                 ("1.2.9".to_string(), "A".to_string()),
                 ("1.2.9".to_string(), "B".to_string()),
@@ -827,7 +834,6 @@ mod tests {
         let malformed = rotate_key_operation(
             "1.2.100".to_string(),
             "1.23.7".to_string(),
-            Some("NEW_OWNER_KEY".to_string()),
             vec![("1.2.bogus".to_string(), "A".to_string())],
         )
         .unwrap_err();
@@ -836,13 +842,20 @@ mod tests {
         let not_an_account = rotate_key_operation(
             "1.2.100".to_string(),
             "1.23.7".to_string(),
-            Some("NEW_OWNER_KEY".to_string()),
             vec![("1.3.9".to_string(), "A".to_string())],
         )
         .unwrap_err();
         assert!(matches!(not_an_account, SwaplockApiError::ObjectId(_)));
     }
 
+    /// Maska i lista flag muszą się zgadzać ZE SOBĄ.
+    ///
+    /// Czego ten test NIE sprawdza i co go raz ominęło: zgodności z protokołem.
+    /// Gdy do `data_room.hpp` doszło `GRANT_CONTENT`, tutaj nie doszło nic —
+    /// lista i maska dalej zgadzały się wzajemnie, więc test milczał, a klient
+    /// odrzucał prawo, które łańcuch znał. Wartość `0x00FF` niżej jest tu
+    /// przepisana Z PROTOKOŁU celowo: to jedyne miejsce, w którym rozjazd
+    /// z nim w ogóle może się zapalić.
     #[test]
     fn permission_flags_cover_the_chain_mask() {
         assert_eq!(
@@ -852,8 +865,10 @@ mod tests {
                 | DATA_ROOM_PERM_MANAGE_PERMISSIONS
                 | DATA_ROOM_PERM_CREATE_CONTENT
                 | DATA_ROOM_PERM_MANAGE_CONTENT
-                | DATA_ROOM_PERM_ROTATE_KEYS,
+                | DATA_ROOM_PERM_ROTATE_KEYS
+                | DATA_ROOM_PERM_GRANT_CONTENT,
             DATA_ROOM_PERM_ALL
         );
+        assert_eq!(DATA_ROOM_PERM_ALL, 0x00FF, "musi zgadzać się z data_room.hpp");
     }
 }
