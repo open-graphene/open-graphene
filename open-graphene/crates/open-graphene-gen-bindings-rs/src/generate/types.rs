@@ -21,6 +21,15 @@ pub(crate) fn render_types(
     out.push_str(
         "#[allow(dead_code)]\npub(crate) fn u32_schema() -> utoipa::openapi::schema::Object {\n    utoipa::openapi::schema::ObjectBuilder::new()\n        .schema_type(utoipa::openapi::schema::SchemaType::Type(\n            utoipa::openapi::schema::Type::Integer,\n        ))\n        .minimum(Some(0u32))\n        .maximum(Some(4294967295u64))\n        .build()\n}\n\n",
     );
+    // Same trap one size up: utoipa stamps u64 as `int64`, and a code generator
+    // trusts the format over the `minimum: 0` beside it — so a client gets i64
+    // and dies on the first value past 2^63 (found the hard way: the chain's
+    // `maintenance_seed` is a random u64, which crosses that line every other
+    // maintenance). `uint64` is not in the OpenAPI core list, but formats are
+    // open-ended and typify-based generators map it to a real u64.
+    out.push_str(
+        "#[allow(dead_code)]\npub(crate) fn u64_schema() -> utoipa::openapi::schema::Object {\n    utoipa::openapi::schema::ObjectBuilder::new()\n        .schema_type(utoipa::openapi::schema::SchemaType::Type(\n            utoipa::openapi::schema::Type::Integer,\n        ))\n        .format(Some(utoipa::openapi::schema::SchemaFormat::Custom(\n            \"uint64\".to_owned(),\n        )))\n        .minimum(Some(0u32))\n        .build()\n}\n\n",
+    );
     if protocol_uses_fixed_bytes(protocol) {
         // The generic hex-or-byte-array decoder is shared typing; it lives in graphene-core.
         // Only the per-length wrappers below (which lengths a chain uses) stay generated.
@@ -281,6 +290,12 @@ pub(crate) fn render_fields(
             || matches!(&field.ty, TypeRef::Optional { inner } if matches!(**inner, TypeRef::Uint32));
         if is_u32 {
             out.push_str("    #[schema(schema_with = crate::generated::types::u32_schema)]\n");
+        }
+        // u64 must not inherit `int64` either; see u64_schema.
+        let is_u64 = matches!(field.ty, TypeRef::Uint64 { .. })
+            || matches!(&field.ty, TypeRef::Optional { inner } if matches!(**inner, TypeRef::Uint64 { .. }));
+        if is_u64 {
+            out.push_str("    #[schema(schema_with = crate::generated::types::u64_schema)]\n");
         }
         // Graphene JSON omits absent optionals (fc treats missing and null the
         // same); emitting `null` breaks OpenAPI clients, which describe these

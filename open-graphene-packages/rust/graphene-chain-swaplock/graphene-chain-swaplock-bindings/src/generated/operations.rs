@@ -1367,6 +1367,7 @@ pub struct RevealCreateOperation {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub value: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub maintenance_time: u32,
