@@ -23,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             "wss://node01.swaplock.chainpool.online:8090",
             "wss://node02.swaplock.chainpool.online:8090",
         ])
-        .chain_id("1e9aea9e936607ca2cce053765c39c995c591ef23d85332ec63d6f06a0704f86")
+        .chain_id("3b4f346481a66146d732eb22a43b5956134e5bea6124b379033589146036cbbf")
         .prefix("BTS")
         .build()?
         .swaplock()
