@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 pub const SCHEMA_VERSION: u32 = 1;
 pub const CHAIN_ID: &str = "swaplock";
-pub const CHAIN_ID_HEX: &str = "e80d8f63b598759059ca8f8627a6c9252bf6ae13ed404e1afbf4ae51b1781837";
+pub const CHAIN_ID_HEX: &str = "f7dc1f352cb6b8aef3d14a4aab8cb5592e440c79f8634252e327b40610b7784d";
 pub const PUBLIC_KEY_PREFIX: &str = "BTS";
 
 pub const STRUCT_COUNT: usize = 271;

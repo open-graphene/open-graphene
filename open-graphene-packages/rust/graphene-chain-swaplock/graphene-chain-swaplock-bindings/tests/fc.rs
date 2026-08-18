@@ -2102,7 +2102,7 @@ fn transaction_signature_digest_matches_bitsharesjs_signature_fixture_digest() {
             .signature_preimage_bytes()
             .expect("build fixture signature preimage"),
         decode_hex(
-            "e80d8f63b598759059ca8f8627a6c9252bf6ae13ed404e1afbf4ae51b17818370100020000000300000001000000000000000000000102a08601000000000000000000",
+            "f7dc1f352cb6b8aef3d14a4aab8cb5592e440c79f8634252e327b40610b7784d0100020000000300000001000000000000000000000102a08601000000000000000000",
         )
     );
     // Derived from the preimage above rather than pinned separately. The two were pinned
@@ -2110,7 +2110,7 @@ fn transaction_signature_digest_matches_bitsharesjs_signature_fixture_digest() {
     // updated — leaving a digest of the *old* chain id asserted against correct signing code.
     // The digest-is-sha256-of-preimage relationship has its own test.
     let expected_digest: [u8; 32] = sha256_bytes(&decode_hex(
-        "e80d8f63b598759059ca8f8627a6c9252bf6ae13ed404e1afbf4ae51b17818370100020000000300000001000000000000000000000102a08601000000000000000000",
+        "f7dc1f352cb6b8aef3d14a4aab8cb5592e440c79f8634252e327b40610b7784d0100020000000300000001000000000000000000000102a08601000000000000000000",
     ));
     assert_eq!(
         transaction
