@@ -2467,6 +2467,10 @@ impl FcSerialize for crate::generated::static_variants::DataRoomMemberRef {
                     out,
                 )
             }
+            Self::DataRoomIdType(value) => {
+                write_varint(2u64, out);
+                value.as_ref().fc_serialize(out)
+            }
         }
     }
 }
@@ -2487,6 +2491,10 @@ impl crate::generated::static_variants::DataRoomMemberRef {
                     &mut bytes,
                 )?;
                 Ok((1u64, bytes))
+            }
+            Self::DataRoomIdType(value) => {
+                let parts = parse_protocol_object_id(&value.0, None, None)?;
+                Ok((2u64, parts.instance.to_be_bytes().to_vec()))
             }
         }
     }

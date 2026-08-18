@@ -1,12 +1,19 @@
-//! Naming a data room member, which may be an account or a bare public key.
+//! Naming a data room member: an account, a bare public key, or another data room.
 //!
 //! Key members exist because Graphene accounts are permanent and occupy a global namespace, so
 //! creating one per ephemeral process pollutes the chain forever. A key member can be granted
 //! room access and can author content cards; what it cannot do is pay a fee, which is why the
 //! content card operations name their payer separately from their author.
 
-use graphene_chain_swaplock_bindings::generated::ids::{AccountId, PUBLIC_KEY_PREFIX};
+use graphene_chain_swaplock_bindings::generated::ids::{AccountId, DataRoomId, PUBLIC_KEY_PREFIX};
 use graphene_chain_swaplock_bindings::generated::static_variants::DataRoomMemberRef;
+
+/// Whether a string names a data room id (`1.23.x`) - the keyring member kind.
+pub fn is_data_room_id(value: &str) -> bool {
+    value
+        .strip_prefix("1.23.")
+        .is_some_and(|rest| !rest.is_empty() && rest.bytes().all(|b| b.is_ascii_digit()))
+}
 
 /// Whether a string names a public key rather than an account.
 ///
@@ -18,7 +25,7 @@ pub fn is_public_key(value: &str) -> bool {
 }
 
 /// Read a member reference from a string: a public key if it carries the chain's address
-/// prefix, otherwise an account id.
+/// prefix, a data room if it is a `1.23.x` id (the keyring), otherwise an account id.
 ///
 /// Note this takes an account *id* (`1.2.5`), not a name - operations travel to the chain with
 /// ids already resolved.
@@ -26,6 +33,8 @@ pub fn member_ref(value: impl Into<String>) -> DataRoomMemberRef {
     let value = value.into();
     if is_public_key(&value) {
         DataRoomMemberRef::PublicKeyType(Box::new(value))
+    } else if is_data_room_id(&value) {
+        DataRoomMemberRef::DataRoomIdType(Box::new(DataRoomId(value)))
     } else {
         DataRoomMemberRef::AccountIdType(Box::new(AccountId(value)))
     }
@@ -55,6 +64,15 @@ mod tests {
         assert!(matches!(
             member_ref("BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"),
             DataRoomMemberRef::PublicKeyType(_)
+        ));
+        assert!(matches!(
+            member_ref("1.23.7"),
+            DataRoomMemberRef::DataRoomIdType(_)
+        ));
+        // Anything that is not literally a 1.23.x id keeps resolving as an account
+        assert!(matches!(
+            member_ref("1.23."),
+            DataRoomMemberRef::AccountIdType(_)
         ));
     }
 }

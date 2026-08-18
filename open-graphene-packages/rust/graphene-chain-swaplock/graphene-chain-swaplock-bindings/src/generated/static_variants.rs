@@ -829,6 +829,7 @@ impl<'de> serde::Deserialize<'de> for ArgumentType {
 pub enum DataRoomMemberRef {
     AccountIdType(Box<crate::generated::ids::AccountId>),
     PublicKeyType(Box<String>),
+    DataRoomIdType(Box<crate::generated::ids::DataRoomId>),
 }
 
 impl utoipa::PartialSchema for DataRoomMemberRef {
@@ -845,6 +846,11 @@ impl utoipa::PartialSchema for DataRoomMemberRef {
                     1,
                     "public_key_type",
                     static_variant_inline_payload::<String>(),
+                ))
+                .item(static_variant_arm_schema(
+                    2,
+                    "data_room_id_type",
+                    static_variant_ref_payload::<crate::generated::ids::DataRoomId>(),
                 ))
                 .build(),
         )
@@ -877,6 +883,11 @@ impl utoipa::ToSchema for DataRoomMemberRef {
             <crate::generated::ids::AccountId as utoipa::PartialSchema>::schema(),
         ));
         <crate::generated::ids::AccountId as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::ids::DataRoomId as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::ids::DataRoomId as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::ids::DataRoomId as utoipa::ToSchema>::schemas(schemas);
         WALKING.set(false);
     }
 }
@@ -895,6 +906,10 @@ impl serde::Serialize for DataRoomMemberRef {
             }
             Self::PublicKeyType(value) => {
                 seq.serialize_element(&1u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::DataRoomIdType(value) => {
+                seq.serialize_element(&2u32)?;
                 seq.serialize_element(value.as_ref())?;
             }
         }
@@ -925,6 +940,9 @@ impl<'de> serde::Deserialize<'de> for DataRoomMemberRef {
                 .map_err(serde::de::Error::custom),
             1 => serde_json::from_value::<String>(payload)
                 .map(|value| Self::PublicKeyType(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            2 => serde_json::from_value::<crate::generated::ids::DataRoomId>(payload)
+                .map(|value| Self::DataRoomIdType(Box::new(value)))
                 .map_err(serde::de::Error::custom),
             other => Err(serde::de::Error::custom(format!(
                 "unknown static variant DataRoomMemberRef tag {other}"

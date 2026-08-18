@@ -43,7 +43,9 @@ fn resolve_payer(
     }
     match subject {
         DataRoomMemberRef::AccountIdType(account) => Ok((**account).clone()),
-        DataRoomMemberRef::PublicKeyType(_) => {
+        // A key needs a payer; a ROOM cannot act at all - the chain rejects it in
+        // validate(), so failing here is just the earlier, clearer error.
+        DataRoomMemberRef::PublicKeyType(_) | DataRoomMemberRef::DataRoomIdType(_) => {
             Err(SwaplockApiError::KeyMemberNeedsPayer { operation })
         }
     }
