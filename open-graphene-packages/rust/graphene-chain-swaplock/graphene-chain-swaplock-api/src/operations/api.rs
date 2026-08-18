@@ -20,6 +20,7 @@ use super::blind::{BlindTransferRequest, TransferFromBlindRequest, TransferToBli
 use super::call_order::{BidCollateralRequest, CallOrderUpdateRequest};
 use super::content_card::{
     ContentCardCreateRequest, ContentCardGrantCreateRequest, ContentCardGrantRevokeRequest,
+    ContentCardLinkCreateRequest, ContentCardLinkRemoveRequest, ContentCardLinkUpdateRequest,
     ContentCardRemoveRequest, ContentCardUpdateRequest,
 };
 use super::credit_offer::{
@@ -827,6 +828,35 @@ impl<'session> OperationsApi<'session> {
         grant_id: impl Into<String>,
     ) -> ContentCardGrantRevokeRequest<'session> {
         ContentCardGrantRevokeRequest::new(self.session, caller, grant_id)
+    }
+
+    /// Embed a card into another room by reference: `caller`, the `content_id`, the target
+    /// `room`, then `.link_key(..)` for an encrypted card.
+    pub fn content_card_link_create(
+        self,
+        caller: impl Into<String>,
+        content_id: impl Into<String>,
+        room: impl Into<String>,
+    ) -> ContentCardLinkCreateRequest<'session> {
+        ContentCardLinkCreateRequest::new(self.session, caller, content_id, room)
+    }
+
+    /// Re-wrap a link after a rotation: `caller`, the `link_id`, then `.new_link_key(..)`.
+    pub fn content_card_link_update(
+        self,
+        caller: impl Into<String>,
+        link_id: impl Into<String>,
+    ) -> ContentCardLinkUpdateRequest<'session> {
+        ContentCardLinkUpdateRequest::new(self.session, caller, link_id)
+    }
+
+    /// Take a card off a room's table: `caller`, the `link_id`.
+    pub fn content_card_link_remove(
+        self,
+        caller: impl Into<String>,
+        link_id: impl Into<String>,
+    ) -> ContentCardLinkRemoveRequest<'session> {
+        ContentCardLinkRemoveRequest::new(self.session, caller, link_id)
     }
 
     pub async fn sign_transfer_with_wif(

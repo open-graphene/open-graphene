@@ -41,6 +41,7 @@ pub use blind::{BlindTransferRequest, TransferFromBlindRequest, TransferToBlindR
 pub use call_order::{BidCollateralRequest, CallOrderUpdateRequest};
 pub use content_card::{
     ContentCardCreateRequest, ContentCardGrantCreateRequest, ContentCardGrantRevokeRequest,
+    ContentCardLinkCreateRequest, ContentCardLinkRemoveRequest, ContentCardLinkUpdateRequest,
     ContentCardRemoveRequest, ContentCardUpdateRequest, content_card_grant_create_operation,
 };
 pub use credit_offer::{

@@ -1212,6 +1212,59 @@ pub struct ContentCardGrantRevokeOperationFeeParamsT {
     pub fee: u64,
 }
 
+/// Raw protocol struct `content_card_link_create_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardLinkCreateOperationFeeParamsT)]
+pub struct ContentCardLinkCreateOperationFeeParamsT {
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
+    )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
+    pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    pub price_per_kbyte: u32,
+}
+
+/// Raw protocol struct `content_card_link_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardLinkObject)]
+pub struct ContentCardLinkObject {
+    pub id: crate::generated::ids::ContentCardLinkId,
+    pub card: crate::generated::ids::ContentCardId,
+    pub room: crate::generated::ids::DataRoomId,
+    pub linker: crate::generated::static_variants::DataRoomMemberRef,
+    pub link_key: String,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    pub link_epoch: u32,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    pub card_epoch: u32,
+    pub created: String,
+}
+
+/// Raw protocol struct `content_card_link_remove_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardLinkRemoveOperationFeeParamsT)]
+pub struct ContentCardLinkRemoveOperationFeeParamsT {
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
+    )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
+    pub fee: u64,
+}
+
+/// Raw protocol struct `content_card_link_update_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardLinkUpdateOperationFeeParamsT)]
+pub struct ContentCardLinkUpdateOperationFeeParamsT {
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
+    )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
+    pub fee: u64,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    pub price_per_kbyte: u32,
+}
+
 /// Raw protocol struct `content_card_object`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockContentCardObject)]

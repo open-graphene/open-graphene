@@ -130,6 +130,12 @@ impl FcSerialize for crate::generated::ids::ContentCardGrantId {
     }
 }
 
+impl FcSerialize for crate::generated::ids::ContentCardLinkId {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_protocol_object_id(&self.0, Some(1), Some(29), out)
+    }
+}
+
 impl FcSerialize for crate::generated::ids::CreditDealId {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         write_protocol_object_id(&self.0, Some(1), Some(22), out)
@@ -1118,6 +1124,43 @@ impl FcSerialize for crate::generated::types::ContentCardGrantObject {
 impl FcSerialize for crate::generated::types::ContentCardGrantRevokeOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::ContentCardLinkCreateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.price_per_kbyte.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::ContentCardLinkObject {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.id.fc_serialize(out)?;
+        self.card.fc_serialize(out)?;
+        self.room.fc_serialize(out)?;
+        self.linker.fc_serialize(out)?;
+        self.link_key.fc_serialize(out)?;
+        self.link_epoch.fc_serialize(out)?;
+        self.card_epoch.fc_serialize(out)?;
+        write_time_point_sec(&self.created, out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::ContentCardLinkRemoveOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::ContentCardLinkUpdateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.price_per_kbyte.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -2543,6 +2586,9 @@ fn fee_parameters_tag(value: &crate::generated::static_variants::FeeParameters) 
         crate::generated::static_variants::FeeParameters::RevealCreateOperationFeeParamsT(_) => 89u64,
         crate::generated::static_variants::FeeParameters::ContentCardGrantCreateOperationFeeParamsT(_) => 90u64,
         crate::generated::static_variants::FeeParameters::ContentCardGrantRevokeOperationFeeParamsT(_) => 91u64,
+        crate::generated::static_variants::FeeParameters::ContentCardLinkCreateOperationFeeParamsT(_) => 92u64,
+        crate::generated::static_variants::FeeParameters::ContentCardLinkUpdateOperationFeeParamsT(_) => 93u64,
+        crate::generated::static_variants::FeeParameters::ContentCardLinkRemoveOperationFeeParamsT(_) => 94u64,
     }
 }
 
@@ -2915,6 +2961,18 @@ impl FcSerialize for crate::generated::static_variants::FeeParameters {
             }
             Self::ContentCardGrantRevokeOperationFeeParamsT(value) => {
                 write_varint(91u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ContentCardLinkCreateOperationFeeParamsT(value) => {
+                write_varint(92u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ContentCardLinkUpdateOperationFeeParamsT(value) => {
+                write_varint(93u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ContentCardLinkRemoveOperationFeeParamsT(value) => {
+                write_varint(94u64, out);
                 value.as_ref().fc_serialize(out)
             }
         }
@@ -5490,6 +5548,78 @@ impl FcSerialize for crate::generated::operations::ContentCardGrantRevokeOperati
     }
 }
 
+impl FcSerialize for crate::generated::operations::ContentCardLinkCreateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.payer.fc_serialize(out)?;
+        self.caller.fc_serialize(out)?;
+        self.content_id.fc_serialize(out)?;
+        self.room.fc_serialize(out)?;
+        self.link_key.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::ContentCardLinkUpdateOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.payer.fc_serialize(out)?;
+        self.caller.fc_serialize(out)?;
+        self.link_id.fc_serialize(out)?;
+        self.new_link_key.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::ContentCardLinkRemoveOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.payer.fc_serialize(out)?;
+        self.caller.fc_serialize(out)?;
+        self.link_id.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::static_variants::Operation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         match self {
@@ -5859,6 +5989,18 @@ impl FcSerialize for crate::generated::static_variants::Operation {
             }
             Self::ContentCardGrantRevokeOperation(value) => {
                 write_varint(91u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ContentCardLinkCreateOperation(value) => {
+                write_varint(92u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ContentCardLinkUpdateOperation(value) => {
+                write_varint(93u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::ContentCardLinkRemoveOperation(value) => {
+                write_varint(94u64, out);
                 value.as_ref().fc_serialize(out)
             }
         }

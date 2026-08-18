@@ -1399,3 +1399,45 @@ pub struct ContentCardGrantRevokeOperation {
     pub grant_id: crate::generated::ids::ContentCardGrantId,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
+
+pub const CONTENT_CARD_LINK_CREATE_OPERATION_ID: u32 = 92;
+
+/// Protocol operation `content_card_link_create_operation` with wire tag 92.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardLinkCreateOperation)]
+pub struct ContentCardLinkCreateOperation {
+    pub fee: crate::generated::types::Asset,
+    pub payer: crate::generated::ids::AccountId,
+    pub caller: crate::generated::static_variants::DataRoomMemberRef,
+    pub content_id: crate::generated::ids::ContentCardId,
+    pub room: crate::generated::ids::DataRoomId,
+    pub link_key: String,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const CONTENT_CARD_LINK_UPDATE_OPERATION_ID: u32 = 93;
+
+/// Protocol operation `content_card_link_update_operation` with wire tag 93.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardLinkUpdateOperation)]
+pub struct ContentCardLinkUpdateOperation {
+    pub fee: crate::generated::types::Asset,
+    pub payer: crate::generated::ids::AccountId,
+    pub caller: crate::generated::static_variants::DataRoomMemberRef,
+    pub link_id: crate::generated::ids::ContentCardLinkId,
+    pub new_link_key: String,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const CONTENT_CARD_LINK_REMOVE_OPERATION_ID: u32 = 94;
+
+/// Protocol operation `content_card_link_remove_operation` with wire tag 94.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardLinkRemoveOperation)]
+pub struct ContentCardLinkRemoveOperation {
+    pub fee: crate::generated::types::Asset,
+    pub payer: crate::generated::ids::AccountId,
+    pub caller: crate::generated::static_variants::DataRoomMemberRef,
+    pub link_id: crate::generated::ids::ContentCardLinkId,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}

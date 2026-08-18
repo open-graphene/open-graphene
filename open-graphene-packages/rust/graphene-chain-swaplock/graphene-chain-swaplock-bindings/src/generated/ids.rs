@@ -9,11 +9,11 @@ pub const CHAIN_ID: &str = "swaplock";
 pub const CHAIN_ID_HEX: &str = "e80d8f63b598759059ca8f8627a6c9252bf6ae13ed404e1afbf4ae51b1781837";
 pub const PUBLIC_KEY_PREFIX: &str = "BTS";
 
-pub const STRUCT_COUNT: usize = 264;
+pub const STRUCT_COUNT: usize = 271;
 pub const ENUM_COUNT: usize = 11;
 pub const STATIC_VARIANT_COUNT: usize = 13;
-pub const OPERATION_COUNT: usize = 92;
-pub const OBJECT_TYPE_COUNT: usize = 48;
+pub const OPERATION_COUNT: usize = 95;
+pub const OBJECT_TYPE_COUNT: usize = 49;
 pub const RPC_API_COUNT: usize = 5;
 pub const RPC_METHOD_COUNT: usize = 46;
 
@@ -660,6 +660,37 @@ impl From<&str> for ContentCardGrantId {
 impl ContentCardGrantId {
     pub const SPACE_ID: u32 = 1;
     pub const TYPE_ID: u32 = 28;
+}
+
+/// Object ID for `content_card_link` protocol objects.
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
+)]
+#[schema(as = GrapheneSwaplockContentCardLinkId)]
+#[serde(transparent)]
+pub struct ContentCardLinkId(pub String);
+
+impl ContentCardLinkId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for ContentCardLinkId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for ContentCardLinkId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
+impl ContentCardLinkId {
+    pub const SPACE_ID: u32 = 1;
+    pub const TYPE_ID: u32 = 29;
 }
 
 /// Object ID for `credit_deal` protocol objects.

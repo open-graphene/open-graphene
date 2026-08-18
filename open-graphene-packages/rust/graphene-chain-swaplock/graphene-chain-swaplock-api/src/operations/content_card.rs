@@ -6,10 +6,11 @@
 //! someone else's card takes `DATA_ROOM_PERM_MANAGE_CONTENT`.
 
 use graphene_chain_swaplock_bindings::generated::ids::{
-    AccountId, AssetId, ContentCardGrantId, ContentCardId, DataRoomId,
+    AccountId, AssetId, ContentCardGrantId, ContentCardId, ContentCardLinkId, DataRoomId,
 };
 use graphene_chain_swaplock_bindings::generated::operations::{
     ContentCardCreateOperation, ContentCardGrantCreateOperation, ContentCardGrantRevokeOperation,
+    ContentCardLinkCreateOperation, ContentCardLinkRemoveOperation, ContentCardLinkUpdateOperation,
     ContentCardRemoveOperation, ContentCardUpdateOperation,
 };
 use graphene_chain_swaplock_bindings::generated::static_variants::DataRoomMemberRef;
@@ -623,3 +624,178 @@ mod grant_tests {
         assert_eq!(error.to_string(), "missing transfer field `key`");
     }
 }
+
+/// Builder for `content_card_link_create`: embed a card into another room by reference.
+///
+/// Required: the `caller` (a member of the card's HOME room, holding
+/// `DATA_ROOM_PERM_CREATE_CONTENT` in the target room), the `content_id` and the target
+/// `room`. An encrypted card additionally requires `.link_key(..)` - its content key wrapped
+/// to the target room's key.
+pub struct ContentCardLinkCreateRequest<'session> {
+    session: &'session mut GrapheneSession,
+    caller: String,
+    content_id: String,
+    room: String,
+    link_key: String,
+    payer: Option<String>,
+}
+
+impl<'session> ContentCardLinkCreateRequest<'session> {
+    pub(super) fn new(
+        session: &'session mut GrapheneSession,
+        caller: impl Into<String>,
+        content_id: impl Into<String>,
+        room: impl Into<String>,
+    ) -> Self {
+        Self {
+            session,
+            caller: caller.into(),
+            content_id: content_id.into(),
+            room: room.into(),
+            link_key: String::new(),
+            payer: None,
+        }
+    }
+
+    /// The card's content key wrapped to the TARGET room's key. Required for an encrypted
+    /// card; must stay empty for a public one.
+    pub fn link_key(mut self, link_key: impl Into<String>) -> Self {
+        self.link_key = link_key.into();
+        self
+    }
+
+    /// The account paying the fee, when it is not the caller. Required for a key caller.
+    pub fn payer(mut self, payer: impl Into<String>) -> Self {
+        self.payer = Some(payer.into());
+        self
+    }
+
+    pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
+        let caller = member_ref(self.caller);
+        let payer = resolve_payer(&caller, self.payer, "content_card_link_create")?;
+        let operation = Operation::content_card_link_create(ContentCardLinkCreateOperation {
+            fee: core_fee(),
+            payer,
+            caller,
+            content_id: ContentCardId(self.content_id),
+            room: DataRoomId(self.room),
+            link_key: self.link_key,
+            extensions: vec![],
+        });
+        TransactionBuilder::new(self.session)
+            .add_operation(operation)
+            .prepare()
+            .await
+    }
+}
+
+/// Builder for `content_card_link_update`: re-wrap a link after either side rotates.
+///
+/// Required: the `caller` (the linker or a member of the card's home room), the `link_id`
+/// and the `new_link_key`. The chain restamps which epochs the fresh wrap corresponds to.
+pub struct ContentCardLinkUpdateRequest<'session> {
+    session: &'session mut GrapheneSession,
+    caller: String,
+    link_id: String,
+    new_link_key: Option<String>,
+    payer: Option<String>,
+}
+
+impl<'session> ContentCardLinkUpdateRequest<'session> {
+    pub(super) fn new(
+        session: &'session mut GrapheneSession,
+        caller: impl Into<String>,
+        link_id: impl Into<String>,
+    ) -> Self {
+        Self {
+            session,
+            caller: caller.into(),
+            link_id: link_id.into(),
+            new_link_key: None,
+            payer: None,
+        }
+    }
+
+    /// The card's content key re-wrapped to the target room's key.
+    pub fn new_link_key(mut self, new_link_key: impl Into<String>) -> Self {
+        self.new_link_key = Some(new_link_key.into());
+        self
+    }
+
+    /// The account paying the fee, when it is not the caller. Required for a key caller.
+    pub fn payer(mut self, payer: impl Into<String>) -> Self {
+        self.payer = Some(payer.into());
+        self
+    }
+
+    pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
+        let new_link_key = self
+            .new_link_key
+            .ok_or(SwaplockApiError::MissingTransferField {
+                field: "new_link_key",
+            })?;
+        let caller = member_ref(self.caller);
+        let payer = resolve_payer(&caller, self.payer, "content_card_link_update")?;
+        let operation = Operation::content_card_link_update(ContentCardLinkUpdateOperation {
+            fee: core_fee(),
+            payer,
+            caller,
+            link_id: ContentCardLinkId(self.link_id),
+            new_link_key,
+            extensions: vec![],
+        });
+        TransactionBuilder::new(self.session)
+            .add_operation(operation)
+            .prepare()
+            .await
+    }
+}
+
+/// Builder for `content_card_link_remove`: take a card off a room's table.
+///
+/// Required: the `caller` (the linker, the home room via `MANAGE_CONTENT`, or the target
+/// room via `MANAGE_CONTENT`) and the `link_id`. The card itself is untouched.
+pub struct ContentCardLinkRemoveRequest<'session> {
+    session: &'session mut GrapheneSession,
+    caller: String,
+    link_id: String,
+    payer: Option<String>,
+}
+
+impl<'session> ContentCardLinkRemoveRequest<'session> {
+    pub(super) fn new(
+        session: &'session mut GrapheneSession,
+        caller: impl Into<String>,
+        link_id: impl Into<String>,
+    ) -> Self {
+        Self {
+            session,
+            caller: caller.into(),
+            link_id: link_id.into(),
+            payer: None,
+        }
+    }
+
+    /// The account paying the fee, when it is not the caller. Required for a key caller.
+    pub fn payer(mut self, payer: impl Into<String>) -> Self {
+        self.payer = Some(payer.into());
+        self
+    }
+
+    pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
+        let caller = member_ref(self.caller);
+        let payer = resolve_payer(&caller, self.payer, "content_card_link_remove")?;
+        let operation = Operation::content_card_link_remove(ContentCardLinkRemoveOperation {
+            fee: core_fee(),
+            payer,
+            caller,
+            link_id: ContentCardLinkId(self.link_id),
+            extensions: vec![],
+        });
+        TransactionBuilder::new(self.session)
+            .add_operation(operation)
+            .prepare()
+            .await
+    }
+}
+

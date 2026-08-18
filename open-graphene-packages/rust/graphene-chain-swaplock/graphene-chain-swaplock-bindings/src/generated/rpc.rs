@@ -33,6 +33,7 @@ pub enum ProtocolObject {
     DataRoomKeyEpoch(Box<crate::generated::types::DataRoomKeyEpochObject>),
     ContentCard(Box<crate::generated::types::ContentCardObject>),
     ContentCardGrant(Box<crate::generated::types::ContentCardGrantObject>),
+    ContentCardLink(Box<crate::generated::types::ContentCardLinkObject>),
     GlobalProperty(Box<crate::generated::types::GlobalPropertyObject>),
     DynamicGlobalProperty(Box<crate::generated::types::DynamicGlobalPropertyObject>),
     AssetDynamicData(Box<crate::generated::types::AssetDynamicDataObject>),
@@ -63,6 +64,7 @@ impl serde::Serialize for ProtocolObject {
             Self::DataRoomKeyEpoch(value) => serde::Serialize::serialize(value, serializer),
             Self::ContentCard(value) => serde::Serialize::serialize(value, serializer),
             Self::ContentCardGrant(value) => serde::Serialize::serialize(value, serializer),
+            Self::ContentCardLink(value) => serde::Serialize::serialize(value, serializer),
             Self::GlobalProperty(value) => serde::Serialize::serialize(value, serializer),
             Self::DynamicGlobalProperty(value) => serde::Serialize::serialize(value, serializer),
             Self::AssetDynamicData(value) => serde::Serialize::serialize(value, serializer),
@@ -129,6 +131,9 @@ impl<'de> serde::Deserialize<'de> for ProtocolObject {
                 .map_err(serde::de::Error::custom),
             Some((1, 28)) => serde_json::from_value(value)
                 .map(Self::ContentCardGrant)
+                .map_err(serde::de::Error::custom),
+            Some((1, 29)) => serde_json::from_value(value)
+                .map(Self::ContentCardLink)
                 .map_err(serde::de::Error::custom),
             Some((2, 0)) => serde_json::from_value(value)
                 .map(Self::GlobalProperty)
