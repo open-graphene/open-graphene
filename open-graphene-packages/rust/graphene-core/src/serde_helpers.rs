@@ -6,7 +6,8 @@ use serde::Deserialize;
 /// Deserialize an `i64` that may arrive as a JSON number or a decimal string.
 ///
 /// Graphene's `share_type` (signed 64-bit) is serialized as a JSON number for small
-/// magnitudes and as a decimal string for large ones; accept both. This is shared
+/// magnitudes and as a decimal string for large ones; accept both. "Large" starts just
+/// above `u32::MAX` - see the note on the unsigned helper below. This is shared
 /// typing common to every chain, so it lives in core rather than being re-implemented
 /// per API module.
 pub fn deserialize_i64_from_number_or_decimal_string<'de, D>(
@@ -30,10 +31,15 @@ where
 
 /// Deserialize a `u64` that arrives either as a JSON number or as a decimal string.
 ///
-/// fc renders large unsigned integers as strings, because past 2^53 a JSON number can no longer
-/// survive a round trip through a double. Which side of that line a value falls on depends on
-/// the value, not the field, so any u64 can arrive either way - `symbol3` in the asset creation
-/// fee is a string on one chain and a number on another purely because of what it was set to.
+/// fc renders large unsigned integers as strings, so that a consumer reading JSON with doubles
+/// cannot silently round them. The switch happens **above `u32::MAX`, not at 2^53**: measured
+/// against a live node, `2^32 + 1` already comes back quoted. Which side of that line a value
+/// falls on depends on the value, not the field, so any u64 can arrive either way - `symbol3`
+/// in the asset creation fee is a string on one chain and a number on another purely because of
+/// what it was set to.
+///
+/// Assuming the higher threshold is a trap worth naming: it makes anything between 2^32 and 2^53
+/// look safe to read as a plain number, and it is not.
 pub fn deserialize_u64_from_number_or_decimal_string<'de, D>(
     deserializer: D,
 ) -> Result<u64, D::Error>
