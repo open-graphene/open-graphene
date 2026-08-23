@@ -1,22 +1,35 @@
 use ripemd::Digest;
+#[cfg(feature = "signing")]
 use secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
+#[cfg(feature = "signing")]
 use secp256k1::{Message, Secp256k1, SecretKey};
 use sha2::Sha256;
+#[cfg(feature = "signing")]
 use zeroize::Zeroize;
 
 pub mod address;
+#[cfg(feature = "signing")]
 pub mod brainkey;
 pub mod hash;
 pub mod keys;
+#[cfg(feature = "signing")]
 pub mod login;
+#[cfg(feature = "signing")]
 pub mod memo;
+#[cfg(feature = "signing")]
 pub mod signature;
 pub mod void;
 pub use address::Address;
+#[cfg(feature = "signing")]
 pub use brainkey::{BrainKey, SUGGESTED_BRAIN_KEY_WORDS};
-pub use keys::{PrivateKey, PublicKey};
+#[cfg(feature = "signing")]
+pub use keys::PrivateKey;
+pub use keys::PublicKey;
+#[cfg(feature = "signing")]
 pub use login::{AccountKeys, account_role_key};
+#[cfg(feature = "signing")]
 pub use memo::{decrypt_with_checksum, encrypt_with_checksum, unique_nonce};
+#[cfg(feature = "signing")]
 pub use signature::Signature;
 pub use void::VoidT;
 
@@ -428,6 +441,9 @@ pub fn sha256_bytes(value: &[u8]) -> [u8; 32] {
     Sha256::digest(value).into()
 }
 
+/// Poniżej zaczyna się krypto na krzywej — wszystko wcześniej to pakowanie
+/// bajtów, które nie potrzebuje jej ani razu.
+#[cfg(feature = "signing")]
 pub fn decode_wif_private_key(value: &str) -> Result<[u8; 32]> {
     let mut decoded = bs58::decode(value)
         .into_vec()
@@ -438,6 +454,7 @@ pub fn decode_wif_private_key(value: &str) -> Result<[u8; 32]> {
     result
 }
 
+#[cfg(feature = "signing")]
 fn decode_wif_payload(decoded: &[u8]) -> Result<[u8; 32]> {
     if decoded.len() != 37 {
         return Err(invalid_private_key(
@@ -462,6 +479,7 @@ fn decode_wif_payload(decoded: &[u8]) -> Result<[u8; 32]> {
     Ok(private_key)
 }
 
+#[cfg(feature = "signing")]
 pub fn sign_digest_compact(digest: [u8; 32], private_key: [u8; 32]) -> Result<[u8; 65]> {
     let secret_key = SecretKey::from_slice(&private_key)
         .map_err(|_| invalid_private_key("private key scalar is out of range"))?;
@@ -498,6 +516,7 @@ pub fn sign_digest_compact(digest: [u8; 32], private_key: [u8; 32]) -> Result<[u
 }
 
 /// `(n-1)/2` krzywej secp256k1 — granica low-S z BIP-62/BIP-146.
+#[cfg(feature = "signing")]
 const SECP256K1_HALF_ORDER: [u8; 32] = [
     0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     0x5d, 0x57, 0x6e, 0x73, 0x57, 0xa4, 0x50, 0x1d, 0xdf, 0xe9, 0x2f, 0x46, 0x68, 0x1b, 0x20, 0xa0,
@@ -508,16 +527,19 @@ const SECP256K1_HALF_ORDER: [u8; 32] = [
 /// `fc::ecc::public_key::is_canonical` w swaplock-fc. Historyczna reguła
 /// Graphene odrzucała też wysoki bit pierwszego bajtu `r`/`s`, czego
 /// deterministyczne podpisy HSM (WebAuthn/DFNS) nie są w stanie ominąć.
+#[cfg(feature = "signing")]
 pub fn is_graphene_canonical_compact_signature(signature: &[u8]) -> bool {
     signature.len() == 65
         && (31..=34).contains(&signature[0])
         && signature[33..65] <= SECP256K1_HALF_ORDER[..]
 }
 
+#[cfg(feature = "signing")]
 pub fn sign_digest_compact_with_wif(digest: [u8; 32], wif: &str) -> Result<[u8; 65]> {
     sign_digest_compact(digest, decode_wif_private_key(wif)?)
 }
 
+#[cfg(feature = "signing")]
 pub fn recover_public_key_from_compact_signature(
     digest: [u8; 32],
     signature: &[u8],
@@ -556,6 +578,7 @@ pub fn recover_public_key_from_compact_signature(
     Ok(public_key.serialize())
 }
 
+#[cfg(feature = "signing")]
 pub fn verify_compact_signature_public_key(
     digest: [u8; 32],
     signature: &[u8],
@@ -659,6 +682,7 @@ fn invalid_chain_id(value: &str, reason: &'static str) -> FcSerializeError {
     }
 }
 
+#[cfg(feature = "signing")]
 fn invalid_private_key(reason: &'static str) -> FcSerializeError {
     FcSerializeError::InvalidPrivateKey { reason }
 }

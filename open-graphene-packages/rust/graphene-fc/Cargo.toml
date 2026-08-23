@@ -5,18 +5,33 @@ edition = "2024"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/open-graphene/open-graphene"
 
+[features]
+# Domyślnie krateks umie wszystko: serializować, podpisywać, szyfrować memo.
+default = ["signing"]
+
+# Krypto na krzywej. Wyłączone zostawia SAMĄ SERIALIZACJĘ — i to jest cały
+# powód, dla którego ta granica istnieje: `secp256k1` to wiązanie do kodu C,
+# więc do zbudowania wymaga kompilatora C dla docelowej architektury. Na
+# `wasm32-unknown-unknown` nie ma go w standardowej instalacji Rusta.
+#
+# Serializacja nie potrzebuje krzywej ani razu: pakowanie bajtów to pakowanie
+# bajtów, a klucz publiczny jest w niej 33 bajtami. Kto chce tylko policzyć
+# digest transakcji — a to jest cała potrzeba przeglądarki, która ma sprawdzić,
+# co podpisuje — nie ma powodu ciągnąć za sobą łańcucha narzędzi C.
+signing = ["dep:secp256k1", "dep:aes", "dep:cbc", "dep:hmac", "dep:sha1", "dep:getrandom"]
+
 [dependencies]
-aes = "0.8"
+aes = { version = "0.8", optional = true }
 bs58 = "0.5"
-cbc = { version = "0.1", features = ["alloc"] }
-getrandom = "0.2"
+cbc = { version = "0.1", features = ["alloc"], optional = true }
+getrandom = { version = "0.2", optional = true }
 hex = "0.4"
-hmac = "0.12"
+hmac = { version = "0.12", optional = true }
 ripemd = "0.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-sha1 = "0.10"
-secp256k1 = { version = "0.29", features = ["recovery"] }
+sha1 = { version = "0.10", optional = true }
+secp256k1 = { version = "0.29", features = ["recovery"], optional = true }
 sha2 = "0.10"
 utoipa = { workspace = true }
 zeroize = { version = "1", features = ["derive"] }

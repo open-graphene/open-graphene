@@ -2,7 +2,7 @@ use super::*;
 
 pub(crate) fn render_fc(protocol: &Protocol) -> Result<String> {
     let mut out = generated_header(protocol, "minimal FC serialization for transfer path");
-    out.push_str("pub use open_graphene_fc::{decode_chain_id_hex, decode_public_key, is_graphene_canonical_compact_signature, parse_protocol_object_id, recover_public_key_from_compact_signature, sha256_bytes, sign_digest_compact_with_wif, verify_compact_signature_public_key, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};\n\n");
+    out.push_str("pub use open_graphene_fc::{decode_chain_id_hex, decode_public_key, parse_protocol_object_id, sha256_bytes, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};\n// Krypto na krzywej jest za cechą: bez niej zostaje sama serializacja,\n// a z nią wiazanie do kodu C, ktorego wasm32 nie zbuduje bez lancucha C.\n#[cfg(feature = \"signing\")]\npub use open_graphene_fc::{is_graphene_canonical_compact_signature, recover_public_key_from_compact_signature, sign_digest_compact_with_wif, verify_compact_signature_public_key};\n\n");
 
     render_fc_id_impls(&mut out, protocol)?;
     render_fc_signature_impl(&mut out, protocol);
@@ -196,11 +196,13 @@ pub(crate) fn render_fc_transaction_helpers(out: &mut String, protocol: &Protoco
     out.push_str("    pub fn signature_digest_bytes(&self) -> Result<[u8; 32]> {\n");
     out.push_str("        Ok(sha256_bytes(&self.signature_preimage_bytes()?))\n");
     out.push_str("    }\n\n");
+    out.push_str("    #[cfg(feature = \"signing\")]\n");
     out.push_str("    pub fn sign_with_wif(&self, wif: &str) -> Result<crate::generated::types::Signature> {\n");
     out.push_str("        Ok(crate::generated::types::Signature(sign_digest_compact_with_wif(self.signature_digest_bytes()?, wif)?.to_vec()))\n");
     out.push_str("    }\n");
     if has_signed_transaction {
         out.push('\n');
+        out.push_str("    #[cfg(feature = \"signing\")]\n");
         out.push_str("    pub fn signed_with_wif(&self, wif: &str) -> Result<crate::generated::types::SignedTransaction> {\n");
         out.push_str("        Ok(crate::generated::types::SignedTransaction {\n");
         out.push_str("            ref_block_num: self.ref_block_num,\n");
@@ -1809,7 +1811,7 @@ mod tests {
 
         let output = render_fc(&protocol).expect("render fc");
 
-        assert!(output.contains("pub use open_graphene_fc::{decode_chain_id_hex, decode_public_key, is_graphene_canonical_compact_signature, parse_protocol_object_id, recover_public_key_from_compact_signature, sha256_bytes, sign_digest_compact_with_wif, verify_compact_signature_public_key, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};"));
+        assert!(output.contains("pub use open_graphene_fc::{decode_chain_id_hex, decode_public_key, parse_protocol_object_id, sha256_bytes, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};"));
         assert!(output.contains("impl FcSerialize for crate::generated::types::Asset"));
         assert!(
             output.contains(

@@ -9,6 +9,7 @@ members = [
     "open-graphene-packages/rust/graphene-core",
     "open-graphene-packages/rust/graphene-transport",
     "open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-bindings",
+    "open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-wasm",
     "open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-bindings",
     "open-graphene-packages/rust/graphene-chain-acta/graphene-chain-acta-bindings",
     "open-graphene-packages/rust/graphene-chain-rsquared/graphene-chain-rsquared-bindings",

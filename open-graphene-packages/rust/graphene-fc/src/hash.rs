@@ -1,8 +1,10 @@
 //! The hash primitives Graphene relies on, in one place: the bitsharesjs `hash` module ported to
 //! Rust. Thin wrappers over the `sha1`/`sha2`/`ripemd`/`hmac` crates that return fixed-size arrays.
 
+#[cfg(feature = "signing")]
 use hmac::{Hmac, Mac};
 use ripemd::Ripemd160;
+#[cfg(feature = "signing")]
 use sha1::Sha1;
 use sha2::{Digest, Sha256, Sha512};
 
@@ -17,6 +19,7 @@ pub fn sha512(data: &[u8]) -> [u8; 64] {
 }
 
 /// `SHA1(data)`. Legacy and not collision-resistant; here only for parity with old chain data.
+#[cfg(feature = "signing")]
 pub fn sha1(data: &[u8]) -> [u8; 20] {
     Sha1::digest(data).into()
 }
@@ -27,6 +30,7 @@ pub fn ripemd160(data: &[u8]) -> [u8; 20] {
 }
 
 /// `HMAC-SHA256(key, data)`.
+#[cfg(feature = "signing")]
 pub fn hmac_sha256(key: &[u8], data: &[u8]) -> [u8; 32] {
     let mut mac = Hmac::<Sha256>::new_from_slice(key).expect("HMAC accepts keys of any length");
     mac.update(data);
@@ -34,6 +38,7 @@ pub fn hmac_sha256(key: &[u8], data: &[u8]) -> [u8; 32] {
 }
 
 /// `HMAC-SHA512(key, data)`.
+#[cfg(feature = "signing")]
 pub fn hmac_sha512(key: &[u8], data: &[u8]) -> [u8; 64] {
     let mut mac = Hmac::<Sha512>::new_from_slice(key).expect("HMAC accepts keys of any length");
     mac.update(data);

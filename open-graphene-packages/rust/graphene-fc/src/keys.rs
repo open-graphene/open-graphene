@@ -5,21 +5,29 @@
 //! of free functions.
 
 use ripemd::{Digest, Ripemd160};
+#[cfg(feature = "signing")]
 use secp256k1::{PublicKey as Secp256k1PublicKey, Scalar, Secp256k1, SecretKey};
+#[cfg(feature = "signing")]
 use sha2::Sha512;
+#[cfg(feature = "signing")]
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
+use crate::{FcSerializeError, Result, decode_public_key};
+#[cfg(feature = "signing")]
+use crate::sha256_bytes;
+#[cfg(feature = "signing")]
 use crate::{
-    FcSerializeError, Result, decode_public_key, decode_wif_private_key,
-    recover_public_key_from_compact_signature, sha256_bytes, sign_digest_compact,
+    decode_wif_private_key, recover_public_key_from_compact_signature, sign_digest_compact,
     verify_compact_signature_public_key,
 };
 
 /// A secp256k1 private key. Keep it secret: treat it like a password, never log or display it.
 /// The key bytes are zeroized on drop.
+#[cfg(feature = "signing")]
 #[derive(Clone, Zeroize, ZeroizeOnDrop)]
 pub struct PrivateKey([u8; 32]);
 
+#[cfg(feature = "signing")]
 impl PrivateKey {
     /// Parse a Wallet Import Format string (the `5...` keys exported by wallets).
     pub fn from_wif(wif: &str) -> Result<Self> {
@@ -83,6 +91,7 @@ impl PrivateKey {
     }
 }
 
+#[cfg(feature = "signing")]
 impl std::fmt::Debug for PrivateKey {
     /// Redacts the secret so it can't leak into logs or panics.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -102,12 +111,24 @@ impl PublicKey {
     }
 
     /// Wrap 33 raw bytes, rejecting anything that isn't a valid compressed point.
+    ///
+    /// Bez cechy `signing` walidacja punktu jest POMIJANA: sprawdzenie, czy
+    /// 33 bajty leżą na krzywej, wymaga krzywej. Dla serializacji to bez
+    /// znaczenia — klucz publiczny jest w niej 33 bajtami — a kto przyjmuje
+    /// cudze klucze, i tak musi je sprawdzić po swojej stronie.
+    #[cfg(feature = "signing")]
     pub fn from_bytes(bytes: [u8; 33]) -> Result<Self> {
         Secp256k1PublicKey::from_slice(&bytes).map_err(|_| FcSerializeError::InvalidPublicKey {
             value: String::new(),
             expected_prefix: None,
             reason: "not a valid compressed secp256k1 point",
         })?;
+        Ok(Self(bytes))
+    }
+
+    /// Wrap 33 raw bytes bez sprawdzania, czy leżą na krzywej.
+    #[cfg(not(feature = "signing"))]
+    pub fn from_bytes(bytes: [u8; 33]) -> Result<Self> {
         Ok(Self(bytes))
     }
 
@@ -149,11 +170,13 @@ impl PublicKey {
     }
 
     /// Whether `signature` over `digest` was produced by the matching private key.
+    #[cfg(feature = "signing")]
     pub fn verify(&self, digest: [u8; 32], signature: &[u8]) -> Result<bool> {
         verify_compact_signature_public_key(digest, signature, self.0)
     }
 
     /// Recover the signer's public key straight from a compact signature, no key needed up front.
+    #[cfg(feature = "signing")]
     pub fn recover(digest: [u8; 32], signature: &[u8]) -> Result<Self> {
         Ok(Self(recover_public_key_from_compact_signature(
             digest, signature,
