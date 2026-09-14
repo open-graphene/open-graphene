@@ -112,7 +112,7 @@ fn sorted_member_keys(
         .into_iter()
         .map(|(member, key)| Ok((member_sort_key(&member)?, member, key)))
         .collect::<Result<Vec<_>, SwaplockApiError>>()?;
-    keyed.sort_by(|left, right| left.0.cmp(&right.0));
+    keyed.sort_by_key(|entry| entry.0);
     for pair in keyed.windows(2) {
         if pair[0].0 == pair[1].0 {
             return Err(SwaplockApiError::InvalidTransfer {

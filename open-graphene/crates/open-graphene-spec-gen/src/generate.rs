@@ -434,7 +434,7 @@ fn build_operations(
         .iter()
         .filter_map(|arm| operation_from_arm(arm, structs, virtual_operations))
         .collect::<Vec<_>>();
-    operations.sort_by(|left, right| left.wire_tag.cmp(&right.wire_tag));
+    operations.sort_by_key(|operation| operation.wire_tag);
     operations
 }
 

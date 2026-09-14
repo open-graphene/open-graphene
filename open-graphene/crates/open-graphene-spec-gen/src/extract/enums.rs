@@ -258,11 +258,9 @@ fn split_binary_expr(expr: &str, operator: &str) -> Option<(String, String)> {
         match bytes[index] {
             b'(' => depth += 1,
             b')' => depth = depth.saturating_sub(1),
-            _ if depth == 0 && expr[index..].starts_with(operator) => {
-                // Index 0 would be a unary operator, not a binary split point.
-                if index > 0 {
-                    split_at = Some(index);
-                }
+            // Index 0 is a unary operator, not a binary split point.
+            _ if depth == 0 && index > 0 && expr[index..].starts_with(operator) => {
+                split_at = Some(index);
             }
             _ => {}
         }
