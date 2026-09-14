@@ -1326,7 +1326,7 @@ pub struct ContentCardUpdateOperation {
     pub new_content_key: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub new_storage_data: Option<String>,
-    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+    pub extensions: crate::generated::types::ContentCardUpdateOperationExt,
 }
 
 pub const CONTENT_CARD_REMOVE_OPERATION_ID: u32 = 87;

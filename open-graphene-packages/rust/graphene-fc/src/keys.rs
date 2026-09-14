@@ -12,9 +12,9 @@ use sha2::Sha512;
 #[cfg(feature = "signing")]
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
-use crate::{FcSerializeError, Result, decode_public_key};
 #[cfg(feature = "signing")]
 use crate::sha256_bytes;
+use crate::{FcSerializeError, Result, decode_public_key};
 #[cfg(feature = "signing")]
 use crate::{
     decode_wif_private_key, recover_public_key_from_compact_signature, sign_digest_compact,

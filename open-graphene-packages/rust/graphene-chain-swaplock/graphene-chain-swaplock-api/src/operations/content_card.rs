@@ -191,6 +191,7 @@ pub struct ContentCardUpdateRequest<'session> {
     caller: String,
     content_id: String,
     new_hash: Option<String>,
+    expected_hash: Option<String>,
     new_url: Option<String>,
     new_type: Option<String>,
     new_description: Option<String>,
@@ -210,6 +211,7 @@ impl<'session> ContentCardUpdateRequest<'session> {
             caller: caller.into(),
             content_id: content_id.into(),
             new_hash: None,
+            expected_hash: None,
             new_url: None,
             new_type: None,
             new_description: None,
@@ -219,7 +221,13 @@ impl<'session> ContentCardUpdateRequest<'session> {
         }
     }
 
-    /// New content hash, unique within the room.
+    /// Require the current hash to match at execution time.
+    pub fn expected_hash(mut self, hash: impl Into<String>) -> Self {
+        self.expected_hash = Some(hash.into());
+        self
+    }
+
+    /// New content hash.
     pub fn new_hash(mut self, hash: impl Into<String>) -> Self {
         self.new_hash = Some(hash.into());
         self
@@ -275,7 +283,10 @@ impl<'session> ContentCardUpdateRequest<'session> {
             new_description: self.new_description,
             new_content_key: self.new_content_key,
             new_storage_data: self.new_storage_data,
-            extensions: vec![],
+            extensions:
+                graphene_chain_swaplock_bindings::generated::types::ContentCardUpdateOperationExt {
+                    expected_hash: self.expected_hash,
+                },
         });
         TransactionBuilder::new(self.session)
             .add_operation(operation)
@@ -471,6 +482,26 @@ mod tests {
     }
 
     #[test]
+    fn expected_hash_extension_matches_native_fc_vector() {
+        use graphene_chain_swaplock_bindings::generated::types::ContentCardUpdateOperationExt;
+        use open_graphene_fc::FcSerialize;
+        let mut bytes = Vec::new();
+        ContentCardUpdateOperationExt {
+            expected_hash: None,
+        }
+        .fc_serialize(&mut bytes)
+        .unwrap();
+        assert_eq!(bytes, vec![0]);
+        bytes.clear();
+        ContentCardUpdateOperationExt {
+            expected_hash: Some("revision-1".into()),
+        }
+        .fc_serialize(&mut bytes)
+        .unwrap();
+        assert_eq!(bytes, b"\x01\x00\x0arevision-1");
+    }
+
+    #[test]
     fn content_card_create_serializes_to_the_graphene_wire_shape() {
         let operation = fixture_fields().into_operation().unwrap();
 
@@ -529,7 +560,10 @@ mod tests {
             new_description: Some("v2".to_string()),
             new_content_key: None,
             new_storage_data: None,
-            extensions: vec![],
+            extensions:
+                graphene_chain_swaplock_bindings::generated::types::ContentCardUpdateOperationExt {
+                    expected_hash: None,
+                },
         });
 
         assert_eq!(
@@ -541,7 +575,7 @@ mod tests {
                 "content_id": "1.26.4",
                 "new_url": "ipfs://Qm456",
                 "new_description": "v2",
-                "extensions": []
+                "extensions": {}
             }])
         );
     }
@@ -800,4 +834,3 @@ impl<'session> ContentCardLinkRemoveRequest<'session> {
             .await
     }
 }
-

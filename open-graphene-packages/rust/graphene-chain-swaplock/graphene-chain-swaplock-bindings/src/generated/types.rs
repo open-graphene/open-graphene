@@ -1295,6 +1295,14 @@ pub struct ContentCardRemoveOperationFeeParamsT {
     pub fee: u64,
 }
 
+/// Raw protocol struct `content_card_update_operation_ext`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardUpdateOperationExt)]
+pub struct ContentCardUpdateOperationExt {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_hash: Option<String>,
+}
+
 /// Raw protocol struct `content_card_update_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockContentCardUpdateOperationFeeParamsT)]

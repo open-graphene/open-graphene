@@ -43,8 +43,8 @@ pub fn serialize_transaction(transaction: JsValue) -> Result<Vec<u8>, JsValue> {
 /// `chain_id` w hex, tak jak oddaje go węzeł.
 #[wasm_bindgen(js_name = transactionDigest)]
 pub fn transaction_digest(chain_id: &str, transaction: JsValue) -> Result<Vec<u8>, JsValue> {
-    let chain = hex::decode(chain_id.trim())
-        .map_err(|_| JsValue::from_str("chain_id musi być w hex"))?;
+    let chain =
+        hex::decode(chain_id.trim()).map_err(|_| JsValue::from_str("chain_id musi być w hex"))?;
     let bytes = serialize_transaction(transaction)?;
 
     let mut buf = Vec::with_capacity(chain.len() + bytes.len());

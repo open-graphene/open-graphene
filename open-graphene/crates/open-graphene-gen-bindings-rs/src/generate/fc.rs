@@ -293,7 +293,14 @@ pub(crate) fn render_fc_extension_struct_impl(out: &mut String, struct_def: &Str
     let mut fields = struct_def.fields.clone();
     fields.sort_by_key(|field| field.index);
 
-    if fields.is_empty() {
+    // This extension has one optional string at FC index 0. Keep other extension
+    // families fail-closed until their non-empty wire formats have coverage.
+    if struct_def.name == "content_card_update_operation_ext" {
+        out.push_str("        match &self.expected_hash {\n");
+        out.push_str("            None => write_varint(0u64, out),\n");
+        out.push_str("            Some(hash) => { write_varint(1u64, out); write_varint(0u64, out); hash.fc_serialize(out)?; }\n");
+        out.push_str("        }\n        Ok(())\n");
+    } else if fields.is_empty() {
         out.push_str("        write_varint(0u64, out);\n");
         out.push_str("        Ok(())\n");
     } else {

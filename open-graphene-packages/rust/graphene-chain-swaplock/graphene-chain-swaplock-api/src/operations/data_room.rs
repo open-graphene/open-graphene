@@ -869,6 +869,9 @@ mod tests {
                 | DATA_ROOM_PERM_GRANT_CONTENT,
             DATA_ROOM_PERM_ALL
         );
-        assert_eq!(DATA_ROOM_PERM_ALL, 0x00FF, "musi zgadzać się z data_room.hpp");
+        assert_eq!(
+            DATA_ROOM_PERM_ALL, 0x00FF,
+            "musi zgadzać się z data_room.hpp"
+        );
     }
 }

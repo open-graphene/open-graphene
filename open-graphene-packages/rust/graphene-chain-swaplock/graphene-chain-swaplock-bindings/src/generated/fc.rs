@@ -1195,6 +1195,20 @@ impl FcSerialize for crate::generated::types::ContentCardRemoveOperationFeeParam
     }
 }
 
+impl FcSerialize for crate::generated::types::ContentCardUpdateOperationExt {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        match &self.expected_hash {
+            None => write_varint(0u64, out),
+            Some(hash) => {
+                write_varint(1u64, out);
+                write_varint(0u64, out);
+                hash.fc_serialize(out)?;
+            }
+        }
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::ContentCardUpdateOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -5445,19 +5459,7 @@ impl FcSerialize for crate::generated::operations::ContentCardUpdateOperation {
         self.new_description.fc_serialize(out)?;
         self.new_content_key.fc_serialize(out)?;
         self.new_storage_data.fc_serialize(out)?;
-        write_varint(self.extensions.len() as u64, out);
-        let mut previous_key: Option<u64> = None;
-        for value in &self.extensions {
-            let key = future_extensions_tag(value);
-            if previous_key.is_some_and(|previous| previous >= key) {
-                return Err(FcSerializeError::UnsupportedValue {
-                    type_name: "Set",
-                    reason: "set values must be sorted and unique",
-                });
-            }
-            previous_key = Some(key);
-            value.fc_serialize(out)?;
-        }
+        self.extensions.fc_serialize(out)?;
         Ok(())
     }
 }
