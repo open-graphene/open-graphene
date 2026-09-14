@@ -295,10 +295,15 @@ pub(crate) fn render_fc_extension_struct_impl(out: &mut String, struct_def: &Str
 
     // This extension has one optional string at FC index 0. Keep other extension
     // families fail-closed until their non-empty wire formats have coverage.
-    if struct_def.name == "content_card_update_operation_ext" {
+    if matches!(struct_def.name.as_str(), "content_card_update_operation_ext" | "content_card_remove_operation_ext") {
         out.push_str("        match &self.expected_hash {\n");
         out.push_str("            None => write_varint(0u64, out),\n");
         out.push_str("            Some(hash) => { write_varint(1u64, out); write_varint(0u64, out); hash.fc_serialize(out)?; }\n");
+        out.push_str("        }\n        Ok(())\n");
+    } else if struct_def.name == "data_room_create_operation_ext" {
+        out.push_str("        match &self.write_policy {\n");
+        out.push_str("            None => write_varint(0u64, out),\n");
+        out.push_str("            Some(policy) => { write_varint(1u64, out); write_varint(0u64, out); policy.fc_serialize(out)?; }\n");
         out.push_str("        }\n        Ok(())\n");
     } else if fields.is_empty() {
         out.push_str("        write_varint(0u64, out);\n");

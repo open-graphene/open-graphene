@@ -207,6 +207,7 @@ pub struct DataRoomCreateRequest<'session> {
     description: String,
     subject: DataRoomSubject,
     room_key: Option<String>,
+    write_policy: Option<u32>,
 }
 
 impl<'session> DataRoomCreateRequest<'session> {
@@ -222,6 +223,7 @@ impl<'session> DataRoomCreateRequest<'session> {
             description: String::new(),
             subject: DataRoomSubject::VoidT(Box::new(open_graphene_fc::VoidT)),
             room_key: None,
+            write_policy: None,
         }
     }
 
@@ -249,6 +251,12 @@ impl<'session> DataRoomCreateRequest<'session> {
         self
     }
 
+    /// Require current editors and compare-and-swap for this room permanently.
+    pub fn strict_writes(mut self) -> Self {
+        self.write_policy = Some(1);
+        self
+    }
+
     pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
         let operation = Operation::data_room_create(DataRoomCreateOperation {
             fee: core_fee(),
@@ -257,7 +265,7 @@ impl<'session> DataRoomCreateRequest<'session> {
             description: self.description,
             subject: self.subject,
             room_key: self.room_key,
-            extensions: vec![],
+            extensions: graphene_chain_swaplock_bindings::generated::types::DataRoomCreateOperationExt { write_policy: self.write_policy },
         });
         TransactionBuilder::new(self.session)
             .add_operation(operation)
@@ -605,7 +613,7 @@ mod tests {
             description: "diligence".to_string(),
             subject: DataRoomSubject::AssetIdType(Box::new(AssetId("1.3.5".to_string()))),
             room_key: Some("ENC_OWNER".to_string()),
-            extensions: vec![],
+            extensions: graphene_chain_swaplock_bindings::generated::types::DataRoomCreateOperationExt { write_policy: None },
         });
 
         assert_eq!(
@@ -617,7 +625,7 @@ mod tests {
                 "description": "diligence",
                 "subject": [1, "1.3.5"],
                 "room_key": "ENC_OWNER",
-                "extensions": []
+                "extensions": {}
             }])
         );
     }
@@ -636,7 +644,7 @@ mod tests {
             description: String::new(),
             subject: DataRoomSubject::VoidT(Box::new(open_graphene_fc::VoidT)),
             room_key: None,
-            extensions: vec![],
+            extensions: graphene_chain_swaplock_bindings::generated::types::DataRoomCreateOperationExt { write_policy: None },
         });
 
         assert_eq!(
@@ -647,7 +655,7 @@ mod tests {
                 "name": "deal-room",
                 "description": "",
                 "subject": [0, {}],
-                "extensions": []
+                "extensions": {}
             }])
         );
     }

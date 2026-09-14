@@ -1192,7 +1192,7 @@ pub struct DataRoomCreateOperation {
     pub subject: crate::generated::static_variants::DataRoomSubject,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub room_key: Option<String>,
-    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+    pub extensions: crate::generated::types::DataRoomCreateOperationExt,
 }
 
 pub const DATA_ROOM_UPDATE_OPERATION_ID: u32 = 79;
@@ -1339,7 +1339,7 @@ pub struct ContentCardRemoveOperation {
     pub payer: crate::generated::ids::AccountId,
     pub caller: crate::generated::static_variants::DataRoomMemberRef,
     pub content_id: crate::generated::ids::ContentCardId,
-    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+    pub extensions: crate::generated::types::ContentCardRemoveOperationExt,
 }
 
 pub const COMMIT_CREATE_OPERATION_ID: u32 = 88;

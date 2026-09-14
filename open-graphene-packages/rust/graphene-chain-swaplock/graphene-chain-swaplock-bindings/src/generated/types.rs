@@ -1284,6 +1284,15 @@ pub struct ContentCardObject {
     pub updated: String,
 }
 
+/// Raw protocol struct `content_card_remove_operation_ext`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockContentCardRemoveOperationExt)]
+pub struct ContentCardRemoveOperationExt {
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_hash: Option<String>,
+}
+
 /// Raw protocol struct `content_card_remove_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockContentCardRemoveOperationFeeParamsT)]
@@ -1299,6 +1308,7 @@ pub struct ContentCardRemoveOperationFeeParamsT {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockContentCardUpdateOperationExt)]
 pub struct ContentCardUpdateOperationExt {
+    #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub expected_hash: Option<String>,
 }
@@ -1476,6 +1486,16 @@ pub struct CustomOperationFeeParamsT {
     pub price_per_kbyte: u32,
 }
 
+/// Raw protocol struct `data_room_create_operation_ext`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomCreateOperationExt)]
+pub struct DataRoomCreateOperationExt {
+    #[serde(default)]
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub write_policy: Option<u32>,
+}
+
 /// Raw protocol struct `data_room_create_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockDataRoomCreateOperationFeeParamsT)]
@@ -1568,6 +1588,9 @@ pub struct DataRoomObject {
     pub description: String,
     pub subject: crate::generated::static_variants::DataRoomSubject,
     pub encrypted: bool,
+    #[serde(default)]
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    pub write_policy: u32,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub current_epoch: u32,
     pub created: String,

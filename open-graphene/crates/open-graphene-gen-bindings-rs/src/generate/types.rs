@@ -272,6 +272,13 @@ pub(crate) fn render_fields(
         let field_name = rust_field_name(&field.name);
         ensure_unique(&mut emitted, &field_name, "field")?;
         let ty = render_type_ref(protocol, &field.ty)?;
+        // Older Swaplock nodes omit the immutable room policy. Treat their rooms
+        // as legacy; missing policy must never accidentally enable strict writes.
+        if (owner == "DataRoomObject" && field.name == "write_policy")
+            || (owner == "DataRoomCreateOperationExt" && field.name == "write_policy")
+            || ((owner == "ContentCardRemoveOperationExt" || owner == "ContentCardUpdateOperationExt") && field.name == "expected_hash") {
+            out.push_str("    #[serde(default)]\n");
+        }
         out.push_str(&serde_rename_attr("    ", &field.name, &field_name));
         // fc renders integers past 2^53 as strings, so a 64-bit field can arrive either way
         // depending on its value. Accept both rather than guessing per field.
