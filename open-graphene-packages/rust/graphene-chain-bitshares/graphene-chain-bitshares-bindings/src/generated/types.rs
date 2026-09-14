@@ -18,6 +18,19 @@ pub(crate) fn u32_schema() -> utoipa::openapi::schema::Object {
         .build()
 }
 
+#[allow(dead_code)]
+pub(crate) fn u64_schema() -> utoipa::openapi::schema::Object {
+    utoipa::openapi::schema::ObjectBuilder::new()
+        .schema_type(utoipa::openapi::schema::SchemaType::Type(
+            utoipa::openapi::schema::Type::Integer,
+        ))
+        .format(Some(utoipa::openapi::schema::SchemaFormat::Custom(
+            "uint64".to_owned(),
+        )))
+        .minimum(Some(0u32))
+        .build()
+}
+
 use open_graphene_core::deserialize_fixed_bytes_from_hex_string_or_byte_array;
 
 pub(crate) fn deserialize_fixed_bytes_20_from_hex_string_or_byte_array<'de, D>(
@@ -272,10 +285,12 @@ pub struct AccountCreateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub basic_fee: u64,
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub premium_fee: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
@@ -308,6 +323,7 @@ pub struct AccountTransferOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -342,10 +358,12 @@ pub struct AccountUpgradeOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub membership_annual_fee: u64,
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub membership_lifetime_fee: u64,
 }
 
@@ -378,6 +396,7 @@ pub struct AssertOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -413,6 +432,7 @@ pub struct AssetClaimFeesOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -423,6 +443,7 @@ pub struct AssetClaimPoolOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -433,14 +454,17 @@ pub struct AssetCreateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub symbol3: u64,
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub symbol4: u64,
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub long_symbol: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
@@ -453,6 +477,7 @@ pub struct AssetFundFeePoolOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -463,6 +488,7 @@ pub struct AssetGlobalSettleOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -473,6 +499,7 @@ pub struct AssetIssueOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
@@ -538,6 +565,7 @@ pub struct AssetPublishFeedOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -548,6 +576,7 @@ pub struct AssetReserveOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -563,6 +592,7 @@ pub struct AssetSettleOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -581,6 +611,7 @@ pub struct AssetUpdateBitassetOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -591,6 +622,7 @@ pub struct AssetUpdateFeedProducersOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -601,6 +633,7 @@ pub struct AssetUpdateIssuerOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -621,6 +654,7 @@ pub struct AssetUpdateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
@@ -649,6 +683,7 @@ pub struct BidCollateralOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -726,6 +761,7 @@ pub struct BlindTransferOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_output: u32,
@@ -764,6 +800,7 @@ pub struct CallOrderUpdateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -851,6 +888,7 @@ pub struct CommitteeMemberCreateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -861,6 +899,7 @@ pub struct CommitteeMemberUpdateGlobalParametersOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -871,6 +910,7 @@ pub struct CommitteeMemberUpdateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -899,6 +939,7 @@ pub struct CreditDealRepayOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -909,6 +950,7 @@ pub struct CreditDealUpdateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -927,6 +969,7 @@ pub struct CreditOfferAcceptOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -937,6 +980,7 @@ pub struct CreditOfferCreateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
@@ -949,6 +993,7 @@ pub struct CreditOfferDeleteOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -959,6 +1004,7 @@ pub struct CreditOfferUpdateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
@@ -971,6 +1017,7 @@ pub struct CustomAuthorityCreateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub basic_fee: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_byte: u32,
@@ -983,6 +1030,7 @@ pub struct CustomAuthorityDeleteOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1007,6 +1055,7 @@ pub struct CustomAuthorityUpdateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub basic_fee: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_byte: u32,
@@ -1019,6 +1068,7 @@ pub struct CustomOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
@@ -1061,6 +1111,7 @@ pub struct DynamicGlobalPropertyObject {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub current_aslot: u64,
     pub recent_slots_filled: String,
     #[schema(schema_with = crate::generated::types::u32_schema)]
@@ -1146,10 +1197,12 @@ pub struct HtlcCreateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee_per_day: u64,
 }
 
@@ -1160,10 +1213,12 @@ pub struct HtlcExtendOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee_per_day: u64,
 }
 
@@ -1184,10 +1239,12 @@ pub struct HtlcRedeemOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee_per_kb: u64,
 }
 
@@ -1213,6 +1270,7 @@ pub struct LimitOrderCancelOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1223,6 +1281,7 @@ pub struct LimitOrderCreateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1257,6 +1316,7 @@ pub struct LimitOrderUpdateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1278,6 +1338,7 @@ pub struct LiquidityPoolCreateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1288,6 +1349,7 @@ pub struct LiquidityPoolDeleteOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1298,6 +1360,7 @@ pub struct LiquidityPoolDepositOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1308,6 +1371,7 @@ pub struct LiquidityPoolExchangeOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1318,6 +1382,7 @@ pub struct LiquidityPoolUpdateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1328,6 +1393,7 @@ pub struct LiquidityPoolWithdrawOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1363,6 +1429,7 @@ pub struct MemoData {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub nonce: u64,
     #[serde(
         serialize_with = "open_graphene_core::serialize_bytes_as_hex",
@@ -1409,6 +1476,7 @@ pub struct OverrideTransferOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
@@ -1462,6 +1530,7 @@ pub struct ProposalCreateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
@@ -1474,6 +1543,7 @@ pub struct ProposalDeleteOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1484,6 +1554,7 @@ pub struct ProposalUpdateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
@@ -1511,6 +1582,7 @@ pub struct SametFundBorrowOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1521,6 +1593,7 @@ pub struct SametFundCreateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1531,6 +1604,7 @@ pub struct SametFundDeleteOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1541,6 +1615,7 @@ pub struct SametFundRepayOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1551,6 +1626,7 @@ pub struct SametFundUpdateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1612,6 +1688,7 @@ pub struct TicketCreateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1622,6 +1699,7 @@ pub struct TicketUpdateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1652,6 +1730,7 @@ pub struct TransferFromBlindOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1662,6 +1741,7 @@ pub struct TransferOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
@@ -1674,6 +1754,7 @@ pub struct TransferToBlindOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_output: u32,
@@ -1686,6 +1767,7 @@ pub struct VestingBalanceCreateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1696,6 +1778,7 @@ pub struct VestingBalanceWithdrawOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1718,6 +1801,7 @@ pub struct WithdrawPermissionClaimOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
@@ -1730,6 +1814,7 @@ pub struct WithdrawPermissionCreateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1740,6 +1825,7 @@ pub struct WithdrawPermissionDeleteOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1750,6 +1836,7 @@ pub struct WithdrawPermissionUpdateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1760,6 +1847,7 @@ pub struct WitnessCreateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }
 
@@ -1780,5 +1868,6 @@ pub struct WorkerCreateOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
 }

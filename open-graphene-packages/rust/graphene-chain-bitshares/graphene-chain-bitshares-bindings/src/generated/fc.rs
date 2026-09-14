@@ -4,10 +4,15 @@
 
 pub use open_graphene_fc::{
     FcSerialize, FcSerializeError, Result, decode_chain_id_hex, decode_public_key,
-    is_graphene_canonical_compact_signature, parse_protocol_object_id,
-    recover_public_key_from_compact_signature, sha256_bytes, sign_digest_compact_with_wif,
-    verify_compact_signature_public_key, write_bytes, write_fixed_bytes, write_protocol_object_id,
-    write_public_key, write_time_point_sec, write_varint, write_vote_id,
+    parse_protocol_object_id, sha256_bytes, write_bytes, write_fixed_bytes,
+    write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id,
+};
+// Krypto na krzywej jest za cechą: bez niej zostaje sama serializacja,
+// a z nią wiazanie do kodu C, ktorego wasm32 nie zbuduje bez lancucha C.
+#[cfg(feature = "signing")]
+pub use open_graphene_fc::{
+    is_graphene_canonical_compact_signature, recover_public_key_from_compact_signature,
+    sign_digest_compact_with_wif, verify_compact_signature_public_key,
 };
 
 impl FcSerialize for crate::generated::ids::AccountId {
