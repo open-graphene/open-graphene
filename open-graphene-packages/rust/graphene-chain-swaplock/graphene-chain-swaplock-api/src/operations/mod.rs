@@ -15,6 +15,7 @@ mod htlc;
 mod limit_order;
 mod liquidity_pool;
 mod proposal;
+mod room_access;
 mod samet_fund;
 mod sign_transfer;
 mod ticket;
@@ -71,6 +72,7 @@ pub use liquidity_pool::{
     LiquidityPoolExchangeRequest, LiquidityPoolUpdateRequest, LiquidityPoolWithdrawRequest,
 };
 pub use proposal::{ProposalCreateRequest, ProposalDeleteRequest, ProposalUpdateRequest};
+pub use room_access::RoomAccessPrecondition;
 pub use samet_fund::{
     SametFundBorrowRequest, SametFundCreateRequest, SametFundDeleteRequest, SametFundRepayRequest,
     SametFundUpdateRequest,

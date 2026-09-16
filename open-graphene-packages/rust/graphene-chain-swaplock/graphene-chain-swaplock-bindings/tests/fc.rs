@@ -2358,6 +2358,15 @@ fn data_room_member_add_fc_serializes_a_key_member() {
     //   + permissions(4) + extensions(1)
     assert_eq!(bytes.len(), 52);
     assert_eq!(bytes[11], 0x01, "the member arm is the public key one");
+    let mut json = serde_json::to_value(&operation).unwrap();
+    assert_eq!(json["extensions"], serde_json::json!([]));
+    let legacy: DataRoomMemberAddOperation = serde_json::from_value(json.clone()).unwrap();
+    assert_eq!(legacy.to_fc_bytes().unwrap(), bytes);
+    json["extensions"] = serde_json::json!({});
+    let empty_object: DataRoomMemberAddOperation = serde_json::from_value(json.clone()).unwrap();
+    assert_eq!(empty_object.to_fc_bytes().unwrap(), bytes);
+    json["extensions"] = serde_json::json!({"unexpected_guard": "ignored?"});
+    assert!(serde_json::from_value::<DataRoomMemberAddOperation>(json).is_err());
 }
 
 #[test]

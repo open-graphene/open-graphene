@@ -24,6 +24,7 @@ use open_graphene_transport::GrapheneSession;
 use crate::SwaplockApiError;
 use crate::member::{is_public_key, member_ref};
 
+use super::room_access::RoomAccessPrecondition;
 use super::transaction::{PreparedTransaction, TransactionBuilder};
 
 const CORE_ASSET_ID: &str = "1.3.0";
@@ -420,6 +421,7 @@ impl<'session> DataRoomDeleteRequest<'session> {
 /// Grant abilities with `.permissions(..)` (defaults to none; see the `DATA_ROOM_PERM_*` flags).
 pub struct DataRoomMemberAddRequest<'session> {
     session: &'session mut GrapheneSession,
+    precondition: Option<RoomAccessPrecondition>,
     caller: String,
     room: String,
     account: String,
@@ -437,6 +439,7 @@ impl<'session> DataRoomMemberAddRequest<'session> {
     ) -> Self {
         Self {
             session,
+            precondition: None,
             caller: caller.into(),
             room: room.into(),
             account: account.into(),
@@ -464,6 +467,12 @@ impl<'session> DataRoomMemberAddRequest<'session> {
         self
     }
 
+    /// Bind the mutation to a previously read room state.
+    pub fn access_precondition(mut self, precondition: RoomAccessPrecondition) -> Self {
+        self.precondition = Some(precondition);
+        self
+    }
+
     pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
         let operation = member_add_operation(
             self.caller,
@@ -473,6 +482,10 @@ impl<'session> DataRoomMemberAddRequest<'session> {
             self.epoch_keys,
             self.permissions,
         )?;
+        let operation = match self.precondition {
+            Some(condition) => condition.guard(operation)?,
+            None => operation,
+        };
         TransactionBuilder::new(self.session)
             .add_operation(operation)
             .prepare()
@@ -487,6 +500,7 @@ impl<'session> DataRoomMemberAddRequest<'session> {
 /// modified.
 pub struct DataRoomMemberUpdateRequest<'session> {
     session: &'session mut GrapheneSession,
+    precondition: Option<RoomAccessPrecondition>,
     caller: String,
     room: String,
     account: String,
@@ -503,11 +517,18 @@ impl<'session> DataRoomMemberUpdateRequest<'session> {
     ) -> Self {
         Self {
             session,
+            precondition: None,
             caller: caller.into(),
             room: room.into(),
             account: account.into(),
             permissions,
         }
+    }
+
+    /// Bind the mutation to a previously read room state.
+    pub fn access_precondition(mut self, precondition: RoomAccessPrecondition) -> Self {
+        self.precondition = Some(precondition);
+        self
     }
 
     pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
@@ -523,6 +544,10 @@ impl<'session> DataRoomMemberUpdateRequest<'session> {
                     expected_access_state: None,
                 },
         });
+        let operation = match self.precondition {
+            Some(condition) => condition.guard(operation)?,
+            None => operation,
+        };
         TransactionBuilder::new(self.session)
             .add_operation(operation)
             .prepare()
@@ -537,6 +562,7 @@ impl<'session> DataRoomMemberUpdateRequest<'session> {
 /// so previously encrypted content stays decryptable for remaining members.
 pub struct DataRoomMemberRemoveRequest<'session> {
     session: &'session mut GrapheneSession,
+    precondition: Option<RoomAccessPrecondition>,
     caller: String,
     room: String,
     account: String,
@@ -551,10 +577,17 @@ impl<'session> DataRoomMemberRemoveRequest<'session> {
     ) -> Self {
         Self {
             session,
+            precondition: None,
             caller: caller.into(),
             room: room.into(),
             account: account.into(),
         }
+    }
+
+    /// Bind the mutation to a previously read room state.
+    pub fn access_precondition(mut self, precondition: RoomAccessPrecondition) -> Self {
+        self.precondition = Some(precondition);
+        self
     }
 
     pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
@@ -568,6 +601,10 @@ impl<'session> DataRoomMemberRemoveRequest<'session> {
                     expected_access_state: None,
                 },
         });
+        let operation = match self.precondition {
+            Some(condition) => condition.guard(operation)?,
+            None => operation,
+        };
         TransactionBuilder::new(self.session)
             .add_operation(operation)
             .prepare()
@@ -583,6 +620,7 @@ impl<'session> DataRoomMemberRemoveRequest<'session> {
 /// previously public room.
 pub struct DataRoomRotateKeyRequest<'session> {
     session: &'session mut GrapheneSession,
+    precondition: Option<RoomAccessPrecondition>,
     caller: String,
     room: String,
     member_keys: Vec<(String, String)>,
@@ -596,6 +634,7 @@ impl<'session> DataRoomRotateKeyRequest<'session> {
     ) -> Self {
         Self {
             session,
+            precondition: None,
             caller: caller.into(),
             room: room.into(),
             member_keys: vec![],
@@ -608,8 +647,18 @@ impl<'session> DataRoomRotateKeyRequest<'session> {
         self
     }
 
+    /// Bind the mutation to a previously read room state.
+    pub fn access_precondition(mut self, precondition: RoomAccessPrecondition) -> Self {
+        self.precondition = Some(precondition);
+        self
+    }
+
     pub async fn prepare(self) -> Result<PreparedTransaction, SwaplockApiError> {
         let operation = rotate_key_operation(self.caller, self.room, self.member_keys)?;
+        let operation = match self.precondition {
+            Some(condition) => condition.guard(operation)?,
+            None => operation,
+        };
         TransactionBuilder::new(self.session)
             .add_operation(operation)
             .prepare()
