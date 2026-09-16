@@ -1241,7 +1241,11 @@ pub struct DataRoomMemberAddOperation {
     pub epoch_keys: Vec<(u32, String)>,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub permissions: u32,
-    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+    #[serde(
+        serialize_with = "crate::generated::types::serialize_access_extensions",
+        deserialize_with = "crate::generated::types::deserialize_access_extensions"
+    )]
+    pub extensions: crate::generated::types::DataRoomAccessExtensions,
 }
 
 pub const DATA_ROOM_MEMBER_UPDATE_OPERATION_ID: u32 = 82;
@@ -1256,7 +1260,11 @@ pub struct DataRoomMemberUpdateOperation {
     pub member: crate::generated::static_variants::DataRoomMemberRef,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub permissions: u32,
-    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+    #[serde(
+        serialize_with = "crate::generated::types::serialize_access_extensions",
+        deserialize_with = "crate::generated::types::deserialize_access_extensions"
+    )]
+    pub extensions: crate::generated::types::DataRoomAccessExtensions,
 }
 
 pub const DATA_ROOM_MEMBER_REMOVE_OPERATION_ID: u32 = 83;
@@ -1269,7 +1277,11 @@ pub struct DataRoomMemberRemoveOperation {
     pub caller: crate::generated::ids::AccountId,
     pub room: crate::generated::ids::DataRoomId,
     pub member: crate::generated::static_variants::DataRoomMemberRef,
-    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+    #[serde(
+        serialize_with = "crate::generated::types::serialize_access_extensions",
+        deserialize_with = "crate::generated::types::deserialize_access_extensions"
+    )]
+    pub extensions: crate::generated::types::DataRoomAccessExtensions,
 }
 
 pub const DATA_ROOM_ROTATE_KEY_OPERATION_ID: u32 = 84;
@@ -1282,7 +1294,11 @@ pub struct DataRoomRotateKeyOperation {
     pub caller: crate::generated::ids::AccountId,
     pub room: crate::generated::ids::DataRoomId,
     pub member_keys: Vec<(crate::generated::static_variants::DataRoomMemberRef, String)>,
-    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+    #[serde(
+        serialize_with = "crate::generated::types::serialize_access_extensions",
+        deserialize_with = "crate::generated::types::deserialize_access_extensions"
+    )]
+    pub extensions: crate::generated::types::DataRoomAccessExtensions,
 }
 
 pub const CONTENT_CARD_CREATE_OPERATION_ID: u32 = 85;

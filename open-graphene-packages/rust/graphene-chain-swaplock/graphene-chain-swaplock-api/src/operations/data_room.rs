@@ -146,7 +146,10 @@ pub fn member_add_operation(
             member_key,
             epoch_keys: sorted_epoch_keys(epoch_keys)?,
             permissions,
-            extensions: vec![],
+            extensions:
+                graphene_chain_swaplock_bindings::generated::types::DataRoomAccessExtensions {
+                    expected_access_state: None,
+                },
         },
     ))
 }
@@ -164,7 +167,10 @@ pub fn member_remove_operation(
             caller: AccountId(caller),
             room: DataRoomId(room),
             member: member_ref(member),
-            extensions: vec![],
+            extensions:
+                graphene_chain_swaplock_bindings::generated::types::DataRoomAccessExtensions {
+                    expected_access_state: None,
+                },
         },
     ))
 }
@@ -189,7 +195,10 @@ pub fn rotate_key_operation(
             caller: AccountId(caller),
             room: DataRoomId(room),
             member_keys: sorted_member_keys(member_keys)?,
-            extensions: vec![],
+            extensions:
+                graphene_chain_swaplock_bindings::generated::types::DataRoomAccessExtensions {
+                    expected_access_state: None,
+                },
         },
     ))
 }
@@ -265,7 +274,10 @@ impl<'session> DataRoomCreateRequest<'session> {
             description: self.description,
             subject: self.subject,
             room_key: self.room_key,
-            extensions: graphene_chain_swaplock_bindings::generated::types::DataRoomCreateOperationExt { write_policy: self.write_policy },
+            extensions:
+                graphene_chain_swaplock_bindings::generated::types::DataRoomCreateOperationExt {
+                    write_policy: self.write_policy,
+                },
         });
         TransactionBuilder::new(self.session)
             .add_operation(operation)
@@ -506,7 +518,10 @@ impl<'session> DataRoomMemberUpdateRequest<'session> {
             room: DataRoomId(self.room),
             member: member_ref(self.account),
             permissions: self.permissions,
-            extensions: vec![],
+            extensions:
+                graphene_chain_swaplock_bindings::generated::types::DataRoomAccessExtensions {
+                    expected_access_state: None,
+                },
         });
         TransactionBuilder::new(self.session)
             .add_operation(operation)
@@ -548,7 +563,10 @@ impl<'session> DataRoomMemberRemoveRequest<'session> {
             caller: AccountId(self.caller),
             room: DataRoomId(self.room),
             member: member_ref(self.account),
-            extensions: vec![],
+            extensions:
+                graphene_chain_swaplock_bindings::generated::types::DataRoomAccessExtensions {
+                    expected_access_state: None,
+                },
         });
         TransactionBuilder::new(self.session)
             .add_operation(operation)
@@ -613,7 +631,10 @@ mod tests {
             description: "diligence".to_string(),
             subject: DataRoomSubject::AssetIdType(Box::new(AssetId("1.3.5".to_string()))),
             room_key: Some("ENC_OWNER".to_string()),
-            extensions: graphene_chain_swaplock_bindings::generated::types::DataRoomCreateOperationExt { write_policy: None },
+            extensions:
+                graphene_chain_swaplock_bindings::generated::types::DataRoomCreateOperationExt {
+                    write_policy: None,
+                },
         });
 
         assert_eq!(
@@ -644,7 +665,10 @@ mod tests {
             description: String::new(),
             subject: DataRoomSubject::VoidT(Box::new(open_graphene_fc::VoidT)),
             room_key: None,
-            extensions: graphene_chain_swaplock_bindings::generated::types::DataRoomCreateOperationExt { write_policy: None },
+            extensions:
+                graphene_chain_swaplock_bindings::generated::types::DataRoomCreateOperationExt {
+                    write_policy: None,
+                },
         });
 
         assert_eq!(

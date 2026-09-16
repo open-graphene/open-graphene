@@ -9,13 +9,13 @@ pub const CHAIN_ID: &str = "swaplock";
 pub const CHAIN_ID_HEX: &str = "3b4f346481a66146d732eb22a43b5956134e5bea6124b379033589146036cbbf";
 pub const PUBLIC_KEY_PREFIX: &str = "BTS";
 
-pub const STRUCT_COUNT: usize = 274;
+pub const STRUCT_COUNT: usize = 277;
 pub const ENUM_COUNT: usize = 11;
 pub const STATIC_VARIANT_COUNT: usize = 13;
 pub const OPERATION_COUNT: usize = 95;
 pub const OBJECT_TYPE_COUNT: usize = 49;
 pub const RPC_API_COUNT: usize = 5;
-pub const RPC_METHOD_COUNT: usize = 46;
+pub const RPC_METHOD_COUNT: usize = 47;
 
 #[derive(
     Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,

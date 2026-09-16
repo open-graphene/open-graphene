@@ -300,6 +300,11 @@ pub(crate) fn render_fc_extension_struct_impl(out: &mut String, struct_def: &Str
         out.push_str("            None => write_varint(0u64, out),\n");
         out.push_str("            Some(hash) => { write_varint(1u64, out); write_varint(0u64, out); hash.fc_serialize(out)?; }\n");
         out.push_str("        }\n        Ok(())\n");
+    } else if struct_def.name == "data_room_access_extensions" {
+        out.push_str("        match &self.expected_access_state {\n");
+        out.push_str("            None => write_varint(0u64, out),\n");
+        out.push_str("            Some(hash) => { write_varint(1u64, out); write_varint(0u64, out); hash.fc_serialize(out)?; }\n");
+        out.push_str("        }\n        Ok(())\n");
     } else if struct_def.name == "data_room_create_operation_ext" {
         out.push_str("        match &self.write_policy {\n");
         out.push_str("            None => write_varint(0u64, out),\n");

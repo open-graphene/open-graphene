@@ -60,6 +60,28 @@ where
     deserialize_fixed_bytes_from_hex_string_or_byte_array(deserializer, 33)
 }
 
+// Typed extension payloads retain legacy [] JSON when empty.
+pub(crate) fn serialize_access_extensions<S: serde::Serializer>(
+    value: &DataRoomAccessExtensions,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
+    if value.expected_access_state.is_none() {
+        Vec::<serde_json::Value>::new().serialize(serializer)
+    } else {
+        value.serialize(serializer)
+    }
+}
+pub(crate) fn deserialize_access_extensions<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<DataRoomAccessExtensions, D::Error> {
+    let value = serde_json::Value::deserialize(deserializer)?;
+    if value.as_array().is_some_and(|v| v.is_empty()) {
+        return Ok(DataRoomAccessExtensions {
+            expected_access_state: None,
+        });
+    }
+    serde_json::from_value(value).map_err(serde::de::Error::custom)
+}
 /// Graphene compact recoverable ECDSA signature bytes.
 /// Wire layout: one compact header byte followed by 32-byte r and 32-byte s.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
@@ -1484,6 +1506,42 @@ pub struct CustomOperationFeeParamsT {
     pub fee: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
+}
+
+/// Raw protocol struct `data_room_access_extensions`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomAccessExtensions)]
+pub struct DataRoomAccessExtensions {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_access_state: Option<String>,
+}
+
+/// Raw protocol struct `data_room_access_member_state`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomAccessMemberState)]
+pub struct DataRoomAccessMemberState {
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
+    )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
+    pub membership_instance: u64,
+    pub member: crate::generated::static_variants::DataRoomMemberRef,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    pub permissions: u32,
+    pub member_key: String,
+}
+
+/// Raw protocol struct `data_room_access_state`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockDataRoomAccessState)]
+pub struct DataRoomAccessState {
+    pub domain: String,
+    pub room: crate::generated::ids::DataRoomId,
+    pub owner: crate::generated::ids::AccountId,
+    pub encrypted: bool,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    pub current_epoch: u32,
+    pub members: Vec<crate::generated::types::DataRoomAccessMemberState>,
 }
 
 /// Raw protocol struct `data_room_create_operation_ext`.

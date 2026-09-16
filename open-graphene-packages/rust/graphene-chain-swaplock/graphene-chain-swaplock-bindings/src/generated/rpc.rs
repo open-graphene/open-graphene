@@ -872,6 +872,32 @@ pub mod database {
         }
     }
 
+    /// RPC `database.get_data_room_access_state`.
+    pub mod get_data_room_access_state {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_data_room_access_state";
+
+        /// Positional parameters for `database.get_data_room_access_state`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub room_id: crate::generated::ids::DataRoomId,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![serde_json::to_value(&self.room_id)?];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Option<crate::generated::types::DataRoomAccessState>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
     /// RPC `database.get_data_room_by_id`.
     pub mod get_data_room_by_id {
         pub const API: &str = "database";

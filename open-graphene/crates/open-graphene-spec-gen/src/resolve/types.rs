@@ -231,6 +231,9 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         "limit_order_auto_action" => TypeRef::StaticVariantRef {
             name: "limit_order_auto_action".to_string(),
         },
+        "data_room_access_state" | "data_room_access_member_state" => TypeRef::Ref {
+            name: normalized.to_string(),
+        },
         "data_room_subject" => TypeRef::StaticVariantRef {
             name: "data_room_subject".to_string(),
         },

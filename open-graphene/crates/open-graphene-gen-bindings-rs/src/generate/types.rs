@@ -50,6 +50,26 @@ pub(crate) fn render_types(
         }
     }
 
+    if protocol.structs.iter().any(|s| s.name == "data_room_access_extensions") {
+        out.push_str(r#"
+// Typed extension payloads retain legacy [] JSON when empty.
+pub(crate) fn serialize_access_extensions<S: serde::Serializer>(value: &DataRoomAccessExtensions, serializer: S) -> Result<S::Ok, S::Error> {
+    if value.expected_access_state.is_none() {
+        Vec::<serde_json::Value>::new().serialize(serializer)
+    } else {
+        value.serialize(serializer)
+    }
+}
+pub(crate) fn deserialize_access_extensions<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<DataRoomAccessExtensions, D::Error> {
+    let value = serde_json::Value::deserialize(deserializer)?;
+    if value.as_array().is_some_and(|v| v.is_empty()) {
+        return Ok(DataRoomAccessExtensions { expected_access_state: None });
+    }
+    serde_json::from_value(value).map_err(serde::de::Error::custom)
+}
+"#);
+    }
+
     let mut emitted = BTreeSet::new();
     if protocol_uses_signature(protocol) {
         ensure_unique(&mut emitted, "Signature", "type")?;
@@ -278,6 +298,9 @@ pub(crate) fn render_fields(
             || (owner == "DataRoomCreateOperationExt" && field.name == "write_policy")
             || ((owner == "ContentCardRemoveOperationExt" || owner == "ContentCardUpdateOperationExt") && field.name == "expected_hash") {
             out.push_str("    #[serde(default)]\n");
+        }
+        if field.name == "extensions" && matches!(owner, "DataRoomMemberAddOperation" | "DataRoomMemberUpdateOperation" | "DataRoomMemberRemoveOperation" | "DataRoomRotateKeyOperation") {
+            out.push_str("    #[serde(serialize_with = \"crate::generated::types::serialize_access_extensions\", deserialize_with = \"crate::generated::types::deserialize_access_extensions\")]\n");
         }
         out.push_str(&serde_rename_attr("    ", &field.name, &field_name));
         // fc renders integers past 2^53 as strings, so a 64-bit field can arrive either way

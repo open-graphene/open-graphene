@@ -2347,7 +2347,9 @@ fn data_room_member_add_fc_serializes_a_key_member() {
         member_key: String::new(),
         epoch_keys: vec![],
         permissions: 4,
-        extensions: vec![],
+        extensions: graphene_chain_swaplock_bindings::generated::types::DataRoomAccessExtensions {
+            expected_access_state: None,
+        },
     };
 
     let bytes = operation.to_fc_bytes().expect("serialize member add");
@@ -2356,4 +2358,50 @@ fn data_room_member_add_fc_serializes_a_key_member() {
     //   + permissions(4) + extensions(1)
     assert_eq!(bytes.len(), 52);
     assert_eq!(bytes[11], 0x01, "the member arm is the public key one");
+}
+
+#[test]
+fn access_precondition_extension_matches_cpp_wire_fixture() {
+    use graphene_chain_swaplock_bindings::generated::types::DataRoomAccessExtensions;
+    let empty = DataRoomAccessExtensions {
+        expected_access_state: None,
+    };
+    assert_eq!(empty.to_fc_bytes().unwrap(), vec![0]);
+    let guarded = DataRoomAccessExtensions {
+        expected_access_state: Some("ab".repeat(32)),
+    };
+    let mut expected = vec![1, 0, 64];
+    expected.extend_from_slice("ab".repeat(32).as_bytes());
+    assert_eq!(guarded.to_fc_bytes().unwrap(), expected);
+    let json = serde_json::to_value(&guarded).unwrap();
+    assert_eq!(json["expected_access_state"], "ab".repeat(32));
+    assert_eq!(
+        serde_json::from_value::<DataRoomAccessExtensions>(json).unwrap(),
+        guarded
+    );
+}
+
+#[test]
+fn access_snapshot_digest_matches_cpp_wire_fixture() {
+    use graphene_chain_swaplock_bindings::generated::types::{
+        DataRoomAccessMemberState, DataRoomAccessState,
+    };
+    let state = DataRoomAccessState {
+        domain: "swaplock:data-room-access:v1".into(),
+        room: DataRoomId("1.23.7".into()),
+        owner: AccountId("1.2.2".into()),
+        encrypted: true,
+        current_epoch: 3,
+        members: vec![DataRoomAccessMemberState {
+            membership_instance: 9,
+            member: DataRoomMemberRef::AccountIdType(Box::new(AccountId("1.2.2".into()))),
+            permissions: 255,
+            member_key: "envelope".into(),
+        }],
+    };
+    let bytes = state.to_fc_bytes().unwrap();
+    assert_eq!(
+        graphene_chain_swaplock_bindings::generated::fc::sha256_bytes(&bytes).to_vec(),
+        decode_hex("3ef3e7a0f3b8dc2a2ea389b800623fa84c9dafe0ffde9f1c1e194e6516efcfbf")
+    );
 }

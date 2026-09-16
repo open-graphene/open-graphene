@@ -1362,6 +1362,42 @@ impl FcSerialize for crate::generated::types::CustomOperationFeeParamsT {
     }
 }
 
+impl FcSerialize for crate::generated::types::DataRoomAccessExtensions {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        match &self.expected_access_state {
+            None => write_varint(0u64, out),
+            Some(hash) => {
+                write_varint(1u64, out);
+                write_varint(0u64, out);
+                hash.fc_serialize(out)?;
+            }
+        }
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::DataRoomAccessMemberState {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.membership_instance.fc_serialize(out)?;
+        self.member.fc_serialize(out)?;
+        self.permissions.fc_serialize(out)?;
+        self.member_key.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::DataRoomAccessState {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.domain.fc_serialize(out)?;
+        self.room.fc_serialize(out)?;
+        self.owner.fc_serialize(out)?;
+        self.encrypted.fc_serialize(out)?;
+        self.current_epoch.fc_serialize(out)?;
+        self.members.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::DataRoomCreateOperationExt {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         match &self.write_policy {
@@ -5332,19 +5368,7 @@ impl FcSerialize for crate::generated::operations::DataRoomMemberAddOperation {
             value.fc_serialize(out)?;
         }
         self.permissions.fc_serialize(out)?;
-        write_varint(self.extensions.len() as u64, out);
-        let mut previous_key: Option<u64> = None;
-        for value in &self.extensions {
-            let key = future_extensions_tag(value);
-            if previous_key.is_some_and(|previous| previous >= key) {
-                return Err(FcSerializeError::UnsupportedValue {
-                    type_name: "Set",
-                    reason: "set values must be sorted and unique",
-                });
-            }
-            previous_key = Some(key);
-            value.fc_serialize(out)?;
-        }
+        self.extensions.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -5356,19 +5380,7 @@ impl FcSerialize for crate::generated::operations::DataRoomMemberUpdateOperation
         self.room.fc_serialize(out)?;
         self.member.fc_serialize(out)?;
         self.permissions.fc_serialize(out)?;
-        write_varint(self.extensions.len() as u64, out);
-        let mut previous_key: Option<u64> = None;
-        for value in &self.extensions {
-            let key = future_extensions_tag(value);
-            if previous_key.is_some_and(|previous| previous >= key) {
-                return Err(FcSerializeError::UnsupportedValue {
-                    type_name: "Set",
-                    reason: "set values must be sorted and unique",
-                });
-            }
-            previous_key = Some(key);
-            value.fc_serialize(out)?;
-        }
+        self.extensions.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -5379,19 +5391,7 @@ impl FcSerialize for crate::generated::operations::DataRoomMemberRemoveOperation
         self.caller.fc_serialize(out)?;
         self.room.fc_serialize(out)?;
         self.member.fc_serialize(out)?;
-        write_varint(self.extensions.len() as u64, out);
-        let mut previous_key: Option<u64> = None;
-        for value in &self.extensions {
-            let key = future_extensions_tag(value);
-            if previous_key.is_some_and(|previous| previous >= key) {
-                return Err(FcSerializeError::UnsupportedValue {
-                    type_name: "Set",
-                    reason: "set values must be sorted and unique",
-                });
-            }
-            previous_key = Some(key);
-            value.fc_serialize(out)?;
-        }
+        self.extensions.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -5418,19 +5418,7 @@ impl FcSerialize for crate::generated::operations::DataRoomRotateKeyOperation {
             key.fc_serialize(out)?;
             value.fc_serialize(out)?;
         }
-        write_varint(self.extensions.len() as u64, out);
-        let mut previous_key: Option<u64> = None;
-        for value in &self.extensions {
-            let key = future_extensions_tag(value);
-            if previous_key.is_some_and(|previous| previous >= key) {
-                return Err(FcSerializeError::UnsupportedValue {
-                    type_name: "Set",
-                    reason: "set values must be sorted and unique",
-                });
-            }
-            previous_key = Some(key);
-            value.fc_serialize(out)?;
-        }
+        self.extensions.fc_serialize(out)?;
         Ok(())
     }
 }
