@@ -68,15 +68,15 @@ pub use operations::{
     LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest,
     LiquidityPoolExchangeRequest, LiquidityPoolUpdateRequest, LiquidityPoolWithdrawRequest,
     OperationsApi, OverrideTransferRequest, PreparedTransaction, PreparedTransfer,
-    ProposalCreateRequest, ProposalDeleteRequest, ProposalUpdateRequest, SametFundBorrowRequest,
-    SametFundCreateRequest, SametFundDeleteRequest, SametFundRepayRequest, SametFundUpdateRequest,
-    SignedTransactionEnvelope, SignedTransfer, TicketCreateRequest, TicketUpdateRequest,
-    TransactionBuilder, TransferFromBlindRequest, TransferRequest, TransferToBlindRequest,
-    VestingBalanceCreateRequest, VestingBalanceWithdrawRequest, WithdrawPermissionClaimRequest,
-    WithdrawPermissionCreateRequest, WithdrawPermissionDeleteRequest,
-    WithdrawPermissionUpdateRequest, WitnessCreateRequest, WitnessUpdateRequest,
-    WorkerCreateRequest, content_card_grant_create_operation, member_add_operation,
-    member_remove_operation, rotate_key_operation,
+    ProposalCreateRequest, ProposalDeleteRequest, ProposalUpdateRequest, RoomAccessPrecondition,
+    SametFundBorrowRequest, SametFundCreateRequest, SametFundDeleteRequest, SametFundRepayRequest,
+    SametFundUpdateRequest, SignedTransactionEnvelope, SignedTransfer, TicketCreateRequest,
+    TicketUpdateRequest, TransactionBuilder, TransferFromBlindRequest, TransferRequest,
+    TransferToBlindRequest, VestingBalanceCreateRequest, VestingBalanceWithdrawRequest,
+    WithdrawPermissionClaimRequest, WithdrawPermissionCreateRequest,
+    WithdrawPermissionDeleteRequest, WithdrawPermissionUpdateRequest, WitnessCreateRequest,
+    WitnessUpdateRequest, WorkerCreateRequest, content_card_grant_create_operation,
+    member_add_operation, member_remove_operation, rotate_key_operation,
 };
 
 // Binding types callers need to construct operations for `OperationsApi::transaction()`.
@@ -116,13 +116,13 @@ pub use database::{
     ContentCardByIdRequest, ContentCardGrantRequest, ContentCardGrantsByCardRequest,
     ContentCardGrantsByGranteeRequest, ContentCardsByAuthorRequest, ContentCardsByRoomRequest,
     DEFAULT_GET_LIMIT_ORDERS_LIMIT, DEFAULT_LIST_ASSETS_LIMIT, DEFAULT_LOOKUP_ACCOUNTS_LIMIT,
-    DataRoomByIdRequest, DataRoomKeyEpochRequest, DataRoomKeyEpochsRequest, DataRoomMemberRequest,
-    DataRoomMembersRequest, DataRoomsByMemberRequest, DataRoomsByOwnerRequest,
-    DataRoomsBySubjectRequest, DatabaseApi, DynamicGlobalPropertiesRequest,
-    DynamicGlobalPropertiesSubscription, GetBlockHeaderRequest, GetBlockRequest, GetConfigRequest,
-    GetKeyReferencesRequest, GetLimitOrdersRequest, GetObjectsRequest, GetTickerRequest,
-    GlobalPropertiesRequest, IntoStringList, ListAssetsRequest, LookupAccountsRequest,
-    ProposedTransactionsRequest, Ticker,
+    DataRoomAccessStateRequest, DataRoomByIdRequest, DataRoomKeyEpochRequest,
+    DataRoomKeyEpochsRequest, DataRoomMemberRequest, DataRoomMembersRequest,
+    DataRoomsByMemberRequest, DataRoomsByOwnerRequest, DataRoomsBySubjectRequest, DatabaseApi,
+    DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription, GetBlockHeaderRequest,
+    GetBlockRequest, GetConfigRequest, GetKeyReferencesRequest, GetLimitOrdersRequest,
+    GetObjectsRequest, GetTickerRequest, GlobalPropertiesRequest, IntoStringList,
+    ListAssetsRequest, LookupAccountsRequest, ProposedTransactionsRequest, Ticker,
 };
 
 pub const SWAPLOCK_CHAIN_ID: &str =
@@ -160,6 +160,9 @@ pub enum SwaplockApiError {
          alongside the public key"
     )]
     KeyMemberNeedsPayer { operation: &'static str },
+
+    #[error("invalid room access: {message}")]
+    InvalidRoomAccess { message: String },
 
     #[error("invalid transfer: {message}")]
     InvalidTransfer { message: String },

@@ -50,7 +50,11 @@ pub(crate) fn render_types(
         }
     }
 
-    if protocol.structs.iter().any(|s| s.name == "data_room_access_extensions") {
+    if protocol
+        .structs
+        .iter()
+        .any(|s| s.name == "data_room_access_extensions")
+    {
         out.push_str(r#"
 // Typed extension payloads retain legacy [] JSON when empty.
 pub(crate) fn serialize_access_extensions<S: serde::Serializer>(value: &DataRoomAccessExtensions, serializer: S) -> Result<S::Ok, S::Error> {
@@ -177,6 +181,9 @@ pub(crate) fn render_struct(
         "#[schema(as = {})]\n",
         openapi_schema_name(protocol, &struct_name)
     ));
+    if struct_def.name == "data_room_access_extensions" {
+        out.push_str("#[serde(deny_unknown_fields)]\n");
+    }
     out.push_str(&format!("pub struct {struct_name} {{\n"));
     render_fields(
         out,
@@ -296,10 +303,21 @@ pub(crate) fn render_fields(
         // as legacy; missing policy must never accidentally enable strict writes.
         if (owner == "DataRoomObject" && field.name == "write_policy")
             || (owner == "DataRoomCreateOperationExt" && field.name == "write_policy")
-            || ((owner == "ContentCardRemoveOperationExt" || owner == "ContentCardUpdateOperationExt") && field.name == "expected_hash") {
+            || ((owner == "ContentCardRemoveOperationExt"
+                || owner == "ContentCardUpdateOperationExt")
+                && field.name == "expected_hash")
+        {
             out.push_str("    #[serde(default)]\n");
         }
-        if field.name == "extensions" && matches!(owner, "DataRoomMemberAddOperation" | "DataRoomMemberUpdateOperation" | "DataRoomMemberRemoveOperation" | "DataRoomRotateKeyOperation") {
+        if field.name == "extensions"
+            && matches!(
+                owner,
+                "DataRoomMemberAddOperation"
+                    | "DataRoomMemberUpdateOperation"
+                    | "DataRoomMemberRemoveOperation"
+                    | "DataRoomRotateKeyOperation"
+            )
+        {
             out.push_str("    #[serde(serialize_with = \"crate::generated::types::serialize_access_extensions\", deserialize_with = \"crate::generated::types::deserialize_access_extensions\")]\n");
         }
         out.push_str(&serde_rename_attr("    ", &field.name, &field_name));

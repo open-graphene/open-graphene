@@ -27,6 +27,7 @@ use super::content_card_grants_by_card::ContentCardGrantsByCardRequest;
 use super::content_card_grants_by_grantee::ContentCardGrantsByGranteeRequest;
 use super::content_cards_by_author::ContentCardsByAuthorRequest;
 use super::content_cards_by_room::ContentCardsByRoomRequest;
+use super::data_room_access_state::DataRoomAccessStateRequest;
 use super::data_room_by_id::DataRoomByIdRequest;
 use super::data_room_key_epoch::DataRoomKeyEpochRequest;
 use super::data_room_key_epochs::DataRoomKeyEpochsRequest;
@@ -269,6 +270,17 @@ impl<'session> DatabaseApi<'session> {
         S: Into<String>,
     {
         DataRoomByIdRequest {
+            session: self.session,
+            room_id: room_id.into(),
+        }
+    }
+
+    /// Read a coherent room authority snapshot for access preconditions.
+    pub fn data_room_access_state(
+        self,
+        room_id: impl Into<String>,
+    ) -> DataRoomAccessStateRequest<'session> {
+        DataRoomAccessStateRequest {
             session: self.session,
             room_id: room_id.into(),
         }

@@ -1511,6 +1511,7 @@ pub struct CustomOperationFeeParamsT {
 /// Raw protocol struct `data_room_access_extensions`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockDataRoomAccessExtensions)]
+#[serde(deny_unknown_fields)]
 pub struct DataRoomAccessExtensions {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub expected_access_state: Option<String>,
