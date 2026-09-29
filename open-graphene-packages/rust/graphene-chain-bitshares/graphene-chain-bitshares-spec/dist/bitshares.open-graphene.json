@@ -2,7 +2,8 @@
   "schemaVersion": 1,
   "chain": {
     "id": "bitshares",
-    "publicKeyPrefix": "BTS"
+    "publicKeyPrefix": "BTS",
+    "chainId": "4018d7844c78f6a6c41c6a552b898022310fc5dec06da467ee7905a8dad512c8"
   },
   "structs": [
     {
@@ -346,6 +347,458 @@
             "name": "name",
             "file": "libraries/protocol/include/graphene/protocol/assert.hpp",
             "line": 35
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
+      "name": "account_object",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "id",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 180
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "inherited object id from graphene::db::object for reflected Graphene object"
+          }
+        },
+        {
+          "index": 1,
+          "name": "membership_expiration_date",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "membership_expiration_date",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 180
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "registrar",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "registrar",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 190
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "referrer",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "referrer",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 193
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "lifetime_referrer",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "lifetime_referrer",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 195
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 5,
+          "name": "network_fee_percentage",
+          "type": {
+            "kind": "uint16"
+          },
+          "source": {
+            "name": "network_fee_percentage",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 197
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 6,
+          "name": "lifetime_referrer_fee_percentage",
+          "type": {
+            "kind": "uint16"
+          },
+          "source": {
+            "name": "lifetime_referrer_fee_percentage",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 200
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 7,
+          "name": "referrer_rewards_percentage",
+          "type": {
+            "kind": "uint16"
+          },
+          "source": {
+            "name": "referrer_rewards_percentage",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 202
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 8,
+          "name": "name",
+          "type": {
+            "kind": "string"
+          },
+          "source": {
+            "name": "name",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 205
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 9,
+          "name": "owner",
+          "type": {
+            "kind": "ref",
+            "name": "authority"
+          },
+          "source": {
+            "name": "owner",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 208
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 10,
+          "name": "active",
+          "type": {
+            "kind": "ref",
+            "name": "authority"
+          },
+          "source": {
+            "name": "active",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 216
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 11,
+          "name": "options",
+          "type": {
+            "kind": "ref",
+            "name": "account_options"
+          },
+          "source": {
+            "name": "options",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 219
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 12,
+          "name": "num_committee_voted",
+          "type": {
+            "kind": "uint16"
+          },
+          "source": {
+            "name": "num_committee_voted",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 221
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 13,
+          "name": "statistics",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account_statistics"
+          },
+          "source": {
+            "name": "statistics",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 224
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 14,
+          "name": "whitelisting_accounts",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "account"
+            },
+            "ordering": "unresolved"
+          },
+          "source": {
+            "name": "whitelisting_accounts",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 228
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 15,
+          "name": "blacklisting_accounts",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "account"
+            },
+            "ordering": "unresolved"
+          },
+          "source": {
+            "name": "blacklisting_accounts",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 249
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 16,
+          "name": "whitelisted_accounts",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "account"
+            },
+            "ordering": "unresolved"
+          },
+          "source": {
+            "name": "whitelisted_accounts",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 236
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 17,
+          "name": "blacklisted_accounts",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "account"
+            },
+            "ordering": "unresolved"
+          },
+          "source": {
+            "name": "blacklisted_accounts",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 248
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 18,
+          "name": "cashback_vb",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "vesting_balance"
+            }
+          },
+          "source": {
+            "name": "cashback_vb",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 259
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 19,
+          "name": "owner_special_authority",
+          "type": {
+            "kind": "static_variant_ref",
+            "name": "special_authority"
+          },
+          "source": {
+            "name": "owner_special_authority",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 264
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 20,
+          "name": "active_special_authority",
+          "type": {
+            "kind": "static_variant_ref",
+            "name": "special_authority"
+          },
+          "source": {
+            "name": "active_special_authority",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 266
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 21,
+          "name": "top_n_control_flags",
+          "type": {
+            "kind": "uint8"
+          },
+          "source": {
+            "name": "top_n_control_flags",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 267
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 22,
+          "name": "allowed_assets",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "set",
+              "inner": {
+                "kind": "protocol_object_id",
+                "objectType": "asset"
+              },
+              "ordering": "unresolved"
+            }
+          },
+          "source": {
+            "name": "allowed_assets",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 275
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 23,
+          "name": "creation_block_num",
+          "type": {
+            "kind": "uint32"
+          },
+          "source": {
+            "name": "creation_block_num",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 282
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 24,
+          "name": "creation_time",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "creation_time",
+            "file": "libraries/chain/include/graphene/chain/account_object.hpp",
+            "line": 285
           },
           "support": {
             "status": "provisional",
@@ -27981,6 +28434,7 @@
       "cppAlias": "account_id_type",
       "objectSpace": 1,
       "typeId": 2,
+      "structRef": "account_object",
       "source": {
         "name": "account",
         "file": "libraries/protocol/include/graphene/protocol/types.hpp",
@@ -28593,9 +29047,162 @@
       "class": "history_api",
       "accessName": "history_api",
       "discoverMethod": "history"
+    },
+    {
+      "name": "network_broadcast",
+      "class": "network_broadcast_api",
+      "accessName": "network_broadcast_api",
+      "discoverMethod": "network_broadcast"
     }
   ],
   "rpcMethods": [
+    {
+      "name": "get_chain_id",
+      "apiClass": "database_api",
+      "apiName": "database",
+      "params": [],
+      "returns": {
+        "kind": "fixed_hex",
+        "bytes": 32
+      },
+      "isSubscription": false,
+      "source": {
+        "name": "get_chain_id",
+        "file": "libraries/app/include/graphene/app/database_api.hpp",
+        "line": 218
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "selected in config, present in FC_API, and signature found"
+      }
+    },
+    {
+      "name": "get_accounts",
+      "apiClass": "database_api",
+      "apiName": "database",
+      "params": [
+        {
+          "index": 0,
+          "name": "account_names_or_ids",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "source": {
+            "name": "account_names_or_ids",
+            "file": "libraries/app/include/graphene/app/database_api.hpp",
+            "line": 274
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        },
+        {
+          "index": 1,
+          "name": "subscribe",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "bool"
+            }
+          },
+          "required": false,
+          "nullable": true,
+          "source": {
+            "name": "subscribe",
+            "file": "libraries/app/include/graphene/app/database_api.hpp",
+            "line": 274
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "vector",
+        "inner": {
+          "kind": "optional",
+          "inner": {
+            "kind": "ref",
+            "name": "account_object"
+          }
+        }
+      },
+      "isSubscription": false,
+      "source": {
+        "name": "get_accounts",
+        "file": "libraries/app/include/graphene/app/database_api.hpp",
+        "line": 274
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "selected in config, present in FC_API, and signature found"
+      }
+    },
+    {
+      "name": "get_required_fees",
+      "apiClass": "database_api",
+      "apiName": "database",
+      "params": [
+        {
+          "index": 0,
+          "name": "ops",
+          "type": {
+            "kind": "vector",
+            "inner": {
+              "kind": "static_variant_ref",
+              "name": "operation"
+            }
+          },
+          "source": {
+            "name": "ops",
+            "file": "libraries/app/include/graphene/app/database_api.hpp",
+            "line": 1304
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        },
+        {
+          "index": 1,
+          "name": "asset_symbol_or_id",
+          "type": {
+            "kind": "string"
+          },
+          "source": {
+            "name": "asset_symbol_or_id",
+            "file": "libraries/app/include/graphene/app/database_api.hpp",
+            "line": 1304
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "vector",
+        "inner": {
+          "kind": "ref",
+          "name": "required_fee"
+        }
+      },
+      "isSubscription": false,
+      "source": {
+        "name": "get_required_fees",
+        "file": "libraries/app/include/graphene/app/database_api.hpp",
+        "line": 1304
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "selected in config, present in FC_API, and signature found"
+      }
+    },
     {
       "name": "get_objects",
       "apiClass": "database_api",
@@ -29047,6 +29654,43 @@
         "name": "get_account_history",
         "file": "libraries/app/include/graphene/app/api.hpp",
         "line": 77
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "selected in config, present in FC_API, and signature found"
+      }
+    },
+    {
+      "name": "broadcast_transaction",
+      "apiClass": "network_broadcast_api",
+      "apiName": "network_broadcast",
+      "params": [
+        {
+          "index": 0,
+          "name": "trx",
+          "type": {
+            "kind": "any_json",
+            "reason": "unsupported C++ type mapping: precomputable_transaction"
+          },
+          "source": {
+            "name": "trx",
+            "file": "libraries/app/include/graphene/app/api.hpp",
+            "line": 342
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "void"
+      },
+      "isSubscription": false,
+      "source": {
+        "name": "broadcast_transaction",
+        "file": "libraries/app/include/graphene/app/api.hpp",
+        "line": 342
       },
       "support": {
         "status": "provisional",

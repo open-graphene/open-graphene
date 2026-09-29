@@ -1,0 +1,30 @@
+{
+  "name": "@open-graphene/chain-bitshares-api",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT OR Apache-2.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@open-graphene/primitives": "workspace:*",
+    "@open-graphene/codec": "workspace:*",
+    "@open-graphene/fc": "workspace:*",
+    "@open-graphene/transport": "workspace:*",
+    "@open-graphene/chain-bitshares-bindings": "workspace:*"
+  }
+}

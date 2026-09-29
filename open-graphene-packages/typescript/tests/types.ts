@@ -14,3 +14,12 @@ const wrongAmount: TransferOperation = { ...transfer, amount: { amount: 1, asset
 // @ts-expect-error Required RPC parameters may not be omitted.
 DatabaseGetObjects.encodeParams({});
 void [wrongAccount, wrongChain, wrongAmount];
+
+import { BitSharesClient, type SignedTransfer as BitSharesSignedTransfer } from '../graphene-chain-bitshares/graphene-chain-bitshares-api/dist/index.js';
+import type { SwaplockClient } from '../graphene-chain-swaplock/graphene-chain-swaplock-api/dist/index.js';
+function chainIsolation(bitshares: BitSharesClient, swaplock: SwaplockClient, signed: BitSharesSignedTransfer) {
+  void bitshares.broadcast(signed);
+  // @ts-expect-error Signed transactions belong to their chain-specific API.
+  void swaplock.broadcast(signed);
+}
+void chainIsolation;

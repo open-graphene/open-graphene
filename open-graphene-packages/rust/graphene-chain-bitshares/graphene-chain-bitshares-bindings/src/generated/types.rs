@@ -304,6 +304,40 @@ pub struct AccountNameEqLitPredicate {
     pub name: String,
 }
 
+/// Raw protocol struct `account_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesAccountObject)]
+pub struct AccountObject {
+    pub id: crate::generated::ids::AccountId,
+    pub membership_expiration_date: String,
+    pub registrar: crate::generated::ids::AccountId,
+    pub referrer: crate::generated::ids::AccountId,
+    pub lifetime_referrer: crate::generated::ids::AccountId,
+    pub network_fee_percentage: u16,
+    pub lifetime_referrer_fee_percentage: u16,
+    pub referrer_rewards_percentage: u16,
+    pub name: String,
+    pub owner: crate::generated::types::Authority,
+    pub active: crate::generated::types::Authority,
+    pub options: crate::generated::types::AccountOptions,
+    pub num_committee_voted: u16,
+    pub statistics: crate::generated::ids::AccountStatisticsId,
+    pub whitelisting_accounts: Vec<crate::generated::ids::AccountId>,
+    pub blacklisting_accounts: Vec<crate::generated::ids::AccountId>,
+    pub whitelisted_accounts: Vec<crate::generated::ids::AccountId>,
+    pub blacklisted_accounts: Vec<crate::generated::ids::AccountId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cashback_vb: Option<crate::generated::ids::VestingBalanceId>,
+    pub owner_special_authority: crate::generated::static_variants::SpecialAuthority,
+    pub active_special_authority: crate::generated::static_variants::SpecialAuthority,
+    pub top_n_control_flags: u8,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub allowed_assets: Option<Vec<crate::generated::ids::AssetId>>,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    pub creation_block_num: u32,
+    pub creation_time: String,
+}
+
 /// Raw protocol struct `account_options`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneBitsharesAccountOptions)]

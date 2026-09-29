@@ -28,13 +28,30 @@ export function decodeWif(wif: string): Uint8Array {
   } catch { throw new Error('Invalid Graphene WIF private key'); }
   finally { decoded?.fill(0); }
 }
-export function signDigestCompact(digest: Uint8Array, privateKey: Uint8Array): Uint8Array {
+export type SigningProfile = 'swaplock-low-s' | 'graphene-legacy';
+/** FC/bitsharesjs canonical compact integers: exactly 32 DER bytes for r and s. */
+export function isCanonicalCompactSignature(signature: Uint8Array): boolean {
+  return signature instanceof Uint8Array && signature.length === 65
+    && signature[0]! >= 31 && signature[0]! <= 34
+    && (signature[1]! & 0x80) === 0 && !(signature[1] === 0 && (signature[2]! & 0x80) === 0)
+    && (signature[33]! & 0x80) === 0 && !(signature[33] === 0 && (signature[34]! & 0x80) === 0);
+}
+export function signDigestCompact(digest: Uint8Array, privateKey: Uint8Array, profile: SigningProfile = 'swaplock-low-s'): Uint8Array {
   digest32(digest);
   if (!secp256k1.utils.isValidSecretKey(privateKey)) throw new Error('Invalid private key');
-  // Swaplock profile: low-S, with no legacy DER-length nonce grinding.
-  const result = secp256k1.sign(digest, privateKey, { prehash: false, lowS: true, format: 'recovered', extraEntropy: false });
-  result[0] = result[0]! + 31;
-  return result;
+  if (profile !== 'swaplock-low-s' && profile !== 'graphene-legacy') throw new Error('Unknown signing profile');
+  // RFC6979 with deterministic extra entropy on retries. Signatures need not be
+  // byte-identical to bitsharesjs; the signed digest and FC canonical rules are identical.
+  for (let attempt = 0; attempt < 1024; attempt++) {
+    const entropy = new Uint8Array(32);
+    new DataView(entropy.buffer).setUint32(28, attempt, false);
+    const result = secp256k1.sign(digest, privateKey, {
+      prehash: false, lowS: true, format: 'recovered', extraEntropy: attempt === 0 ? false : entropy,
+    });
+    result[0] = result[0]! + 31;
+    if (profile === 'swaplock-low-s' || isCanonicalCompactSignature(result)) return result;
+  }
+  throw new Error('Unable to produce a canonical compact signature');
 }
 export function recoverPublicKey(digest: Uint8Array, signature: Uint8Array): Uint8Array {
   digest32(digest);
@@ -52,11 +69,11 @@ export class WifSigner implements Signer {
   #key: Uint8Array;
   #publicKey: Uint8Array;
   #disposed = false;
-  constructor(wif: string) { this.#key = decodeWif(wif); this.#publicKey = secp256k1.getPublicKey(this.#key, true); }
+  constructor(wif: string, private readonly profile: SigningProfile = 'swaplock-low-s') { this.#key = decodeWif(wif); this.#publicKey = secp256k1.getPublicKey(this.#key, true); }
   get publicKey(): Uint8Array { return this.#publicKey.slice(); }
   async signDigest(digest: Uint8Array): Promise<Uint8Array> {
     if (this.#disposed) throw new Error('Signer disposed');
-    return signDigestCompact(digest, this.#key);
+    return signDigestCompact(digest, this.#key, this.profile);
   }
   dispose(): void { this.#key.fill(0); this.#disposed = true; }
   toJSON(): object { return { type: 'WifSigner', disposed: this.#disposed }; }

@@ -15,7 +15,7 @@ Implemented:
   fees, object routing and positional RPC descriptors.
 - `@open-graphene/chain-swaplock-bindings`: generated definitions and codecs for
   95 operations and descriptors for 47 RPC methods from the current spec.
-- `@open-graphene/chain-bitshares-bindings`: 78 operations and 7 RPC methods.
+- `@open-graphene/chain-bitshares-bindings`: 78 operations and 11 RPC methods.
 - Generated FC for the transfer/transaction dependency closure in both chains;
   other operations and nonempty future extensions fail closed.
 - `@open-graphene/transport`: one-connection WebSocket RPC, API discovery,
@@ -24,13 +24,16 @@ Implemented:
   cap, immutable transaction snapshots, single-active-key signing, broadcast
   and block inclusion lookup.
 
+- `@open-graphene/chain-bitshares-api`: BitShares mainnet client with the same
+  core-transfer lifecycle and a `BitSharesWifSigner` producing legacy canonical
+  compact signatures. Chain identity is checked before use.
+
 These are generated definitions, not a claim that every operation has been
 independently tested against a live node. Each generated `support.json` records
 dynamic/unresolved fields and the narrow FC/signing scope. A native TypeScript
 transfer has been included and made irreversible on the Swaplock testnet;
 see [live transaction evidence](../../docs/TYPESCRIPT-LIVE-TRANSFER-2026-09-29.md).
-Remaining work includes other FC operations, memo encryption, legacy BitShares
-signing, multisig, reconnect/subscriptions, richer transaction orchestration and
+Remaining work includes other FC operations, memo encryption, multisig, reconnect/subscriptions, richer transaction orchestration and
 ChainStore. Packages have not been published.
 
 ## Development
@@ -161,3 +164,43 @@ See the [full live coverage report](../../docs/TYPESCRIPT-SDK-LIVE-COVERAGE-2026
 39 reads passed on both nodes in both runtimes, one native TypeScript transfer
 was confirmed and irreversible, and seven crypto methods were denied by the
 nodes' API access policy.
+
+
+## BitShares API
+
+```ts
+import { BitSharesClient, BitSharesWifSigner } from '@open-graphene/chain-bitshares-api';
+import { DatabaseGetDynamicGlobalProperties } from '@open-graphene/chain-bitshares-bindings';
+
+const client = await BitSharesClient.connect(endpoint);
+try {
+  const head = await client.rpc.invoke(DatabaseGetDynamicGlobalProperties, {});
+  console.log(head.head_block_number);
+} finally {
+  client.close();
+}
+```
+
+Use `client.prepareTransfer({ from, to, amount, maxFee })` (amounts in BTS atoms),
+`prepared.sign(new BitSharesWifSigner(wif))`, `client.broadcast(signed)`, and
+`client.waitForInclusion(signed)` for transfers. Dispose the signer when finished.
+Broadcast submits to the connected mainnet and consumes real network fees.
+The client supports mainnet's generated chain ID and BTS public-key prefix;
+arbitrary testnets require a corresponding generated chain profile.
+
+External signers must return a valid low-S signature with legacy Graphene
+canonical r/s lengths. The shared `WifSigner` retains its Swaplock low-S default;
+`BitSharesWifSigner` explicitly selects the canonical profile. Retry entropy is
+deterministic, but signatures need not be byte-identical to bitsharesjs.
+
+```sh
+# Read-only mainnet checks, including native C++/TypeScript FC comparison:
+pnpm test:bitshares:live /tmp/bitshares-node.json
+pnpm test:bitshares:live /tmp/bitshares-browser.json --browser
+```
+
+The read-only suite covers the ten generated non-broadcast methods. Broadcast
+and inclusion are tested with a local RPC harness; no live BitShares transfer
+has been submitted. See [validation evidence](../../docs/TYPESCRIPT-BITSHARES-API-2026-09-29.md).
+Memo encryption, other operation serializers, multisig and subscriptions remain
+outside this initial API stage.

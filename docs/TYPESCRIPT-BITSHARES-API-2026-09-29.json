@@ -1,0 +1,346 @@
+{
+  "scope": "BitShares mainnet: 10 generated non-broadcast methods and native C++ FC comparison; no transactions submitted.",
+  "runs": [
+    {
+      "endpoint": "wss://api.dex.trading/",
+      "chainId": "4018d7844c78f6a6c41c6a552b898022310fc5dec06da467ee7905a8dad512c8",
+      "startedAt": "2026-09-29T14:13:47.477Z",
+      "checks": [
+        {
+          "method": "database.get_chain_id",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_dynamic_global_properties",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_accounts",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_objects",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_account_balances",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_block_header",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_block",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_limit_orders",
+          "status": "passed"
+        },
+        {
+          "method": "history.get_account_history",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_required_fees",
+          "status": "passed"
+        },
+        {
+          "method": "transfer FC vs native C++",
+          "status": "passed"
+        }
+      ],
+      "broadcast": false,
+      "headBlock": 114788216,
+      "unsignedTransaction": {
+        "ref_block_num": 34680,
+        "ref_block_prefix": 3063962158,
+        "expiration": "2026-09-29T14:15:45",
+        "operations": [
+          [
+            0,
+            {
+              "fee": {
+                "amount": 86869,
+                "asset_id": "1.3.0"
+              },
+              "from": "1.2.0",
+              "to": "1.2.1",
+              "amount": {
+                "amount": 1,
+                "asset_id": "1.3.0"
+              },
+              "extensions": []
+            }
+          ]
+        ],
+        "extensions": []
+      },
+      "unsignedFcHex": "78872e5aa0b611c8bb6a01005553010000000000000001010000000000000000000000",
+      "finishedAt": "2026-09-29T14:13:47.973Z",
+      "runtime": "Node.js"
+    },
+    {
+      "endpoint": "wss://public.xbts.io/ws",
+      "chainId": "4018d7844c78f6a6c41c6a552b898022310fc5dec06da467ee7905a8dad512c8",
+      "startedAt": "2026-09-29T14:13:48.227Z",
+      "checks": [
+        {
+          "method": "database.get_chain_id",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_dynamic_global_properties",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_accounts",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_objects",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_account_balances",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_block_header",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_block",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_limit_orders",
+          "status": "passed"
+        },
+        {
+          "method": "history.get_account_history",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_required_fees",
+          "status": "passed"
+        },
+        {
+          "method": "transfer FC vs native C++",
+          "status": "passed"
+        }
+      ],
+      "broadcast": false,
+      "headBlock": 114788217,
+      "unsignedTransaction": {
+        "ref_block_num": 34681,
+        "ref_block_prefix": 3086405463,
+        "expiration": "2026-09-29T14:15:48",
+        "operations": [
+          [
+            0,
+            {
+              "fee": {
+                "amount": 86869,
+                "asset_id": "1.3.0"
+              },
+              "from": "1.2.0",
+              "to": "1.2.1",
+              "amount": {
+                "amount": 1,
+                "asset_id": "1.3.0"
+              },
+              "extensions": []
+            }
+          ]
+        ],
+        "extensions": []
+      },
+      "unsignedFcHex": "798757cff6b714c8bb6a01005553010000000000000001010000000000000000000000",
+      "finishedAt": "2026-09-29T14:13:48.672Z",
+      "runtime": "Node.js"
+    },
+    {
+      "endpoint": "wss://api.dex.trading/",
+      "chainId": "4018d7844c78f6a6c41c6a552b898022310fc5dec06da467ee7905a8dad512c8",
+      "startedAt": "2026-09-29T14:13:49.922Z",
+      "checks": [
+        {
+          "method": "database.get_chain_id",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_dynamic_global_properties",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_accounts",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_objects",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_account_balances",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_block_header",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_block",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_limit_orders",
+          "status": "passed"
+        },
+        {
+          "method": "history.get_account_history",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_required_fees",
+          "status": "passed"
+        },
+        {
+          "method": "transfer FC vs native C++",
+          "status": "passed"
+        }
+      ],
+      "broadcast": false,
+      "headBlock": 114788217,
+      "unsignedTransaction": {
+        "ref_block_num": 34681,
+        "ref_block_prefix": 3086405463,
+        "expiration": "2026-09-29T14:15:48",
+        "operations": [
+          [
+            0,
+            {
+              "fee": {
+                "amount": 86869,
+                "asset_id": "1.3.0"
+              },
+              "from": "1.2.0",
+              "to": "1.2.1",
+              "amount": {
+                "amount": 1,
+                "asset_id": "1.3.0"
+              },
+              "extensions": []
+            }
+          ]
+        ],
+        "extensions": []
+      },
+      "unsignedFcHex": "798757cff6b714c8bb6a01005553010000000000000001010000000000000000000000",
+      "finishedAt": "2026-09-29T14:13:50.391Z",
+      "runtime": "Chromium"
+    },
+    {
+      "endpoint": "wss://public.xbts.io/ws",
+      "chainId": "4018d7844c78f6a6c41c6a552b898022310fc5dec06da467ee7905a8dad512c8",
+      "startedAt": "2026-09-29T14:13:50.617Z",
+      "checks": [
+        {
+          "method": "database.get_chain_id",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_dynamic_global_properties",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_accounts",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_objects",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_account_balances",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_block_header",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_block",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_limit_orders",
+          "status": "passed"
+        },
+        {
+          "method": "history.get_account_history",
+          "status": "passed"
+        },
+        {
+          "method": "database.get_required_fees",
+          "status": "passed"
+        },
+        {
+          "method": "transfer FC vs native C++",
+          "status": "passed"
+        }
+      ],
+      "broadcast": false,
+      "headBlock": 114788217,
+      "unsignedTransaction": {
+        "ref_block_num": 34681,
+        "ref_block_prefix": 3086405463,
+        "expiration": "2026-09-29T14:15:48",
+        "operations": [
+          [
+            0,
+            {
+              "fee": {
+                "amount": 86869,
+                "asset_id": "1.3.0"
+              },
+              "from": "1.2.0",
+              "to": "1.2.1",
+              "amount": {
+                "amount": 1,
+                "asset_id": "1.3.0"
+              },
+              "extensions": []
+            }
+          ]
+        ],
+        "extensions": []
+      },
+      "unsignedFcHex": "798757cff6b714c8bb6a01005553010000000000000001010000000000000000000000",
+      "finishedAt": "2026-09-29T14:13:51.041Z",
+      "runtime": "Chromium"
+    }
+  ],
+  "validation": {
+    "nodeTests": 24,
+    "rustTests": 442,
+    "browser": "passed",
+    "clippy": "passed",
+    "rustfmt": "passed",
+    "generatedOutput": "passed"
+  },
+  "localScenarios": [
+    "prepare/sign/broadcast/inclusion",
+    "chain identity rejection and socket close",
+    "fee cap",
+    "missing account",
+    "insufficient balance",
+    "stale chain head",
+    "invalid amount",
+    "uncertain broadcast outcome without retry",
+    "canonical legacy signature grinding and public-key recovery",
+    "rejection of noncanonical and invalid external signatures",
+    "compile-time chain isolation"
+  ]
+}

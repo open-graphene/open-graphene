@@ -2,6 +2,12 @@
 
 Status: development rozpoczęty po akceptacji i przełączeniu modelu przez użytkownika (2026-09-29). Plan przygotowany na podstawie lokalnego repozytorium, HEAD `4d15808c0e2011b7fc7393c57853ff95c036b17f`.
 
+Aktualizacja BitShares (2026-09-29): dodano `@open-graphene/chain-bitshares-api`
+z mainnetowym prepare/sign/broadcast/inclusion, profilem kanonicznych podpisów
+Graphene i 11 generowanymi RPC. Dziesięć metod odczytu/wyceny oraz zgodność FC
+potwierdzono live w Node i Chromium; broadcast przetestowano lokalnym harness.
+[Raport BitShares](TYPESCRIPT-BITSHARES-API-2026-09-29.md).
+
 Uzgodniony z użytkownikiem cel: natywny TypeScript dla Node.js i przeglądarki, pełny zakres aktualnego SDK Rust realizowany etapami, najpierw Swaplock. Użytkownik autoryzował development poleceniem „Przełączyłem. Rozpocznij development”.
 
 Pierwszy przyrost obejmuje fundament E0–E2: inventory i publiczne wektory,

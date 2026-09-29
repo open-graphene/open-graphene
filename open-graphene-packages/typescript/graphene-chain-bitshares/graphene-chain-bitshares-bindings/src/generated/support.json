@@ -1,6 +1,11 @@
 {
   "chain": "bitshares",
-  "dynamicFields": [],
+  "dynamicFields": [
+    {
+      "path": "/rpcMethods/10/params/0/type",
+      "reason": "unsupported C++ type mapping: precomputable_transaction"
+    }
+  ],
   "operations": [
     {
       "builder": false,
@@ -789,6 +794,27 @@
       "api": "database",
       "descriptor": true,
       "highLevel": false,
+      "method": "get_chain_id",
+      "subscription": false
+    },
+    {
+      "api": "database",
+      "descriptor": true,
+      "highLevel": false,
+      "method": "get_accounts",
+      "subscription": false
+    },
+    {
+      "api": "database",
+      "descriptor": true,
+      "highLevel": false,
+      "method": "get_required_fees",
+      "subscription": false
+    },
+    {
+      "api": "database",
+      "descriptor": true,
+      "highLevel": false,
       "method": "get_objects",
       "subscription": false
     },
@@ -833,9 +859,16 @@
       "highLevel": false,
       "method": "get_account_history",
       "subscription": false
+    },
+    {
+      "api": "network_broadcast",
+      "descriptor": true,
+      "highLevel": false,
+      "method": "broadcast_transaction",
+      "subscription": false
     }
   ],
   "schemaVersion": 1,
-  "specSha256": "b9fe35d33ac3583740bfed065a90c9e8dce160e66a0e91296b9dea5aca14d79b",
+  "specSha256": "94097e5faf807413ccf4e07e1354a0ceba8c8c145c695c540ba2fe30a35b6060",
   "stage": "transfer-fc"
 }

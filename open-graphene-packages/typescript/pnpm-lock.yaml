@@ -18,6 +18,24 @@ importers:
         specifier: 7.0.2
         version: 7.0.2
 
+  graphene-chain-bitshares/graphene-chain-bitshares-api:
+    dependencies:
+      '@open-graphene/chain-bitshares-bindings':
+        specifier: workspace:*
+        version: link:../graphene-chain-bitshares-bindings
+      '@open-graphene/codec':
+        specifier: workspace:*
+        version: link:../../graphene-codec
+      '@open-graphene/fc':
+        specifier: workspace:*
+        version: link:../../graphene-fc
+      '@open-graphene/primitives':
+        specifier: workspace:*
+        version: link:../../graphene-primitives
+      '@open-graphene/transport':
+        specifier: workspace:*
+        version: link:../../graphene-transport
+
   graphene-chain-bitshares/graphene-chain-bitshares-bindings:
     dependencies:
       '@open-graphene/codec':

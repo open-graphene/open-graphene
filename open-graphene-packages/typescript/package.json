@@ -15,7 +15,8 @@
     "test:browser": "node scripts/browser-test.mjs",
     "test:testnet": "pnpm build && node scripts/testnet-smoke.mjs",
     "test:testnet:browser": "pnpm build && node scripts/testnet-smoke.mjs --browser",
-    "test:live:all": "pnpm build && node scripts/test-all-live.mjs"
+    "test:live:all": "pnpm build && node scripts/test-all-live.mjs",
+    "test:bitshares:live": "pnpm build && node scripts/test-bitshares-live.mjs"
   },
   "devDependencies": {
     "typescript": "7.0.2",
