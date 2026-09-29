@@ -341,7 +341,10 @@ impl<'session> ContentCardRemoveRequest<'session> {
             payer,
             caller,
             content_id: ContentCardId(self.content_id),
-            extensions: graphene_chain_swaplock_bindings::generated::types::ContentCardRemoveOperationExt { expected_hash: self.expected_hash },
+            extensions:
+                graphene_chain_swaplock_bindings::generated::types::ContentCardRemoveOperationExt {
+                    expected_hash: self.expected_hash,
+                },
         });
         TransactionBuilder::new(self.session)
             .add_operation(operation)
@@ -594,7 +597,10 @@ mod tests {
             payer: AccountId("1.2.100".to_string()),
             caller: member_ref("1.2.100"),
             content_id: ContentCardId("1.26.4".to_string()),
-            extensions: graphene_chain_swaplock_bindings::generated::types::ContentCardRemoveOperationExt { expected_hash: None },
+            extensions:
+                graphene_chain_swaplock_bindings::generated::types::ContentCardRemoveOperationExt {
+                    expected_hash: None,
+                },
         });
 
         assert_eq!(

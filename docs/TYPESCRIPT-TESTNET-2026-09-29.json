@@ -1,0 +1,483 @@
+{
+  "portal": "https://portal.swaplock.chainpool.online/",
+  "scope": "read-only and get_required_fees; no signing or broadcast",
+  "sourceCommit": "7b471be9d1cc051e7a3563a639a9ee98979de9d8",
+  "runs": [
+    {
+      "endpoint": "wss://node01.swaplock.chainpool.online:8090",
+      "startedAt": "2026-09-29T13:24:35.391Z",
+      "checks": [
+        {
+          "name": "chain identity matches generated spec",
+          "status": "passed",
+          "milliseconds": 19
+        },
+        {
+          "name": "dynamic global properties",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "chain properties",
+          "status": "passed",
+          "milliseconds": 14
+        },
+        {
+          "name": "global properties and fee schedule variants",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "configuration",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "account lookup",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "accounts with missing-account null slot",
+          "status": "passed",
+          "milliseconds": 18
+        },
+        {
+          "name": "full account",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "asset with missing-asset null slot",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "asset listing",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "account balances",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "heterogeneous object routing and null slot",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "head block header",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "head block",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "transfer fee estimation (no broadcast)",
+          "status": "passed",
+          "milliseconds": 14
+        },
+        {
+          "name": "Data Room lookup",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "Data Room missing ID returns null",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "Data Room access state",
+          "status": "passed",
+          "milliseconds": 14
+        },
+        {
+          "name": "Data Room members",
+          "status": "passed",
+          "milliseconds": 14
+        },
+        {
+          "name": "Content Card lookup",
+          "status": "passed",
+          "milliseconds": 14
+        },
+        {
+          "name": "Content Cards by room",
+          "status": "passed",
+          "milliseconds": 14
+        }
+      ],
+      "chainId": "3b4f346481a66146d732eb22a43b5956134e5bea6124b379033589146036cbbf",
+      "headBlock": 1201371,
+      "headTime": "2026-09-29T13:24:33",
+      "transferFee": "200000",
+      "roomFound": true,
+      "contentCardFound": true,
+      "finishedAt": "2026-09-29T13:24:35.853Z",
+      "runtime": "Node.js"
+    },
+    {
+      "endpoint": "wss://node02.swaplock.chainpool.online:8090",
+      "startedAt": "2026-09-29T13:24:35.853Z",
+      "checks": [
+        {
+          "name": "chain identity matches generated spec",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "dynamic global properties",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "chain properties",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "global properties and fee schedule variants",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "configuration",
+          "status": "passed",
+          "milliseconds": 14
+        },
+        {
+          "name": "account lookup",
+          "status": "passed",
+          "milliseconds": 14
+        },
+        {
+          "name": "accounts with missing-account null slot",
+          "status": "passed",
+          "milliseconds": 17
+        },
+        {
+          "name": "full account",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "asset with missing-asset null slot",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "asset listing",
+          "status": "passed",
+          "milliseconds": 18
+        },
+        {
+          "name": "account balances",
+          "status": "passed",
+          "milliseconds": 14
+        },
+        {
+          "name": "heterogeneous object routing and null slot",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "head block header",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "head block",
+          "status": "passed",
+          "milliseconds": 14
+        },
+        {
+          "name": "transfer fee estimation (no broadcast)",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "Data Room lookup",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "Data Room missing ID returns null",
+          "status": "passed",
+          "milliseconds": 14
+        },
+        {
+          "name": "Data Room access state",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "Data Room members",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "Content Card lookup",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "Content Cards by room",
+          "status": "passed",
+          "milliseconds": 14
+        }
+      ],
+      "chainId": "3b4f346481a66146d732eb22a43b5956134e5bea6124b379033589146036cbbf",
+      "headBlock": 1201372,
+      "headTime": "2026-09-29T13:24:36",
+      "transferFee": "200000",
+      "roomFound": true,
+      "contentCardFound": true,
+      "finishedAt": "2026-09-29T13:24:36.276Z",
+      "runtime": "Node.js"
+    },
+    {
+      "endpoint": "wss://node01.swaplock.chainpool.online:8090",
+      "startedAt": "2026-09-29T13:22:53.128Z",
+      "checks": [
+        {
+          "name": "chain identity matches generated spec",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "dynamic global properties",
+          "status": "passed",
+          "milliseconds": 20
+        },
+        {
+          "name": "chain properties",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "global properties and fee schedule variants",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "configuration",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "account lookup",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "accounts with missing-account null slot",
+          "status": "passed",
+          "milliseconds": 18
+        },
+        {
+          "name": "full account",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "asset with missing-asset null slot",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "asset listing",
+          "status": "passed",
+          "milliseconds": 17
+        },
+        {
+          "name": "account balances",
+          "status": "passed",
+          "milliseconds": 17
+        },
+        {
+          "name": "heterogeneous object routing and null slot",
+          "status": "passed",
+          "milliseconds": 17
+        },
+        {
+          "name": "head block header",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "head block",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "transfer fee estimation (no broadcast)",
+          "status": "passed",
+          "milliseconds": 17
+        },
+        {
+          "name": "Data Room lookup",
+          "status": "passed",
+          "milliseconds": 18
+        },
+        {
+          "name": "Data Room missing ID returns null",
+          "status": "passed",
+          "milliseconds": 14
+        },
+        {
+          "name": "Data Room access state",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "Data Room members",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "Content Card lookup",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "Content Cards by room",
+          "status": "passed",
+          "milliseconds": 18
+        }
+      ],
+      "chainId": "3b4f346481a66146d732eb22a43b5956134e5bea6124b379033589146036cbbf",
+      "headBlock": 1201337,
+      "headTime": "2026-09-29T13:22:51",
+      "transferFee": "200000",
+      "roomFound": true,
+      "contentCardFound": true,
+      "finishedAt": "2026-09-29T13:22:53.628Z",
+      "runtime": "Chromium (portal origin)"
+    },
+    {
+      "endpoint": "wss://node02.swaplock.chainpool.online:8090",
+      "startedAt": "2026-09-29T13:22:53.635Z",
+      "checks": [
+        {
+          "name": "chain identity matches generated spec",
+          "status": "passed",
+          "milliseconds": 18
+        },
+        {
+          "name": "dynamic global properties",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "chain properties",
+          "status": "passed",
+          "milliseconds": 14
+        },
+        {
+          "name": "global properties and fee schedule variants",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "configuration",
+          "status": "passed",
+          "milliseconds": 21
+        },
+        {
+          "name": "account lookup",
+          "status": "passed",
+          "milliseconds": 14
+        },
+        {
+          "name": "accounts with missing-account null slot",
+          "status": "passed",
+          "milliseconds": 14
+        },
+        {
+          "name": "full account",
+          "status": "passed",
+          "milliseconds": 47
+        },
+        {
+          "name": "asset with missing-asset null slot",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "asset listing",
+          "status": "passed",
+          "milliseconds": 24
+        },
+        {
+          "name": "account balances",
+          "status": "passed",
+          "milliseconds": 14
+        },
+        {
+          "name": "heterogeneous object routing and null slot",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "head block header",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "head block",
+          "status": "passed",
+          "milliseconds": 19
+        },
+        {
+          "name": "transfer fee estimation (no broadcast)",
+          "status": "passed",
+          "milliseconds": 14
+        },
+        {
+          "name": "Data Room lookup",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "Data Room missing ID returns null",
+          "status": "passed",
+          "milliseconds": 14
+        },
+        {
+          "name": "Data Room access state",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "Data Room members",
+          "status": "passed",
+          "milliseconds": 16
+        },
+        {
+          "name": "Content Card lookup",
+          "status": "passed",
+          "milliseconds": 15
+        },
+        {
+          "name": "Content Cards by room",
+          "status": "passed",
+          "milliseconds": 17
+        }
+      ],
+      "chainId": "3b4f346481a66146d732eb22a43b5956134e5bea6124b379033589146036cbbf",
+      "headBlock": 1201337,
+      "headTime": "2026-09-29T13:22:51",
+      "transferFee": "200000",
+      "roomFound": true,
+      "contentCardFound": true,
+      "finishedAt": "2026-09-29T13:22:54.099Z",
+      "runtime": "Chromium (portal origin)"
+    }
+  ]
+}

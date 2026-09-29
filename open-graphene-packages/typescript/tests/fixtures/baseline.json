@@ -1,0 +1,967 @@
+{
+  "baseline": "4d15808c0e2011b7fc7393c57853ff95c036b17f",
+  "swaplockSnapshot": "50179db9950f7297fdb94145efa33a69fd5bbc5f",
+  "bitsharesjs": "94846cee720f0b80ea2e2282a94eec78dbbf9016",
+  "bitsharesjsWs": "67e79722e2971c491befe8ce52d90a4b12672db5",
+  "swaplockFc": "21b82e33b95e1183fc8b3a355974e06dada84d63",
+  "sourceHashes": {
+    "blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/object_id.hpp": "eab8526f0fc7d727313852ab5d605b0ed9316a8bb38a03784f3a00cbeaa7fb6c",
+    "blockchains/bitshares/bitsharesjs/lib/chain/src/ObjectId.js": "6d2e4e29e5f39ded48b4b95265f5af1ab3c6ab092a3acd94113afa87fbf48946",
+    "blockchains/bitshares/bitsharesjs/lib/serializer/src/types.js": "cdfc015d9a335da8877bbc1b18e1a9e3911176517bc38ace7cfd4ebe0ad725d2",
+    "blockchains/bitshares/bitsharesjs/lib/ecc/src/signature.js": "ee7c84d8b2a681df04dde82f9751c2f81a8477dc4edd29b2fbff42705cd7976f",
+    "blockchains/bitshares/bitsharesjs-ws/src/ChainWebSocket.js": "c0af1ec627b52b0d8d06e40707187864f1a68f156cefd4bff0b43c1f48b5694c"
+  },
+  "chains": {
+    "swaplock": {
+      "sha256": "a6f1ef63ac75a627fb108b63b98c466204c3dc560b2a7ce090d701e196a0002d",
+      "schemaVersion": 1,
+      "counts": {
+        "structs": 277,
+        "enums": 11,
+        "staticVariants": 13,
+        "operations": 95,
+        "objectTypes": 49,
+        "rpcMethods": 47
+      },
+      "operations": [
+        {
+          "name": "transfer_operation",
+          "tag": 0,
+          "virtual": false
+        },
+        {
+          "name": "limit_order_create_operation",
+          "tag": 1,
+          "virtual": false
+        },
+        {
+          "name": "limit_order_cancel_operation",
+          "tag": 2,
+          "virtual": false
+        },
+        {
+          "name": "call_order_update_operation",
+          "tag": 3,
+          "virtual": false
+        },
+        {
+          "name": "fill_order_operation",
+          "tag": 4,
+          "virtual": true
+        },
+        {
+          "name": "account_create_operation",
+          "tag": 5,
+          "virtual": false
+        },
+        {
+          "name": "account_update_operation",
+          "tag": 6,
+          "virtual": false
+        },
+        {
+          "name": "account_whitelist_operation",
+          "tag": 7,
+          "virtual": false
+        },
+        {
+          "name": "account_upgrade_operation",
+          "tag": 8,
+          "virtual": false
+        },
+        {
+          "name": "account_transfer_operation",
+          "tag": 9,
+          "virtual": false
+        },
+        {
+          "name": "asset_create_operation",
+          "tag": 10,
+          "virtual": false
+        },
+        {
+          "name": "asset_update_operation",
+          "tag": 11,
+          "virtual": false
+        },
+        {
+          "name": "asset_update_bitasset_operation",
+          "tag": 12,
+          "virtual": false
+        },
+        {
+          "name": "asset_update_feed_producers_operation",
+          "tag": 13,
+          "virtual": false
+        },
+        {
+          "name": "asset_issue_operation",
+          "tag": 14,
+          "virtual": false
+        },
+        {
+          "name": "asset_reserve_operation",
+          "tag": 15,
+          "virtual": false
+        },
+        {
+          "name": "asset_fund_fee_pool_operation",
+          "tag": 16,
+          "virtual": false
+        },
+        {
+          "name": "asset_settle_operation",
+          "tag": 17,
+          "virtual": false
+        },
+        {
+          "name": "asset_global_settle_operation",
+          "tag": 18,
+          "virtual": false
+        },
+        {
+          "name": "asset_publish_feed_operation",
+          "tag": 19,
+          "virtual": false
+        },
+        {
+          "name": "witness_create_operation",
+          "tag": 20,
+          "virtual": false
+        },
+        {
+          "name": "witness_update_operation",
+          "tag": 21,
+          "virtual": false
+        },
+        {
+          "name": "proposal_create_operation",
+          "tag": 22,
+          "virtual": false
+        },
+        {
+          "name": "proposal_update_operation",
+          "tag": 23,
+          "virtual": false
+        },
+        {
+          "name": "proposal_delete_operation",
+          "tag": 24,
+          "virtual": false
+        },
+        {
+          "name": "withdraw_permission_create_operation",
+          "tag": 25,
+          "virtual": false
+        },
+        {
+          "name": "withdraw_permission_update_operation",
+          "tag": 26,
+          "virtual": false
+        },
+        {
+          "name": "withdraw_permission_claim_operation",
+          "tag": 27,
+          "virtual": false
+        },
+        {
+          "name": "withdraw_permission_delete_operation",
+          "tag": 28,
+          "virtual": false
+        },
+        {
+          "name": "committee_member_create_operation",
+          "tag": 29,
+          "virtual": false
+        },
+        {
+          "name": "committee_member_update_operation",
+          "tag": 30,
+          "virtual": false
+        },
+        {
+          "name": "committee_member_update_global_parameters_operation",
+          "tag": 31,
+          "virtual": false
+        },
+        {
+          "name": "vesting_balance_create_operation",
+          "tag": 32,
+          "virtual": false
+        },
+        {
+          "name": "vesting_balance_withdraw_operation",
+          "tag": 33,
+          "virtual": false
+        },
+        {
+          "name": "worker_create_operation",
+          "tag": 34,
+          "virtual": false
+        },
+        {
+          "name": "custom_operation",
+          "tag": 35,
+          "virtual": false
+        },
+        {
+          "name": "assert_operation",
+          "tag": 36,
+          "virtual": false
+        },
+        {
+          "name": "balance_claim_operation",
+          "tag": 37,
+          "virtual": false
+        },
+        {
+          "name": "override_transfer_operation",
+          "tag": 38,
+          "virtual": false
+        },
+        {
+          "name": "transfer_to_blind_operation",
+          "tag": 39,
+          "virtual": false
+        },
+        {
+          "name": "blind_transfer_operation",
+          "tag": 40,
+          "virtual": false
+        },
+        {
+          "name": "transfer_from_blind_operation",
+          "tag": 41,
+          "virtual": false
+        },
+        {
+          "name": "asset_settle_cancel_operation",
+          "tag": 42,
+          "virtual": true
+        },
+        {
+          "name": "asset_claim_fees_operation",
+          "tag": 43,
+          "virtual": false
+        },
+        {
+          "name": "fba_distribute_operation",
+          "tag": 44,
+          "virtual": true
+        },
+        {
+          "name": "bid_collateral_operation",
+          "tag": 45,
+          "virtual": false
+        },
+        {
+          "name": "execute_bid_operation",
+          "tag": 46,
+          "virtual": true
+        },
+        {
+          "name": "asset_claim_pool_operation",
+          "tag": 47,
+          "virtual": false
+        },
+        {
+          "name": "asset_update_issuer_operation",
+          "tag": 48,
+          "virtual": false
+        },
+        {
+          "name": "htlc_create_operation",
+          "tag": 49,
+          "virtual": false
+        },
+        {
+          "name": "htlc_redeem_operation",
+          "tag": 50,
+          "virtual": false
+        },
+        {
+          "name": "htlc_redeemed_operation",
+          "tag": 51,
+          "virtual": true
+        },
+        {
+          "name": "htlc_extend_operation",
+          "tag": 52,
+          "virtual": false
+        },
+        {
+          "name": "htlc_refund_operation",
+          "tag": 53,
+          "virtual": true
+        },
+        {
+          "name": "custom_authority_create_operation",
+          "tag": 54,
+          "virtual": false
+        },
+        {
+          "name": "custom_authority_update_operation",
+          "tag": 55,
+          "virtual": false
+        },
+        {
+          "name": "custom_authority_delete_operation",
+          "tag": 56,
+          "virtual": false
+        },
+        {
+          "name": "ticket_create_operation",
+          "tag": 57,
+          "virtual": false
+        },
+        {
+          "name": "ticket_update_operation",
+          "tag": 58,
+          "virtual": false
+        },
+        {
+          "name": "liquidity_pool_create_operation",
+          "tag": 59,
+          "virtual": false
+        },
+        {
+          "name": "liquidity_pool_delete_operation",
+          "tag": 60,
+          "virtual": false
+        },
+        {
+          "name": "liquidity_pool_deposit_operation",
+          "tag": 61,
+          "virtual": false
+        },
+        {
+          "name": "liquidity_pool_withdraw_operation",
+          "tag": 62,
+          "virtual": false
+        },
+        {
+          "name": "liquidity_pool_exchange_operation",
+          "tag": 63,
+          "virtual": false
+        },
+        {
+          "name": "samet_fund_create_operation",
+          "tag": 64,
+          "virtual": false
+        },
+        {
+          "name": "samet_fund_delete_operation",
+          "tag": 65,
+          "virtual": false
+        },
+        {
+          "name": "samet_fund_update_operation",
+          "tag": 66,
+          "virtual": false
+        },
+        {
+          "name": "samet_fund_borrow_operation",
+          "tag": 67,
+          "virtual": false
+        },
+        {
+          "name": "samet_fund_repay_operation",
+          "tag": 68,
+          "virtual": false
+        },
+        {
+          "name": "credit_offer_create_operation",
+          "tag": 69,
+          "virtual": false
+        },
+        {
+          "name": "credit_offer_delete_operation",
+          "tag": 70,
+          "virtual": false
+        },
+        {
+          "name": "credit_offer_update_operation",
+          "tag": 71,
+          "virtual": false
+        },
+        {
+          "name": "credit_offer_accept_operation",
+          "tag": 72,
+          "virtual": false
+        },
+        {
+          "name": "credit_deal_repay_operation",
+          "tag": 73,
+          "virtual": false
+        },
+        {
+          "name": "credit_deal_expired_operation",
+          "tag": 74,
+          "virtual": true
+        },
+        {
+          "name": "liquidity_pool_update_operation",
+          "tag": 75,
+          "virtual": false
+        },
+        {
+          "name": "credit_deal_update_operation",
+          "tag": 76,
+          "virtual": false
+        },
+        {
+          "name": "limit_order_update_operation",
+          "tag": 77,
+          "virtual": false
+        },
+        {
+          "name": "data_room_create_operation",
+          "tag": 78,
+          "virtual": false
+        },
+        {
+          "name": "data_room_update_operation",
+          "tag": 79,
+          "virtual": false
+        },
+        {
+          "name": "data_room_delete_operation",
+          "tag": 80,
+          "virtual": false
+        },
+        {
+          "name": "data_room_member_add_operation",
+          "tag": 81,
+          "virtual": false
+        },
+        {
+          "name": "data_room_member_update_operation",
+          "tag": 82,
+          "virtual": false
+        },
+        {
+          "name": "data_room_member_remove_operation",
+          "tag": 83,
+          "virtual": false
+        },
+        {
+          "name": "data_room_rotate_key_operation",
+          "tag": 84,
+          "virtual": false
+        },
+        {
+          "name": "content_card_create_operation",
+          "tag": 85,
+          "virtual": false
+        },
+        {
+          "name": "content_card_update_operation",
+          "tag": 86,
+          "virtual": false
+        },
+        {
+          "name": "content_card_remove_operation",
+          "tag": 87,
+          "virtual": false
+        },
+        {
+          "name": "commit_create_operation",
+          "tag": 88,
+          "virtual": false
+        },
+        {
+          "name": "reveal_create_operation",
+          "tag": 89,
+          "virtual": false
+        },
+        {
+          "name": "content_card_grant_create_operation",
+          "tag": 90,
+          "virtual": false
+        },
+        {
+          "name": "content_card_grant_revoke_operation",
+          "tag": 91,
+          "virtual": false
+        },
+        {
+          "name": "content_card_link_create_operation",
+          "tag": 92,
+          "virtual": false
+        },
+        {
+          "name": "content_card_link_update_operation",
+          "tag": 93,
+          "virtual": false
+        },
+        {
+          "name": "content_card_link_remove_operation",
+          "tag": 94,
+          "virtual": false
+        }
+      ],
+      "rpcMethods": [
+        "database.get_objects",
+        "database.get_block_header",
+        "database.get_block",
+        "database.get_account_balances",
+        "database.get_accounts",
+        "database.get_full_accounts",
+        "database.get_chain_properties",
+        "database.get_dynamic_global_properties",
+        "database.get_global_properties",
+        "database.get_limit_orders",
+        "database.get_chain_id",
+        "database.get_config",
+        "database.get_key_references",
+        "database.get_assets",
+        "database.lookup_asset_symbols",
+        "database.list_assets",
+        "database.lookup_accounts",
+        "database.get_ticker",
+        "database.get_required_fees",
+        "database.get_data_room_by_id",
+        "database.get_data_room_access_state",
+        "database.get_data_rooms_by_owner",
+        "database.get_data_rooms_by_subject",
+        "database.get_data_room_members",
+        "database.get_data_room_member",
+        "database.get_data_rooms_by_member",
+        "database.get_data_room_key_epochs",
+        "database.get_data_room_key_epoch",
+        "database.get_content_card_by_id",
+        "database.get_content_cards_by_room",
+        "database.get_content_cards_by_author",
+        "database.get_content_card_grants_by_card",
+        "database.get_content_card_grant",
+        "database.get_content_card_grants_by_grantee",
+        "history.get_account_history",
+        "history.get_fill_order_history",
+        "history.get_market_history",
+        "orders.get_tracked_groups",
+        "orders.get_grouped_limit_orders",
+        "crypto.blind",
+        "crypto.blind_sum",
+        "crypto.verify_sum",
+        "crypto.verify_range",
+        "crypto.range_proof_sign",
+        "crypto.verify_range_proof_rewind",
+        "crypto.range_get_info",
+        "network_broadcast.broadcast_transaction"
+      ]
+    },
+    "bitshares": {
+      "sha256": "8a338c3879b8030d1ef586628490970ea5034916f6e10612fd4297747a9250ff",
+      "schemaVersion": 1,
+      "counts": {
+        "structs": 209,
+        "enums": 11,
+        "staticVariants": 11,
+        "operations": 78,
+        "objectTypes": 42,
+        "rpcMethods": 7
+      },
+      "operations": [
+        {
+          "name": "transfer_operation",
+          "tag": 0,
+          "virtual": false
+        },
+        {
+          "name": "limit_order_create_operation",
+          "tag": 1,
+          "virtual": false
+        },
+        {
+          "name": "limit_order_cancel_operation",
+          "tag": 2,
+          "virtual": false
+        },
+        {
+          "name": "call_order_update_operation",
+          "tag": 3,
+          "virtual": false
+        },
+        {
+          "name": "fill_order_operation",
+          "tag": 4,
+          "virtual": true
+        },
+        {
+          "name": "account_create_operation",
+          "tag": 5,
+          "virtual": false
+        },
+        {
+          "name": "account_update_operation",
+          "tag": 6,
+          "virtual": false
+        },
+        {
+          "name": "account_whitelist_operation",
+          "tag": 7,
+          "virtual": false
+        },
+        {
+          "name": "account_upgrade_operation",
+          "tag": 8,
+          "virtual": false
+        },
+        {
+          "name": "account_transfer_operation",
+          "tag": 9,
+          "virtual": false
+        },
+        {
+          "name": "asset_create_operation",
+          "tag": 10,
+          "virtual": false
+        },
+        {
+          "name": "asset_update_operation",
+          "tag": 11,
+          "virtual": false
+        },
+        {
+          "name": "asset_update_bitasset_operation",
+          "tag": 12,
+          "virtual": false
+        },
+        {
+          "name": "asset_update_feed_producers_operation",
+          "tag": 13,
+          "virtual": false
+        },
+        {
+          "name": "asset_issue_operation",
+          "tag": 14,
+          "virtual": false
+        },
+        {
+          "name": "asset_reserve_operation",
+          "tag": 15,
+          "virtual": false
+        },
+        {
+          "name": "asset_fund_fee_pool_operation",
+          "tag": 16,
+          "virtual": false
+        },
+        {
+          "name": "asset_settle_operation",
+          "tag": 17,
+          "virtual": false
+        },
+        {
+          "name": "asset_global_settle_operation",
+          "tag": 18,
+          "virtual": false
+        },
+        {
+          "name": "asset_publish_feed_operation",
+          "tag": 19,
+          "virtual": false
+        },
+        {
+          "name": "witness_create_operation",
+          "tag": 20,
+          "virtual": false
+        },
+        {
+          "name": "witness_update_operation",
+          "tag": 21,
+          "virtual": false
+        },
+        {
+          "name": "proposal_create_operation",
+          "tag": 22,
+          "virtual": false
+        },
+        {
+          "name": "proposal_update_operation",
+          "tag": 23,
+          "virtual": false
+        },
+        {
+          "name": "proposal_delete_operation",
+          "tag": 24,
+          "virtual": false
+        },
+        {
+          "name": "withdraw_permission_create_operation",
+          "tag": 25,
+          "virtual": false
+        },
+        {
+          "name": "withdraw_permission_update_operation",
+          "tag": 26,
+          "virtual": false
+        },
+        {
+          "name": "withdraw_permission_claim_operation",
+          "tag": 27,
+          "virtual": false
+        },
+        {
+          "name": "withdraw_permission_delete_operation",
+          "tag": 28,
+          "virtual": false
+        },
+        {
+          "name": "committee_member_create_operation",
+          "tag": 29,
+          "virtual": false
+        },
+        {
+          "name": "committee_member_update_operation",
+          "tag": 30,
+          "virtual": false
+        },
+        {
+          "name": "committee_member_update_global_parameters_operation",
+          "tag": 31,
+          "virtual": false
+        },
+        {
+          "name": "vesting_balance_create_operation",
+          "tag": 32,
+          "virtual": false
+        },
+        {
+          "name": "vesting_balance_withdraw_operation",
+          "tag": 33,
+          "virtual": false
+        },
+        {
+          "name": "worker_create_operation",
+          "tag": 34,
+          "virtual": false
+        },
+        {
+          "name": "custom_operation",
+          "tag": 35,
+          "virtual": false
+        },
+        {
+          "name": "assert_operation",
+          "tag": 36,
+          "virtual": false
+        },
+        {
+          "name": "balance_claim_operation",
+          "tag": 37,
+          "virtual": false
+        },
+        {
+          "name": "override_transfer_operation",
+          "tag": 38,
+          "virtual": false
+        },
+        {
+          "name": "transfer_to_blind_operation",
+          "tag": 39,
+          "virtual": false
+        },
+        {
+          "name": "blind_transfer_operation",
+          "tag": 40,
+          "virtual": false
+        },
+        {
+          "name": "transfer_from_blind_operation",
+          "tag": 41,
+          "virtual": false
+        },
+        {
+          "name": "asset_settle_cancel_operation",
+          "tag": 42,
+          "virtual": true
+        },
+        {
+          "name": "asset_claim_fees_operation",
+          "tag": 43,
+          "virtual": false
+        },
+        {
+          "name": "fba_distribute_operation",
+          "tag": 44,
+          "virtual": true
+        },
+        {
+          "name": "bid_collateral_operation",
+          "tag": 45,
+          "virtual": false
+        },
+        {
+          "name": "execute_bid_operation",
+          "tag": 46,
+          "virtual": true
+        },
+        {
+          "name": "asset_claim_pool_operation",
+          "tag": 47,
+          "virtual": false
+        },
+        {
+          "name": "asset_update_issuer_operation",
+          "tag": 48,
+          "virtual": false
+        },
+        {
+          "name": "htlc_create_operation",
+          "tag": 49,
+          "virtual": false
+        },
+        {
+          "name": "htlc_redeem_operation",
+          "tag": 50,
+          "virtual": false
+        },
+        {
+          "name": "htlc_redeemed_operation",
+          "tag": 51,
+          "virtual": true
+        },
+        {
+          "name": "htlc_extend_operation",
+          "tag": 52,
+          "virtual": false
+        },
+        {
+          "name": "htlc_refund_operation",
+          "tag": 53,
+          "virtual": true
+        },
+        {
+          "name": "custom_authority_create_operation",
+          "tag": 54,
+          "virtual": false
+        },
+        {
+          "name": "custom_authority_update_operation",
+          "tag": 55,
+          "virtual": false
+        },
+        {
+          "name": "custom_authority_delete_operation",
+          "tag": 56,
+          "virtual": false
+        },
+        {
+          "name": "ticket_create_operation",
+          "tag": 57,
+          "virtual": false
+        },
+        {
+          "name": "ticket_update_operation",
+          "tag": 58,
+          "virtual": false
+        },
+        {
+          "name": "liquidity_pool_create_operation",
+          "tag": 59,
+          "virtual": false
+        },
+        {
+          "name": "liquidity_pool_delete_operation",
+          "tag": 60,
+          "virtual": false
+        },
+        {
+          "name": "liquidity_pool_deposit_operation",
+          "tag": 61,
+          "virtual": false
+        },
+        {
+          "name": "liquidity_pool_withdraw_operation",
+          "tag": 62,
+          "virtual": false
+        },
+        {
+          "name": "liquidity_pool_exchange_operation",
+          "tag": 63,
+          "virtual": false
+        },
+        {
+          "name": "samet_fund_create_operation",
+          "tag": 64,
+          "virtual": false
+        },
+        {
+          "name": "samet_fund_delete_operation",
+          "tag": 65,
+          "virtual": false
+        },
+        {
+          "name": "samet_fund_update_operation",
+          "tag": 66,
+          "virtual": false
+        },
+        {
+          "name": "samet_fund_borrow_operation",
+          "tag": 67,
+          "virtual": false
+        },
+        {
+          "name": "samet_fund_repay_operation",
+          "tag": 68,
+          "virtual": false
+        },
+        {
+          "name": "credit_offer_create_operation",
+          "tag": 69,
+          "virtual": false
+        },
+        {
+          "name": "credit_offer_delete_operation",
+          "tag": 70,
+          "virtual": false
+        },
+        {
+          "name": "credit_offer_update_operation",
+          "tag": 71,
+          "virtual": false
+        },
+        {
+          "name": "credit_offer_accept_operation",
+          "tag": 72,
+          "virtual": false
+        },
+        {
+          "name": "credit_deal_repay_operation",
+          "tag": 73,
+          "virtual": false
+        },
+        {
+          "name": "credit_deal_expired_operation",
+          "tag": 74,
+          "virtual": true
+        },
+        {
+          "name": "liquidity_pool_update_operation",
+          "tag": 75,
+          "virtual": false
+        },
+        {
+          "name": "credit_deal_update_operation",
+          "tag": 76,
+          "virtual": false
+        },
+        {
+          "name": "limit_order_update_operation",
+          "tag": 77,
+          "virtual": false
+        }
+      ],
+      "rpcMethods": [
+        "database.get_objects",
+        "database.get_block_header",
+        "database.get_block",
+        "database.get_account_balances",
+        "database.get_dynamic_global_properties",
+        "database.get_limit_orders",
+        "history.get_account_history"
+      ]
+    }
+  }
+}

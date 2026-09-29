@@ -138,6 +138,7 @@ fn extract_methods_from_class_body(body: &str, file: &Path, class_line: usize) -
 
 fn extract_fields_from_class_body(body: &str, file: &Path, class_line: usize) -> Vec<RawField> {
     let mut fields = Vec::new();
+    let mut extension_aliases = std::collections::BTreeMap::new();
     let mut statement_start = 0usize;
     let mut paren_depth = 0usize;
     let mut angle_depth = 0usize;
@@ -159,7 +160,20 @@ fn extract_fields_from_class_body(body: &str, file: &Path, class_line: usize) ->
             ';' if paren_depth == 0 && angle_depth == 0 && brace_depth == 0 => {
                 let statement = &body[statement_start..index];
                 let statement_line = class_line + line_number(body, statement_start) - 1;
-                fields.extend(parse_field_statement(statement, file, statement_line));
+                let normalized = collapse_whitespace(statement);
+                let declaration = strip_access_labels(&normalized).trim();
+                if let Some(alias) = declaration.strip_prefix("using ")
+                    && let Some((name, target)) = alias.split_once('=')
+                    && target.trim().starts_with("extension<")
+                {
+                    extension_aliases.insert(name.trim().to_string(), target.trim().to_string());
+                }
+                for mut field in parse_field_statement(statement, file, statement_line) {
+                    if let Some(target) = extension_aliases.get(&field.type_expr) {
+                        field.type_expr = target.clone();
+                    }
+                    fields.push(field);
+                }
                 statement_start = index + ch.len_utf8();
             }
             _ => {}
@@ -167,6 +181,18 @@ fn extract_fields_from_class_body(body: &str, file: &Path, class_line: usize) ->
     }
 
     fields
+}
+
+#[test]
+fn class_local_extension_alias_is_resolved_without_leaking_to_other_classes() {
+    let classes = extract_classes(
+        "struct order { struct options_type { optional<uint16_t> flag; }; using extensions_type = extension<options_type>; extensions_type extensions; }; struct other { extensions_type extensions; };",
+        Path::new("market.hpp"),
+    );
+    let order = classes.iter().find(|c| c.name == "order").unwrap();
+    assert_eq!(order.fields[0].type_expr, "extension<options_type>");
+    let other = classes.iter().find(|c| c.name == "other").unwrap();
+    assert_eq!(other.fields[0].type_expr, "extensions_type");
 }
 
 fn parse_field_statement(statement: &str, file: &Path, line: usize) -> Vec<RawField> {

@@ -72,7 +72,7 @@ impl<'session> CallOrderUpdateRequest<'session> {
             funding_account: AccountId(self.funding_account),
             delta_collateral: Asset::new(collateral_amount, AssetId(collateral_asset)),
             delta_debt: Asset::new(debt_amount, AssetId(debt_asset)),
-            extensions: vec![],
+            extensions: graphene_chain_swaplock_bindings::generated::types::CallOrderUpdateOperationOptionsType { target_collateral_ratio: None },
         });
         TransactionBuilder::new(self.session)
             .add_operation(operation)

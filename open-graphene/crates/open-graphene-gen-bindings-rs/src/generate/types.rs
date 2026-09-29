@@ -301,22 +301,17 @@ pub(crate) fn render_fields(
         let ty = render_type_ref(protocol, &field.ty)?;
         // Older Swaplock nodes omit the immutable room policy. Treat their rooms
         // as legacy; missing policy must never accidentally enable strict writes.
-        if (owner == "DataRoomObject" && field.name == "write_policy")
-            || (owner == "DataRoomCreateOperationExt" && field.name == "write_policy")
-            || ((owner == "ContentCardRemoveOperationExt"
-                || owner == "ContentCardUpdateOperationExt")
-                && field.name == "expected_hash")
-        {
+        if open_graphene_codegen_common::DEFAULT_FIELDS.iter().any(
+            |(source_owner, source_field)| {
+                owner == rust_type_name(source_owner) && field.name == *source_field
+            },
+        ) {
             out.push_str("    #[serde(default)]\n");
         }
         if field.name == "extensions"
-            && matches!(
-                owner,
-                "DataRoomMemberAddOperation"
-                    | "DataRoomMemberUpdateOperation"
-                    | "DataRoomMemberRemoveOperation"
-                    | "DataRoomRotateKeyOperation"
-            )
+            && open_graphene_codegen_common::LEGACY_ACCESS_OPERATIONS
+                .iter()
+                .any(|name| owner == rust_type_name(name))
         {
             out.push_str("    #[serde(serialize_with = \"crate::generated::types::serialize_access_extensions\", deserialize_with = \"crate::generated::types::deserialize_access_extensions\")]\n");
         }

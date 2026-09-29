@@ -177,7 +177,11 @@ pub fn parse_protocol_object_id(
     expected_type: Option<u32>,
 ) -> Result<ProtocolObjectIdParts> {
     let parts = value.split('.').collect::<Vec<_>>();
-    if parts.len() != 3 {
+    if parts.len() != 3
+        || parts
+            .iter()
+            .any(|part| part.is_empty() || !part.bytes().all(|b| b.is_ascii_digit()))
+    {
         return Err(invalid_protocol_object_id(
             value,
             expected_space,
@@ -195,7 +199,10 @@ pub fn parse_protocol_object_id(
         .parse::<u64>()
         .map_err(|_| invalid_protocol_object_id(value, expected_space, expected_type))?;
 
-    if expected_space.is_some_and(|expected| expected != space)
+    if space > u8::MAX.into()
+        || type_id > u8::MAX.into()
+        || instance > 0x0000_ffff_ffff_ffff
+        || expected_space.is_some_and(|expected| expected != space)
         || expected_type.is_some_and(|expected| expected != type_id)
     {
         return Err(invalid_protocol_object_id(
@@ -220,6 +227,15 @@ pub fn write_protocol_object_id(
 ) -> Result<()> {
     let parts = parse_protocol_object_id(value, expected_space, expected_type)?;
     write_varint(parts.instance, out);
+    Ok(())
+}
+
+/// Generic `graphene::db::object_id_type` stores the full packed u64, unlike
+/// `object_id<Space, Type>`, which serializes only its varint instance.
+pub fn write_object_id(value: &str, out: &mut Vec<u8>) -> Result<()> {
+    let parts = parse_protocol_object_id(value, None, None)?;
+    let packed = (u64::from(parts.space) << 56) | (u64::from(parts.type_id) << 48) | parts.instance;
+    out.extend_from_slice(&packed.to_le_bytes());
     Ok(())
 }
 

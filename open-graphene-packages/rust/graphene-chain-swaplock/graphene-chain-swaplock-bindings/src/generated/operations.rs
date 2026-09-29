@@ -31,7 +31,7 @@ pub struct LimitOrderCreateOperation {
     pub min_to_receive: crate::generated::types::Asset,
     pub expiration: String,
     pub fill_or_kill: bool,
-    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+    pub extensions: crate::generated::types::LimitOrderCreateOperationOptionsType,
 }
 
 pub const LIMIT_ORDER_CANCEL_OPERATION_ID: u32 = 2;
@@ -56,7 +56,7 @@ pub struct CallOrderUpdateOperation {
     pub funding_account: crate::generated::ids::AccountId,
     pub delta_collateral: crate::generated::types::Asset,
     pub delta_debt: crate::generated::types::Asset,
-    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+    pub extensions: crate::generated::types::CallOrderUpdateOperationOptionsType,
 }
 
 pub const FILL_ORDER_OPERATION_ID: u32 = 4;

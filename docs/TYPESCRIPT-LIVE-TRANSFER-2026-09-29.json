@@ -1,0 +1,77 @@
+{
+  "startedAt": "2026-09-29T13:35:52.167Z",
+  "endpoint": "wss://node01.swaplock.chainpool.online:8090",
+  "chainId": "3b4f346481a66146d732eb22a43b5956134e5bea6124b379033589146036cbbf",
+  "mode": "broadcast",
+  "transactionId": "1a5f3f4448f72561e136b27f408857ebe85af6d4",
+  "from": {
+    "id": "1.2.100",
+    "name": "swaplock"
+  },
+  "to": {
+    "id": "1.2.101",
+    "name": "registrar"
+  },
+  "asset": {
+    "id": "1.3.0",
+    "symbol": "BTS",
+    "precision": 5
+  },
+  "amountUnits": "1000",
+  "feeUnits": "200000",
+  "nativeFcBytesMatch": true,
+  "nodeAuthorityVerified": true,
+  "signedTransaction": {
+    "ref_block_num": 21949,
+    "ref_block_prefix": 2262200968,
+    "expiration": "2026-09-29T13:37:51",
+    "operations": [
+      [
+        0,
+        {
+          "fee": {
+            "amount": 200000,
+            "asset_id": "1.3.0"
+          },
+          "from": "1.2.100",
+          "to": "1.2.101",
+          "amount": {
+            "amount": 1000,
+            "asset_id": "1.3.0"
+          },
+          "extensions": []
+        }
+      ]
+    ],
+    "extensions": [],
+    "signatures": [
+      "1ff918883d11d42b3b2c0518fa543ca6695f0f2c910c5d99a073e3a2ef093529dd2889d5cc211189d4b51b8c0502d3d82d4c6c6fc97854d37c6eb79571c86d83e3"
+    ]
+  },
+  "unsignedFcHex": "bd558872d6862fbfbb6a0100400d030000000000006465e80300000000000000000000",
+  "signedFcHex": "bd558872d6862fbfbb6a0100400d030000000000006465e80300000000000000000000011ff918883d11d42b3b2c0518fa543ca6695f0f2c910c5d99a073e3a2ef093529dd2889d5cc211189d4b51b8c0502d3d82d4c6c6fc97854d37c6eb79571c86d83e3",
+  "submission": {
+    "transactionId": "1a5f3f4448f72561e136b27f408857ebe85af6d4",
+    "status": "submitted"
+  },
+  "inclusion": {
+    "transactionId": "1a5f3f4448f72561e136b27f408857ebe85af6d4",
+    "blockNumber": 1201598,
+    "transactionIndex": 0,
+    "blockTime": "2026-09-29T13:35:54"
+  },
+  "secondNodeInclusion": {
+    "endpoint": "wss://node02.swaplock.chainpool.online:8090",
+    "transactionId": "1a5f3f4448f72561e136b27f408857ebe85af6d4",
+    "blockNumber": 1201598,
+    "transactionIndex": 0,
+    "blockTime": "2026-09-29T13:35:54"
+  },
+  "balanceChanges": {
+    "senderUnits": "-201000",
+    "recipientUnits": "1000"
+  },
+  "lastIrreversibleBlock": 1201598,
+  "explorer": "https://portal.swaplock.chainpool.online/block/1201598",
+  "finishedAt": "2026-09-29T13:36:04.781Z"
+}

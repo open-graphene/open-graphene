@@ -2,7 +2,7 @@ use super::*;
 
 pub(crate) fn render_fc(protocol: &Protocol) -> Result<String> {
     let mut out = generated_header(protocol, "minimal FC serialization for transfer path");
-    out.push_str("pub use open_graphene_fc::{decode_chain_id_hex, decode_public_key, parse_protocol_object_id, sha256_bytes, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};\n// Krypto na krzywej jest za cechą: bez niej zostaje sama serializacja,\n// a z nią wiazanie do kodu C, ktorego wasm32 nie zbuduje bez lancucha C.\n#[cfg(feature = \"signing\")]\npub use open_graphene_fc::{is_graphene_canonical_compact_signature, recover_public_key_from_compact_signature, sign_digest_compact_with_wif, verify_compact_signature_public_key};\n\n");
+    out.push_str("pub use open_graphene_fc::{decode_chain_id_hex, decode_public_key, parse_protocol_object_id, sha256_bytes, write_bytes, write_fixed_bytes, write_object_id, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};\n// Krypto na krzywej jest za cechą: bez niej zostaje sama serializacja,\n// a z nią wiazanie do kodu C, ktorego wasm32 nie zbuduje bez lancucha C.\n#[cfg(feature = \"signing\")]\npub use open_graphene_fc::{is_graphene_canonical_compact_signature, recover_public_key_from_compact_signature, sign_digest_compact_with_wif, verify_compact_signature_public_key};\n\n");
 
     render_fc_id_impls(&mut out, protocol)?;
     render_fc_signature_impl(&mut out, protocol);
@@ -61,7 +61,7 @@ pub(crate) fn render_fc_id_impls(out: &mut String, protocol: &Protocol) -> Resul
 
     out.push_str("impl FcSerialize for crate::generated::ids::ObjectId {\n");
     out.push_str("    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {\n");
-    out.push_str("        write_protocol_object_id(&self.0, None, None, out)\n");
+    out.push_str("        write_object_id(&self.0, out)\n");
     out.push_str("    }\n");
     out.push_str("}\n\n");
     Ok(())
@@ -261,23 +261,7 @@ pub(crate) fn render_fc_struct_impls(
 /// `extensions` field (the `flat_set<future_extension>` variant is an array, not a struct ref, so
 /// it never lands here).
 pub(crate) fn extension_struct_names(protocol: &Protocol) -> BTreeSet<String> {
-    let mut names = BTreeSet::new();
-    let mut collect = |fields: &[FieldDef]| {
-        for field in fields {
-            if field.name == "extensions"
-                && let TypeRef::Ref { name } = &field.ty
-            {
-                names.insert(name.clone());
-            }
-        }
-    };
-    for struct_def in &protocol.structs {
-        collect(&struct_def.fields);
-    }
-    for operation in &protocol.operations {
-        collect(&operation.fields);
-    }
-    names
+    open_graphene_codegen_common::extension_struct_names(protocol)
 }
 
 /// FC encoding for a `extension<T>` struct: a varint count of set members followed by each set
@@ -295,7 +279,10 @@ pub(crate) fn render_fc_extension_struct_impl(out: &mut String, struct_def: &Str
 
     // This extension has one optional string at FC index 0. Keep other extension
     // families fail-closed until their non-empty wire formats have coverage.
-    if matches!(struct_def.name.as_str(), "content_card_update_operation_ext" | "content_card_remove_operation_ext") {
+    if matches!(
+        struct_def.name.as_str(),
+        "content_card_update_operation_ext" | "content_card_remove_operation_ext"
+    ) {
         out.push_str("        match &self.expected_hash {\n");
         out.push_str("            None => write_varint(0u64, out),\n");
         out.push_str("            Some(hash) => { write_varint(1u64, out); write_varint(0u64, out); hash.fc_serialize(out)?; }\n");
@@ -1828,7 +1815,7 @@ mod tests {
 
         let output = render_fc(&protocol).expect("render fc");
 
-        assert!(output.contains("pub use open_graphene_fc::{decode_chain_id_hex, decode_public_key, parse_protocol_object_id, sha256_bytes, write_bytes, write_fixed_bytes, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};"));
+        assert!(output.contains("pub use open_graphene_fc::{decode_chain_id_hex, decode_public_key, parse_protocol_object_id, sha256_bytes, write_bytes, write_fixed_bytes, write_object_id, write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id, FcSerialize, FcSerializeError, Result};"));
         assert!(output.contains("impl FcSerialize for crate::generated::types::Asset"));
         assert!(
             output.contains(

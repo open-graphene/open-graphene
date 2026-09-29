@@ -804,6 +804,14 @@ pub struct CallOrderUpdateOperationFeeParamsT {
     pub fee: u64,
 }
 
+/// Raw protocol struct `call_order_update_operation_options_type`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesCallOrderUpdateOperationOptionsType)]
+pub struct CallOrderUpdateOperationOptionsType {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub target_collateral_ratio: Option<u16>,
+}
+
 /// Raw protocol struct `cdd_vesting_policy_initializer`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneBitsharesCddVestingPolicyInitializer)]
@@ -1283,6 +1291,14 @@ pub struct LimitOrderCreateOperationFeeParamsT {
     )]
     #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
+}
+
+/// Raw protocol struct `limit_order_create_operation_options_type`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneBitsharesLimitOrderCreateOperationOptionsType)]
+pub struct LimitOrderCreateOperationOptionsType {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub on_fill: Option<Vec<crate::generated::static_variants::LimitOrderAutoAction>>,
 }
 
 /// Raw protocol struct `limit_order_object`.

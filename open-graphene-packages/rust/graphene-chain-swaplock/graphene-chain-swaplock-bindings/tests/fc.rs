@@ -190,7 +190,7 @@ fn sample_limit_order_create_operation() -> LimitOrderCreateOperation {
         },
         expiration: "2026-05-25T12:01:00".to_string(),
         fill_or_kill: true,
-        extensions: vec![],
+        extensions: graphene_chain_swaplock_bindings::generated::types::LimitOrderCreateOperationOptionsType { on_fill: None },
     }
 }
 

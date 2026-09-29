@@ -32,6 +32,12 @@ open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-bind
 Both the spec JSON and the generated Rust sources are committed; CI regenerates
 them and fails if the committed output drifts from the generators.
 
+The same specs now feed `open-graphene-gen-bindings-ts`. The native TypeScript
+implementation includes generated types, JSON/RPC bindings and transfer FC,
+plus a Swaplock prepare/sign/broadcast path verified on the live testnet. See the
+[TypeScript workspace](open-graphene-packages/typescript/README.md) for setup,
+tests and the remaining SDK stages.
+
 ## Repository layout
 
 | Path | Purpose |
@@ -39,6 +45,9 @@ them and fails if the committed output drifts from the generators.
 | `open-graphene/crates/open-graphene-spec-gen` | C++ → protocol-spec extractor (config-driven per chain) |
 | `open-graphene/crates/open-graphene-json-schema` | The spec's typed IR + published JSON Schema (`dist/schema.json`) |
 | `open-graphene/crates/open-graphene-gen-bindings-rs` | Spec → Rust bindings generator |
+| `open-graphene/crates/open-graphene-gen-bindings-ts` | Spec → native TypeScript bindings generator |
+| `open-graphene/crates/open-graphene-codegen-common` | Shared protocol compatibility rules for generators |
+| `open-graphene-packages/typescript` | Native TypeScript workspace; initial types/JSON/RPC stage |
 | `open-graphene-packages/rust/graphene` | SDK facade (currently Swaplock-only) |
 | `open-graphene-packages/rust/graphene-chain-swaplock` | Swaplock spec, generated bindings, and hand-written API layer |
 | `open-graphene-packages/rust/graphene-chain-bitshares` | BitShares spec + bindings (cross-chain sanity check) |
