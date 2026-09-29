@@ -18,6 +18,24 @@ importers:
         specifier: 7.0.2
         version: 7.0.2
 
+  graphene:
+    dependencies:
+      '@open-graphene/chain-bitshares-api':
+        specifier: workspace:*
+        version: link:../graphene-chain-bitshares/graphene-chain-bitshares-api
+      '@open-graphene/chain-swaplock-api':
+        specifier: workspace:*
+        version: link:../graphene-chain-swaplock/graphene-chain-swaplock-api
+      '@open-graphene/core':
+        specifier: workspace:*
+        version: link:../graphene-core
+      '@open-graphene/fc':
+        specifier: workspace:*
+        version: link:../graphene-fc
+      '@open-graphene/transport':
+        specifier: workspace:*
+        version: link:../graphene-transport
+
   graphene-chain-bitshares/graphene-chain-bitshares-api:
     dependencies:
       '@open-graphene/chain-bitshares-bindings':
@@ -26,6 +44,9 @@ importers:
       '@open-graphene/codec':
         specifier: workspace:*
         version: link:../../graphene-codec
+      '@open-graphene/core':
+        specifier: workspace:*
+        version: link:../../graphene-core
       '@open-graphene/fc':
         specifier: workspace:*
         version: link:../../graphene-fc
@@ -56,6 +77,9 @@ importers:
       '@open-graphene/codec':
         specifier: workspace:*
         version: link:../../graphene-codec
+      '@open-graphene/core':
+        specifier: workspace:*
+        version: link:../../graphene-core
       '@open-graphene/fc':
         specifier: workspace:*
         version: link:../../graphene-fc
@@ -89,6 +113,12 @@ importers:
       lossless-json:
         specifier: 4.3.1
         version: 4.3.1
+
+  graphene-core:
+    dependencies:
+      '@open-graphene/primitives':
+        specifier: workspace:*
+        version: link:../graphene-primitives
 
   graphene-fc:
     dependencies:

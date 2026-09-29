@@ -31,6 +31,36 @@ export async function runBitSharesSmoke(endpoint) {
   expect(nativeHex===bytesToHex(b.encodeTransaction(tx)),'Native FC mismatch');
   report.checks.push({method:'transfer FC vs native C++',status:'passed'});
   report.unsignedTransaction=b.TransactionCodec.encode(tx);report.unsignedFcHex=nativeHex;
+  for(const [descriptor,params] of [
+   [b.DatabaseGetChainProperties,{}],[b.DatabaseGetGlobalProperties,{}],[b.DatabaseGetConfig,{}],
+   [b.DatabaseGetFullAccounts,{names_or_ids:['committee-account'],subscribe:false}],
+   [b.DatabaseGetKeyReferences,{keys:['BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV']}],
+   [b.DatabaseGetAssets,{asset_symbols_or_ids:['BTS'],subscribe:false}],[b.DatabaseLookupAssetSymbols,{symbols_or_ids:['BTS']}],
+   [b.DatabaseListAssets,{lower_bound_symbol:'',limit:5}],[b.DatabaseLookupAccounts,{lower_bound_name:'committee',limit:5,subscribe:false}],
+   [b.DatabaseGetTicker,{base:'1.3.0',quote:'1.3.121'}],
+   [b.HistoryGetFillOrderHistory,{a:'1.3.0',b:'1.3.121',limit:5}],
+   [b.HistoryGetMarketHistory,{a:'1.3.0',b:'1.3.121',bucket_seconds:60,start:new Date(Date.now()-86400000).toISOString().slice(0,19),end:new Date().toISOString().slice(0,19)}],
+  ])await call(descriptor,params);
+  const optional=async(descriptor,params,verify=()=>{})=>{
+   try{return await call(descriptor,params,verify);}
+   catch(error){
+    const denied=/Access denied|not enabled|not available/.test(error.message);
+    report.checks.push({method:descriptor.api+'.'+descriptor.method,status:denied?'unavailable_on_node':'failed',reason:error.message.slice(0,200)});
+    return undefined;
+   }
+  };
+  const groups=await optional(b.OrdersGetTrackedGroups,{});
+  await optional(b.OrdersGetGroupedLimitOrders,{base_asset:'1.3.0',quote_asset:'1.3.121',group:groups?.[0]??10,start:null,limit:5});
+  const blind=new Uint8Array(32);blind[31]=1;const nonce=new Uint8Array(32).fill(2);
+  const commit=await optional(b.CryptoBlind,{blind,value:7n},v=>expect(v.length===33,'Commit length'));
+  await optional(b.CryptoBlindSum,{blinds_in:[blind,blind],non_neg:1},v=>expect(v.every(x=>x===0),'Blind sum'));
+  const commitHex=bytesToHex(commit??new Uint8Array(33));
+  await optional(b.CryptoVerifySum,{commits_in:[commitHex],neg_commits_in:[commitHex],excess:0n},v=>expect(v===true,'Commit sum'));
+  const proof=await optional(b.CryptoRangeProofSign,{min_value:0n,commit:commitHex,commit_blind:blind,nonce,base10_exp:0,min_bits:8,actual_value:7n},v=>expect(v.length>0,'Proof'));
+  await optional(b.CryptoVerifyRange,{commit:commit??new Uint8Array(33),proof:proof??new Uint8Array()},v=>expect(v.success&&v.min_val<=7n&&v.max_val>=7n,'Range'));
+  await optional(b.CryptoVerifyRangeProofRewind,{nonce,commit:commit??new Uint8Array(33),proof:proof??new Uint8Array()},v=>expect(v.success&&v.value_out===7n,'Rewind'));
+  await optional(b.CryptoRangeGetInfo,{proof:proof??new Uint8Array()},v=>expect(v.min_value<=7n&&v.max_value>=7n,'Info'));
+  report.summary=Object.fromEntries([...new Set(report.checks.map(c=>c.status))].map(status=>[status,report.checks.filter(c=>c.status===status).length]));
   return report;
  }finally{client.close();report.finishedAt=new Date().toISOString();}
 }

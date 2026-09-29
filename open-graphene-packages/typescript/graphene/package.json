@@ -1,0 +1,30 @@
+{
+  "name": "@open-graphene/graphene",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT OR Apache-2.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@open-graphene/chain-swaplock-api": "workspace:*",
+    "@open-graphene/chain-bitshares-api": "workspace:*",
+    "@open-graphene/core": "workspace:*",
+    "@open-graphene/transport": "workspace:*",
+    "@open-graphene/fc": "workspace:*"
+  }
+}

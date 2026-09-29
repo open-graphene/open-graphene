@@ -20,9 +20,19 @@
 pub enum ProtocolObject {
     Account(Box<crate::generated::types::AccountObject>),
     Asset(Box<crate::generated::types::AssetObject>),
+    ForceSettlement(Box<crate::generated::types::ForceSettlementObject>),
     LimitOrder(Box<crate::generated::types::LimitOrderObject>),
+    CallOrder(Box<crate::generated::types::CallOrderObject>),
+    Proposal(Box<crate::generated::types::ProposalObject>),
     OperationHistory(Box<crate::generated::types::OperationHistoryObject>),
+    WithdrawPermission(Box<crate::generated::types::WithdrawPermissionObject>),
+    VestingBalance(Box<crate::generated::types::VestingBalanceObject>),
+    Htlc(Box<crate::generated::types::HtlcObject>),
+    GlobalProperty(Box<crate::generated::types::GlobalPropertyObject>),
     DynamicGlobalProperty(Box<crate::generated::types::DynamicGlobalPropertyObject>),
+    AccountBalance(Box<crate::generated::types::AccountBalanceObject>),
+    AccountStatistics(Box<crate::generated::types::AccountStatisticsObject>),
+    ChainProperty(Box<crate::generated::types::ChainPropertyObject>),
     Unknown(serde_json::Value),
 }
 
@@ -34,9 +44,19 @@ impl serde::Serialize for ProtocolObject {
         match self {
             Self::Account(value) => serde::Serialize::serialize(value, serializer),
             Self::Asset(value) => serde::Serialize::serialize(value, serializer),
+            Self::ForceSettlement(value) => serde::Serialize::serialize(value, serializer),
             Self::LimitOrder(value) => serde::Serialize::serialize(value, serializer),
+            Self::CallOrder(value) => serde::Serialize::serialize(value, serializer),
+            Self::Proposal(value) => serde::Serialize::serialize(value, serializer),
             Self::OperationHistory(value) => serde::Serialize::serialize(value, serializer),
+            Self::WithdrawPermission(value) => serde::Serialize::serialize(value, serializer),
+            Self::VestingBalance(value) => serde::Serialize::serialize(value, serializer),
+            Self::Htlc(value) => serde::Serialize::serialize(value, serializer),
+            Self::GlobalProperty(value) => serde::Serialize::serialize(value, serializer),
             Self::DynamicGlobalProperty(value) => serde::Serialize::serialize(value, serializer),
+            Self::AccountBalance(value) => serde::Serialize::serialize(value, serializer),
+            Self::AccountStatistics(value) => serde::Serialize::serialize(value, serializer),
+            Self::ChainProperty(value) => serde::Serialize::serialize(value, serializer),
             Self::Unknown(value) => serde::Serialize::serialize(value, serializer),
         }
     }
@@ -59,14 +79,44 @@ impl<'de> serde::Deserialize<'de> for ProtocolObject {
             Some((1, 3)) => serde_json::from_value(value)
                 .map(Self::Asset)
                 .map_err(serde::de::Error::custom),
+            Some((1, 4)) => serde_json::from_value(value)
+                .map(Self::ForceSettlement)
+                .map_err(serde::de::Error::custom),
             Some((1, 7)) => serde_json::from_value(value)
                 .map(Self::LimitOrder)
+                .map_err(serde::de::Error::custom),
+            Some((1, 8)) => serde_json::from_value(value)
+                .map(Self::CallOrder)
+                .map_err(serde::de::Error::custom),
+            Some((1, 10)) => serde_json::from_value(value)
+                .map(Self::Proposal)
                 .map_err(serde::de::Error::custom),
             Some((1, 11)) => serde_json::from_value(value)
                 .map(Self::OperationHistory)
                 .map_err(serde::de::Error::custom),
+            Some((1, 12)) => serde_json::from_value(value)
+                .map(Self::WithdrawPermission)
+                .map_err(serde::de::Error::custom),
+            Some((1, 13)) => serde_json::from_value(value)
+                .map(Self::VestingBalance)
+                .map_err(serde::de::Error::custom),
+            Some((1, 16)) => serde_json::from_value(value)
+                .map(Self::Htlc)
+                .map_err(serde::de::Error::custom),
+            Some((2, 0)) => serde_json::from_value(value)
+                .map(Self::GlobalProperty)
+                .map_err(serde::de::Error::custom),
             Some((2, 1)) => serde_json::from_value(value)
                 .map(Self::DynamicGlobalProperty)
+                .map_err(serde::de::Error::custom),
+            Some((2, 5)) => serde_json::from_value(value)
+                .map(Self::AccountBalance)
+                .map_err(serde::de::Error::custom),
+            Some((2, 6)) => serde_json::from_value(value)
+                .map(Self::AccountStatistics)
+                .map_err(serde::de::Error::custom),
+            Some((2, 11)) => serde_json::from_value(value)
+                .map(Self::ChainProperty)
                 .map_err(serde::de::Error::custom),
             _ => Ok(Self::Unknown(value)),
         }
@@ -82,6 +132,229 @@ fn protocol_object_type_key(id: &str) -> Option<(u32, u32)> {
         return None;
     }
     Some((space, object_type))
+}
+
+/// RPC methods on the `crypto` API.
+pub mod crypto {
+    /// RPC `crypto.blind`.
+    pub mod blind {
+        pub const API: &str = "crypto";
+        pub const METHOD: &str = "blind";
+
+        /// Positional parameters for `crypto.blind`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub blind: String,
+            pub value: u64,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![
+                    serde_json::to_value(&self.blind)?,
+                    serde_json::to_value(self.value)?,
+                ];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = String;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `crypto.blind_sum`.
+    pub mod blind_sum {
+        pub const API: &str = "crypto";
+        pub const METHOD: &str = "blind_sum";
+
+        /// Positional parameters for `crypto.blind_sum`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub blinds_in: Vec<String>,
+            pub non_neg: u32,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![
+                    serde_json::to_value(&self.blinds_in)?,
+                    serde_json::to_value(self.non_neg)?,
+                ];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = String;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `crypto.range_get_info`.
+    pub mod range_get_info {
+        pub const API: &str = "crypto";
+        pub const METHOD: &str = "range_get_info";
+
+        /// Positional parameters for `crypto.range_get_info`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub proof: String,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![serde_json::to_value(&self.proof)?];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = crate::generated::types::RangeProofInfo;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `crypto.range_proof_sign`.
+    pub mod range_proof_sign {
+        pub const API: &str = "crypto";
+        pub const METHOD: &str = "range_proof_sign";
+
+        /// Positional parameters for `crypto.range_proof_sign`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub min_value: u64,
+            pub commit: serde_json::Value,
+            pub commit_blind: String,
+            pub nonce: String,
+            pub base10_exp: serde_json::Value,
+            pub min_bits: u8,
+            pub actual_value: u64,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![
+                    serde_json::to_value(self.min_value)?,
+                    serde_json::to_value(&self.commit)?,
+                    serde_json::to_value(&self.commit_blind)?,
+                    serde_json::to_value(&self.nonce)?,
+                    serde_json::to_value(&self.base10_exp)?,
+                    serde_json::to_value(self.min_bits)?,
+                    serde_json::to_value(self.actual_value)?,
+                ];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = String;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `crypto.verify_range`.
+    pub mod verify_range {
+        pub const API: &str = "crypto";
+        pub const METHOD: &str = "verify_range";
+
+        /// Positional parameters for `crypto.verify_range`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub commit: String,
+            pub proof: String,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![
+                    serde_json::to_value(&self.commit)?,
+                    serde_json::to_value(&self.proof)?,
+                ];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = crate::generated::types::VerifyRangeResult;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `crypto.verify_range_proof_rewind`.
+    pub mod verify_range_proof_rewind {
+        pub const API: &str = "crypto";
+        pub const METHOD: &str = "verify_range_proof_rewind";
+
+        /// Positional parameters for `crypto.verify_range_proof_rewind`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub nonce: String,
+            pub commit: String,
+            pub proof: String,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![
+                    serde_json::to_value(&self.nonce)?,
+                    serde_json::to_value(&self.commit)?,
+                    serde_json::to_value(&self.proof)?,
+                ];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = crate::generated::types::VerifyRangeProofRewindResult;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `crypto.verify_sum`.
+    pub mod verify_sum {
+        pub const API: &str = "crypto";
+        pub const METHOD: &str = "verify_sum";
+
+        /// Positional parameters for `crypto.verify_sum`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub commits_in: Vec<serde_json::Value>,
+            pub neg_commits_in: Vec<serde_json::Value>,
+            pub excess: i64,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![
+                    serde_json::to_value(&self.commits_in)?,
+                    serde_json::to_value(&self.neg_commits_in)?,
+                    serde_json::to_value(self.excess)?,
+                ];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = bool;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
 }
 
 /// RPC methods on the `database` API.
@@ -147,6 +420,43 @@ pub mod database {
         }
 
         pub type Returns = Vec<Option<crate::generated::types::AccountObject>>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_assets`.
+    pub mod get_assets {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_assets";
+
+        /// Positional parameters for `database.get_assets`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub asset_symbols_or_ids: Vec<String>,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub subscribe: Option<bool>,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let mut params = vec![serde_json::to_value(&self.asset_symbols_or_ids)?];
+                let tail: [Option<serde_json::Value>; 1] = [match &self.subscribe {
+                    Some(value) => Some(serde_json::to_value(value)?),
+                    None => None,
+                }];
+                if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
+                    for value in tail.into_iter().take(last_provided + 1) {
+                        params.push(value.unwrap_or(serde_json::Value::Null));
+                    }
+                }
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<Option<crate::generated::types::ExtendedAssetObject>>;
 
         pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
             serde_json::from_value(value)
@@ -239,6 +549,58 @@ pub mod database {
         }
     }
 
+    /// RPC `database.get_chain_properties`.
+    pub mod get_chain_properties {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_chain_properties";
+
+        /// Positional parameters for `database.get_chain_properties`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {}
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                Ok(serde_json::Value::Array(Vec::new()))
+            }
+        }
+
+        pub type Returns = crate::generated::types::ChainPropertyObject;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_config`.
+    pub mod get_config {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_config";
+
+        /// Positional parameters for `database.get_config`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {}
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                Ok(serde_json::Value::Array(Vec::new()))
+            }
+        }
+
+        /// Chain compile-time constants returned by `database.get_config`.
+        ///
+        /// The node returns an `fc::variant_object`, represented as a JSON object whose values
+        /// remain dynamic because individual `GRAPHENE_*` constants mix strings and numbers.
+        pub type Config = std::collections::BTreeMap<String, serde_json::Value>;
+
+        pub type Returns = crate::generated::rpc::database::get_config::Config;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
     /// RPC `database.get_dynamic_global_properties`.
     pub mod get_dynamic_global_properties {
         pub const API: &str = "database";
@@ -256,6 +618,92 @@ pub mod database {
         }
 
         pub type Returns = crate::generated::types::DynamicGlobalPropertyObject;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_full_accounts`.
+    pub mod get_full_accounts {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_full_accounts";
+
+        /// Positional parameters for `database.get_full_accounts`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub names_or_ids: Vec<String>,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub subscribe: Option<bool>,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let mut params = vec![serde_json::to_value(&self.names_or_ids)?];
+                let tail: [Option<serde_json::Value>; 1] = [match &self.subscribe {
+                    Some(value) => Some(serde_json::to_value(value)?),
+                    None => None,
+                }];
+                if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
+                    for value in tail.into_iter().take(last_provided + 1) {
+                        params.push(value.unwrap_or(serde_json::Value::Null));
+                    }
+                }
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<(String, crate::generated::types::FullAccount)>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_global_properties`.
+    pub mod get_global_properties {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_global_properties";
+
+        /// Positional parameters for `database.get_global_properties`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {}
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                Ok(serde_json::Value::Array(Vec::new()))
+            }
+        }
+
+        pub type Returns = crate::generated::types::GlobalPropertyObject;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_key_references`.
+    pub mod get_key_references {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_key_references";
+
+        /// Positional parameters for `database.get_key_references`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub keys: Vec<String>,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![serde_json::to_value(&self.keys)?];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<Vec<crate::generated::ids::AccountId>>;
 
         pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
             serde_json::from_value(value)
@@ -375,6 +823,133 @@ pub mod database {
             serde_json::from_value(value)
         }
     }
+
+    /// RPC `database.get_ticker`.
+    pub mod get_ticker {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_ticker";
+
+        /// Positional parameters for `database.get_ticker`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub base: String,
+            pub quote: String,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![
+                    serde_json::to_value(&self.base)?,
+                    serde_json::to_value(&self.quote)?,
+                ];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = crate::generated::types::MarketTicker;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.list_assets`.
+    pub mod list_assets {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "list_assets";
+
+        /// Positional parameters for `database.list_assets`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub lower_bound_symbol: String,
+            pub limit: u32,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![
+                    serde_json::to_value(&self.lower_bound_symbol)?,
+                    serde_json::to_value(self.limit)?,
+                ];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<crate::generated::types::ExtendedAssetObject>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.lookup_accounts`.
+    pub mod lookup_accounts {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "lookup_accounts";
+
+        /// Positional parameters for `database.lookup_accounts`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub lower_bound_name: String,
+            pub limit: u32,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub subscribe: Option<bool>,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let mut params = vec![
+                    serde_json::to_value(&self.lower_bound_name)?,
+                    serde_json::to_value(self.limit)?,
+                ];
+                let tail: [Option<serde_json::Value>; 1] = [match &self.subscribe {
+                    Some(value) => Some(serde_json::to_value(value)?),
+                    None => None,
+                }];
+                if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
+                    for value in tail.into_iter().take(last_provided + 1) {
+                        params.push(value.unwrap_or(serde_json::Value::Null));
+                    }
+                }
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<(String, crate::generated::ids::AccountId)>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.lookup_asset_symbols`.
+    pub mod lookup_asset_symbols {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "lookup_asset_symbols";
+
+        /// Positional parameters for `database.lookup_asset_symbols`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub symbols_or_ids: Vec<String>,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![serde_json::to_value(&self.symbols_or_ids)?];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<Option<crate::generated::types::ExtendedAssetObject>>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
 }
 
 /// RPC methods on the `history` API.
@@ -429,6 +1004,74 @@ pub mod history {
             serde_json::from_value(value)
         }
     }
+
+    /// RPC `history.get_fill_order_history`.
+    pub mod get_fill_order_history {
+        pub const API: &str = "history";
+        pub const METHOD: &str = "get_fill_order_history";
+
+        /// Positional parameters for `history.get_fill_order_history`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub a: String,
+            pub b: String,
+            pub limit: u32,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![
+                    serde_json::to_value(&self.a)?,
+                    serde_json::to_value(&self.b)?,
+                    serde_json::to_value(self.limit)?,
+                ];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<crate::generated::types::OrderHistoryObject>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `history.get_market_history`.
+    pub mod get_market_history {
+        pub const API: &str = "history";
+        pub const METHOD: &str = "get_market_history";
+
+        /// Positional parameters for `history.get_market_history`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub a: String,
+            pub b: String,
+            pub bucket_seconds: u32,
+            pub start: String,
+            pub end: String,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![
+                    serde_json::to_value(&self.a)?,
+                    serde_json::to_value(&self.b)?,
+                    serde_json::to_value(self.bucket_seconds)?,
+                    serde_json::to_value(&self.start)?,
+                    serde_json::to_value(&self.end)?,
+                ];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<crate::generated::types::BucketObject>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
 }
 
 /// RPC methods on the `network_broadcast` API.
@@ -458,6 +1101,68 @@ pub mod network_broadcast {
         pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
             let _ = value;
             Ok(())
+        }
+    }
+}
+
+/// RPC methods on the `orders` API.
+pub mod orders {
+    /// RPC `orders.get_grouped_limit_orders`.
+    pub mod get_grouped_limit_orders {
+        pub const API: &str = "orders";
+        pub const METHOD: &str = "get_grouped_limit_orders";
+
+        /// Positional parameters for `orders.get_grouped_limit_orders`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub base_asset: String,
+            pub quote_asset: String,
+            pub group: u16,
+            pub start: Option<crate::generated::types::Price>,
+            pub limit: u32,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![
+                    serde_json::to_value(&self.base_asset)?,
+                    serde_json::to_value(&self.quote_asset)?,
+                    serde_json::to_value(self.group)?,
+                    serde_json::to_value(&self.start)?,
+                    serde_json::to_value(self.limit)?,
+                ];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<crate::generated::types::LimitOrderGroup>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `orders.get_tracked_groups`.
+    pub mod get_tracked_groups {
+        pub const API: &str = "orders";
+        pub const METHOD: &str = "get_tracked_groups";
+
+        /// Positional parameters for `orders.get_tracked_groups`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {}
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                Ok(serde_json::Value::Array(Vec::new()))
+            }
+        }
+
+        pub type Returns = Vec<u16>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
         }
     }
 }

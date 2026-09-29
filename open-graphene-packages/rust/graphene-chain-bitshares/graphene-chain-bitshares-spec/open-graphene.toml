@@ -18,15 +18,25 @@ name = "database"
 class = "database_api"
 discover_method = "database"
 methods = [
-  "get_chain_id",
-  "get_accounts",
-  "get_required_fees",
   "get_objects",
   "get_block_header",
   "get_block",
   "get_account_balances",
+  "get_accounts",
+  "get_full_accounts",
+  "get_chain_properties",
   "get_dynamic_global_properties",
+  "get_global_properties",
   "get_limit_orders",
+  "get_chain_id",
+  "get_config",
+  "get_key_references",
+  "get_assets",
+  "lookup_asset_symbols",
+  "list_assets",
+  "lookup_accounts",
+  "get_ticker",
+  "get_required_fees",
 ]
 
 [[rpc_apis]]
@@ -35,6 +45,31 @@ class = "history_api"
 discover_method = "history"
 methods = [
   "get_account_history",
+  "get_fill_order_history",
+  "get_market_history",
+]
+
+[[rpc_apis]]
+name = "orders"
+class = "orders_api"
+discover_method = "orders"
+methods = [
+  "get_tracked_groups",
+  "get_grouped_limit_orders",
+]
+
+[[rpc_apis]]
+name = "crypto"
+class = "crypto_api"
+discover_method = "crypto"
+methods = [
+  "blind",
+  "blind_sum",
+  "verify_sum",
+  "verify_range",
+  "range_proof_sign",
+  "verify_range_proof_rewind",
+  "range_get_info",
 ]
 
 [[rpc_apis]]

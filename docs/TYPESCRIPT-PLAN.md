@@ -1,6 +1,9 @@
 # Natywny Open Graphene TypeScript — plan implementacji
 
-Status: development rozpoczęty po akceptacji i przełączeniu modelu przez użytkownika (2026-09-29). Plan przygotowany na podstawie lokalnego repozytorium, HEAD `4d15808c0e2011b7fc7393c57853ff95c036b17f`.
+Aktualny stan: [raport realizacji parytetu Rust](TYPESCRIPT-RUST-PARITY-2026-09-29.md).
+Poniżej zachowano historyczny plan i wcześniejsze aktualizacje.
+
+Status historyczny: development rozpoczęty po akceptacji i przełączeniu modelu przez użytkownika (2026-09-29). Plan przygotowany na podstawie lokalnego repozytorium, HEAD `4d15808c0e2011b7fc7393c57853ff95c036b17f`.
 
 Aktualizacja BitShares (2026-09-29): dodano `@open-graphene/chain-bitshares-api`
 z mainnetowym prepare/sign/broadcast/inclusion, profilem kanonicznych podpisów

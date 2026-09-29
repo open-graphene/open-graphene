@@ -1,3 +1,5 @@
+import { RpcSubscription } from './subscription.js';
+export { RpcSubscription } from './subscription.js';
 import { parseJson, stringifyJson, smallInteger, type RpcMethod, type WireValue } from '@open-graphene/codec';
 
 export class RpcRemoteError extends Error {
@@ -19,6 +21,8 @@ export class RpcClient {
   #apis = new Map<string, Promise<number>>();
   #nextId = 0;
   #timeout: number;
+  #callbacks = new Map<number, Set<RpcSubscription>>();
+  #databaseCallback: Promise<number> | undefined;
   private constructor(socket: WebSocket, timeout: number) {
     this.#socket = socket; this.#timeout = timeout;
     socket.addEventListener('message', event => {
@@ -27,7 +31,13 @@ export class RpcClient {
         const envelope = parseJson(event.data);
         if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) throw new Error('Invalid RPC envelope');
         const message = envelope as Record<string, WireValue>;
-        if (message.id === undefined) return; // Notice support is a separate stage.
+        if (message.method === 'notice') {
+          if (!Array.isArray(message.params) || message.params.length !== 2) throw new Error('Invalid callback notice');
+          const callback = smallInteger(0, Number.MAX_SAFE_INTEGER).decode(message.params[0]);
+          for (const stream of this.#callbacks.get(callback) ?? []) stream.push(message.params[1]!);
+          return;
+        }
+        if (message.id === undefined) return;
         const id = smallInteger(0, Number.MAX_SAFE_INTEGER).decode(message.id);
         const pending = this.#pending.get(id);
         if (!pending) return;
@@ -43,6 +53,8 @@ export class RpcClient {
   #rejectAll(error: Error): void {
     for (const p of this.#pending.values()) { clearTimeout(p.timer); p.reject(error); }
     this.#pending.clear();
+    for (const streams of [...this.#callbacks.values()]) for (const stream of [...streams]) stream.fail(error);
+    this.#callbacks.clear();
   }
   static async connect(endpoint: string, options: ConnectionOptions = {}): Promise<RpcClient> {
     if (!/^wss?:\/\//.test(endpoint)) throw new Error('Expected WebSocket endpoint');
@@ -88,5 +100,30 @@ export class RpcClient {
     const args = descriptor.encodeParams(params);
     return descriptor.parseReturns(await this.request(descriptor.api, descriptor.method, args));
   }
+  callback(id = ++this.#nextId): RpcSubscription {
+    if(this.#socket.readyState!==1)throw new RpcTransportError('Connection closed',false);
+    let streams = this.#callbacks.get(id);
+    if (!streams) { streams = new Set(); this.#callbacks.set(id, streams); }
+    const target = streams;
+    const stream = new RpcSubscription(id, () => { target.delete(stream); if (!target.size) this.#callbacks.delete(id); });
+    target.add(stream);
+    return stream;
+  }
+  async subscribe(api: string, method: string, args: (callbackId: number) => readonly WireValue[]): Promise<RpcSubscription> {
+    const stream = this.callback();
+    try { await this.request(api, method, args(stream.callbackId)); return stream; }
+    catch (error) { stream.close(); throw error; }
+  }
+  async databaseNotices(): Promise<RpcSubscription> {
+    if (!this.#databaseCallback) {
+      const id = ++this.#nextId;
+      this.#databaseCallback = this.request('database', 'set_subscribe_callback', [id, false]).then(() => id);
+      this.#databaseCallback.catch(() => { this.#databaseCallback = undefined; });
+    }
+    return this.callback(await this.#databaseCallback);
+  }
   close(): void { this.#rejectAll(new RpcTransportError('Client closed', true)); this.#socket.close(); }
 }
+
+export { GrapheneSession, type SessionOptions, type ReconnectPolicy, type ServerLatency } from './session.js';
+export { ChainStore } from './chain-store.js';

@@ -22,7 +22,8 @@ test('generated FC transaction bytes and digest equal shared Rust vectors', () =
   assert.equal(bytesToHex(b.encodeTransaction(tx)), fixture.transfer.hex);
   assert.equal(bytesToHex(transactionDigest(fixture.transfer.chainId, b.encodeTransaction(tx))), fixture.transfer.digestHex);
   assert.equal(bytesToHex(b.encodeSignedTransaction({ ...tx, signatures: [] })), fixture.transfer.hex + '00');
-  assert.throws(() => b.encodeTransaction({ ...tx, extensions: [[0, {}]] }), /Nonempty future extensions/);
+  assert.equal(bytesToHex(b.encodeTransaction({ ...tx, extensions: [[0, {}]] })).slice(-4), '0100');
+  assert.throws(() => b.encodeTransaction({ ...tx, extensions: [[0, {}], [0, {}]] }), /sorted and unique/);
 });
 test('Swaplock low-S signature matches Rust, recovers key, rejects tampering', () => {
   const digest = hexToBytes(fixture.signing.digestHex);

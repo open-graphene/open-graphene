@@ -78,3 +78,15 @@ export class WifSigner implements Signer {
   dispose(): void { this.#key.fill(0); this.#disposed = true; }
   toJSON(): object { return { type: 'WifSigner', disposed: this.#disposed }; }
 }
+
+export function privateKeyFromSeed(seed:Uint8Array):Uint8Array {
+ const key=sha256(seed);
+ if(!secp256k1.utils.isValidSecretKey(key)){key.fill(0);throw new Error('Seed produced invalid private key');}
+ return key;
+}
+export function encodeWif(key:Uint8Array):string {
+ if(!secp256k1.utils.isValidSecretKey(key))throw new Error('Invalid private key');
+ const data=new Uint8Array(37);data[0]=0x80;data.set(key,1);data.set(sha256(sha256(data.subarray(0,33))).subarray(0,4),33);
+ try{return base58.encode(data);}finally{data.fill(0);}
+}
+export function publicKeyFromPrivateKey(key:Uint8Array):Uint8Array{return secp256k1.getPublicKey(key,true);}

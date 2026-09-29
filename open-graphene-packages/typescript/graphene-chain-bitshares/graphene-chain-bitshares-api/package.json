@@ -25,6 +25,7 @@
     "@open-graphene/codec": "workspace:*",
     "@open-graphene/fc": "workspace:*",
     "@open-graphene/transport": "workspace:*",
-    "@open-graphene/chain-bitshares-bindings": "workspace:*"
+    "@open-graphene/chain-bitshares-bindings": "workspace:*",
+    "@open-graphene/core": "workspace:*"
   }
 }

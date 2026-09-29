@@ -18,6 +18,18 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./memo": {
+      "types": "./dist/memo.d.ts",
+      "import": "./dist/memo.js"
+    },
+    "./wallet": {
+      "types": "./dist/wallet.d.ts",
+      "import": "./dist/wallet.js"
+    },
+    "./hash": {
+      "types": "./dist/hash.d.ts",
+      "import": "./dist/hash.js"
     }
   },
   "scripts": {

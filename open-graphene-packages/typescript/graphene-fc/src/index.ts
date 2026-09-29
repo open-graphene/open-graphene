@@ -58,3 +58,5 @@ export function signaturePreimage(chainId: string, transaction: Uint8Array): Uin
 export function transactionDigest(chainId: string, transaction: Uint8Array): Uint8Array {
   return sha256(signaturePreimage(chainId, transaction));
 }
+
+export { encodeFc, type FcSchema } from './schema.js';

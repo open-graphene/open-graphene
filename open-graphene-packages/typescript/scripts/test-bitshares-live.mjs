@@ -16,7 +16,8 @@ try{
   try{
    const report=browserMode?JSON.parse(await page.evaluate(e=>globalThis.runSmoke(e),endpoint)):await runBitSharesSmoke(endpoint);
    report.runtime=browserMode?'Chromium':'Node.js';runs.push(report);
-   console.log(endpoint,report.runtime,report.checks.length+' checks passed');
+   console.log(endpoint,report.runtime,JSON.stringify(report.summary));
+   if(report.checks.some(c=>c.status==='failed'))process.exitCode=1;
   }catch(error){runs.push({endpoint,runtime:browserMode?'Chromium':'Node.js',status:'failed',reason:error.message});process.exitCode=1;console.error(error.message);}
  }
 }finally{await browser?.close();await writeFile(output,stringifyJson({runs})+'\n');}

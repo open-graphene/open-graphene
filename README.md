@@ -4,8 +4,8 @@ SDK tooling for [Graphene](https://github.com/cryptonomex/graphene)-based blockc
 (BitShares family). A machine-readable protocol specification is extracted from a
 chain's C++ sources, and language bindings are generated from that specification.
 
-Swaplock has the broadest SDK coverage. Native TypeScript APIs support the core
-transfer lifecycle for **Swaplock and BitShares**; both consume generated bindings.
+Swaplock has the broadest SDK coverage. Native TypeScript APIs support operation construction, FC encoding,
+multisignature transactions, encrypted memo and live subscriptions for **Swaplock and BitShares**; both consume generated bindings.
 The Acta and R-Squared crates remain empty placeholders.
 
 ## Pipeline
@@ -33,10 +33,10 @@ Both the spec JSON and the generated Rust sources are committed; CI regenerates
 them and fails if the committed output drifts from the generators.
 
 The same specs now feed `open-graphene-gen-bindings-ts`. The native TypeScript
-implementation includes generated types, JSON/RPC bindings and transfer FC,
-plus a Swaplock prepare/sign/broadcast path verified on the live testnet. See the
+implementation includes generated types, JSON/RPC bindings and all nonvirtual
+operation FC encoders, plus compound transactions verified on the Swaplock testnet. See the
 [TypeScript workspace](open-graphene-packages/typescript/README.md) for setup,
-tests and the remaining SDK stages.
+tests and the [Rust parity report](docs/TYPESCRIPT-RUST-PARITY-2026-09-29.md).
 
 ## Repository layout
 
@@ -47,7 +47,7 @@ tests and the remaining SDK stages.
 | `open-graphene/crates/open-graphene-gen-bindings-rs` | Spec → Rust bindings generator |
 | `open-graphene/crates/open-graphene-gen-bindings-ts` | Spec → native TypeScript bindings generator |
 | `open-graphene/crates/open-graphene-codegen-common` | Shared protocol compatibility rules for generators |
-| `open-graphene-packages/typescript` | Native TypeScript workspace; bindings, RPC and core-transfer APIs |
+| `open-graphene-packages/typescript` | Native TypeScript workspace; bindings, RPC, transactions, wallets and subscriptions |
 | `open-graphene-packages/rust/graphene` | SDK facade (currently Swaplock-only) |
 | `open-graphene-packages/rust/graphene-chain-swaplock` | Swaplock spec, generated bindings, and hand-written API layer |
 | `open-graphene-packages/rust/graphene-chain-bitshares` | BitShares spec + bindings (cross-chain sanity check) |

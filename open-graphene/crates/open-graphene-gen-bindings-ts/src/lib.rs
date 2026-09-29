@@ -571,6 +571,33 @@ pub fn render(protocol: &Protocol, spec_hash: &str) -> Result<BTreeMap<String, S
                 .collect::<Vec<_>>()
         )?
     )?;
+    operations.push_str("export function bindOperationBuilders<R>(build: (operation: t.Operation) => R) {\n return {\n");
+    for op in protocol.operations.iter().filter(|o| !o.is_virtual) {
+        let n = name(&op.name);
+        let method = op.name.strip_suffix("_operation").unwrap_or(&op.name);
+        let has_ext = op.fields.iter().find(|f| f.name == "extensions");
+        let keys = if has_ext.is_some() {
+            "'fee' | 'extensions'"
+        } else {
+            "'fee'"
+        };
+        let ext = has_ext
+            .map(|f| {
+                if matches!(f.ty, TypeRef::Ref { .. }) {
+                    ", extensions: value.extensions ?? {}"
+                } else {
+                    ", extensions: value.extensions ?? []"
+                }
+            })
+            .unwrap_or("");
+        writeln!(
+            operations,
+            "    {}: (value: Omit<t.{n}, {keys}> & Partial<Pick<t.{n}, {keys}>>) => build(operation[{}]({{ ...value, fee: value.fee ?? {{ amount: 0n, asset_id: '1.3.0' as t.Asset['asset_id'] }}{ext} }})),",
+            q(method),
+            q(method)
+        )?;
+    }
+    operations.push_str(" };\n}\n");
     files.insert("operations.ts".into(), operations);
     let mut rpc = String::from(
         "import * as c from '@open-graphene/codec';\nimport * as codecs from './json.js';\nimport type * as t from './types.js';\n",
@@ -633,6 +660,25 @@ pub fn render(protocol: &Protocol, spec_hash: &str) -> Result<BTreeMap<String, S
         writeln!(rpc, "  {}: {{ {} }},", q(&api), methods.join(", "))?;
     }
     rpc.push_str("} as const;\n");
+    rpc.push_str("export function bindRpcApi(client: { invoke<P, R>(method: c.RpcMethod<P, R>, params: P): Promise<R> }) {\n return {\n");
+    for api in &protocol.rpc_apis {
+        writeln!(rpc, "  {}: {{", q(&api.name))?;
+        for m in protocol
+            .rpc_methods
+            .iter()
+            .filter(|m| m.api_name.as_deref() == Some(api.name.as_str()))
+        {
+            let descriptor = format!("{}{}", name(&api.name), name(&m.name));
+            let pascal = name(&m.name);
+            let camel = format!("{}{}", pascal[..1].to_lowercase(), &pascal[1..]);
+            writeln!(
+                rpc,
+                "    {camel}: (params: {descriptor}Params) => client.invoke({descriptor}, params),"
+            )?;
+        }
+        rpc.push_str("  },\n");
+    }
+    rpc.push_str(" };\n}\n");
     files.insert("rpc.ts".into(), rpc);
     files.insert("fc.ts".into(), fc::render(protocol)?);
     files.insert("index.ts".into(), "export * from './ids.js';\nexport * from './types.js';\nexport * from './json.js';\nexport * from './operations.js';\nexport * from './rpc.js';\nexport * from './fc.js';\n".into());
@@ -643,9 +689,9 @@ pub fn render(protocol: &Protocol, spec_hash: &str) -> Result<BTreeMap<String, S
     collect_dynamic(&serde_json::to_value(protocol)?, "", &mut dynamic);
     files.insert("support.json".into(), serde_json::to_string_pretty(&json!({
         "chain": protocol.chain.id, "schemaVersion": protocol.schema_version, "profileVersion": PROFILE_VERSION, "specSha256": spec_hash,
-        "stage": "transfer-fc", "dynamicFields": dynamic,
-        "operations": protocol.operations.iter().map(|op| json!({"name":op.name, "tag":op.wire_tag, "virtual":op.is_virtual, "type":true, "json":"generated", "fc": if op.name == "transfer_operation" { "empty_extensions_only" } else { "not_implemented" }, "signing": if op.name == "transfer_operation" && protocol.chain.id == "swaplock" { "swaplock-low-s" } else { "not_implemented" }, "builder":op.name == "transfer_operation" && protocol.chain.id == "swaplock"})).collect::<Vec<_>>(),
-        "rpc": protocol.rpc_methods.iter().map(|m| json!({"api":m.api_name,"method":m.name,"descriptor":true,"highLevel":false,"subscription":false})).collect::<Vec<_>>()
+        "stage": "rust-fc-parity", "dynamicFields": dynamic,
+        "operations": protocol.operations.iter().map(|op| json!({"name":op.name, "tag":op.wire_tag, "virtual":op.is_virtual, "type":true, "json":"generated", "fc": if op.is_virtual { "rejected_virtual" } else { "generated_rust_extension_profile" }, "signing": if op.is_virtual { "not_broadcastable" } else if protocol.chain.id == "swaplock" { "swaplock-low-s" } else { "graphene-legacy" }, "builder":!op.is_virtual})).collect::<Vec<_>>(),
+        "rpc": protocol.rpc_methods.iter().map(|m| json!({"api":m.api_name,"method":m.name,"descriptor":true,"highLevel":true,"subscription":false})).collect::<Vec<_>>()
     }))? + "\n");
     Ok(files)
 }

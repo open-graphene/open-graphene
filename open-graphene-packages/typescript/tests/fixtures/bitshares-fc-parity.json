@@ -1,0 +1,1771 @@
+{
+  "source": "public synthetic inputs, compared with Rust FC and optionally native C++ RPC",
+  "vectors": [
+    {
+      "name": "transfer_operation",
+      "operation": [
+        0,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "from": "1.2.0",
+          "to": "1.2.0",
+          "amount": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "extensions": []
+        }
+      ],
+      "hex": "0000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "0000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "limit_order_create_operation",
+      "operation": [
+        1,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "seller": "1.2.0",
+          "amount_to_sell": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "min_to_receive": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "expiration": "2026-09-29T00:00:00",
+          "fill_or_kill": false,
+          "extensions": {}
+        }
+      ],
+      "hex": "010000000000000000000000000000000000000000000000000000000080ffba6a0000",
+      "rust": {
+        "hex": "010000000000000000000000000000000000000000000000000000000080ffba6a0000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "limit_order_cancel_operation",
+      "operation": [
+        2,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "fee_paying_account": "1.2.0",
+          "order": "1.7.0",
+          "extensions": []
+        }
+      ],
+      "hex": "02000000000000000000000000",
+      "rust": {
+        "hex": "02000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "call_order_update_operation",
+      "operation": [
+        3,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "funding_account": "1.2.0",
+          "delta_collateral": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "delta_debt": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "extensions": {}
+        }
+      ],
+      "hex": "030000000000000000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "030000000000000000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "account_create_operation",
+      "operation": [
+        5,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "registrar": "1.2.0",
+          "referrer": "1.2.0",
+          "referrer_percent": 0,
+          "name": "",
+          "owner": {
+            "weight_threshold": 0,
+            "account_auths": [],
+            "key_auths": [],
+            "address_auths": []
+          },
+          "active": {
+            "weight_threshold": 0,
+            "account_auths": [],
+            "key_auths": [],
+            "address_auths": []
+          },
+          "options": {
+            "memo_key": "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
+            "voting_account": "1.2.0",
+            "num_witness": 0,
+            "num_committee": 0,
+            "votes": [],
+            "extensions": []
+          },
+          "extensions": {}
+        }
+      ],
+      "hex": "050000000000000000000000000000000000000000000000000000000002c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf0000000000000000",
+      "rust": {
+        "hex": "050000000000000000000000000000000000000000000000000000000002c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf0000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "account_update_operation",
+      "operation": [
+        6,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "account": "1.2.0",
+          "extensions": {}
+        }
+      ],
+      "hex": "060000000000000000000000000000",
+      "rust": {
+        "hex": "060000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "account_whitelist_operation",
+      "operation": [
+        7,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "authorizing_account": "1.2.0",
+          "account_to_list": "1.2.0",
+          "new_listing": 0,
+          "extensions": []
+        }
+      ],
+      "hex": "0700000000000000000000000000",
+      "rust": {
+        "hex": "0700000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "account_upgrade_operation",
+      "operation": [
+        8,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "account_to_upgrade": "1.2.0",
+          "upgrade_to_lifetime_member": false,
+          "extensions": []
+        }
+      ],
+      "hex": "08000000000000000000000000",
+      "rust": {
+        "hex": "08000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "account_transfer_operation",
+      "operation": [
+        9,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "account_id": "1.2.0",
+          "new_owner": "1.2.0",
+          "extensions": []
+        }
+      ],
+      "hex": "09000000000000000000000000",
+      "rust": {
+        "hex": "09000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "asset_create_operation",
+      "operation": [
+        10,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "issuer": "1.2.0",
+          "symbol": "",
+          "precision": 0,
+          "common_options": {
+            "max_supply": "0",
+            "market_fee_percent": 0,
+            "max_market_fee": "0",
+            "issuer_permissions": 0,
+            "flags": 0,
+            "core_exchange_rate": {
+              "base": {
+                "amount": "0",
+                "asset_id": "1.3.0"
+              },
+              "quote": {
+                "amount": "0",
+                "asset_id": "1.3.0"
+              }
+            },
+            "whitelist_authorities": [],
+            "blacklist_authorities": [],
+            "whitelist_markets": [],
+            "blacklist_markets": [],
+            "description": "",
+            "extensions": {}
+          },
+          "is_prediction_market": false,
+          "extensions": []
+        }
+      ],
+      "hex": "0a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "0a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "asset_update_operation",
+      "operation": [
+        11,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "issuer": "1.2.0",
+          "asset_to_update": "1.3.0",
+          "new_options": {
+            "max_supply": "0",
+            "market_fee_percent": 0,
+            "max_market_fee": "0",
+            "issuer_permissions": 0,
+            "flags": 0,
+            "core_exchange_rate": {
+              "base": {
+                "amount": "0",
+                "asset_id": "1.3.0"
+              },
+              "quote": {
+                "amount": "0",
+                "asset_id": "1.3.0"
+              }
+            },
+            "whitelist_authorities": [],
+            "blacklist_authorities": [],
+            "whitelist_markets": [],
+            "blacklist_markets": [],
+            "description": "",
+            "extensions": {}
+          },
+          "extensions": {}
+        }
+      ],
+      "hex": "0b0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "0b0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "asset_update_bitasset_operation",
+      "operation": [
+        12,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "issuer": "1.2.0",
+          "asset_to_update": "1.3.0",
+          "new_options": {
+            "feed_lifetime_sec": 0,
+            "minimum_feeds": 0,
+            "force_settlement_delay_sec": 0,
+            "force_settlement_offset_percent": 0,
+            "maximum_force_settlement_volume": 0,
+            "short_backing_asset": "1.3.0",
+            "extensions": {}
+          },
+          "extensions": []
+        }
+      ],
+      "hex": "0c000000000000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "0c000000000000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "asset_update_feed_producers_operation",
+      "operation": [
+        13,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "issuer": "1.2.0",
+          "asset_to_update": "1.3.0",
+          "new_feed_producers": [],
+          "extensions": []
+        }
+      ],
+      "hex": "0d00000000000000000000000000",
+      "rust": {
+        "hex": "0d00000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "asset_issue_operation",
+      "operation": [
+        14,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "issuer": "1.2.0",
+          "asset_to_issue": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "issue_to_account": "1.2.0",
+          "extensions": []
+        }
+      ],
+      "hex": "0e00000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "0e00000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "asset_reserve_operation",
+      "operation": [
+        15,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "payer": "1.2.0",
+          "amount_to_reserve": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "extensions": []
+        }
+      ],
+      "hex": "0f0000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "0f0000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "asset_fund_fee_pool_operation",
+      "operation": [
+        16,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "from_account": "1.2.0",
+          "asset_id": "1.3.0",
+          "amount": "0",
+          "extensions": []
+        }
+      ],
+      "hex": "100000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "100000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "asset_settle_operation",
+      "operation": [
+        17,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "account": "1.2.0",
+          "amount": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "extensions": []
+        }
+      ],
+      "hex": "110000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "110000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "asset_global_settle_operation",
+      "operation": [
+        18,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "issuer": "1.2.0",
+          "asset_to_settle": "1.3.0",
+          "settle_price": {
+            "base": {
+              "amount": "0",
+              "asset_id": "1.3.0"
+            },
+            "quote": {
+              "amount": "0",
+              "asset_id": "1.3.0"
+            }
+          },
+          "extensions": []
+        }
+      ],
+      "hex": "12000000000000000000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "12000000000000000000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "asset_publish_feed_operation",
+      "operation": [
+        19,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "publisher": "1.2.0",
+          "asset_id": "1.3.0",
+          "feed": {
+            "settlement_price": {
+              "base": {
+                "amount": "0",
+                "asset_id": "1.3.0"
+              },
+              "quote": {
+                "amount": "0",
+                "asset_id": "1.3.0"
+              }
+            },
+            "maintenance_collateral_ratio": 0,
+            "maximum_short_squeeze_ratio": 0,
+            "core_exchange_rate": {
+              "base": {
+                "amount": "0",
+                "asset_id": "1.3.0"
+              },
+              "quote": {
+                "amount": "0",
+                "asset_id": "1.3.0"
+              }
+            }
+          },
+          "extensions": {}
+        }
+      ],
+      "hex": "1300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "1300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "witness_create_operation",
+      "operation": [
+        20,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "witness_account": "1.2.0",
+          "url": "",
+          "block_signing_key": "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
+        }
+      ],
+      "hex": "14000000000000000000000002c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf",
+      "rust": {
+        "hex": "14000000000000000000000002c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "witness_update_operation",
+      "operation": [
+        21,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "witness": "1.6.0",
+          "witness_account": "1.2.0"
+        }
+      ],
+      "hex": "1500000000000000000000000000",
+      "rust": {
+        "hex": "1500000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "proposal_create_operation",
+      "operation": [
+        22,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "fee_paying_account": "1.2.0",
+          "expiration_time": "2026-09-29T00:00:00",
+          "proposed_ops": [],
+          "extensions": []
+        }
+      ],
+      "hex": "160000000000000000000080ffba6a000000",
+      "rust": {
+        "hex": "160000000000000000000080ffba6a000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "proposal_update_operation",
+      "operation": [
+        23,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "fee_paying_account": "1.2.0",
+          "proposal": "1.10.0",
+          "active_approvals_to_add": [],
+          "active_approvals_to_remove": [],
+          "owner_approvals_to_add": [],
+          "owner_approvals_to_remove": [],
+          "key_approvals_to_add": [],
+          "key_approvals_to_remove": [],
+          "extensions": []
+        }
+      ],
+      "hex": "17000000000000000000000000000000000000",
+      "rust": {
+        "hex": "17000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "proposal_delete_operation",
+      "operation": [
+        24,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "fee_paying_account": "1.2.0",
+          "using_owner_authority": false,
+          "proposal": "1.10.0",
+          "extensions": []
+        }
+      ],
+      "hex": "1800000000000000000000000000",
+      "rust": {
+        "hex": "1800000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "withdraw_permission_create_operation",
+      "operation": [
+        25,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "withdraw_from_account": "1.2.0",
+          "authorized_account": "1.2.0",
+          "withdrawal_limit": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "withdrawal_period_sec": 0,
+          "periods_until_expiration": 0,
+          "period_start_time": "2026-09-29T00:00:00"
+        }
+      ],
+      "hex": "190000000000000000000000000000000000000000000000000000000080ffba6a",
+      "rust": {
+        "hex": "190000000000000000000000000000000000000000000000000000000080ffba6a"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "withdraw_permission_update_operation",
+      "operation": [
+        26,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "withdraw_from_account": "1.2.0",
+          "authorized_account": "1.2.0",
+          "permission_to_update": "1.12.0",
+          "withdrawal_limit": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "withdrawal_period_sec": 0,
+          "period_start_time": "2026-09-29T00:00:00",
+          "periods_until_expiration": 0
+        }
+      ],
+      "hex": "1a0000000000000000000000000000000000000000000000000080ffba6a00000000",
+      "rust": {
+        "hex": "1a0000000000000000000000000000000000000000000000000080ffba6a00000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "withdraw_permission_claim_operation",
+      "operation": [
+        27,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "withdraw_permission": "1.12.0",
+          "withdraw_from_account": "1.2.0",
+          "withdraw_to_account": "1.2.0",
+          "amount_to_withdraw": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          }
+        }
+      ],
+      "hex": "1b00000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "1b00000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "withdraw_permission_delete_operation",
+      "operation": [
+        28,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "withdraw_from_account": "1.2.0",
+          "authorized_account": "1.2.0",
+          "withdrawal_permission": "1.12.0"
+        }
+      ],
+      "hex": "1c000000000000000000000000",
+      "rust": {
+        "hex": "1c000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "committee_member_create_operation",
+      "operation": [
+        29,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "committee_member_account": "1.2.0",
+          "url": ""
+        }
+      ],
+      "hex": "1d0000000000000000000000",
+      "rust": {
+        "hex": "1d0000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "committee_member_update_operation",
+      "operation": [
+        30,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "committee_member": "1.5.0",
+          "committee_member_account": "1.2.0"
+        }
+      ],
+      "hex": "1e000000000000000000000000",
+      "rust": {
+        "hex": "1e000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "committee_member_update_global_parameters_operation",
+      "operation": [
+        31,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "new_parameters": {
+            "current_fees": {
+              "parameters": [],
+              "scale": 0
+            },
+            "block_interval": 0,
+            "maintenance_interval": 0,
+            "maintenance_skip_slots": 0,
+            "committee_proposal_review_period": 0,
+            "maximum_transaction_size": 0,
+            "maximum_block_size": 0,
+            "maximum_time_until_expiration": 0,
+            "maximum_proposal_lifetime": 0,
+            "maximum_asset_whitelist_authorities": 0,
+            "maximum_asset_feed_publishers": 0,
+            "maximum_witness_count": 0,
+            "maximum_committee_count": 0,
+            "maximum_authority_membership": 0,
+            "reserve_percent_of_fee": 0,
+            "network_percent_of_fee": 0,
+            "lifetime_referrer_percent_of_fee": 0,
+            "cashback_vesting_period_seconds": 0,
+            "cashback_vesting_threshold": "0",
+            "count_non_member_votes": false,
+            "allow_non_member_whitelists": false,
+            "witness_pay_per_block": "0",
+            "worker_budget_per_day": "0",
+            "max_predicate_opcode": 0,
+            "fee_liquidation_threshold": "0",
+            "accounts_per_fee_scale": 0,
+            "account_fee_scale_bitshifts": 0,
+            "max_authority_depth": 0,
+            "extensions": {}
+          }
+        }
+      ],
+      "hex": "1f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "1f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "vesting_balance_create_operation",
+      "operation": [
+        32,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "creator": "1.2.0",
+          "owner": "1.2.0",
+          "amount": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "policy": [
+            0,
+            {
+              "begin_timestamp": "2026-09-29T00:00:00",
+              "vesting_cliff_seconds": 0,
+              "vesting_duration_seconds": 0
+            }
+          ]
+        }
+      ],
+      "hex": "2000000000000000000000000000000000000000000080ffba6a0000000000000000",
+      "rust": {
+        "hex": "2000000000000000000000000000000000000000000080ffba6a0000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "vesting_balance_withdraw_operation",
+      "operation": [
+        33,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "vesting_balance": "1.13.0",
+          "owner": "1.2.0",
+          "amount": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          }
+        }
+      ],
+      "hex": "210000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "210000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "worker_create_operation",
+      "operation": [
+        34,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "owner": "1.2.0",
+          "work_begin_date": "2026-09-29T00:00:00",
+          "work_end_date": "2026-09-29T00:00:00",
+          "daily_pay": "0",
+          "name": "",
+          "url": "",
+          "initializer": [
+            0,
+            {}
+          ]
+        }
+      ],
+      "hex": "220000000000000000000080ffba6a80ffba6a0000000000000000000000",
+      "rust": {
+        "hex": "220000000000000000000080ffba6a80ffba6a0000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "custom_operation",
+      "operation": [
+        35,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "payer": "1.2.0",
+          "required_auths": [],
+          "id": 0,
+          "data": ""
+        }
+      ],
+      "hex": "230000000000000000000000000000",
+      "rust": {
+        "hex": "230000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "assert_operation",
+      "operation": [
+        36,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "fee_paying_account": "1.2.0",
+          "predicates": [],
+          "required_auths": [],
+          "extensions": []
+        }
+      ],
+      "hex": "2400000000000000000000000000",
+      "rust": {
+        "hex": "2400000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "balance_claim_operation",
+      "operation": [
+        37,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "deposit_to_account": "1.2.0",
+          "balance_to_claim": "1.15.0",
+          "balance_owner_key": "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
+          "total_claimed": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          }
+        }
+      ],
+      "hex": "25000000000000000000000002c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf000000000000000000",
+      "rust": {
+        "hex": "25000000000000000000000002c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "override_transfer_operation",
+      "operation": [
+        38,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "issuer": "1.2.0",
+          "from": "1.2.0",
+          "to": "1.2.0",
+          "amount": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "extensions": []
+        }
+      ],
+      "hex": "260000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "260000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "transfer_to_blind_operation",
+      "operation": [
+        39,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "amount": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "from": "1.2.0",
+          "blinding_factor": "0000000000000000000000000000000000000000000000000000000000000000",
+          "outputs": []
+        }
+      ],
+      "hex": "2700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "2700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "blind_transfer_operation",
+      "operation": [
+        40,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "inputs": [],
+          "outputs": []
+        }
+      ],
+      "hex": "280000000000000000000000",
+      "rust": {
+        "hex": "280000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "transfer_from_blind_operation",
+      "operation": [
+        41,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "amount": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "to": "1.2.0",
+          "blinding_factor": "0000000000000000000000000000000000000000000000000000000000000000",
+          "inputs": []
+        }
+      ],
+      "hex": "2900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "2900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "asset_claim_fees_operation",
+      "operation": [
+        43,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "issuer": "1.2.0",
+          "amount_to_claim": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "extensions": {}
+        }
+      ],
+      "hex": "2b0000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "2b0000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "bid_collateral_operation",
+      "operation": [
+        45,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "bidder": "1.2.0",
+          "additional_collateral": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "debt_covered": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "extensions": []
+        }
+      ],
+      "hex": "2d0000000000000000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "2d0000000000000000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "asset_claim_pool_operation",
+      "operation": [
+        47,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "issuer": "1.2.0",
+          "asset_id": "1.3.0",
+          "amount_to_claim": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "extensions": []
+        }
+      ],
+      "hex": "2f000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "2f000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "asset_update_issuer_operation",
+      "operation": [
+        48,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "issuer": "1.2.0",
+          "asset_to_update": "1.3.0",
+          "new_issuer": "1.2.0",
+          "extensions": []
+        }
+      ],
+      "hex": "3000000000000000000000000000",
+      "rust": {
+        "hex": "3000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "htlc_create_operation",
+      "operation": [
+        49,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "from": "1.2.0",
+          "to": "1.2.0",
+          "amount": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "preimage_hash": [
+            0,
+            "0000000000000000000000000000000000000000"
+          ],
+          "preimage_size": 0,
+          "claim_period_seconds": 0,
+          "extensions": {}
+        }
+      ],
+      "hex": "31000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "31000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "htlc_redeem_operation",
+      "operation": [
+        50,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "htlc_id": "1.16.0",
+          "redeemer": "1.2.0",
+          "preimage": "",
+          "extensions": []
+        }
+      ],
+      "hex": "3200000000000000000000000000",
+      "rust": {
+        "hex": "3200000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "htlc_extend_operation",
+      "operation": [
+        52,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "htlc_id": "1.16.0",
+          "update_issuer": "1.2.0",
+          "seconds_to_add": 0,
+          "extensions": []
+        }
+      ],
+      "hex": "3400000000000000000000000000000000",
+      "rust": {
+        "hex": "3400000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "custom_authority_create_operation",
+      "operation": [
+        54,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "account": "1.2.0",
+          "enabled": false,
+          "valid_from": "2026-09-29T00:00:00",
+          "valid_to": "2026-09-29T00:00:00",
+          "operation_type": 0,
+          "auth": {
+            "weight_threshold": 0,
+            "account_auths": [],
+            "key_auths": [],
+            "address_auths": []
+          },
+          "restrictions": [],
+          "extensions": []
+        }
+      ],
+      "hex": "36000000000000000000000080ffba6a80ffba6a00000000000000000000",
+      "rust": {
+        "hex": "36000000000000000000000080ffba6a80ffba6a00000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "custom_authority_update_operation",
+      "operation": [
+        55,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "account": "1.2.0",
+          "authority_to_update": "1.17.0",
+          "restrictions_to_remove": [],
+          "restrictions_to_add": [],
+          "extensions": []
+        }
+      ],
+      "hex": "37000000000000000000000000000000000000",
+      "rust": {
+        "hex": "37000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "custom_authority_delete_operation",
+      "operation": [
+        56,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "account": "1.2.0",
+          "authority_to_delete": "1.17.0",
+          "extensions": []
+        }
+      ],
+      "hex": "38000000000000000000000000",
+      "rust": {
+        "hex": "38000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "ticket_create_operation",
+      "operation": [
+        57,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "account": "1.2.0",
+          "target_type": 0,
+          "amount": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "extensions": []
+        }
+      ],
+      "hex": "39000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "39000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "ticket_update_operation",
+      "operation": [
+        58,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "ticket": "1.18.0",
+          "account": "1.2.0",
+          "target_type": 0,
+          "extensions": []
+        }
+      ],
+      "hex": "3a0000000000000000000000000000",
+      "rust": {
+        "hex": "3a0000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "liquidity_pool_create_operation",
+      "operation": [
+        59,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "account": "1.2.0",
+          "asset_a": "1.3.0",
+          "asset_b": "1.3.0",
+          "share_asset": "1.3.0",
+          "taker_fee_percent": 0,
+          "withdrawal_fee_percent": 0,
+          "extensions": []
+        }
+      ],
+      "hex": "3b000000000000000000000000000000000000",
+      "rust": {
+        "hex": "3b000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "liquidity_pool_delete_operation",
+      "operation": [
+        60,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "account": "1.2.0",
+          "pool": "1.19.0",
+          "extensions": []
+        }
+      ],
+      "hex": "3c000000000000000000000000",
+      "rust": {
+        "hex": "3c000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "liquidity_pool_deposit_operation",
+      "operation": [
+        61,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "account": "1.2.0",
+          "pool": "1.19.0",
+          "amount_a": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "amount_b": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "extensions": []
+        }
+      ],
+      "hex": "3d000000000000000000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "3d000000000000000000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "liquidity_pool_withdraw_operation",
+      "operation": [
+        62,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "account": "1.2.0",
+          "pool": "1.19.0",
+          "share_amount": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "extensions": []
+        }
+      ],
+      "hex": "3e000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "3e000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "liquidity_pool_exchange_operation",
+      "operation": [
+        63,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "account": "1.2.0",
+          "pool": "1.19.0",
+          "amount_to_sell": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "min_to_receive": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "extensions": []
+        }
+      ],
+      "hex": "3f000000000000000000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "3f000000000000000000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "samet_fund_create_operation",
+      "operation": [
+        64,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "owner_account": "1.2.0",
+          "asset_type": "1.3.0",
+          "balance": "0",
+          "fee_rate": 0,
+          "extensions": []
+        }
+      ],
+      "hex": "40000000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "40000000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "samet_fund_delete_operation",
+      "operation": [
+        65,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "owner_account": "1.2.0",
+          "fund_id": "1.20.0",
+          "extensions": []
+        }
+      ],
+      "hex": "41000000000000000000000000",
+      "rust": {
+        "hex": "41000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "samet_fund_update_operation",
+      "operation": [
+        66,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "owner_account": "1.2.0",
+          "fund_id": "1.20.0",
+          "extensions": []
+        }
+      ],
+      "hex": "420000000000000000000000000000",
+      "rust": {
+        "hex": "420000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "samet_fund_borrow_operation",
+      "operation": [
+        67,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "borrower": "1.2.0",
+          "fund_id": "1.20.0",
+          "borrow_amount": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "extensions": []
+        }
+      ],
+      "hex": "43000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "43000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "samet_fund_repay_operation",
+      "operation": [
+        68,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "account": "1.2.0",
+          "fund_id": "1.20.0",
+          "repay_amount": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "fund_fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "extensions": []
+        }
+      ],
+      "hex": "44000000000000000000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "44000000000000000000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "credit_offer_create_operation",
+      "operation": [
+        69,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "owner_account": "1.2.0",
+          "asset_type": "1.3.0",
+          "balance": "0",
+          "fee_rate": 0,
+          "max_duration_seconds": 0,
+          "min_deal_amount": "0",
+          "enabled": false,
+          "auto_disable_time": "2026-09-29T00:00:00",
+          "acceptable_collateral": [],
+          "acceptable_borrowers": [],
+          "extensions": []
+        }
+      ],
+      "hex": "4500000000000000000000000000000000000000000000000000000000000000000000000080ffba6a000000",
+      "rust": {
+        "hex": "4500000000000000000000000000000000000000000000000000000000000000000000000080ffba6a000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "credit_offer_delete_operation",
+      "operation": [
+        70,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "owner_account": "1.2.0",
+          "offer_id": "1.21.0",
+          "extensions": []
+        }
+      ],
+      "hex": "46000000000000000000000000",
+      "rust": {
+        "hex": "46000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "credit_offer_update_operation",
+      "operation": [
+        71,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "owner_account": "1.2.0",
+          "offer_id": "1.21.0",
+          "extensions": []
+        }
+      ],
+      "hex": "470000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "470000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "credit_offer_accept_operation",
+      "operation": [
+        72,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "borrower": "1.2.0",
+          "offer_id": "1.21.0",
+          "borrow_amount": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "collateral": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "max_fee_rate": 0,
+          "min_duration_seconds": 0,
+          "extensions": {}
+        }
+      ],
+      "hex": "480000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "480000000000000000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "credit_deal_repay_operation",
+      "operation": [
+        73,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "account": "1.2.0",
+          "deal_id": "1.22.0",
+          "repay_amount": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "credit_fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "extensions": []
+        }
+      ],
+      "hex": "49000000000000000000000000000000000000000000000000000000000000",
+      "rust": {
+        "hex": "49000000000000000000000000000000000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "liquidity_pool_update_operation",
+      "operation": [
+        75,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "account": "1.2.0",
+          "pool": "1.19.0",
+          "extensions": []
+        }
+      ],
+      "hex": "4b0000000000000000000000000000",
+      "rust": {
+        "hex": "4b0000000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "credit_deal_update_operation",
+      "operation": [
+        76,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "account": "1.2.0",
+          "deal_id": "1.22.0",
+          "auto_repay": 0,
+          "extensions": []
+        }
+      ],
+      "hex": "4c00000000000000000000000000",
+      "rust": {
+        "hex": "4c00000000000000000000000000"
+      },
+      "nativeMatch": true
+    },
+    {
+      "name": "limit_order_update_operation",
+      "operation": [
+        77,
+        {
+          "fee": {
+            "amount": "0",
+            "asset_id": "1.3.0"
+          },
+          "seller": "1.2.0",
+          "order": "1.7.0",
+          "extensions": []
+        }
+      ],
+      "hex": "4d00000000000000000000000000000000",
+      "rust": {
+        "hex": "4d00000000000000000000000000000000"
+      },
+      "nativeMatch": true
+    }
+  ]
+}

@@ -9,13 +9,13 @@ pub const CHAIN_ID: &str = "bitshares";
 pub const CHAIN_ID_HEX: &str = "4018d7844c78f6a6c41c6a552b898022310fc5dec06da467ee7905a8dad512c8";
 pub const PUBLIC_KEY_PREFIX: &str = "BTS";
 
-pub const STRUCT_COUNT: usize = 212;
+pub const STRUCT_COUNT: usize = 232;
 pub const ENUM_COUNT: usize = 11;
 pub const STATIC_VARIANT_COUNT: usize = 11;
 pub const OPERATION_COUNT: usize = 78;
 pub const OBJECT_TYPE_COUNT: usize = 42;
-pub const RPC_API_COUNT: usize = 3;
-pub const RPC_METHOD_COUNT: usize = 11;
+pub const RPC_API_COUNT: usize = 5;
+pub const RPC_METHOD_COUNT: usize = 32;
 
 #[derive(
     Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,

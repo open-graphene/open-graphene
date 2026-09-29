@@ -1,40 +1,27 @@
 # Native Open Graphene TypeScript
 
-Initial implementation of the native ESM SDK for Node.js >=22.12 and browsers.
-This workspace consumes the same checked-in protocol specifications as Rust.
-It does not wrap bitsharesjs, execute Rust/WASM, or maintain duplicate specs.
+Native ESM SDK for Node.js >=22.12 and browsers, generated from the same pinned
+C++ protocol specifications as Rust. No bitsharesjs wrapper, Rust/WASM runtime,
+or duplicate protocol specification.
 
-Implemented:
+Implemented for Swaplock and BitShares:
 
-- `@open-graphene/primitives`: checked, branded chain/object IDs, timestamps,
-  vote IDs and byte conversions.
-- `@open-graphene/fc`: primitive FC writer, packed versus typed IDs, public-key
-  checksum decoding, transaction preimages and hashes; the `/signing` export adds
-  WIF, secp256k1 compact low-S signatures, verification and recovery.
-- `@open-graphene/codec`: lossless JSON, checked struct/variant codecs, recursive
-  fees, object routing and positional RPC descriptors.
-- `@open-graphene/chain-swaplock-bindings`: generated definitions and codecs for
-  95 operations and descriptors for 47 RPC methods from the current spec.
-- `@open-graphene/chain-bitshares-bindings`: 78 operations and 11 RPC methods.
-- Generated FC for the transfer/transaction dependency closure in both chains;
-  other operations and nonempty future extensions fail closed.
-- `@open-graphene/transport`: one-connection WebSocket RPC, API discovery,
-  request multiplexing and timeouts, without automatic retries.
-- `@open-graphene/chain-swaplock-api`: core-asset transfer preparation with fee
-  cap, immutable transaction snapshots, single-active-key signing, broadcast
-  and block inclusion lookup.
+- Generated JSON/RPC bindings: 95/78 operation variants, 47/32 RPC methods.
+- FC encoding and typed operation factories for all 88/71 nonvirtual operations.
+- Compound transactions, recursive proposal fees, fee caps, asset amounts,
+  immutable preparation, multiple signatures, broadcast callbacks and inclusion.
+- Endpoint selection, chain-pinned reconnect, bounded subscriptions, account,
+  balance, order and history watches, market notices and ChainStore.
+- Native encrypted memo, wallet keys, brain keys, account-role derivation,
+  signatures, addresses, hashes and authority analysis.
+- Swaplock room-access digests, mutation preconditions and member/key helpers.
+- `@open-graphene/core` utilities and `@open-graphene/graphene` chain facade.
 
-- `@open-graphene/chain-bitshares-api`: BitShares mainnet client with the same
-  core-transfer lifecycle and a `BitSharesWifSigner` producing legacy canonical
-  compact signatures. Chain identity is checked before use.
-
-These are generated definitions, not a claim that every operation has been
-independently tested against a live node. Each generated `support.json` records
-dynamic/unresolved fields and the narrow FC/signing scope. A native TypeScript
-transfer has been included and made irreversible on the Swaplock testnet;
-see [live transaction evidence](../../docs/TYPESCRIPT-LIVE-TRANSFER-2026-09-29.md).
-Remaining work includes other FC operations, memo encryption, multisig, reconnect/subscriptions, richer transaction orchestration and
-ChainStore. Packages have not been published.
+See the [Rust parity matrix and live evidence](../../docs/TYPESCRIPT-RUST-PARITY-2026-09-29.md).
+318 operation vectors match independent Rust and native C++ serializers. Three
+compound/guarded Swaplock transactions were included and made irreversible.
+Packages have not been published. This is capability parity for the supported
+Rust FC profile, not exhaustive input/branch coverage or a mainnet broadcast test.
 
 ## Development
 
@@ -94,8 +81,8 @@ These opt-in commands connect to the two nodes advertised by
 `https://portal.swaplock.chainpool.online/`, verify the chain ID against the
 generated spec, and perform 21 read/fee-estimation checks per node. Browser mode
 runs the same generated codecs in Chromium on the actual portal origin.
-The socket adapter is test-only; this does not implement the future production
-transport/session layer. There is no signing, broadcasting, private-key loading,
+This older smoke script uses a test adapter; the production session and transport
+are exercised by the full live suite below. There is no signing, broadcasting, private-key loading,
 or account creation. Live tests are excluded from the default offline CI suite.
 Each run emits a JSON report and exits unsuccessfully if any check fails.
 
@@ -203,8 +190,55 @@ pnpm test:bitshares:live /tmp/bitshares-node.json
 pnpm test:bitshares:live /tmp/bitshares-browser.json --browser
 ```
 
-The read-only suite covers the ten generated non-broadcast methods. Broadcast
-and inclusion are tested with a local RPC harness; no live BitShares transfer
-has been submitted. See [validation evidence](../../docs/TYPESCRIPT-BITSHARES-API-2026-09-29.md).
-Memo encryption, other operation serializers, multisig and subscriptions remain
-outside this initial API stage.
+The expanded read-only suite covers 31 non-broadcast RPC methods plus a native
+FC comparison. On both tested public endpoints, 24 RPC methods and FC passed;
+seven crypto methods were denied by node permissions. Broadcast and inclusion
+are tested with a local RPC harness; no live BitShares transfer was submitted.
+See the [current parity report](../../docs/TYPESCRIPT-RUST-PARITY-2026-09-29.md).
+
+## Operations, sessions and wallets
+
+```ts
+import { Graphene, PrivateKey } from '@open-graphene/graphene';
+import { AccountId, AssetId } from '@open-graphene/chain-swaplock-bindings';
+
+const client = await Graphene.swaplock(endpoints);
+const signer = PrivateKey.fromWif(wif);
+try {
+  const prepared = await client.operations.transfer({
+    from: AccountId('1.2.100'), to: AccountId('1.2.101'),
+    amount: { amount: 1n, asset_id: AssetId('1.3.0') },
+  }).maxFee(300000n).prepare();
+  const signed = await prepared.sign([signer]);
+  // Submitting consumes network fees:
+  await client.broadcast(signed);
+  await client.waitForInclusion(signed);
+} finally {
+  signer.dispose();
+  client.close();
+}
+```
+
+Factories use generated snake_case protocol fields; fee and extensions have
+checked defaults. Compose with `.addOperation(...)`, or pass an operation array
+to `client.prepareOperations`. Use `BitSharesWifSigner` or the
+`graphene-legacy` signing profile for BitShares.
+
+Streams are async iterators with an explicit `.close()`. Reconnect closes old
+streams; create new watches and snapshots after reconnect. History watches
+refresh the requested page rather than promising an immutable historical cursor.
+Populated extension support follows Rust's allowlist; unsupported payloads,
+nonempty legacy address maps and virtual signing fail closed.
+JavaScript cannot guarantee erasure of immutable strings or caller-held copies;
+`dispose()` clears the SDK's owned key byte arrays.
+
+Independent FC verification (read-only, built Rust examples required):
+
+```sh
+cargo build --offline --locked -p graphene-chain-swaplock-bindings --example fc_oracle
+cargo build --offline --locked -p graphene-chain-bitshares-bindings --example fc_oracle_bitshares
+node scripts/fc-parity-vectors.mjs --rich --live
+node scripts/fc-parity-vectors.mjs --bitshares --rich --live
+# Explicit opt-in: broadcasts testnet transactions and cleans up its room/order:
+node scripts/test-parity-live.mjs /local/path/genesis.private.json /tmp/parity-live.json
+```
