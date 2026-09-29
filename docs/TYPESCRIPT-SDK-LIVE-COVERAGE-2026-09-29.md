@@ -1,5 +1,7 @@
 # Live SDK Swaplock — 29 września 2026
 
+Aktualizacja po wdrożeniu crypto_api: [nowy przebieg live](TYPESCRIPT-SWAPLOCK-CRYPTO-LIVE-2026-09-29.md) potwierdza wszystkie siedem wcześniej zablokowanych metod na obu węzłach w Node/Chromium. Poniższy raport zachowuje historyczny stan sprzed wdrożenia.
+
 Wynik: **40 z 47 metod RPC potwierdzonych funkcjonalnie**, **7 zablokowanych przez politykę dostępu węzłów**, 0 pozostałych błędów. Zakres to aktualny SDK TypeScript, a nie pełna funkcjonalność Rust ani wszystkie operacje protokołu.
 
 39 metod odczytu sprawdzono przez produkcyjny transport SDK w Node.js i Chromium (origin portalu), na node01 i node02: **156 pozytywnych wyników**. Dodatkowo 12 pozytywnych scenariuszy: limit opłaty, brak odbiorcy, nieistniejący pokój/karta/blok. Każda z 7 metod crypto otrzymała odmowę dostępu w każdym z 4 przebiegów; nie zaliczamy tych odmów jako testów funkcjonalnych kryptografii.

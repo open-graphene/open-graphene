@@ -162,8 +162,12 @@ history and resting orders may expire, so results depend on fixture age.
 The broadcast method is exercised separately by `examples/live-transfer.mjs`.
 See the [full live coverage report](../../docs/TYPESCRIPT-SDK-LIVE-COVERAGE-2026-09-29.md):
 39 reads passed on both nodes in both runtimes, one native TypeScript transfer
-was confirmed and irreversible, and seven crypto methods were denied by the
-nodes' API access policy.
+was confirmed and irreversible. After crypto_api was enabled, all seven crypto
+methods also passed on both nodes in both runtimes, including negative cases,
+cross-node proofs and values above 2^53. See the
+[post-deployment crypto report](../../docs/TYPESCRIPT-SWAPLOCK-CRYPTO-LIVE-2026-09-29.md).
+Together the two runs cover all 47 current RPC methods; broadcast was not
+repeated in the crypto run.
 
 
 ## BitShares API

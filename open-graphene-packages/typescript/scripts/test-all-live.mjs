@@ -20,7 +20,7 @@ try {
  for(const endpoint of ['wss://node01.swaplock.chainpool.online:8090','wss://node02.swaplock.chainpool.online:8090']){
   const report=browserMode?await page.evaluate(({endpoint,options})=>globalThis.testAllMethods(endpoint,options),{endpoint,options}):await testAllMethods(endpoint,options);
   report.runtime=browserMode?'Chromium (portal origin)':'Node.js';runs.push(report);
-  console.log(JSON.stringify({endpoint,runtime:report.runtime,summary:report.summary,failures:report.methods.filter(m=>m.status==='failed')},null,2));
+  console.log(JSON.stringify({endpoint,runtime:report.runtime,summary:report.summary,failures:[...report.methods,...report.scenarios].filter(m=>m.status==='failed')},null,2));
   if(report.methods.some(m=>['failed','not_tested','blocked_by_test_data'].includes(m.status))||report.scenarios.some(s=>s.status==='failed'))process.exitCode=1;
  }
 }finally{

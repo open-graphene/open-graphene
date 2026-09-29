@@ -1,5 +1,6 @@
 import * as b from '../../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
 import { SwaplockClient } from '../../graphene-chain-swaplock/graphene-chain-swaplock-api/dist/index.js';
+import { RpcRemoteError } from '../../graphene-transport/dist/index.js';
 import { bytesToHex } from '../../graphene-primitives/dist/index.js';
 const expect = (v, m) => { if (!v) throw new Error(m); };
 const shape = v => v === null ? { kind: 'null' } : v instanceof Uint8Array ? { kind: 'bytes', length: v.length } : Array.isArray(v) ? { kind: 'array', length: v.length } : { kind: typeof v };
@@ -68,6 +69,48 @@ export async function testAllMethods(endpoint, { marketAsset, subjectAsset, subj
     await call(b.CryptoVerifyRange,{commit:commit??new Uint8Array(33),proof:proof??new Uint8Array()},v=>expect(v.success&&v.min_val<=7n&&v.max_val>=7n,'Range verification'));
     await call(b.CryptoVerifyRangeProofRewind,{nonce,commit:commit??new Uint8Array(33),proof:proof??new Uint8Array()},v=>expect(v.success&&v.value_out===7n&&bytesToHex(v.blind_out)===bytesToHex(blind),'Proof rewind'));
     await call(b.CryptoRangeGetInfo,{proof:proof??new Uint8Array()},v=>expect(v.min_value<=7n&&v.max_value>=7n,'Proof info'));
+    if(commit && proof) {
+      report.cryptoEvidence = { value: '7', blindHex: bytesToHex(blind), nonceHex: bytesToHex(nonce), commitmentHex: commitHex, proofHex: bytesToHex(proof) };
+      await scenario('crypto rejects unbalanced commitment sum', async()=>{
+        expect(await client.rpc.invoke(b.CryptoVerifySum,{commits_in:[commitHex],neg_commits_in:[commitHex],excess:1n})===false,'Unbalanced sum accepted');
+      });
+      await scenario('crypto rejects corrupted range proof', async()=>{
+        const corrupted=proof.slice();corrupted[corrupted.length-1]^=1;
+        const result=await client.rpc.invoke(b.CryptoVerifyRange,{commit,proof:corrupted});
+        expect(result.success===false,'Corrupted proof accepted');
+      });
+      await scenario('crypto rejects wrong rewind nonce', async()=>{
+        const wrongNonce=nonce.slice();wrongNonce[0]^=1;
+        try {
+          const result=await client.rpc.invoke(b.CryptoVerifyRangeProofRewind,{nonce:wrongNonce,commit,proof});
+          expect(result.success===false,'Wrong nonce accepted');
+          report.cryptoEvidence.wrongNonceRejection='success=false';
+        } catch(error) {
+          // FC_ASSERT in the native rewind implementation rejects an invalid nonce.
+          if(!(error instanceof RpcRemoteError) || !/Assert Exception: secp256k1_rangeproof_rewind\(/.test(error.detail?.message??'')) throw error;
+          report.cryptoEvidence.wrongNonceRejection='native secp256k1_rangeproof_rewind assertion (RPC error)';
+        }
+      });
+      await scenario('crypto preserves value above Number.MAX_SAFE_INTEGER', async()=>{
+        const value=9007199254740993n;
+        const wideCommit=await client.rpc.invoke(b.CryptoBlind,{blind,value});
+        const wideProof=await client.rpc.invoke(b.CryptoRangeProofSign,{min_value:0n,commit:bytesToHex(wideCommit),commit_blind:blind,nonce,base10_exp:0,min_bits:64,actual_value:value});
+        const verification=await client.rpc.invoke(b.CryptoVerifyRange,{commit:wideCommit,proof:wideProof});
+        expect(verification.success&&verification.min_val<=value&&verification.max_val>=value,'Wide range verification');
+        const rewound=await client.rpc.invoke(b.CryptoVerifyRangeProofRewind,{nonce,commit:wideCommit,proof:wideProof});
+        expect(rewound.success&&rewound.value_out===value&&bytesToHex(rewound.blind_out)===bytesToHex(blind),'Wide value lost precision');
+        report.cryptoEvidence.wideValue=rewound.value_out.toString();
+        report.cryptoEvidence.wideCommitmentHex=bytesToHex(wideCommit);
+      });
+      await scenario('crypto proof verifies on the other RPC node', async()=>{
+        const peerEndpoint=endpoint.includes('node01.')?endpoint.replace('node01.','node02.'):endpoint.replace('node02.','node01.');
+        const peer=await SwaplockClient.connect(peerEndpoint);
+        try {
+          const result=await peer.rpc.invoke(b.CryptoVerifyRange,{commit,proof});
+          expect(result.success&&result.min_val<=7n&&result.max_val>=7n,'Cross-node proof verification');
+        } finally { peer.close(); }
+      });
+    }
     Object.assign(row(b.NetworkBroadcastBroadcastTransaction),{status:'separate_live_transfer_scenario'});
     for(const [name,request,message] of [
       ['fee cap',{from:'swaplock',to:'registrar',amount:1n,maxFee:0n},'exceeds maximum fee'],
