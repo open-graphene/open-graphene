@@ -750,6 +750,74 @@ fn prepend_inherited_object_id_field(
     }
 }
 
+#[test]
+fn reflected_api_wrappers_keep_inherited_object_ids_through_multiple_levels() {
+    let source = SourceLoc {
+        file: "api_objects.hpp".into(),
+        line: 1,
+    };
+    let mut facts = SourceFacts::default();
+    for (name, base, field) in [
+        ("asset_object", "graphene::db::object", "symbol"),
+        ("extended_asset_object", "asset_object", "collateral"),
+        ("further_asset_object", "extended_asset_object", "extra"),
+    ] {
+        facts.classes.push(RawClass {
+            name: name.into(),
+            qualified_name: None,
+            methods: vec![],
+            fields: vec![crate::extract::RawField {
+                name: field.into(),
+                type_expr: "string".into(),
+                source: source.clone(),
+            }],
+            source: source.clone(),
+        });
+        facts.reflects.push(RawReflect {
+            type_name: name.into(),
+            bases: vec![base.into()],
+            fields: vec![field.into()],
+            derived: true,
+            source: source.clone(),
+        });
+    }
+    facts.object_types.push(crate::extract::RawObjectType {
+        object_type: "asset".into(),
+        cpp_alias: "asset_id_type".into(),
+        object_space_name: "protocol_ids".into(),
+        object_space: Some(1),
+        object_type_name: "asset_object_type".into(),
+        type_id: Some(3),
+        struct_ref: Some("asset_object".into()),
+        source,
+        id_namespace: "protocol".into(),
+    });
+    for expected in [
+        TypeRef::ProtocolObjectId {
+            object_type: "asset".into(),
+        },
+        TypeRef::ObjectId,
+    ] {
+        let mut diagnostics = Vec::new();
+        let result = raw_class_to_struct_def(&facts.classes[2], &facts, &mut diagnostics);
+        assert!(diagnostics.is_empty());
+        assert_eq!(
+            result
+                .fields
+                .iter()
+                .map(|f| f.name.as_str())
+                .collect::<Vec<_>>(),
+            ["id", "symbol", "collateral", "extra"]
+        );
+        assert_eq!(result.fields[0].ty, expected);
+        assert_eq!(
+            result.fields.iter().map(|f| f.index).collect::<Vec<_>>(),
+            [0, 1, 2, 3]
+        );
+        facts.object_types.clear();
+    }
+}
+
 fn is_graphene_db_object_base(base: &str) -> bool {
     let base = base.trim();
     // `graphene::chain::object` is `graphene::db::object` re-exported via
@@ -843,12 +911,13 @@ fn reflected_or_declared_fields(
         }
         if let Some(base_class) = find_raw_class(facts, last_path_segment(base)) {
             let base_reflect = find_raw_reflect(facts, base_class);
-            fields.extend(reflected_or_declared_fields(
-                base_class,
-                base_reflect,
-                facts,
-                diagnostics,
-            ));
+            let mut base_fields =
+                reflected_or_declared_fields(base_class, base_reflect, facts, diagnostics);
+            // API wrappers such as extended_asset_object inherit the object's
+            // ID as well as its declared fields. Supply it before flattening,
+            // while the registered base object's typed ID is still known.
+            prepend_inherited_object_id_field(base_class, facts, &mut base_fields);
+            fields.extend(base_fields);
         } else {
             diagnostics.push(format!(
                 "reflected base class `{base}` of `{}` was not extracted; its fields are missing from the binary layout",

@@ -1,0 +1,2038 @@
+{
+  "scope": "Current TypeScript Swaplock SDK: 47 generated RPC methods, plus implemented transfer lifecycle. Not all protocol operation serializers.",
+  "generatedAt": "2026-09-29T14:03:41.399408+00:00",
+  "summary": {
+    "distinctMethods": 47,
+    "passed": 40,
+    "unavailableOnNode": 7,
+    "failed": 0,
+    "readPasses": 156,
+    "cryptoAccessDenials": 28,
+    "negativeScenariosPassed": 12
+  },
+  "methods": [
+    {
+      "method": "crypto.blind",
+      "status": "unavailable_on_node",
+      "passedRuns": 0,
+      "attemptedRuns": 4,
+      "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+    },
+    {
+      "method": "crypto.blind_sum",
+      "status": "unavailable_on_node",
+      "passedRuns": 0,
+      "attemptedRuns": 4,
+      "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+    },
+    {
+      "method": "crypto.verify_sum",
+      "status": "unavailable_on_node",
+      "passedRuns": 0,
+      "attemptedRuns": 4,
+      "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+    },
+    {
+      "method": "crypto.verify_range",
+      "status": "unavailable_on_node",
+      "passedRuns": 0,
+      "attemptedRuns": 4,
+      "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+    },
+    {
+      "method": "crypto.range_proof_sign",
+      "status": "unavailable_on_node",
+      "passedRuns": 0,
+      "attemptedRuns": 4,
+      "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+    },
+    {
+      "method": "crypto.verify_range_proof_rewind",
+      "status": "unavailable_on_node",
+      "passedRuns": 0,
+      "attemptedRuns": 4,
+      "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+    },
+    {
+      "method": "crypto.range_get_info",
+      "status": "unavailable_on_node",
+      "passedRuns": 0,
+      "attemptedRuns": 4,
+      "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+    },
+    {
+      "method": "database.get_objects",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_block_header",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_block",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_account_balances",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_accounts",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_full_accounts",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_chain_properties",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_dynamic_global_properties",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_global_properties",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_limit_orders",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_chain_id",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_config",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_key_references",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_assets",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.lookup_asset_symbols",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.list_assets",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.lookup_accounts",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_ticker",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_required_fees",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_data_room_by_id",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_data_room_access_state",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_data_rooms_by_owner",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_data_rooms_by_subject",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_data_room_members",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_data_room_member",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_data_rooms_by_member",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_data_room_key_epochs",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_data_room_key_epoch",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_content_card_by_id",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_content_cards_by_room",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_content_cards_by_author",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_content_card_grants_by_card",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_content_card_grant",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "database.get_content_card_grants_by_grantee",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "history.get_account_history",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "history.get_fill_order_history",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "history.get_market_history",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "network_broadcast.broadcast_transaction",
+      "status": "passed",
+      "evidence": "native TypeScript transfer",
+      "transactionId": "93d5cb63619b1e36d34c87e6a93dd30cc7d6d62a",
+      "blockNumber": 1202081
+    },
+    {
+      "method": "orders.get_tracked_groups",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    },
+    {
+      "method": "orders.get_grouped_limit_orders",
+      "status": "passed",
+      "passedRuns": 4,
+      "attemptedRuns": 4
+    }
+  ],
+  "runs": [
+    {
+      "endpoint": "wss://node01.swaplock.chainpool.online:8090",
+      "startedAt": "2026-09-29T14:00:28.996Z",
+      "methods": [
+        {
+          "method": "crypto.blind",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.blind_sum",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.verify_sum",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.verify_range",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.range_proof_sign",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.verify_range_proof_rewind",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.range_get_info",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "database.get_objects",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 4
+          }
+        },
+        {
+          "method": "database.get_block_header",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_block",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_account_balances",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_accounts",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 3
+          }
+        },
+        {
+          "method": "database.get_full_accounts",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_chain_properties",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_dynamic_global_properties",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_global_properties",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_limit_orders",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_chain_id",
+          "status": "passed",
+          "result": {
+            "kind": "string"
+          }
+        },
+        {
+          "method": "database.get_config",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_key_references",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_assets",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "database.lookup_asset_symbols",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "database.list_assets",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "database.lookup_accounts",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 3
+          }
+        },
+        {
+          "method": "database.get_ticker",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_required_fees",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_data_room_by_id",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_data_room_access_state",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_data_rooms_by_owner",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 3
+          }
+        },
+        {
+          "method": "database.get_data_rooms_by_subject",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "database.get_data_room_members",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_data_room_member",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_data_rooms_by_member",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 3
+          }
+        },
+        {
+          "method": "database.get_data_room_key_epochs",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_data_room_key_epoch",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_content_card_by_id",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_content_cards_by_room",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_content_cards_by_author",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_content_card_grants_by_card",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_content_card_grant",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_content_card_grants_by_grantee",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "history.get_account_history",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 10
+          }
+        },
+        {
+          "method": "history.get_fill_order_history",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "history.get_market_history",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "network_broadcast.broadcast_transaction",
+          "status": "separate_live_transfer_scenario"
+        },
+        {
+          "method": "orders.get_tracked_groups",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "orders.get_grouped_limit_orders",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        }
+      ],
+      "scenarios": [
+        {
+          "name": "fee cap",
+          "status": "passed"
+        },
+        {
+          "name": "missing recipient",
+          "status": "passed"
+        },
+        {
+          "name": "missing room/card/block are null",
+          "status": "passed"
+        }
+      ],
+      "chainId": "3b4f346481a66146d732eb22a43b5956134e5bea6124b379033589146036cbbf",
+      "headBlock": 1202086,
+      "market": {
+        "base": "1.3.0",
+        "quote": "1.3.100"
+      },
+      "finishedAt": "2026-09-29T14:00:29.933Z",
+      "summary": {
+        "unavailable_on_node": 7,
+        "passed": 39,
+        "separate_live_transfer_scenario": 1
+      },
+      "runtime": "Node.js"
+    },
+    {
+      "endpoint": "wss://node02.swaplock.chainpool.online:8090",
+      "startedAt": "2026-09-29T14:00:29.936Z",
+      "methods": [
+        {
+          "method": "crypto.blind",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.blind_sum",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.verify_sum",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.verify_range",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.range_proof_sign",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.verify_range_proof_rewind",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.range_get_info",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "database.get_objects",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 4
+          }
+        },
+        {
+          "method": "database.get_block_header",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_block",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_account_balances",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_accounts",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 3
+          }
+        },
+        {
+          "method": "database.get_full_accounts",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_chain_properties",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_dynamic_global_properties",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_global_properties",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_limit_orders",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_chain_id",
+          "status": "passed",
+          "result": {
+            "kind": "string"
+          }
+        },
+        {
+          "method": "database.get_config",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_key_references",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_assets",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "database.lookup_asset_symbols",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "database.list_assets",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "database.lookup_accounts",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 3
+          }
+        },
+        {
+          "method": "database.get_ticker",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_required_fees",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_data_room_by_id",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_data_room_access_state",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_data_rooms_by_owner",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 3
+          }
+        },
+        {
+          "method": "database.get_data_rooms_by_subject",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "database.get_data_room_members",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_data_room_member",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_data_rooms_by_member",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 3
+          }
+        },
+        {
+          "method": "database.get_data_room_key_epochs",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_data_room_key_epoch",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_content_card_by_id",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_content_cards_by_room",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_content_cards_by_author",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_content_card_grants_by_card",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_content_card_grant",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_content_card_grants_by_grantee",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "history.get_account_history",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 10
+          }
+        },
+        {
+          "method": "history.get_fill_order_history",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "history.get_market_history",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "network_broadcast.broadcast_transaction",
+          "status": "separate_live_transfer_scenario"
+        },
+        {
+          "method": "orders.get_tracked_groups",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "orders.get_grouped_limit_orders",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        }
+      ],
+      "scenarios": [
+        {
+          "name": "fee cap",
+          "status": "passed"
+        },
+        {
+          "name": "missing recipient",
+          "status": "passed"
+        },
+        {
+          "name": "missing room/card/block are null",
+          "status": "passed"
+        }
+      ],
+      "chainId": "3b4f346481a66146d732eb22a43b5956134e5bea6124b379033589146036cbbf",
+      "headBlock": 1202087,
+      "market": {
+        "base": "1.3.0",
+        "quote": "1.3.100"
+      },
+      "finishedAt": "2026-09-29T14:00:30.782Z",
+      "summary": {
+        "unavailable_on_node": 7,
+        "passed": 39,
+        "separate_live_transfer_scenario": 1
+      },
+      "runtime": "Node.js"
+    },
+    {
+      "endpoint": "wss://node01.swaplock.chainpool.online:8090",
+      "startedAt": "2026-09-29T14:00:31.840Z",
+      "methods": [
+        {
+          "method": "crypto.blind",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.blind_sum",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.verify_sum",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.verify_range",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.range_proof_sign",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.verify_range_proof_rewind",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.range_get_info",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "database.get_objects",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 4
+          }
+        },
+        {
+          "method": "database.get_block_header",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_block",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_account_balances",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_accounts",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 3
+          }
+        },
+        {
+          "method": "database.get_full_accounts",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_chain_properties",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_dynamic_global_properties",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_global_properties",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_limit_orders",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_chain_id",
+          "status": "passed",
+          "result": {
+            "kind": "string"
+          }
+        },
+        {
+          "method": "database.get_config",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_key_references",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_assets",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "database.lookup_asset_symbols",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "database.list_assets",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "database.lookup_accounts",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 3
+          }
+        },
+        {
+          "method": "database.get_ticker",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_required_fees",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_data_room_by_id",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_data_room_access_state",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_data_rooms_by_owner",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 3
+          }
+        },
+        {
+          "method": "database.get_data_rooms_by_subject",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "database.get_data_room_members",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_data_room_member",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_data_rooms_by_member",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 3
+          }
+        },
+        {
+          "method": "database.get_data_room_key_epochs",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_data_room_key_epoch",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_content_card_by_id",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_content_cards_by_room",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_content_cards_by_author",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_content_card_grants_by_card",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_content_card_grant",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_content_card_grants_by_grantee",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "history.get_account_history",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 10
+          }
+        },
+        {
+          "method": "history.get_fill_order_history",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "history.get_market_history",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "network_broadcast.broadcast_transaction",
+          "status": "separate_live_transfer_scenario"
+        },
+        {
+          "method": "orders.get_tracked_groups",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "orders.get_grouped_limit_orders",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        }
+      ],
+      "scenarios": [
+        {
+          "name": "fee cap",
+          "status": "passed"
+        },
+        {
+          "name": "missing recipient",
+          "status": "passed"
+        },
+        {
+          "name": "missing room/card/block are null",
+          "status": "passed"
+        }
+      ],
+      "chainId": "3b4f346481a66146d732eb22a43b5956134e5bea6124b379033589146036cbbf",
+      "headBlock": 1202087,
+      "market": {
+        "base": "1.3.0",
+        "quote": "1.3.100"
+      },
+      "finishedAt": "2026-09-29T14:00:32.720Z",
+      "summary": {
+        "unavailable_on_node": 7,
+        "passed": 39,
+        "separate_live_transfer_scenario": 1
+      },
+      "runtime": "Chromium (portal origin)"
+    },
+    {
+      "endpoint": "wss://node02.swaplock.chainpool.online:8090",
+      "startedAt": "2026-09-29T14:00:32.724Z",
+      "methods": [
+        {
+          "method": "crypto.blind",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.blind_sum",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.verify_sum",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.verify_range",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.range_proof_sign",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.verify_range_proof_rewind",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "crypto.range_get_info",
+          "status": "unavailable_on_node",
+          "reason": "Execution error: Assert Exception: is_allowed: Access denied"
+        },
+        {
+          "method": "database.get_objects",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 4
+          }
+        },
+        {
+          "method": "database.get_block_header",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_block",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_account_balances",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_accounts",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 3
+          }
+        },
+        {
+          "method": "database.get_full_accounts",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_chain_properties",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_dynamic_global_properties",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_global_properties",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_limit_orders",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_chain_id",
+          "status": "passed",
+          "result": {
+            "kind": "string"
+          }
+        },
+        {
+          "method": "database.get_config",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_key_references",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_assets",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "database.lookup_asset_symbols",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "database.list_assets",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "database.lookup_accounts",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 3
+          }
+        },
+        {
+          "method": "database.get_ticker",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_required_fees",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_data_room_by_id",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_data_room_access_state",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_data_rooms_by_owner",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 3
+          }
+        },
+        {
+          "method": "database.get_data_rooms_by_subject",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "database.get_data_room_members",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_data_room_member",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_data_rooms_by_member",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 3
+          }
+        },
+        {
+          "method": "database.get_data_room_key_epochs",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_data_room_key_epoch",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_content_card_by_id",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_content_cards_by_room",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_content_cards_by_author",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_content_card_grants_by_card",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "database.get_content_card_grant",
+          "status": "passed",
+          "result": {
+            "kind": "object"
+          }
+        },
+        {
+          "method": "database.get_content_card_grants_by_grantee",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "history.get_account_history",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 10
+          }
+        },
+        {
+          "method": "history.get_fill_order_history",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "history.get_market_history",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        },
+        {
+          "method": "network_broadcast.broadcast_transaction",
+          "status": "separate_live_transfer_scenario"
+        },
+        {
+          "method": "orders.get_tracked_groups",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 2
+          }
+        },
+        {
+          "method": "orders.get_grouped_limit_orders",
+          "status": "passed",
+          "result": {
+            "kind": "array",
+            "length": 1
+          }
+        }
+      ],
+      "scenarios": [
+        {
+          "name": "fee cap",
+          "status": "passed"
+        },
+        {
+          "name": "missing recipient",
+          "status": "passed"
+        },
+        {
+          "name": "missing room/card/block are null",
+          "status": "passed"
+        }
+      ],
+      "chainId": "3b4f346481a66146d732eb22a43b5956134e5bea6124b379033589146036cbbf",
+      "headBlock": 1202087,
+      "market": {
+        "base": "1.3.0",
+        "quote": "1.3.100"
+      },
+      "finishedAt": "2026-09-29T14:00:33.555Z",
+      "summary": {
+        "unavailable_on_node": 7,
+        "passed": 39,
+        "separate_live_transfer_scenario": 1
+      },
+      "runtime": "Chromium (portal origin)"
+    }
+  ],
+  "nativeTypeScriptTransfer": {
+    "startedAt": "2026-09-29T14:00:00.362Z",
+    "endpoint": "wss://node01.swaplock.chainpool.online:8090",
+    "chainId": "3b4f346481a66146d732eb22a43b5956134e5bea6124b379033589146036cbbf",
+    "mode": "broadcast",
+    "transactionId": "93d5cb63619b1e36d34c87e6a93dd30cc7d6d62a",
+    "from": {
+      "id": "1.2.100",
+      "name": "swaplock"
+    },
+    "to": {
+      "id": "1.2.101",
+      "name": "registrar"
+    },
+    "asset": {
+      "id": "1.3.0",
+      "symbol": "BTS",
+      "precision": 5
+    },
+    "amountUnits": "1000",
+    "feeUnits": "200000",
+    "nativeFcBytesMatch": true,
+    "nodeAuthorityVerified": true,
+    "signedTransaction": {
+      "ref_block_num": 22432,
+      "ref_block_prefix": 4159350756,
+      "expiration": "2026-09-29T14:02:00",
+      "operations": [
+        [
+          0,
+          {
+            "fee": {
+              "amount": 200000,
+              "asset_id": "1.3.0"
+            },
+            "from": "1.2.100",
+            "to": "1.2.101",
+            "amount": {
+              "amount": 1000,
+              "asset_id": "1.3.0"
+            },
+            "extensions": []
+          }
+        ]
+      ],
+      "extensions": [],
+      "signatures": [
+        "1f29789923d8892aaa1a0a3fd9138027f3da31758e97d6c0f7fd0a94a721c6b13615f87a3f3da66b8c9b97a8171c63e46eda9ff332bcbd1b9f74fe2c43e8192802"
+      ]
+    },
+    "unsignedFcHex": "a057e4a7eaf7d8c4bb6a0100400d030000000000006465e80300000000000000000000",
+    "signedFcHex": "a057e4a7eaf7d8c4bb6a0100400d030000000000006465e80300000000000000000000011f29789923d8892aaa1a0a3fd9138027f3da31758e97d6c0f7fd0a94a721c6b13615f87a3f3da66b8c9b97a8171c63e46eda9ff332bcbd1b9f74fe2c43e8192802",
+    "submission": {
+      "transactionId": "93d5cb63619b1e36d34c87e6a93dd30cc7d6d62a",
+      "status": "submitted"
+    },
+    "inclusion": {
+      "transactionId": "93d5cb63619b1e36d34c87e6a93dd30cc7d6d62a",
+      "blockNumber": 1202081,
+      "transactionIndex": 0,
+      "blockTime": "2026-09-29T14:00:12"
+    },
+    "secondNodeInclusion": {
+      "endpoint": "wss://node02.swaplock.chainpool.online:8090",
+      "transactionId": "93d5cb63619b1e36d34c87e6a93dd30cc7d6d62a",
+      "blockNumber": 1202081,
+      "transactionIndex": 0,
+      "blockTime": "2026-09-29T14:00:12"
+    },
+    "balanceChanges": {
+      "senderUnits": "-201000",
+      "recipientUnits": "1000"
+    },
+    "lastIrreversibleBlock": 1202081,
+    "explorer": "https://portal.swaplock.chainpool.online/block/1202081",
+    "finishedAt": "2026-09-29T14:00:19.118Z"
+  },
+  "fixture": {
+    "symbol": "OGTSMUMQHCL1",
+    "assetId": "1.3.100",
+    "createdAt": "2026-09-29T13:50:15.541Z",
+    "serialization": "native node FC, fixture setup only",
+    "orderId": "1.7.2",
+    "subjectRoomId": "1.23.267",
+    "grantRoomId": "1.23.268",
+    "grantCardId": "1.26.126",
+    "grantId": "1.28.0",
+    "orderClosedAt": "2026-09-29T14:02:04.397Z"
+  },
+  "fixtureSetup": {
+    "startedAt": "2026-09-29T13:50:15.541Z",
+    "purpose": "test data setup using native node FC serializer; not TS FC coverage",
+    "transactions": [
+      {
+        "label": "create isolated market test asset",
+        "id": "f5613e08d8f99d6de051701359607657f6c01cd6",
+        "feeUnits": "50000000",
+        "status": "included",
+        "blockNumber": 1201886,
+        "operationResults": [
+          [
+            1,
+            "1.3.100"
+          ]
+        ]
+      },
+      {
+        "label": "issue one test token",
+        "id": "7f127abbc13abf81ab955e329770153306d2a67c",
+        "feeUnits": "200009",
+        "status": "included",
+        "blockNumber": 1201916,
+        "operationResults": [
+          [
+            0,
+            {}
+          ]
+        ]
+      },
+      {
+        "label": "maker order for test fill",
+        "id": "aaca6e9fce1580bd838c4e7bedb72cb56d508dd2",
+        "feeUnits": "50000",
+        "status": "included",
+        "blockNumber": 1201917,
+        "operationResults": [
+          [
+            1,
+            "1.7.0"
+          ]
+        ]
+      },
+      {
+        "label": "taker order for test fill",
+        "id": "d2b5816e21d3c7a545e9f6bb42fa2a2aa799d49f",
+        "feeUnits": "50000",
+        "status": "included",
+        "blockNumber": 1201965,
+        "operationResults": [
+          [
+            1,
+            "1.7.1"
+          ]
+        ]
+      },
+      {
+        "label": "resting order for depth/grouping reads",
+        "id": "86e73791a2768da66648e397004112d25cc49085",
+        "feeUnits": "50000",
+        "status": "included",
+        "blockNumber": 1201966,
+        "operationResults": [
+          [
+            1,
+            "1.7.2"
+          ]
+        ]
+      },
+      {
+        "label": "room with asset subject",
+        "id": "748037acf553658cc39724d05f31911979c64423",
+        "feeUnits": "0",
+        "status": "included",
+        "blockNumber": 1201967,
+        "operationResults": [
+          [
+            1,
+            "1.23.267"
+          ]
+        ]
+      },
+      {
+        "label": "isolated encrypted room for grant reads",
+        "id": "363ba756f0ca7fdd820db47269d553204c6c107b",
+        "feeUnits": "0",
+        "status": "included",
+        "blockNumber": 1201987,
+        "operationResults": [
+          [
+            1,
+            "1.23.268"
+          ]
+        ]
+      },
+      {
+        "label": "isolated content card for grant reads",
+        "id": "d3ff18da6693dca82dd00a8c726109c360708971",
+        "feeUnits": "0",
+        "status": "rejected",
+        "reason": "Explicit RPC validation rejection: Storage data should not be empty"
+      },
+      {
+        "label": "isolated content card with storage metadata for grant reads",
+        "id": "dac9e5d87c506defe5055597ce61242196000fe4",
+        "feeUnits": "0",
+        "status": "included",
+        "blockNumber": 1202067,
+        "operationResults": [
+          [
+            1,
+            "1.26.126"
+          ]
+        ]
+      },
+      {
+        "label": "grant to controlled registrar account",
+        "id": "8265c91ee20cb3c54222ebfd3412f2fd97d1b45c",
+        "feeUnits": "0",
+        "status": "included",
+        "blockNumber": 1202068,
+        "operationResults": [
+          [
+            1,
+            "1.28.0"
+          ]
+        ]
+      },
+      {
+        "label": "cancel fixture resting order",
+        "id": "b37ed7b531dbf6f8b4683f73e175870fb2067a21",
+        "feeUnits": "0",
+        "status": "included",
+        "blockNumber": 1202108,
+        "operationResults": [
+          [
+            2,
+            {
+              "amount": 200,
+              "asset_id": "1.3.100"
+            }
+          ]
+        ]
+      }
+    ],
+    "finishedAt": "2026-09-29T14:02:04.399Z"
+  },
+  "localValidation": {
+    "rustTestsPassed": 442,
+    "nodeTestsPassed": 20,
+    "clippy": "passed",
+    "rustfmt": "passed",
+    "typecheck": "passed",
+    "generatedBindingsCheck": "passed",
+    "browserOffline": "passed"
+  },
+  "limitations": [
+    "crypto_api blocked by node access policy on both endpoints; seven methods have no functional live verification.",
+    "Only transfer has native TypeScript FC serialization/signing implemented. Fixture setup used C++ node serialization and is not additional TS FC coverage.",
+    "Browser runs covered reads and negative scenarios; broadcast was performed once in Node.js and inclusion confirmed on both nodes.",
+    "Coverage of methods is not exhaustive coverage of every input, error path, subscription, or every protocol operation."
+  ]
+}

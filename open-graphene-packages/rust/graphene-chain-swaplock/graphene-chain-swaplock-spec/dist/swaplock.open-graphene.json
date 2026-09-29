@@ -6100,12 +6100,8 @@
           "index": 4,
           "name": "extensions",
           "type": {
-            "kind": "set",
-            "inner": {
-              "kind": "static_variant_ref",
-              "name": "future_extensions"
-            },
-            "ordering": "static_variant_tag"
+            "kind": "ref",
+            "name": "call_order_update_operation_options_type"
           },
           "source": {
             "name": "extensions",
@@ -6138,6 +6134,36 @@
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/market.hpp",
             "line": 184
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
+      }
+    },
+    {
+      "name": "call_order_update_operation_options_type",
+      "sourceName": "graphene::protocol::call_order_update_operation::options_type",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "target_collateral_ratio",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "uint16"
+            }
+          },
+          "source": {
+            "name": "target_collateral_ratio",
+            "file": "libraries/protocol/include/graphene/protocol/market.hpp",
+            "line": 177
           },
           "support": {
             "status": "provisional",
@@ -13499,6 +13525,23 @@
       "fields": [
         {
           "index": 0,
+          "name": "id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "asset"
+          },
+          "source": {
+            "name": "id",
+            "file": "libraries/chain/include/graphene/chain/asset_object.hpp",
+            "line": 75
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "inherited object id from graphene::db::object for reflected Graphene object"
+          }
+        },
+        {
+          "index": 1,
           "name": "symbol",
           "type": {
             "kind": "string"
@@ -13514,7 +13557,7 @@
           }
         },
         {
-          "index": 1,
+          "index": 2,
           "name": "precision",
           "type": {
             "kind": "uint8"
@@ -13530,7 +13573,7 @@
           }
         },
         {
-          "index": 2,
+          "index": 3,
           "name": "issuer",
           "type": {
             "kind": "protocol_object_id",
@@ -13547,7 +13590,7 @@
           }
         },
         {
-          "index": 3,
+          "index": 4,
           "name": "options",
           "type": {
             "kind": "ref",
@@ -13564,7 +13607,7 @@
           }
         },
         {
-          "index": 4,
+          "index": 5,
           "name": "dynamic_asset_data_id",
           "type": {
             "kind": "protocol_object_id",
@@ -13581,7 +13624,7 @@
           }
         },
         {
-          "index": 5,
+          "index": 6,
           "name": "bitasset_data_id",
           "type": {
             "kind": "optional",
@@ -13601,7 +13644,7 @@
           }
         },
         {
-          "index": 6,
+          "index": 7,
           "name": "buyback_account",
           "type": {
             "kind": "optional",
@@ -13621,7 +13664,7 @@
           }
         },
         {
-          "index": 7,
+          "index": 8,
           "name": "for_liquidity_pool",
           "type": {
             "kind": "optional",
@@ -13641,7 +13684,7 @@
           }
         },
         {
-          "index": 8,
+          "index": 9,
           "name": "creation_block_num",
           "type": {
             "kind": "uint32"
@@ -13657,7 +13700,7 @@
           }
         },
         {
-          "index": 9,
+          "index": 10,
           "name": "creation_time",
           "type": {
             "kind": "time_point_sec"
@@ -13673,7 +13716,7 @@
           }
         },
         {
-          "index": 10,
+          "index": 11,
           "name": "total_in_collateral",
           "type": {
             "kind": "optional",
@@ -13692,7 +13735,7 @@
           }
         },
         {
-          "index": 11,
+          "index": 12,
           "name": "total_backing_collateral",
           "type": {
             "kind": "optional",
@@ -15925,12 +15968,8 @@
           "index": 6,
           "name": "extensions",
           "type": {
-            "kind": "set",
-            "inner": {
-              "kind": "static_variant_ref",
-              "name": "future_extensions"
-            },
-            "ordering": "static_variant_tag"
+            "kind": "ref",
+            "name": "limit_order_create_operation_options_type"
           },
           "source": {
             "name": "extensions",
@@ -15963,6 +16002,40 @@
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/market.hpp",
             "line": 84
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
+      }
+    },
+    {
+      "name": "limit_order_create_operation_options_type",
+      "sourceName": "graphene::protocol::limit_order_create_operation::options_type",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "on_fill",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "vector",
+              "inner": {
+                "kind": "static_variant_ref",
+                "name": "limit_order_auto_action"
+              }
+            }
+          },
+          "source": {
+            "name": "on_fill",
+            "file": "libraries/protocol/include/graphene/protocol/market.hpp",
+            "line": 78
           },
           "support": {
             "status": "provisional",
@@ -27092,12 +27165,8 @@
           "index": 6,
           "name": "extensions",
           "type": {
-            "kind": "set",
-            "inner": {
-              "kind": "static_variant_ref",
-              "name": "future_extensions"
-            },
-            "ordering": "static_variant_tag"
+            "kind": "ref",
+            "name": "limit_order_create_operation_options_type"
           },
           "source": {
             "name": "extensions",
@@ -27275,12 +27344,8 @@
           "index": 4,
           "name": "extensions",
           "type": {
-            "kind": "set",
-            "inner": {
-              "kind": "static_variant_ref",
-              "name": "future_extensions"
-            },
-            "ordering": "static_variant_tag"
+            "kind": "ref",
+            "name": "call_order_update_operation_options_type"
           },
           "source": {
             "name": "extensions",

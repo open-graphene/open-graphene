@@ -8,10 +8,35 @@ on:
 env:
   CARGO_TERM_COLOR: always
   # Pinned vendored-source revisions used to regenerate the committed specs.
-  SWAPLOCK_CORE_COMMIT: 50179db9950f7297fdb94145efa33a69fd5bbc5f
+  SWAPLOCK_CORE_COMMIT: 7b471be9d1cc051e7a3563a639a9ee98979de9d8
   BITSHARES_CORE_COMMIT: b92b82ba3e57381d111f28383e8cfa89a8356966
 
 jobs:
+  typescript:
+    name: Native TypeScript bindings
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: open-graphene-packages/typescript
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: open-graphene-packages/typescript/pnpm-lock.yaml
+      - run: cargo fetch --locked
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm generate:check
+      - run: pnpm test
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:browser
+
   test:
     runs-on: ubuntu-latest
     steps:

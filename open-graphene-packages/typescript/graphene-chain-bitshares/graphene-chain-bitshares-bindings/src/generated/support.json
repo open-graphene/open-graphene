@@ -1,0 +1,841 @@
+{
+  "chain": "bitshares",
+  "dynamicFields": [],
+  "operations": [
+    {
+      "builder": false,
+      "fc": "empty_extensions_only",
+      "json": "generated",
+      "name": "transfer_operation",
+      "signing": "not_implemented",
+      "tag": 0,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "limit_order_create_operation",
+      "signing": "not_implemented",
+      "tag": 1,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "limit_order_cancel_operation",
+      "signing": "not_implemented",
+      "tag": 2,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "call_order_update_operation",
+      "signing": "not_implemented",
+      "tag": 3,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "fill_order_operation",
+      "signing": "not_implemented",
+      "tag": 4,
+      "type": true,
+      "virtual": true
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "account_create_operation",
+      "signing": "not_implemented",
+      "tag": 5,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "account_update_operation",
+      "signing": "not_implemented",
+      "tag": 6,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "account_whitelist_operation",
+      "signing": "not_implemented",
+      "tag": 7,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "account_upgrade_operation",
+      "signing": "not_implemented",
+      "tag": 8,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "account_transfer_operation",
+      "signing": "not_implemented",
+      "tag": 9,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "asset_create_operation",
+      "signing": "not_implemented",
+      "tag": 10,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "asset_update_operation",
+      "signing": "not_implemented",
+      "tag": 11,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "asset_update_bitasset_operation",
+      "signing": "not_implemented",
+      "tag": 12,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "asset_update_feed_producers_operation",
+      "signing": "not_implemented",
+      "tag": 13,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "asset_issue_operation",
+      "signing": "not_implemented",
+      "tag": 14,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "asset_reserve_operation",
+      "signing": "not_implemented",
+      "tag": 15,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "asset_fund_fee_pool_operation",
+      "signing": "not_implemented",
+      "tag": 16,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "asset_settle_operation",
+      "signing": "not_implemented",
+      "tag": 17,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "asset_global_settle_operation",
+      "signing": "not_implemented",
+      "tag": 18,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "asset_publish_feed_operation",
+      "signing": "not_implemented",
+      "tag": 19,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "witness_create_operation",
+      "signing": "not_implemented",
+      "tag": 20,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "witness_update_operation",
+      "signing": "not_implemented",
+      "tag": 21,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "proposal_create_operation",
+      "signing": "not_implemented",
+      "tag": 22,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "proposal_update_operation",
+      "signing": "not_implemented",
+      "tag": 23,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "proposal_delete_operation",
+      "signing": "not_implemented",
+      "tag": 24,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "withdraw_permission_create_operation",
+      "signing": "not_implemented",
+      "tag": 25,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "withdraw_permission_update_operation",
+      "signing": "not_implemented",
+      "tag": 26,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "withdraw_permission_claim_operation",
+      "signing": "not_implemented",
+      "tag": 27,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "withdraw_permission_delete_operation",
+      "signing": "not_implemented",
+      "tag": 28,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "committee_member_create_operation",
+      "signing": "not_implemented",
+      "tag": 29,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "committee_member_update_operation",
+      "signing": "not_implemented",
+      "tag": 30,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "committee_member_update_global_parameters_operation",
+      "signing": "not_implemented",
+      "tag": 31,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "vesting_balance_create_operation",
+      "signing": "not_implemented",
+      "tag": 32,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "vesting_balance_withdraw_operation",
+      "signing": "not_implemented",
+      "tag": 33,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "worker_create_operation",
+      "signing": "not_implemented",
+      "tag": 34,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "custom_operation",
+      "signing": "not_implemented",
+      "tag": 35,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "assert_operation",
+      "signing": "not_implemented",
+      "tag": 36,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "balance_claim_operation",
+      "signing": "not_implemented",
+      "tag": 37,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "override_transfer_operation",
+      "signing": "not_implemented",
+      "tag": 38,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "transfer_to_blind_operation",
+      "signing": "not_implemented",
+      "tag": 39,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "blind_transfer_operation",
+      "signing": "not_implemented",
+      "tag": 40,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "transfer_from_blind_operation",
+      "signing": "not_implemented",
+      "tag": 41,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "asset_settle_cancel_operation",
+      "signing": "not_implemented",
+      "tag": 42,
+      "type": true,
+      "virtual": true
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "asset_claim_fees_operation",
+      "signing": "not_implemented",
+      "tag": 43,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "fba_distribute_operation",
+      "signing": "not_implemented",
+      "tag": 44,
+      "type": true,
+      "virtual": true
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "bid_collateral_operation",
+      "signing": "not_implemented",
+      "tag": 45,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "execute_bid_operation",
+      "signing": "not_implemented",
+      "tag": 46,
+      "type": true,
+      "virtual": true
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "asset_claim_pool_operation",
+      "signing": "not_implemented",
+      "tag": 47,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "asset_update_issuer_operation",
+      "signing": "not_implemented",
+      "tag": 48,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "htlc_create_operation",
+      "signing": "not_implemented",
+      "tag": 49,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "htlc_redeem_operation",
+      "signing": "not_implemented",
+      "tag": 50,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "htlc_redeemed_operation",
+      "signing": "not_implemented",
+      "tag": 51,
+      "type": true,
+      "virtual": true
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "htlc_extend_operation",
+      "signing": "not_implemented",
+      "tag": 52,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "htlc_refund_operation",
+      "signing": "not_implemented",
+      "tag": 53,
+      "type": true,
+      "virtual": true
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "custom_authority_create_operation",
+      "signing": "not_implemented",
+      "tag": 54,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "custom_authority_update_operation",
+      "signing": "not_implemented",
+      "tag": 55,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "custom_authority_delete_operation",
+      "signing": "not_implemented",
+      "tag": 56,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "ticket_create_operation",
+      "signing": "not_implemented",
+      "tag": 57,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "ticket_update_operation",
+      "signing": "not_implemented",
+      "tag": 58,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "liquidity_pool_create_operation",
+      "signing": "not_implemented",
+      "tag": 59,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "liquidity_pool_delete_operation",
+      "signing": "not_implemented",
+      "tag": 60,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "liquidity_pool_deposit_operation",
+      "signing": "not_implemented",
+      "tag": 61,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "liquidity_pool_withdraw_operation",
+      "signing": "not_implemented",
+      "tag": 62,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "liquidity_pool_exchange_operation",
+      "signing": "not_implemented",
+      "tag": 63,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "samet_fund_create_operation",
+      "signing": "not_implemented",
+      "tag": 64,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "samet_fund_delete_operation",
+      "signing": "not_implemented",
+      "tag": 65,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "samet_fund_update_operation",
+      "signing": "not_implemented",
+      "tag": 66,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "samet_fund_borrow_operation",
+      "signing": "not_implemented",
+      "tag": 67,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "samet_fund_repay_operation",
+      "signing": "not_implemented",
+      "tag": 68,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "credit_offer_create_operation",
+      "signing": "not_implemented",
+      "tag": 69,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "credit_offer_delete_operation",
+      "signing": "not_implemented",
+      "tag": 70,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "credit_offer_update_operation",
+      "signing": "not_implemented",
+      "tag": 71,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "credit_offer_accept_operation",
+      "signing": "not_implemented",
+      "tag": 72,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "credit_deal_repay_operation",
+      "signing": "not_implemented",
+      "tag": 73,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "credit_deal_expired_operation",
+      "signing": "not_implemented",
+      "tag": 74,
+      "type": true,
+      "virtual": true
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "liquidity_pool_update_operation",
+      "signing": "not_implemented",
+      "tag": 75,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "credit_deal_update_operation",
+      "signing": "not_implemented",
+      "tag": 76,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "not_implemented",
+      "json": "generated",
+      "name": "limit_order_update_operation",
+      "signing": "not_implemented",
+      "tag": 77,
+      "type": true,
+      "virtual": false
+    }
+  ],
+  "profileVersion": 1,
+  "rpc": [
+    {
+      "api": "database",
+      "descriptor": true,
+      "highLevel": false,
+      "method": "get_objects",
+      "subscription": false
+    },
+    {
+      "api": "database",
+      "descriptor": true,
+      "highLevel": false,
+      "method": "get_block_header",
+      "subscription": false
+    },
+    {
+      "api": "database",
+      "descriptor": true,
+      "highLevel": false,
+      "method": "get_block",
+      "subscription": false
+    },
+    {
+      "api": "database",
+      "descriptor": true,
+      "highLevel": false,
+      "method": "get_account_balances",
+      "subscription": false
+    },
+    {
+      "api": "database",
+      "descriptor": true,
+      "highLevel": false,
+      "method": "get_dynamic_global_properties",
+      "subscription": false
+    },
+    {
+      "api": "database",
+      "descriptor": true,
+      "highLevel": false,
+      "method": "get_limit_orders",
+      "subscription": false
+    },
+    {
+      "api": "history",
+      "descriptor": true,
+      "highLevel": false,
+      "method": "get_account_history",
+      "subscription": false
+    }
+  ],
+  "schemaVersion": 1,
+  "specSha256": "b9fe35d33ac3583740bfed065a90c9e8dce160e66a0e91296b9dea5aca14d79b",
+  "stage": "transfer-fc"
+}

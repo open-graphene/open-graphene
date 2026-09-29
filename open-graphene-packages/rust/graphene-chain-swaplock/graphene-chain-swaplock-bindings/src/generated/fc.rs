@@ -4,7 +4,7 @@
 
 pub use open_graphene_fc::{
     FcSerialize, FcSerializeError, Result, decode_chain_id_hex, decode_public_key,
-    parse_protocol_object_id, sha256_bytes, write_bytes, write_fixed_bytes,
+    parse_protocol_object_id, sha256_bytes, write_bytes, write_fixed_bytes, write_object_id,
     write_protocol_object_id, write_public_key, write_time_point_sec, write_varint, write_vote_id,
 };
 // Krypto na krzywej jest za cechą: bez niej zostaje sama serializacja,
@@ -311,7 +311,7 @@ impl FcSerialize for crate::generated::ids::WorkerId {
 
 impl FcSerialize for crate::generated::ids::ObjectId {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        write_protocol_object_id(&self.0, None, None, out)
+        write_object_id(&self.0, out)
     }
 }
 
@@ -1005,6 +1005,19 @@ impl FcSerialize for crate::generated::types::CallOrderUpdateOperationFeeParamsT
     }
 }
 
+impl FcSerialize for crate::generated::types::CallOrderUpdateOperationOptionsType {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        if self.target_collateral_ratio.is_none() {
+            write_varint(0u64, out);
+            return Ok(());
+        }
+        Err(FcSerializeError::UnsupportedValue {
+            type_name: "call_order_update_operation_options_type",
+            reason: "non-empty graphene extension set is not supported by FC serialization yet",
+        })
+    }
+}
+
 impl FcSerialize for crate::generated::types::CddVestingPolicyInitializer {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         write_time_point_sec(&self.start_claim, out)?;
@@ -1510,6 +1523,7 @@ impl FcSerialize for crate::generated::types::ExecuteBidOperationFeeParamsT {
 
 impl FcSerialize for crate::generated::types::ExtendedAssetObject {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.id.fc_serialize(out)?;
         self.symbol.fc_serialize(out)?;
         self.precision.fc_serialize(out)?;
         self.issuer.fc_serialize(out)?;
@@ -1690,6 +1704,19 @@ impl FcSerialize for crate::generated::types::LimitOrderCreateOperationFeeParams
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
         Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::LimitOrderCreateOperationOptionsType {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        if self.on_fill.is_none() {
+            write_varint(0u64, out);
+            return Ok(());
+        }
+        Err(FcSerializeError::UnsupportedValue {
+            type_name: "limit_order_create_operation_options_type",
+            reason: "non-empty graphene extension set is not supported by FC serialization yet",
+        })
     }
 }
 
@@ -3599,19 +3626,7 @@ impl FcSerialize for crate::generated::operations::LimitOrderCreateOperation {
         self.min_to_receive.fc_serialize(out)?;
         write_time_point_sec(&self.expiration, out)?;
         self.fill_or_kill.fc_serialize(out)?;
-        write_varint(self.extensions.len() as u64, out);
-        let mut previous_key: Option<u64> = None;
-        for value in &self.extensions {
-            let key = future_extensions_tag(value);
-            if previous_key.is_some_and(|previous| previous >= key) {
-                return Err(FcSerializeError::UnsupportedValue {
-                    type_name: "Set",
-                    reason: "set values must be sorted and unique",
-                });
-            }
-            previous_key = Some(key);
-            value.fc_serialize(out)?;
-        }
+        self.extensions.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -3644,19 +3659,7 @@ impl FcSerialize for crate::generated::operations::CallOrderUpdateOperation {
         self.funding_account.fc_serialize(out)?;
         self.delta_collateral.fc_serialize(out)?;
         self.delta_debt.fc_serialize(out)?;
-        write_varint(self.extensions.len() as u64, out);
-        let mut previous_key: Option<u64> = None;
-        for value in &self.extensions {
-            let key = future_extensions_tag(value);
-            if previous_key.is_some_and(|previous| previous >= key) {
-                return Err(FcSerializeError::UnsupportedValue {
-                    type_name: "Set",
-                    reason: "set values must be sorted and unique",
-                });
-            }
-            previous_key = Some(key);
-            value.fc_serialize(out)?;
-        }
+        self.extensions.fc_serialize(out)?;
         Ok(())
     }
 }

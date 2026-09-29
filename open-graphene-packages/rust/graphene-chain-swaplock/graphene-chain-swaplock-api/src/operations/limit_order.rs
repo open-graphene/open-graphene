@@ -97,7 +97,7 @@ impl<'session> LimitOrderCreateRequest<'session> {
             min_to_receive: Asset::new(receive_amount, AssetId(receive_asset)),
             expiration,
             fill_or_kill: self.fill_or_kill,
-            extensions: vec![],
+            extensions: graphene_chain_swaplock_bindings::generated::types::LimitOrderCreateOperationOptionsType { on_fill: None },
         });
         TransactionBuilder::new(self.session)
             .add_operation(operation)
