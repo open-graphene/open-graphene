@@ -49,6 +49,10 @@ every user operation. The adapters share `@open-graphene/react-core` and keep
 React dependencies out of the core SDK. See the
 [React integration guide](../../docs/TYPESCRIPT-REACT.md) for examples.
 
+See the [release guide](../../docs/TYPESCRIPT-RELEASE.md) for package artifact
+checks, React 18/19 validation and the opt-in live room transaction test. The
+current `0.1.0` manifests are release candidates; npm publication is pending.
+
 ## Connect and read an account
 
 This example connects to the Swaplock testnet, reads an account and its balances,
@@ -442,6 +446,8 @@ cargo fetch --locked
 pnpm generate
 pnpm generate:check
 pnpm test
+pnpm test:react:matrix
+pnpm test:packages
 pnpm exec playwright install chromium
 pnpm test:browser
 ```

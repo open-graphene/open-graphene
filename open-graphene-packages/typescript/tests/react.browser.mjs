@@ -33,7 +33,7 @@ function fake(chainId = CHAIN.chainId) {
   return {client,streams,counts};
 }
 export async function runReactChecks() {
-  const q=new QueryClient({defaultOptions:{queries:{gcTime:Infinity},mutations:{retry:3}}});
+  const q=new QueryClient({defaultOptions:{queries:{gcTime:Infinity},mutations:{retry:3,gcTime:Infinity}}});
   const element=document.createElement('div');document.body.append(element);const root=createRoot(element);
   const a=fake(),b=fake();let latest={},mutation,inclusion;
   function Account({label,name='alice',enabled=true}) {
@@ -104,7 +104,7 @@ export async function runReactChecks() {
 
 // Optional read-only live test; no wallet or broadcast code runs here.
 export async function runLiveReact(client, chain = 'swaplock') {
-  const q=new QueryClient(),element=document.createElement('div');document.body.append(element);const root=createRoot(element);
+  const q=new QueryClient({defaultOptions:{queries:{gcTime:Infinity},mutations:{gcTime:Infinity}}}),element=document.createElement('div');document.body.append(element);const root=createRoot(element);
   const heads=new Set();let status;
   const Provider = chain === 'swaplock' ? SwaplockProvider : BitSharesProvider;
   const useHead = chain === 'swaplock' ? useDynamicGlobalProperties : useBitSharesHead;

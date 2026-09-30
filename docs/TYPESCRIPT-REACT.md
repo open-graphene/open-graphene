@@ -356,6 +356,7 @@ From the TypeScript workspace root:
 pnpm generate
 pnpm generate:check
 pnpm test
+pnpm test:react:matrix
 pnpm test:react:browser
 # Read-only browser checks against both Swaplock and both BitShares endpoints:
 pnpm test:react:live
@@ -383,3 +384,11 @@ checks, including all 159 generated preparation hooks. After the split, 55 Node
 tests and ten documentation examples passed; dependency-graph and browser-bundle
 checks confirmed chain isolation. The local Chromium rerun was blocked by the
 sandbox's macOS MachPortRendezvous permission restriction.
+
+The React DOM matrix subsequently passed on React 18.3.1 and 19.3.0, including
+all 159 generated preparation hooks and the create/sign/broadcast/read/delete
+room pipeline against simulated RPC. This complements the Chromium suite; it
+does not prove live transaction execution. The new opt-in room test was blocked
+at the testnet connection in this environment. See the
+[release and live transaction guide](TYPESCRIPT-RELEASE.md) for commands and
+transaction journal handling.

@@ -18,7 +18,10 @@
     "test:live:all": "pnpm build && node scripts/test-all-live.mjs",
     "test:bitshares:live": "pnpm build && node scripts/test-bitshares-live.mjs",
     "test:react:browser": "node scripts/test-react-browser.mjs",
-    "test:react:live": "pnpm build && node scripts/test-react-browser.mjs --live"
+    "test:react:live": "pnpm build && node scripts/test-react-browser.mjs --live",
+    "test:react:matrix": "node scripts/test-react-matrix.mjs",
+    "test:packages": "pnpm build && node scripts/test-packed-packages.mjs",
+    "test:react:room:live": "pnpm build && node scripts/test-react-room-live.mjs"
   },
   "devDependencies": {
     "typescript": "7.0.2",
@@ -29,6 +32,9 @@
     "@tanstack/react-query": "5.104.0",
     "@open-graphene/react-core": "workspace:*",
     "@open-graphene/chain-swaplock-react": "workspace:*",
-    "@open-graphene/chain-bitshares-react": "workspace:*"
+    "@open-graphene/chain-bitshares-react": "workspace:*",
+    "react18": "npm:react@18.3.1",
+    "react-dom18": "npm:react-dom@18.3.1",
+    "jsdom": "26.1.0"
   }
 }

@@ -1,0 +1,113 @@
+{
+  "createdAt": "2026-09-30T07:58:22.321Z",
+  "publicationPerformed": false,
+  "order": [
+    "@open-graphene/primitives",
+    "@open-graphene/fc",
+    "@open-graphene/codec",
+    "@open-graphene/transport",
+    "@open-graphene/chain-bitshares-bindings",
+    "@open-graphene/core",
+    "@open-graphene/chain-bitshares-api",
+    "@open-graphene/react-core",
+    "@open-graphene/chain-bitshares-react",
+    "@open-graphene/chain-swaplock-bindings",
+    "@open-graphene/chain-swaplock-api",
+    "@open-graphene/chain-swaplock-react",
+    "@open-graphene/graphene"
+  ],
+  "artifacts": [
+    {
+      "name": "@open-graphene/primitives",
+      "version": "0.1.0",
+      "file": "open-graphene-primitives-0.1.0.tgz",
+      "sha256": "59345e6de885be872faf7ce10ed374278c23944dc12c94ae2fe25a02b5a7d1d1"
+    },
+    {
+      "name": "@open-graphene/fc",
+      "version": "0.1.0",
+      "file": "open-graphene-fc-0.1.0.tgz",
+      "sha256": "ed31f08e15300c4fc0132309b0cf7e7829c51cc3deea1f4f90a478abf75b9b74"
+    },
+    {
+      "name": "@open-graphene/codec",
+      "version": "0.1.0",
+      "file": "open-graphene-codec-0.1.0.tgz",
+      "sha256": "e80acfd9cb2e8f7794bdec5670b291c843a9cee970625f5e59bc93595ca559ed"
+    },
+    {
+      "name": "@open-graphene/transport",
+      "version": "0.1.0",
+      "file": "open-graphene-transport-0.1.0.tgz",
+      "sha256": "376b93df728f97d6ab018746c600224ce56db4adc6ac4765a9cfb8868c8fc076"
+    },
+    {
+      "name": "@open-graphene/chain-bitshares-bindings",
+      "version": "0.1.0",
+      "file": "open-graphene-chain-bitshares-bindings-0.1.0.tgz",
+      "sha256": "2abe66f15ecf6ead562738dc2effb92313489b23bbc0ad2b09b93f04c45c2df9"
+    },
+    {
+      "name": "@open-graphene/core",
+      "version": "0.1.0",
+      "file": "open-graphene-core-0.1.0.tgz",
+      "sha256": "a56ba43f673254f481a990bec541a6c4b389cf52e543e28e3f5becf98ebb15d8"
+    },
+    {
+      "name": "@open-graphene/chain-bitshares-api",
+      "version": "0.1.0",
+      "file": "open-graphene-chain-bitshares-api-0.1.0.tgz",
+      "sha256": "5ef8263c136dec8f56bfd3e8056ffb0bf93288824d5302ea9ca862f55058e90a"
+    },
+    {
+      "name": "@open-graphene/react-core",
+      "version": "0.1.0",
+      "file": "open-graphene-react-core-0.1.0.tgz",
+      "sha256": "86ea457c697d1bff4cd5e56e79c2db5f518fd893daece558375d47c3e3740ec3"
+    },
+    {
+      "name": "@open-graphene/chain-bitshares-react",
+      "version": "0.1.0",
+      "file": "open-graphene-chain-bitshares-react-0.1.0.tgz",
+      "sha256": "5ed9dc065053632cd8de3ea8e235b22283a4854d5fc0551a9e9a40fba23a6840"
+    },
+    {
+      "name": "@open-graphene/chain-swaplock-bindings",
+      "version": "0.1.0",
+      "file": "open-graphene-chain-swaplock-bindings-0.1.0.tgz",
+      "sha256": "e8fa5aedf175c04ca05f9f3c4ad2ffee23f2fccebf4dd58c0972b7f98127a65a"
+    },
+    {
+      "name": "@open-graphene/chain-swaplock-api",
+      "version": "0.1.0",
+      "file": "open-graphene-chain-swaplock-api-0.1.0.tgz",
+      "sha256": "165512c2c3e337f505aab45025d27ebd5771d42b1f47fe286a1f75e42ad602ab"
+    },
+    {
+      "name": "@open-graphene/chain-swaplock-react",
+      "version": "0.1.0",
+      "file": "open-graphene-chain-swaplock-react-0.1.0.tgz",
+      "sha256": "90562f93811b6c714d5e3cfe6e0409a1532c2957c1b7025d9bea122b20e01a59"
+    },
+    {
+      "name": "@open-graphene/graphene",
+      "version": "0.1.0",
+      "file": "open-graphene-graphene-0.1.0.tgz",
+      "sha256": "11e3602f013bdbd0711d352628aca8db726e9ac1211368773e1b925bdca89658"
+    }
+  ],
+  "consumers": [
+    {
+      "chain": "swaplock",
+      "esm": "passed",
+      "declarations": "passed",
+      "isolation": "passed"
+    },
+    {
+      "chain": "bitshares",
+      "esm": "passed",
+      "declarations": "passed",
+      "isolation": "passed"
+    }
+  ]
+}

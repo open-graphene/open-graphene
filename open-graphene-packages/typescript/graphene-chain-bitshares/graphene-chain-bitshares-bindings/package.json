@@ -7,7 +7,9 @@
     "node": ">=22.12.0"
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE-MIT",
+    "LICENSE-APACHE"
   ],
   "sideEffects": false,
   "exports": {
@@ -24,5 +26,8 @@
     "@open-graphene/primitives": "workspace:*",
     "@open-graphene/codec": "workspace:*",
     "@open-graphene/fc": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
