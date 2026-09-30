@@ -8,6 +8,15 @@ importers:
 
   .:
     devDependencies:
+      '@open-graphene/chain-bitshares-react':
+        specifier: workspace:*
+        version: link:graphene-chain-bitshares/graphene-chain-bitshares-react
+      '@open-graphene/chain-swaplock-react':
+        specifier: workspace:*
+        version: link:graphene-chain-swaplock/graphene-chain-swaplock-react
+      '@open-graphene/react-core':
+        specifier: workspace:*
+        version: link:graphene-react-core
       '@playwright/test':
         specifier: 1.63.0
         version: 1.63.0
@@ -78,6 +87,31 @@ importers:
         specifier: workspace:*
         version: link:../../graphene-primitives
 
+  graphene-chain-bitshares/graphene-chain-bitshares-react:
+    dependencies:
+      '@open-graphene/chain-bitshares-api':
+        specifier: workspace:*
+        version: link:../graphene-chain-bitshares-api
+      '@open-graphene/chain-bitshares-bindings':
+        specifier: workspace:*
+        version: link:../graphene-chain-bitshares-bindings
+      '@open-graphene/fc':
+        specifier: workspace:*
+        version: link:../../graphene-fc
+      '@open-graphene/react-core':
+        specifier: workspace:*
+        version: link:../../graphene-react-core
+    devDependencies:
+      '@tanstack/react-query':
+        specifier: 5.104.0
+        version: 5.104.0(react@19.3.0)
+      '@types/react':
+        specifier: 19.3.0
+        version: 19.3.0
+      react:
+        specifier: 19.3.0
+        version: 19.3.0
+
   graphene-chain-swaplock/graphene-chain-swaplock-api:
     dependencies:
       '@open-graphene/chain-swaplock-bindings':
@@ -110,6 +144,34 @@ importers:
       '@open-graphene/primitives':
         specifier: workspace:*
         version: link:../../graphene-primitives
+
+  graphene-chain-swaplock/graphene-chain-swaplock-react:
+    dependencies:
+      '@open-graphene/chain-swaplock-api':
+        specifier: workspace:*
+        version: link:../graphene-chain-swaplock-api
+      '@open-graphene/chain-swaplock-bindings':
+        specifier: workspace:*
+        version: link:../graphene-chain-swaplock-bindings
+      '@open-graphene/fc':
+        specifier: workspace:*
+        version: link:../../graphene-fc
+      '@open-graphene/primitives':
+        specifier: workspace:*
+        version: link:../../graphene-primitives
+      '@open-graphene/react-core':
+        specifier: workspace:*
+        version: link:../../graphene-react-core
+    devDependencies:
+      '@tanstack/react-query':
+        specifier: 5.104.0
+        version: 5.104.0(react@19.3.0)
+      '@types/react':
+        specifier: 19.3.0
+        version: 19.3.0
+      react:
+        specifier: 19.3.0
+        version: 19.3.0
 
   graphene-codec:
     dependencies:
@@ -146,29 +208,11 @@ importers:
 
   graphene-primitives: {}
 
-  graphene-react:
+  graphene-react-core:
     dependencies:
-      '@open-graphene/chain-bitshares-api':
-        specifier: workspace:*
-        version: link:../graphene-chain-bitshares/graphene-chain-bitshares-api
-      '@open-graphene/chain-bitshares-bindings':
-        specifier: workspace:*
-        version: link:../graphene-chain-bitshares/graphene-chain-bitshares-bindings
-      '@open-graphene/chain-swaplock-api':
-        specifier: workspace:*
-        version: link:../graphene-chain-swaplock/graphene-chain-swaplock-api
-      '@open-graphene/chain-swaplock-bindings':
-        specifier: workspace:*
-        version: link:../graphene-chain-swaplock/graphene-chain-swaplock-bindings
       '@open-graphene/codec':
         specifier: workspace:*
         version: link:../graphene-codec
-      '@open-graphene/fc':
-        specifier: workspace:*
-        version: link:../graphene-fc
-      '@open-graphene/primitives':
-        specifier: workspace:*
-        version: link:../graphene-primitives
       '@open-graphene/transport':
         specifier: workspace:*
         version: link:../graphene-transport

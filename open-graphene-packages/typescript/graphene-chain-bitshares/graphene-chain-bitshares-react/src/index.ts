@@ -1,9 +1,9 @@
-import { adapter } from './bitshares-context.js';
+import { adapter } from './context.js';
 import type { BitSharesClient, TransferRequest, PreparedTransfer, PreparedTransaction, SignedTransfer, TransactionOptions } from '@open-graphene/chain-bitshares-api';
 import type { Operation, AssetId } from '@open-graphene/chain-bitshares-bindings';
 import type { Signer } from '@open-graphene/fc/signing';
-import type { LiveReadOptions } from './adapter.js';
-export * from './generated/bitshares.js';
+import type { LiveReadOptions } from '@open-graphene/react-core';
+export * from './generated/index.js';
 export const BitSharesProvider = adapter.Provider;
 export const useBitSharesClient = adapter.useClient;
 type Account = Awaited<ReturnType<BitSharesClient['database']['account']>>;

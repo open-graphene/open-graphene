@@ -7,8 +7,25 @@ updates through the SDK's WebSocket subscriptions.
   query-options factory for prefetching and loaders.
 - Live hooks for accounts, balances, orders, history, assets and block properties.
 - Swaplock room, room-access-state and content-card hooks.
-- Separate mutations for prepare, sign, broadcast and block inclusion.
+- Generated preparation hooks and helpers for all 88 Swaplock and 71 BitShares
+  user operations, plus separate sign, broadcast and inclusion mutations.
+- Generated imperative hooks for the seven crypto RPCs and broadcast on each chain.
 - Shared subscriptions, bounded reconnect retries and exact bigint/byte handling.
+
+The chain adapters are separate packages:
+
+| Package | Scope |
+|---|---|
+| `@open-graphene/chain-swaplock-react` | Swaplock hooks and operation preparation |
+| `@open-graphene/chain-bitshares-react` | BitShares hooks and operation preparation |
+| `@open-graphene/react-core` | Shared adapter, cache keys and lossless hydration |
+
+Each chain package depends only on its own chain API/bindings and the shared core.
+Import hooks from the matching chain package; import cache utilities from the core.
+The former `@open-graphene/react/swaplock` and `/bitshares` entry points have been
+replaced by these packages. In a pnpm workspace, declare the chain package with
+`workspace:*`, plus React and TanStack Query. Declare `react-core` directly if you
+import its cache utilities.
 
 React and TanStack Query are peer dependencies. The core SDK does not depend on
 React. Packages are not published to npm yet; build this workspace with
@@ -26,7 +43,7 @@ key management. It does not close the client on unmount.
 ```tsx
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Graphene } from '@open-graphene/graphene';
-import { SwaplockProvider, useAccountBalances } from '@open-graphene/react/swaplock';
+import { SwaplockProvider, useAccountBalances } from '@open-graphene/chain-swaplock-react';
 
 const sdk = await Graphene.swaplock([
   'wss://node01.swaplock.chainpool.online:8090',
@@ -63,12 +80,12 @@ function Balances() {
 
 Call `sdk.close()` when your application no longer needs the connection. For
 BitShares, use `Graphene.bitshares(...)`, `BitSharesProvider` and hooks from
-`@open-graphene/react/bitshares`. You can mount both providers in one application.
+`@open-graphene/chain-bitshares-react`. You can mount both providers in one application.
 
 ## Read once or keep data live
 
 ```tsx
-import { useAccount, useAccountHistory } from '@open-graphene/react/swaplock';
+import { useAccount, useAccountHistory } from '@open-graphene/chain-swaplock-react';
 
 export function AccountDetails({ name }: { name: string }) {
   const account = useAccount(name, {
@@ -123,7 +140,7 @@ codec errors stop automatic recovery. Configure bounded retries on the provider:
 ```tsx
 import type { ReactNode } from 'react';
 import type { SwaplockClient } from '@open-graphene/chain-swaplock-api';
-import { SwaplockProvider } from '@open-graphene/react/swaplock';
+import { SwaplockProvider } from '@open-graphene/chain-swaplock-react';
 
 export function Connection({ client, children }: { client: SwaplockClient; children: ReactNode }) {
   return (
@@ -148,7 +165,7 @@ by the SDK and by these generated hooks.
 ```tsx
 import { QueryClient } from '@tanstack/react-query';
 import type { SwaplockClient } from '@open-graphene/chain-swaplock-api';
-import { databaseGetAccountsOptions, useDatabaseGetAccounts } from '@open-graphene/react/swaplock';
+import { databaseGetAccountsOptions, useDatabaseGetAccounts } from '@open-graphene/chain-swaplock-react';
 
 export async function preload(client: SwaplockClient, cache: QueryClient) {
   await cache.prefetchQuery(databaseGetAccountsOptions(client, {
@@ -165,13 +182,85 @@ export function AccountName() {
 Generated reads cover `get_*`, `lookup_*` and `list_*` methods in database, history
 and orders APIs. They do not expose `live: true`; use the mapped live hooks above.
 `subscribe: true` is rejected in cached RPC reads because registration must have
-an explicit lifecycle. Crypto operations and raw broadcast RPC are deliberately
-excluded from query generation. Use the SDK's crypto API imperatively; do not put
-private/blinding keys into query parameters or cache keys.
+an explicit lifecycle. Crypto operations and broadcast are generated as imperative mutations rather
+than queries. For example, `useCryptoBlind()` accepts its typed RPC parameters
+through `mutateAsync`; `useNetworkBroadcastBroadcastTransaction()` accepts
+`{ trx: signedTransaction }` and uses the SDK broadcast path. Both have retries
+disabled. Crypto variables/results can contain sensitive blinding material:
+exclude mutations from persistence and manage their lifetime in your application.
 
 The options factories also work with `fetchQuery`, `ensureQueryData` and TanStack
 Router loaders. Use the same SDK instance and params as the component for cache
 reuse. Friendly helpers and raw generated RPC hooks have separate cache keys.
+
+## Create a room with a generated hook
+
+Every nonvirtual operation has a preparation hook generated from its protocol
+fields. You do not need to assemble the operation tuple yourself:
+
+```tsx
+import { AccountId } from '@open-graphene/chain-swaplock-bindings';
+import { usePrepareDataRoomCreate } from '@open-graphene/chain-swaplock-react';
+
+export function CreateRoomButton({ ownerId }: { ownerId: string }) {
+  const createRoom = usePrepareDataRoomCreate({ maxFee: 300000n });
+
+  async function prepareRoom() {
+    const prepared = await createRoom.mutateAsync({
+      owner: AccountId(ownerId),
+      name: 'Project documents',
+      description: 'A room for the project team',
+      subject: [0, {}],
+      extensions: { write_policy: 1 },
+    });
+    // Hand prepared to your wallet/signing step, then broadcast explicitly.
+    console.log('Prepared operations:', prepared.transaction.operations);
+  }
+
+  return (
+    <div>
+      <button disabled={createRoom.isPending} onClick={() => { void prepareRoom().catch(() => {}); }}>
+        Prepare room
+      </button>
+      {createRoom.error && <p>{createRoom.error.message}</p>}
+    </div>
+  );
+}
+```
+
+Preparation builds the operation, prices fees and checks the maximum fee. It
+returns `PreparedTransaction`; it does not submit the transaction. Fee and
+extensions inputs are optional because the existing operation factories provide
+their defaults. Other required protocol fields remain required. Encryption,
+permission choices and room-key envelopes stay under application control.
+
+Hook names follow the operation name: `data_room_create` →
+`usePrepareDataRoomCreate`, `data_room_member_add` → `usePrepareDataRoomMemberAdd`,
+`content_card_create` → `usePrepareContentCardCreate`, and `limit_order_create` →
+`usePrepareLimitOrderCreate`. For typed raw transfer inputs, use
+`usePrepareTransferOperation`; the existing `usePrepareTransfer` convenience hook
+continues to resolve names and decimal amounts.
+
+The same generator emits helpers for use outside React components:
+
+```ts
+import type { SwaplockClient } from '@open-graphene/chain-swaplock-api';
+import { AccountId } from '@open-graphene/chain-swaplock-bindings';
+import { prepareDataRoomCreate } from '@open-graphene/chain-swaplock-react';
+
+export function prepareRoom(client: SwaplockClient, ownerId: string) {
+  return prepareDataRoomCreate(client, {
+    owner: AccountId(ownerId),
+    name: 'Project documents',
+    description: '',
+    subject: [0, {}],
+    extensions: { write_policy: 1 },
+  }, { maxFee: 300000n });
+}
+```
+
+`generatedPrepareOperations` lists the available operation names. Virtual
+operations are excluded because only the blockchain produces them.
 
 ## Prepare, sign and send a transaction
 
@@ -184,7 +273,7 @@ import type { Signer } from '@open-graphene/fc/signing';
 import {
   usePrepareTransfer, useSignTransaction,
   useBroadcastTransaction, useWaitForInclusion,
-} from '@open-graphene/react/swaplock';
+} from '@open-graphene/chain-swaplock-react';
 
 export function SendButton({ signer, from, to }: { signer: Signer; from: string; to: string }) {
   const prepare = usePrepareTransfer();
@@ -237,8 +326,8 @@ request. Never reuse a scope across different authorization contexts.
 ```ts
 import { QueryClient, dehydrate, hydrate, type DehydratedState } from '@tanstack/react-query';
 import type { SwaplockClient } from '@open-graphene/chain-swaplock-api';
-import { accountOptions } from '@open-graphene/react/swaplock';
-import { serializeCache, deserializeCache } from '@open-graphene/react';
+import { accountOptions } from '@open-graphene/chain-swaplock-react';
+import { serializeCache, deserializeCache } from '@open-graphene/react-core';
 
 export async function serverPayload(client: SwaplockClient) {
   const cache = new QueryClient();
@@ -273,20 +362,24 @@ pnpm test:react:live
 ```
 
 `generate-react.mjs` reads the shared chain IR and emits the files under
-`src/generated`. Do not edit those files by hand. Live mappings and lifecycle
+each chain React package's `src/generated`. Do not edit those files by hand. Live mappings and lifecycle
 handling are maintained in the React adapter; no duplicate protocol types or
 serializers are introduced.
 
-Tests cover generated read inventories, selected result types, cache isolation,
+Tests cover complete RPC inventories, all 159 operation preparations against
+independent Rust/C++ vectors, selected result types, cache isolation,
 lossless hydration, shared streams, Strict Mode, pending-open cleanup, stale-read
 races, disabled hooks, parameter/client changes, reconnect, buffer overflow,
 retry limits, broadcast retry suppression and inclusion invalidation. Live tests
 observe consecutive blocks through actual React hooks without sending transactions.
 
-See the [SDK guide](../README.md) for operation construction, memo and room guards.
+See the [SDK guide](../open-graphene-packages/typescript/README.md) for operation construction, memo and room guards.
 
 On 2026-09-30, live React checks observed successive blocks on both Swaplock RPC
 nodes and both public BitShares endpoints. No transactions were broadcast.
-See the [recorded live results](../../../docs/TYPESCRIPT-REACT-LIVE-2026-09-30.json).
-The complete workspace suite passed 52 Node tests plus Chromium checks; the six
-React README examples were also typechecked.
+See the [recorded live results](TYPESCRIPT-REACT-LIVE-2026-09-30.json).
+Before the package split, the expanded suite passed 54 Node tests and Chromium
+checks, including all 159 generated preparation hooks. After the split, 55 Node
+tests and ten documentation examples passed; dependency-graph and browser-bundle
+checks confirmed chain isolation. The local Chromium rerun was blocked by the
+sandbox's macOS MachPortRendezvous permission restriction.

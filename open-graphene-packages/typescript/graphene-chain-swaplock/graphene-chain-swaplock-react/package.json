@@ -1,0 +1,36 @@
+{
+  "name": "@open-graphene/chain-swaplock-react",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT OR Apache-2.0",
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@open-graphene/chain-swaplock-api": "workspace:*",
+    "@open-graphene/chain-swaplock-bindings": "workspace:*",
+    "@open-graphene/react-core": "workspace:*",
+    "@open-graphene/fc": "workspace:*",
+    "@open-graphene/primitives": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^18.3.0 || ^19.0.0",
+    "@tanstack/react-query": "^5.104.0"
+  },
+  "devDependencies": {
+    "react": "19.3.0",
+    "@types/react": "19.3.0",
+    "@tanstack/react-query": "5.104.0"
+  }
+}

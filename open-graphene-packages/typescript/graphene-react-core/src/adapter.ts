@@ -88,3 +88,5 @@ function assertReadParams(params: unknown): void {
 const noop = () => {};
 const noSubscribe = (_listener: () => void) => noop;
 const getDisabled = () => disabledLive;
+
+export type ChainAdapter<C extends SdkClient> = ReturnType<typeof createChainAdapter<C>>;

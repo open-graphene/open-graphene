@@ -38,7 +38,7 @@ operation FC encoders, plus compound transactions verified on the Swaplock testn
 [TypeScript workspace](open-graphene-packages/typescript/README.md) for setup,
 tests and the [Rust parity report](docs/TYPESCRIPT-RUST-PARITY-2026-09-29.md).
 
-React applications can use the separate [React / TanStack Query package](open-graphene-packages/typescript/graphene-react/README.md), with generated read hooks and shared live subscriptions for both chains.
+React applications can use the [separate React / TanStack Query packages](docs/TYPESCRIPT-REACT.md), with generated read hooks and shared live subscriptions for both chains.
 
 ## Repository layout
 

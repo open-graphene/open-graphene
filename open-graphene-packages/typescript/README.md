@@ -26,7 +26,9 @@ packages are available when you only need one chain.
 
 | Package | Use it for |
 |---|---|
-| `@open-graphene/react` | React providers, TanStack Query hooks and live cache updates |
+| `@open-graphene/chain-swaplock-react` | Swaplock React hooks, live updates and operation preparation |
+| `@open-graphene/chain-bitshares-react` | BitShares React hooks, live updates and operation preparation |
+| `@open-graphene/react-core` | Shared React adapter and cache utilities |
 | `@open-graphene/graphene` | Connect to either chain; access wallet, memo and amount helpers |
 | `@open-graphene/chain-swaplock-api` | Swaplock transactions, queries and room-access helpers |
 | `@open-graphene/chain-bitshares-api` | BitShares transactions and queries |
@@ -40,9 +42,12 @@ packages are available when you only need one chain.
 
 ## React applications
 
-Use the separate [`@open-graphene/react` package](graphene-react/README.md) for
-TanStack Query hooks, generated query options, live subscriptions and transaction
-mutations. It supports both chains and keeps React dependencies out of the core SDK.
+Use [`@open-graphene/chain-swaplock-react`](graphene-chain-swaplock/graphene-chain-swaplock-react/README.md)
+or [`@open-graphene/chain-bitshares-react`](graphene-chain-bitshares/graphene-chain-bitshares-react/README.md)
+for TanStack Query hooks, live subscriptions and dedicated preparation hooks for
+every user operation. The adapters share `@open-graphene/react-core` and keep
+React dependencies out of the core SDK. See the
+[React integration guide](../../docs/TYPESCRIPT-REACT.md) for examples.
 
 ## Connect and read an account
 

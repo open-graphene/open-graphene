@@ -26,6 +26,9 @@
     "esbuild": "0.28.2",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "@tanstack/react-query": "5.104.0"
+    "@tanstack/react-query": "5.104.0",
+    "@open-graphene/react-core": "workspace:*",
+    "@open-graphene/chain-swaplock-react": "workspace:*",
+    "@open-graphene/chain-bitshares-react": "workspace:*"
   }
 }

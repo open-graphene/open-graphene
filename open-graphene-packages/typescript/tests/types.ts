@@ -24,7 +24,7 @@ function chainIsolation(bitshares: BitSharesClient, swaplock: SwaplockClient, si
 }
 void chainIsolation;
 
-import { useAccount, useDatabaseGetAccounts, usePrepareTransfer, useSignTransaction, accountOptions, SwaplockProvider, useRoom } from '../graphene-react/dist/swaplock.js';
+import { useAccount, useDatabaseGetAccounts, usePrepareTransfer, useSignTransaction, accountOptions, SwaplockProvider, useRoom } from '@open-graphene/chain-swaplock-react';
 import { QueryClient } from '@tanstack/react-query';
 import { DataRoomId } from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
 function reactTypes(client: SwaplockClient, other: BitSharesClient) {
@@ -52,3 +52,25 @@ function reactTypes(client: SwaplockClient, other: BitSharesClient) {
   void [selected, name, cachedName];
 }
 void reactTypes;
+
+import { usePrepareDataRoomCreate, usePrepareTransferOperation, prepareDataRoomCreate, useCryptoBlind, useNetworkBroadcastBroadcastTransaction } from '@open-graphene/chain-swaplock-react';
+import { usePrepareTransferOperation as useBitSharesPrepareTransferOperation } from '@open-graphene/chain-bitshares-react';
+function generatedMutationTypes(client: SwaplockClient) {
+  const room = usePrepareDataRoomCreate({ maxFee: 300000n });
+  room.mutate({ owner: AccountId('1.2.100'), name: 'room', description: '', subject: [0, {}], extensions: { write_policy: 1 } });
+  // @ts-expect-error Operation owner must be an account, not an asset ID.
+  room.mutate({ owner: AssetId('1.3.0'), name: 'room', description: '', subject: [0, {}] });
+  // @ts-expect-error Required operation fields cannot be omitted.
+  room.mutate({ name: 'room' });
+  const raw = usePrepareTransferOperation();
+  raw.mutate({ from: account, to: account, amount: { amount: 1n, asset_id: asset } });
+  // @ts-expect-error Generated transfer amounts are raw bigint asset amounts.
+  raw.mutate({ from: account, to: account, amount: '0.01' });
+  // @ts-expect-error Operation hooks preserve chain-specific IDs.
+  useBitSharesPrepareTransferOperation().mutate({ from: account, to: account, amount: { amount: 1n, asset_id: asset } });
+  useCryptoBlind().mutate({ blind: new Uint8Array(32), value: 1n });
+  // @ts-expect-error Broadcast takes a checked typed signed transaction, not arbitrary JSON.
+  useNetworkBroadcastBroadcastTransaction().mutate({ trx: 'raw JSON' });
+  void prepareDataRoomCreate(client, { owner: account, name: 'room', description: '', subject: [0, {}] });
+}
+void generatedMutationTypes;

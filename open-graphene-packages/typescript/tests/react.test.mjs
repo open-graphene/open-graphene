@@ -1,13 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { QueryClient, dehydrate, hydrate } from '@tanstack/react-query';
-import { serializeCache, deserializeCache, grapheneQueryKey } from '../graphene-react/dist/index.js';
-import { LiveEntry, sharedLive } from '../graphene-react/dist/live.js';
+import { serializeCache, deserializeCache, grapheneQueryKey } from '@open-graphene/react-core';
+import { LiveEntry, sharedLive } from '../graphene-react-core/dist/live.js';
 import { RpcSubscription, RpcTransportError, RpcRemoteError } from '../graphene-transport/dist/index.js';
-import * as swaplock from '../graphene-react/dist/swaplock.js';
-import * as bitshares from '../graphene-react/dist/bitshares.js';
+import * as swaplock from '@open-graphene/chain-swaplock-react';
+import * as bitshares from '@open-graphene/chain-bitshares-react';
 import { CHAIN } from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
 import { readFileSync } from 'node:fs';
+import * as swaplockBindings from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
+import * as bitsharesBindings from '../graphene-chain-bitshares/graphene-chain-bitshares-bindings/dist/index.js';
+import { bytesToHex } from '../graphene-primitives/dist/index.js';
 const pause = () => new Promise(resolve => setTimeout(resolve, 0));
 async function until(fn) { for(let i=0;i<100;i++){if(fn())return;await pause();}assert.fail('condition did not become true'); }
 const cache = () => new QueryClient({defaultOptions:{queries:{retry:false,gcTime:Infinity}}});
@@ -27,12 +30,14 @@ test('React query keys isolate clients, chains and tagged values; hydrate bigint
  const cyclic={};cyclic.self=cyclic;assert.throws(()=>serializeCache(cyclic),/Cyclic/);
  assert.throws(()=>deserializeCache('["bytes",[999]]'),/Invalid/);
 });
-test('generated query inventory exactly covers reviewed read APIs, excluding commands/crypto',async()=>{
+test('generated RPC inventory covers reads and imperative methods with distinct lifecycles',async()=>{
  for(const [chain,exports] of [['swaplock',swaplock],['bitshares',bitshares]]){
   const spec=JSON.parse(readFileSync(new URL(`../../rust/graphene-chain-${chain}/graphene-chain-${chain}-spec/dist/${chain}.open-graphene.json`,import.meta.url)));
   const expected=spec.rpcMethods.filter(m=>['database','history','orders'].includes(m.apiName)&&/^(get_|lookup_|list_)/.test(m.name)&&!m.isSubscription).map(m=>m.apiName+'.'+m.name);
   assert.deepEqual(exports.generatedQueryMethods,expected);assert.equal(expected.length,chain==='swaplock'?39:24);
-  assert.equal(exports.useNetworkBroadcastBroadcastTransaction,undefined);
+  assert.equal(typeof exports.useNetworkBroadcastBroadcastTransaction,'function');
+  assert.equal(exports.generatedRpcMutations.length,8);
+  assert.deepEqual([...exports.generatedQueryMethods,...exports.generatedRpcMutations].sort(),spec.rpcMethods.map(m=>m.apiName+'.'+m.name).sort());
  }
  const client={chainId:CHAIN.chainId,rpc:{invoke:async()=>[{amount:5n,asset_id:'1.3.0'}]}};
  const q=cache();const options=swaplock.databaseGetAccountBalancesOptions(client,{account_name_or_id:'alice',assets:[]});
@@ -96,4 +101,47 @@ test('transient reconnect failures consume the same bounded retry budget',async(
  const e=new LiveEntry(q,['reconnect-error'],async()=>{opens++;throw new RpcTransportError('offline',false);},async()=>{reconnects++;throw new RpcTransportError('still offline',false);},{delayMs:0,maxRetries:2});
  const release=e.acquire();await until(()=>e.getSnapshot().status==='error');
  assert.equal(opens,1);assert.equal(reconnects,2);release();await pause();q.clear();
+});
+
+const operationSymbol = name => name === 'transfer' ? 'TransferOperation' : name.split('_').map(p=>p[0].toUpperCase()+p.slice(1)).join('');
+test('every generated operation preparation preserves the independently verified payload and transaction options',async()=>{
+ for(const [chain,api,b] of [['swaplock',swaplock,swaplockBindings],['bitshares',bitshares,bitsharesBindings]]){
+  const spec=JSON.parse(readFileSync(new URL(`../../rust/graphene-chain-${chain}/graphene-chain-${chain}-spec/dist/${chain}.open-graphene.json`,import.meta.url)));
+  const names=spec.operations.filter(op=>!op.isVirtual).map(op=>op.name.replace(/_operation$/,''));
+  assert.deepEqual(api.generatedPrepareOperations,names);
+  assert.equal(names.length,chain==='swaplock'?88:71);
+  const client={prepareOperations:async(operations,options)=>({operations,options})};
+  const fixture=JSON.parse(readFileSync(new URL(`fixtures/${chain}-fc-parity-rich.json`,import.meta.url)));
+  for(const vector of fixture.vectors){
+   const name=vector.name.replace(/_operation$/,''),symbol=operationSymbol(name);
+   assert.equal(typeof api['usePrepare'+symbol],'function');
+   const op=b.OperationCodec.decode(vector.operation),options={maxFee:9007199254740993n,expirationSeconds:120};
+   const result=await api['prepare'+symbol](client,op[1],options);
+   assert.equal(bytesToHex(b.encodeOperation(result.operations[0])),vector.rust.hex,name);
+   assert.equal(result.options,options);
+  }
+  for(const op of spec.operations.filter(op=>op.isVirtual))assert.equal(api['usePrepare'+operationSymbol(op.name.replace(/_operation$/,''))],undefined);
+ }
+});
+test('room preparation supplies fee/extensions defaults without generating keys or broadcasting',async()=>{
+ let submitted=0;const client={prepareOperations:async(operations,options)=>({operations,options}),broadcast:()=>{submitted++;}};
+ const result=await swaplock.prepareDataRoomCreate(client,{owner:swaplockBindings.AccountId('1.2.100'),name:'room',description:'',subject:[0,{}]});
+ assert.deepEqual(result.operations[0],[78,{owner:'1.2.100',name:'room',description:'',subject:[0,{}],fee:{amount:0n,asset_id:'1.3.0'},extensions:{}}]);
+ assert.equal(submitted,0);assert.ok(!('room_key' in result.operations[0][1]));
+});
+test('chain React packages have isolated dependency graphs and browser bundles',async()=>{
+ const {build}=await import('esbuild');
+ const {fileURLToPath}=await import('node:url');
+ const root=new URL('../',import.meta.url);
+ const manifests=new Map();
+ const folders=['graphene-react-core','graphene-transport','graphene-codec','graphene-fc','graphene-primitives','graphene-core'];
+ for(const chain of ['swaplock','bitshares'])for(const suffix of ['api','bindings','react'])folders.push(`graphene-chain-${chain}/graphene-chain-${chain}-${suffix}`);
+ for(const folder of folders){const manifest=JSON.parse(readFileSync(new URL(folder+'/package.json',root)));manifests.set(manifest.name,manifest);}
+ for(const chain of ['swaplock','bitshares']){
+  const other=chain==='swaplock'?'bitshares':'swaplock',name=`@open-graphene/chain-${chain}-react`,visited=new Set();
+  function visit(name){if(visited.has(name))return;visited.add(name);for(const dependency of Object.keys(manifests.get(name)?.dependencies??{}))visit(dependency);}
+  visit(name);assert.ok(![...visited].some(name=>name.includes('chain-'+other)),`${chain} pulls in ${other}`);
+  const bundle=await build({stdin:{contents:`export * from '${name}';`,resolveDir:fileURLToPath(root),sourcefile:'isolation.mjs'},bundle:true,format:'esm',platform:'browser',write:false,metafile:true});
+  assert.ok(!Object.keys(bundle.metafile.inputs).some(path=>path.includes('chain-'+other)),`${chain} browser bundle includes ${other}`);
+ }
 });
