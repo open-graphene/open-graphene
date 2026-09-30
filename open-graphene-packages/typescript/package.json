@@ -12,15 +12,20 @@
     "test": "pnpm build && tsc -p tests/tsconfig.json && node --test tests/*.test.mjs",
     "generate": "node scripts/generate.mjs",
     "generate:check": "node scripts/generate.mjs --check",
-    "test:browser": "node scripts/browser-test.mjs",
+    "test:browser": "node scripts/browser-test.mjs && node scripts/test-react-browser.mjs",
     "test:testnet": "pnpm build && node scripts/testnet-smoke.mjs",
     "test:testnet:browser": "pnpm build && node scripts/testnet-smoke.mjs --browser",
     "test:live:all": "pnpm build && node scripts/test-all-live.mjs",
-    "test:bitshares:live": "pnpm build && node scripts/test-bitshares-live.mjs"
+    "test:bitshares:live": "pnpm build && node scripts/test-bitshares-live.mjs",
+    "test:react:browser": "node scripts/test-react-browser.mjs",
+    "test:react:live": "pnpm build && node scripts/test-react-browser.mjs --live"
   },
   "devDependencies": {
     "typescript": "7.0.2",
     "@playwright/test": "1.63.0",
-    "esbuild": "0.28.2"
+    "esbuild": "0.28.2",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "@tanstack/react-query": "5.104.0"
   }
 }

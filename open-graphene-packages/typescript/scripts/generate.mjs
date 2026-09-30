@@ -12,3 +12,6 @@ for (const chain of ['swaplock', 'bitshares']) {
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
+const react = spawnSync(process.execPath, ['open-graphene-packages/typescript/scripts/generate-react.mjs', ...process.argv.slice(2)], { cwd: root, stdio: 'inherit' });
+if (react.error) throw react.error;
+if (react.status !== 0) process.exit(react.status ?? 1);

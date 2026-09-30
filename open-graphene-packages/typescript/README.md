@@ -26,6 +26,7 @@ packages are available when you only need one chain.
 
 | Package | Use it for |
 |---|---|
+| `@open-graphene/react` | React providers, TanStack Query hooks and live cache updates |
 | `@open-graphene/graphene` | Connect to either chain; access wallet, memo and amount helpers |
 | `@open-graphene/chain-swaplock-api` | Swaplock transactions, queries and room-access helpers |
 | `@open-graphene/chain-bitshares-api` | BitShares transactions and queries |
@@ -36,6 +37,12 @@ packages are available when you only need one chain.
 | `@open-graphene/transport` | WebSocket sessions, subscriptions and ChainStore |
 | `@open-graphene/codec` | Lossless JSON and checked runtime codecs |
 | `@open-graphene/primitives` | IDs, timestamps and byte conversions |
+
+## React applications
+
+Use the separate [`@open-graphene/react` package](graphene-react/README.md) for
+TanStack Query hooks, generated query options, live subscriptions and transaction
+mutations. It supports both chains and keeps React dependencies out of the core SDK.
 
 ## Connect and read an account
 

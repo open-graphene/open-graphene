@@ -1,0 +1,46 @@
+{
+  "date": "2026-09-30T06:46:24.110Z",
+  "broadcast": false,
+  "runs": [
+    {
+      "chain": "swaplock",
+      "endpoint": "wss://node01.swaplock.chainpool.online:8090",
+      "chainId": "3b4f346481a66146d732eb22a43b5956134e5bea6124b379033589146036cbbf",
+      "heads": [
+        1222153,
+        1222154
+      ],
+      "status": "live"
+    },
+    {
+      "chain": "swaplock",
+      "endpoint": "wss://node02.swaplock.chainpool.online:8090",
+      "chainId": "3b4f346481a66146d732eb22a43b5956134e5bea6124b379033589146036cbbf",
+      "heads": [
+        1222154,
+        1222155
+      ],
+      "status": "live"
+    },
+    {
+      "chain": "bitshares",
+      "endpoint": "wss://api.dex.trading/",
+      "chainId": "4018d7844c78f6a6c41c6a552b898022310fc5dec06da467ee7905a8dad512c8",
+      "heads": [
+        114808019,
+        114808020
+      ],
+      "status": "live"
+    },
+    {
+      "chain": "bitshares",
+      "endpoint": "wss://public.xbts.io/ws",
+      "chainId": "4018d7844c78f6a6c41c6a552b898022310fc5dec06da467ee7905a8dad512c8",
+      "heads": [
+        114808020,
+        114808021
+      ],
+      "status": "live"
+    }
+  ]
+}
