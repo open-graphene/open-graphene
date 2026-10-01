@@ -108,10 +108,7 @@
       "members": [
         {
           "membership_instance": 9,
-          "member": [
-            0,
-            "1.2.2"
-          ],
+          "member": [0, "1.2.2"],
           "permissions": 255,
           "member_key": "envelope"
         }

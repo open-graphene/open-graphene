@@ -888,10 +888,7 @@
           "daily_pay": "0",
           "name": "",
           "url": "",
-          "initializer": [
-            0,
-            {}
-          ]
+          "initializer": [0, {}]
         }
       ],
       "hex": "220000000000000000000080ffba6a80ffba6a0000000000000000000000",
@@ -1168,10 +1165,7 @@
             "amount": "0",
             "asset_id": "1.3.0"
           },
-          "preimage_hash": [
-            0,
-            "0000000000000000000000000000000000000000"
-          ],
+          "preimage_hash": [0, "0000000000000000000000000000000000000000"],
           "preimage_size": 0,
           "claim_period_seconds": 0,
           "extensions": {}

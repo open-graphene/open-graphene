@@ -24,21 +24,21 @@ For an application in the same pnpm workspace, add the packages you import with
 `workspace:*`. The main entry point is `@open-graphene/graphene`; chain-specific
 packages are available when you only need one chain.
 
-| Package | Use it for |
-|---|---|
-| `@open-graphene/chain-swaplock-react` | Swaplock React hooks, live updates and operation preparation |
-| `@open-graphene/chain-bitshares-react` | BitShares React hooks, live updates and operation preparation |
-| `@open-graphene/react-core` | Shared React adapter and cache utilities |
-| `@open-graphene/graphene` | Connect to either chain; access wallet, memo and amount helpers |
-| `@open-graphene/chain-swaplock-api` | Swaplock transactions, queries and room-access helpers |
-| `@open-graphene/chain-bitshares-api` | BitShares transactions and queries |
-| `@open-graphene/chain-swaplock-bindings` | Swaplock protocol types, operation factories and codecs |
-| `@open-graphene/chain-bitshares-bindings` | BitShares protocol types, operation factories and codecs |
-| `@open-graphene/core` | Amount formatting, account-name validation and authority analysis |
-| `@open-graphene/fc` | Binary serialization; `/signing`, `/memo`, `/wallet` and `/hash` exports |
-| `@open-graphene/transport` | WebSocket sessions, subscriptions and ChainStore |
-| `@open-graphene/codec` | Lossless JSON and checked runtime codecs |
-| `@open-graphene/primitives` | IDs, timestamps and byte conversions |
+| Package                                   | Use it for                                                               |
+| ----------------------------------------- | ------------------------------------------------------------------------ |
+| `@open-graphene/chain-swaplock-react`     | Swaplock React hooks, live updates and operation preparation             |
+| `@open-graphene/chain-bitshares-react`    | BitShares React hooks, live updates and operation preparation            |
+| `@open-graphene/react-core`               | Shared React adapter and cache utilities                                 |
+| `@open-graphene/graphene`                 | Connect to either chain; access wallet, memo and amount helpers          |
+| `@open-graphene/chain-swaplock-api`       | Swaplock transactions, queries and room-access helpers                   |
+| `@open-graphene/chain-bitshares-api`      | BitShares transactions and queries                                       |
+| `@open-graphene/chain-swaplock-bindings`  | Swaplock protocol types, operation factories and codecs                  |
+| `@open-graphene/chain-bitshares-bindings` | BitShares protocol types, operation factories and codecs                 |
+| `@open-graphene/core`                     | Amount formatting, account-name validation and authority analysis        |
+| `@open-graphene/fc`                       | Binary serialization; `/signing`, `/memo`, `/wallet` and `/hash` exports |
+| `@open-graphene/transport`                | WebSocket sessions, subscriptions and ChainStore                         |
+| `@open-graphene/codec`                    | Lossless JSON and checked runtime codecs                                 |
+| `@open-graphene/primitives`               | IDs, timestamps and byte conversions                                     |
 
 ## Formatting
 
@@ -79,10 +79,13 @@ try {
   const account = await client.database.account('swaplock');
   const balances = await client.database.accountBalances(account.id);
   const core = await client.database.asset('1.3.0');
-  const balance = balances.find(item => item.asset_id === core.id);
+  const balance = balances.find((item) => item.asset_id === core.id);
 
   console.log(account.id, account.name);
-  console.log(formatRawAmount(balance?.amount ?? 0n, core.precision), core.symbol);
+  console.log(
+    formatRawAmount(balance?.amount ?? 0n, core.precision),
+    core.symbol,
+  );
 } finally {
   client.close();
 }
@@ -106,7 +109,11 @@ async function inspectAccount(client: SwaplockClient, accountName: string) {
   console.log(page.items);
 
   if (page.nextOffset !== null) {
-    const nextPage = await client.history.accountHistory(accountName, 20, page.nextOffset);
+    const nextPage = await client.history.accountHistory(
+      accountName,
+      20,
+      page.nextOffset,
+    );
     console.log(nextPage.items);
   }
 
@@ -116,8 +123,7 @@ async function inspectAccount(client: SwaplockClient, accountName: string) {
 }
 ```
 
-History takes `(accountNameOrId, limit, offset)`; `limit + offset` must be at most
-98. New transactions can shift offset-based pages. To read a market ticker, call
+History takes `(accountNameOrId, limit, offset)`; `limit + offset` must be at most 98. New transactions can shift offset-based pages. To read a market ticker, call
 `client.database.getTicker({ base: 'BTS', quote: 'USD' })` on a chain where both
 assets exist.
 
@@ -136,16 +142,19 @@ import { PrivateKey } from '@open-graphene/graphene';
 import type { SwaplockClient } from '@open-graphene/chain-swaplock-api';
 
 async function sendTransfer(
-  client: SwaplockClient, activeWif: string, from: string, to: string,
+  client: SwaplockClient,
+  activeWif: string,
+  from: string,
+  to: string,
 ) {
   const signer = PrivateKey.fromWif(activeWif);
   try {
     const prepared = await client.prepareTransfer({
       from,
       to,
-      amount: '0.01',       // Decimal asset units, expressed as a string.
+      amount: '0.01', // Decimal asset units, expressed as a string.
       asset: 'BTS',
-      maxFee: 300000n,      // Raw fee units: 3 BTS when precision is 5.
+      maxFee: 300000n, // Raw fee units: 3 BTS when precision is 5.
     });
 
     const signed = await prepared.sign(signer);
@@ -179,7 +188,11 @@ async function prepareBitSharesTransfer(wif: string, from: string, to: string) {
   const signer = new BitSharesWifSigner(wif);
   try {
     const prepared = await client.prepareTransfer({
-      from, to, amount: '0.01', asset: 'BTS', maxFee: 300000n,
+      from,
+      to,
+      amount: '0.01',
+      asset: 'BTS',
+      maxFee: 300000n,
     });
     const signed = await prepared.sign(signer);
     console.log('Signed locally:', signed.id);
@@ -208,27 +221,36 @@ protocol's snake_case spelling.
 ```ts
 import type { SwaplockClient } from '@open-graphene/chain-swaplock-api';
 import {
-  AccountId, AssetId, bindOperationBuilders,
+  AccountId,
+  AssetId,
+  bindOperationBuilders,
 } from '@open-graphene/chain-swaplock-bindings';
 
 async function prepareTwoTransfers(client: SwaplockClient) {
-  const op = bindOperationBuilders(operation => operation);
+  const op = bindOperationBuilders((operation) => operation);
   const from = AccountId('1.2.100');
   const to = AccountId('1.2.101');
   const asset_id = AssetId('1.3.0');
 
-  return client.prepareOperations([
-    op.transfer({ from, to, amount: { amount: 1n, asset_id } }),
-    op.transfer({ from, to, amount: { amount: 2n, asset_id } }),
-  ], { maxFee: 300000n, expirationSeconds: 120 });
+  return client.prepareOperations(
+    [
+      op.transfer({ from, to, amount: { amount: 1n, asset_id } }),
+      op.transfer({ from, to, amount: { amount: 2n, asset_id } }),
+    ],
+    { maxFee: 300000n, expirationSeconds: 120 },
+  );
 }
 
 async function prepareOneTransfer(client: SwaplockClient) {
-  return client.operations.transfer({
-    from: AccountId('1.2.100'),
-    to: AccountId('1.2.101'),
-    amount: { amount: 1n, asset_id: AssetId('1.3.0') },
-  }).maxFee(300000n).expiration(120).prepare();
+  return client.operations
+    .transfer({
+      from: AccountId('1.2.100'),
+      to: AccountId('1.2.101'),
+      amount: { amount: 1n, asset_id: AssetId('1.3.0') },
+    })
+    .maxFee(300000n)
+    .expiration(120)
+    .prepare();
 }
 ```
 
@@ -247,8 +269,11 @@ checks each returned signature. Supply all keys needed by the on-chain authority
 import { PrivateKey } from '@open-graphene/graphene';
 import type { PreparedTransaction } from '@open-graphene/chain-swaplock-api';
 
-async function signWithTwoKeys(prepared: PreparedTransaction, wifs: readonly string[]) {
-  const signers = wifs.map(wif => PrivateKey.fromWif(wif));
+async function signWithTwoKeys(
+  prepared: PreparedTransaction,
+  wifs: readonly string[],
+) {
+  const signers = wifs.map((wif) => PrivateKey.fromWif(wif));
   try {
     return await prepared.sign(signers);
   } finally {
@@ -270,13 +295,24 @@ to `prepareTransfer`. Sign the resulting transaction with the active key as usua
 
 ```ts
 import {
-  PrivateKey, PublicKey, encryptMemoWithWif, decryptMemoWithWif, uniqueNonce,
+  PrivateKey,
+  PublicKey,
+  encryptMemoWithWif,
+  decryptMemoWithWif,
+  uniqueNonce,
 } from '@open-graphene/graphene';
 import type { SwaplockClient } from '@open-graphene/chain-swaplock-api';
-import { MemoDataCodec, type MemoData } from '@open-graphene/chain-swaplock-bindings';
+import {
+  MemoDataCodec,
+  type MemoData,
+} from '@open-graphene/chain-swaplock-bindings';
 
 async function prepareWithMemo(
-  client: SwaplockClient, memoWif: string, from: string, to: string, text: string,
+  client: SwaplockClient,
+  memoWif: string,
+  from: string,
+  to: string,
+  text: string,
 ) {
   const sender = await client.database.account(from);
   const recipient = await client.database.account(to);
@@ -287,14 +323,24 @@ async function prepareWithMemo(
     }
     const nonce = uniqueNonce();
     const message = await encryptMemoWithWif(
-      memoWif, PublicKey.fromString(recipient.options.memo_key, 'BTS').bytes,
-      nonce, new TextEncoder().encode(text),
+      memoWif,
+      PublicKey.fromString(recipient.options.memo_key, 'BTS').bytes,
+      nonce,
+      new TextEncoder().encode(text),
     );
     const memo = MemoDataCodec.decode({
-      from: sender.options.memo_key, to: recipient.options.memo_key, nonce, message,
+      from: sender.options.memo_key,
+      to: recipient.options.memo_key,
+      nonce,
+      message,
     });
     return await client.prepareTransfer({
-      from, to, amount: '0.01', asset: 'BTS', maxFee: 300000n, memo,
+      from,
+      to,
+      amount: '0.01',
+      asset: 'BTS',
+      maxFee: 300000n,
+      memo,
     });
   } finally {
     memoKey.dispose();
@@ -303,8 +349,10 @@ async function prepareWithMemo(
 
 async function readMemo(recipientMemoWif: string, memo: MemoData) {
   const plaintext = await decryptMemoWithWif(
-    recipientMemoWif, PublicKey.fromString(memo.from, 'BTS').bytes,
-    memo.nonce, memo.message,
+    recipientMemoWif,
+    PublicKey.fromString(memo.from, 'BTS').bytes,
+    memo.nonce,
+    memo.message,
   );
   return new TextDecoder().decode(plaintext);
 }
@@ -377,12 +425,17 @@ Read the new state and reconsider the change before preparing another transactio
 
 ```ts
 import {
-  RoomAccessPrecondition, memberRemoveOperation, type SwaplockClient,
+  RoomAccessPrecondition,
+  memberRemoveOperation,
+  type SwaplockClient,
 } from '@open-graphene/chain-swaplock-api';
 import { DataRoomId } from '@open-graphene/chain-swaplock-bindings';
 
 async function prepareMemberRemoval(
-  client: SwaplockClient, callerId: string, roomId: string, memberId: string,
+  client: SwaplockClient,
+  callerId: string,
+  roomId: string,
+  memberId: string,
 ) {
   const state = await client.database.getDataRoomAccessState({
     room_id: DataRoomId(roomId),
@@ -391,7 +444,9 @@ async function prepareMemberRemoval(
 
   const guard = RoomAccessPrecondition.fromSnapshot(state);
   const operation = memberRemoveOperation(callerId, roomId, memberId);
-  return client.prepareOperations([guard.guard(operation)], { maxFee: 300000n });
+  return client.prepareOperations([guard.guard(operation)], {
+    maxFee: 300000n,
+  });
 }
 ```
 
@@ -407,7 +462,9 @@ JSON yourself, use the SDK's parser and serializer so large integers stay exact.
 
 ```ts
 import {
-  TransactionCodec, parseJson, stringifyJson,
+  TransactionCodec,
+  parseJson,
+  stringifyJson,
 } from '@open-graphene/chain-swaplock-bindings';
 
 function roundTripTransaction(rawRpcJson: string) {
@@ -422,12 +479,12 @@ cannot serialize `bigint` directly. For a signed transaction, use
 
 ## What is supported and tested?
 
-| Capability | Swaplock | BitShares |
-|---|---:|---:|
-| Operation variants with generated JSON bindings | 95 | 78 |
-| User operations with FC encoding and typed factories | 88 | 71 |
-| Generated RPC methods | 47 | 32 |
-| RPC methods confirmed live in the dated report | 47 | 24 |
+| Capability                                           | Swaplock | BitShares |
+| ---------------------------------------------------- | -------: | --------: |
+| Operation variants with generated JSON bindings      |       95 |        78 |
+| User operations with FC encoding and typed factories |       88 |        71 |
+| Generated RPC methods                                |       47 |        32 |
+| RPC methods confirmed live in the dated report       |       47 |        24 |
 
 Each chain has seven additional **virtual operations**: records produced by the
 blockchain, not operations a user can sign. FC is Graphene's binary transaction

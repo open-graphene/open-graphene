@@ -3,7 +3,8 @@ import { chromium } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
 
 const result = await build({
-  stdin: { contents: `
+  stdin: {
+    contents: `
     import { TransactionCodec, encodeTransaction } from './graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
     import { signDigestCompact, recoverPublicKey, isCanonicalCompactSignature } from './graphene-fc/dist/signing.js';
     import { BitSharesWifSigner, BitSharesClient } from './graphene-chain-bitshares/graphene-chain-bitshares-api/dist/index.js';
@@ -52,20 +53,44 @@ const result = await build({
       signature: bytesToHex(signature), expectedSignature: fixture.signing.signatureHex,
       recoveredKey: bytesToHex(recoverPublicKey(hexToBytes(fixture.signing.digestHex), signature)), expectedKey: fixture.signing.publicKeyHex
     };
-  `, resolveDir: fileURLToPath(new URL('../', import.meta.url)), sourcefile: 'browser-smoke.ts' },
-  bundle: true, platform: 'browser', target: 'es2022', format: 'iife', write: false,
+  `,
+    resolveDir: fileURLToPath(new URL('../', import.meta.url)),
+    sourcefile: 'browser-smoke.ts',
+  },
+  bundle: true,
+  platform: 'browser',
+  target: 'es2022',
+  format: 'iife',
+  write: false,
 });
 const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage();
-  await page.route('https://sdk.test/', route => route.fulfill({contentType:'text/html',body:'<!doctype html><title>SDK test</title>'}));
+  await page.route('https://sdk.test/', (route) =>
+    route.fulfill({
+      contentType: 'text/html',
+      body: '<!doctype html><title>SDK test</title>',
+    }),
+  );
   await page.goto('https://sdk.test/');
   await page.addScriptTag({ content: result.outputFiles[0].text });
   const value = await page.evaluate(() => globalThis.result);
-  if (!value.bitshares || value.amount !== '9007199254740993' || value.id !== '5901000000000201' || value.digest !== value.expectedDigest || value.transferHex !== value.expectedTransferHex || value.signature !== value.expectedSignature || value.recoveredKey !== value.expectedKey) {
+  if (
+    !value.bitshares ||
+    value.amount !== '9007199254740993' ||
+    value.id !== '5901000000000201' ||
+    value.digest !== value.expectedDigest ||
+    value.transferHex !== value.expectedTransferHex ||
+    value.signature !== value.expectedSignature ||
+    value.recoveredKey !== value.expectedKey
+  ) {
     throw new Error(`Browser vector mismatch: ${JSON.stringify(value)}`);
   }
-  const parityCount=await page.evaluate(() => globalThis.parity());
-  if(parityCount!==159)throw new Error('Missing browser FC cases');
-  console.log('Chromium: generated JSON/FC, lossless integers, transaction digest, signing and recovery passed (no Node polyfills).');
-} finally { await browser.close(); }
+  const parityCount = await page.evaluate(() => globalThis.parity());
+  if (parityCount !== 159) throw new Error('Missing browser FC cases');
+  console.log(
+    'Chromium: generated JSON/FC, lossless integers, transaction digest, signing and recovery passed (no Node polyfills).',
+  );
+} finally {
+  await browser.close();
+}

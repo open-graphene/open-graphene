@@ -12,11 +12,18 @@ React 18.3/19 and TanStack Query 5.104+ (v5) are peer dependencies. Build from t
 TypeScript workspace; this package is not published to npm yet.
 
 ```tsx
-import { SwaplockProvider, useAccountBalances } from '@open-graphene/chain-swaplock-react';
+import {
+  SwaplockProvider,
+  useAccountBalances,
+} from '@open-graphene/chain-swaplock-react';
 
 function Balances() {
   const result = useAccountBalances('your-account', { live: true });
-  return <p>{result.data?.length ?? 0} balances; {result.live.status}</p>;
+  return (
+    <p>
+      {result.data?.length ?? 0} balances; {result.live.status}
+    </p>
+  );
 }
 ```
 

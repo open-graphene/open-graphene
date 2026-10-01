@@ -22,12 +22,7 @@
             "nonce": "9007199254740993",
             "message": "0123abcd"
           },
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "0001000000000020000000000100000000002000000102c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf02c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf0100000000002000040123abcd0100",
@@ -76,12 +71,7 @@
           },
           "fee_paying_account": "1.2.0",
           "order": "1.7.0",
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "0201000000000020000000000100",
@@ -132,33 +122,17 @@
           "name": "public-fixture",
           "owner": {
             "weight_threshold": 7,
-            "account_auths": [
-              [
-                "1.2.0",
-                7
-              ]
-            ],
+            "account_auths": [["1.2.0", 7]],
             "key_auths": [
-              [
-                "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
-                7
-              ]
+              ["BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV", 7]
             ],
             "address_auths": []
           },
           "active": {
             "weight_threshold": 7,
-            "account_auths": [
-              [
-                "1.2.0",
-                7
-              ]
-            ],
+            "account_auths": [["1.2.0", 7]],
             "key_auths": [
-              [
-                "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
-                7
-              ]
+              ["BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV", 7]
             ],
             "address_auths": []
           },
@@ -167,15 +141,8 @@
             "voting_account": "1.2.0",
             "num_witness": 7,
             "num_committee": 7,
-            "votes": [
-              "0:0"
-            ],
-            "extensions": [
-              [
-                0,
-                {}
-              ]
-            ]
+            "votes": ["0:0"],
+            "extensions": [[0, {}]]
           },
           "extensions": {}
         }
@@ -198,33 +165,17 @@
           "account": "1.2.0",
           "owner": {
             "weight_threshold": 7,
-            "account_auths": [
-              [
-                "1.2.0",
-                7
-              ]
-            ],
+            "account_auths": [["1.2.0", 7]],
             "key_auths": [
-              [
-                "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
-                7
-              ]
+              ["BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV", 7]
             ],
             "address_auths": []
           },
           "active": {
             "weight_threshold": 7,
-            "account_auths": [
-              [
-                "1.2.0",
-                7
-              ]
-            ],
+            "account_auths": [["1.2.0", 7]],
             "key_auths": [
-              [
-                "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
-                7
-              ]
+              ["BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV", 7]
             ],
             "address_auths": []
           },
@@ -233,15 +184,8 @@
             "voting_account": "1.2.0",
             "num_witness": 7,
             "num_committee": 7,
-            "votes": [
-              "0:0"
-            ],
-            "extensions": [
-              [
-                0,
-                {}
-              ]
-            ]
+            "votes": ["0:0"],
+            "extensions": [[0, {}]]
           },
           "extensions": {}
         }
@@ -264,12 +208,7 @@
           "authorizing_account": "1.2.0",
           "account_to_list": "1.2.0",
           "new_listing": 7,
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "070100000000002000000000070100",
@@ -289,12 +228,7 @@
           },
           "account_to_upgrade": "1.2.0",
           "upgrade_to_lifetime_member": true,
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "0801000000000020000000010100",
@@ -314,12 +248,7 @@
           },
           "account_id": "1.2.0",
           "new_owner": "1.2.0",
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "0901000000000020000000000100",
@@ -356,18 +285,10 @@
                 "asset_id": "1.3.0"
               }
             },
-            "whitelist_authorities": [
-              "1.2.0"
-            ],
-            "blacklist_authorities": [
-              "1.2.0"
-            ],
-            "whitelist_markets": [
-              "1.3.0"
-            ],
-            "blacklist_markets": [
-              "1.3.0"
-            ],
+            "whitelist_authorities": ["1.2.0"],
+            "blacklist_authorities": ["1.2.0"],
+            "whitelist_markets": ["1.3.0"],
+            "blacklist_markets": ["1.3.0"],
             "description": "public-fixture",
             "extensions": {}
           },
@@ -381,12 +302,7 @@
             "extensions": {}
           },
           "is_prediction_market": true,
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "0a010000000000200000000e7075626c69632d66697874757265070100000000002000070001000000000020000700070001000000000020000001000000000020000001000100010001000e7075626c69632d666978747572650001070000000707000000070007000000010100",
@@ -423,18 +339,10 @@
                 "asset_id": "1.3.0"
               }
             },
-            "whitelist_authorities": [
-              "1.2.0"
-            ],
-            "blacklist_authorities": [
-              "1.2.0"
-            ],
-            "whitelist_markets": [
-              "1.3.0"
-            ],
-            "blacklist_markets": [
-              "1.3.0"
-            ],
+            "whitelist_authorities": ["1.2.0"],
+            "blacklist_authorities": ["1.2.0"],
+            "whitelist_markets": ["1.3.0"],
+            "blacklist_markets": ["1.3.0"],
             "description": "public-fixture",
             "extensions": {}
           },
@@ -467,12 +375,7 @@
             "short_backing_asset": "1.3.0",
             "extensions": {}
           },
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "0c01000000000020000000000700000007070000000700070000000100",
@@ -492,15 +395,8 @@
           },
           "issuer": "1.2.0",
           "asset_to_update": "1.3.0",
-          "new_feed_producers": [
-            "1.2.0"
-          ],
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "new_feed_producers": ["1.2.0"],
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "0d010000000000200000000001000100",
@@ -530,12 +426,7 @@
             "nonce": "9007199254740993",
             "message": "0123abcd"
           },
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "0e01000000000020000000010000000000200000000102c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf02c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf0100000000002000040123abcd0100",
@@ -558,12 +449,7 @@
             "amount": "9007199254740993",
             "asset_id": "1.3.0"
           },
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "0f010000000000200000000100000000002000000100",
@@ -584,12 +470,7 @@
           "from_account": "1.2.0",
           "asset_id": "1.3.0",
           "amount": "9007199254740993",
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "10010000000000200000000001000000000020000100",
@@ -612,12 +493,7 @@
             "amount": "9007199254740993",
             "asset_id": "1.3.0"
           },
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "11010000000000200000000100000000002000000100",
@@ -647,12 +523,7 @@
               "asset_id": "1.3.0"
             }
           },
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "1201000000000020000000000100000000002000000100000000002000000100",
@@ -778,23 +649,13 @@
                     "nonce": "9007199254740993",
                     "message": "0123abcd"
                   },
-                  "extensions": [
-                    [
-                      0,
-                      {}
-                    ]
-                  ]
+                  "extensions": [[0, {}]]
                 }
               ]
             }
           ],
           "review_period_seconds": 7,
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "160100000000002000000080ffba6a010001000000000020000000000100000000002000000102c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf02c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf0100000000002000040123abcd010001070000000100",
@@ -814,30 +675,17 @@
           },
           "fee_paying_account": "1.2.0",
           "proposal": "1.10.0",
-          "active_approvals_to_add": [
-            "1.2.0"
-          ],
-          "active_approvals_to_remove": [
-            "1.2.0"
-          ],
-          "owner_approvals_to_add": [
-            "1.2.0"
-          ],
-          "owner_approvals_to_remove": [
-            "1.2.0"
-          ],
+          "active_approvals_to_add": ["1.2.0"],
+          "active_approvals_to_remove": ["1.2.0"],
+          "owner_approvals_to_add": ["1.2.0"],
+          "owner_approvals_to_remove": ["1.2.0"],
           "key_approvals_to_add": [
             "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
           ],
           "key_approvals_to_remove": [
             "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
           ],
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "17010000000000200000000001000100010001000102c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf0102c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf0100",
@@ -858,12 +706,7 @@
           "fee_paying_account": "1.2.0",
           "using_owner_authority": true,
           "proposal": "1.10.0",
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "180100000000002000000001000100",
@@ -1144,10 +987,7 @@
           "daily_pay": "9007199254740993",
           "name": "public-fixture",
           "url": "public-fixture",
-          "initializer": [
-            0,
-            {}
-          ]
+          "initializer": [0, {}]
         }
       ],
       "hex": "220100000000002000000080ffba6a80ffba6a01000000000020000e7075626c69632d666978747572650e7075626c69632d6669787475726500",
@@ -1166,9 +1006,7 @@
             "asset_id": "1.3.0"
           },
           "payer": "1.2.0",
-          "required_auths": [
-            "1.2.0"
-          ],
+          "required_auths": ["1.2.0"],
           "id": 7,
           "data": "0123abcd"
         }
@@ -1198,15 +1036,8 @@
               }
             ]
           ],
-          "required_auths": [
-            "1.2.0"
-          ],
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "required_auths": ["1.2.0"],
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "24010000000000200000000100000e7075626c69632d6669787475726501000100",
@@ -1261,12 +1092,7 @@
             "nonce": "9007199254740993",
             "message": "0123abcd"
           },
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "260100000000002000000000000100000000002000000102c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf02c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf0100000000002000040123abcd0100",
@@ -1296,17 +1122,9 @@
               "range_proof": "0123abcd",
               "owner": {
                 "weight_threshold": 7,
-                "account_auths": [
-                  [
-                    "1.2.0",
-                    7
-                  ]
-                ],
+                "account_auths": [["1.2.0", 7]],
                 "key_auths": [
-                  [
-                    "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
-                    7
-                  ]
+                  ["BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV", 7]
                 ],
                 "address_auths": []
               },
@@ -1339,17 +1157,9 @@
               "commitment": "000000000000000000000000000000000000000000000000000000000000000000",
               "owner": {
                 "weight_threshold": 7,
-                "account_auths": [
-                  [
-                    "1.2.0",
-                    7
-                  ]
-                ],
+                "account_auths": [["1.2.0", 7]],
                 "key_auths": [
-                  [
-                    "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
-                    7
-                  ]
+                  ["BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV", 7]
                 ],
                 "address_auths": []
               }
@@ -1361,17 +1171,9 @@
               "range_proof": "0123abcd",
               "owner": {
                 "weight_threshold": 7,
-                "account_auths": [
-                  [
-                    "1.2.0",
-                    7
-                  ]
-                ],
+                "account_auths": [["1.2.0", 7]],
                 "key_auths": [
-                  [
-                    "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
-                    7
-                  ]
+                  ["BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV", 7]
                 ],
                 "address_auths": []
               },
@@ -1410,17 +1212,9 @@
               "commitment": "000000000000000000000000000000000000000000000000000000000000000000",
               "owner": {
                 "weight_threshold": 7,
-                "account_auths": [
-                  [
-                    "1.2.0",
-                    7
-                  ]
-                ],
+                "account_auths": [["1.2.0", 7]],
                 "key_auths": [
-                  [
-                    "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
-                    7
-                  ]
+                  ["BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV", 7]
                 ],
                 "address_auths": []
               }
@@ -1475,12 +1269,7 @@
             "amount": "9007199254740993",
             "asset_id": "1.3.0"
           },
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "2d010000000000200000000100000000002000000100000000002000000100",
@@ -1504,12 +1293,7 @@
             "amount": "9007199254740993",
             "asset_id": "1.3.0"
           },
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "2f01000000000020000000000100000000002000000100",
@@ -1530,12 +1314,7 @@
           "issuer": "1.2.0",
           "asset_to_update": "1.3.0",
           "new_issuer": "1.2.0",
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "300100000000002000000000000100",
@@ -1559,10 +1338,7 @@
             "amount": "9007199254740993",
             "asset_id": "1.3.0"
           },
-          "preimage_hash": [
-            0,
-            "0000000000000000000000000000000000000000"
-          ],
+          "preimage_hash": [0, "0000000000000000000000000000000000000000"],
           "preimage_size": 7,
           "claim_period_seconds": 7,
           "extensions": {}
@@ -1586,12 +1362,7 @@
           "htlc_id": "1.16.0",
           "redeemer": "1.2.0",
           "preimage": "0123abcd",
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "320100000000002000000000040123abcd0100",
@@ -1612,12 +1383,7 @@
           "htlc_id": "1.16.0",
           "update_issuer": "1.2.0",
           "seconds_to_add": 7,
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "340100000000002000000000070000000100",
@@ -1642,17 +1408,9 @@
           "operation_type": 7,
           "auth": {
             "weight_threshold": 7,
-            "account_auths": [
-              [
-                "1.2.0",
-                7
-              ]
-            ],
+            "account_auths": [["1.2.0", 7]],
             "key_auths": [
-              [
-                "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
-                7
-              ]
+              ["BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV", 7]
             ],
             "address_auths": []
           },
@@ -1660,24 +1418,11 @@
             {
               "member_index": 7,
               "restriction_type": 7,
-              "argument": [
-                0,
-                {}
-              ],
-              "extensions": [
-                [
-                  0,
-                  {}
-                ]
-              ]
+              "argument": [0, {}],
+              "extensions": [[0, {}]]
             }
           ],
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "36010000000000200000000180ffba6a80ffba6a0707000000010007000102c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf0700000107070001000100",
@@ -1702,45 +1447,22 @@
           "new_valid_to": "2026-09-29T00:00:00",
           "new_auth": {
             "weight_threshold": 7,
-            "account_auths": [
-              [
-                "1.2.0",
-                7
-              ]
-            ],
+            "account_auths": [["1.2.0", 7]],
             "key_auths": [
-              [
-                "BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
-                7
-              ]
+              ["BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV", 7]
             ],
             "address_auths": []
           },
-          "restrictions_to_remove": [
-            7
-          ],
+          "restrictions_to_remove": [7],
           "restrictions_to_add": [
             {
               "member_index": 7,
               "restriction_type": 7,
-              "argument": [
-                0,
-                {}
-              ],
-              "extensions": [
-                [
-                  0,
-                  {}
-                ]
-              ]
+              "argument": [0, {}],
+              "extensions": [[0, {}]]
             }
           ],
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "37010000000000200000000001010180ffba6a0180ffba6a0107000000010007000102c0ded2bc1f1305fb0faac5e6c03ee3a1924234985427b6167ca569d13df435cf0700000107000107070001000100",
@@ -1760,12 +1482,7 @@
           },
           "account": "1.2.0",
           "authority_to_delete": "1.17.0",
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "3801000000000020000000000100",
@@ -1789,12 +1506,7 @@
             "amount": "9007199254740993",
             "asset_id": "1.3.0"
           },
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "3901000000000020000000070100000000002000000100",
@@ -1819,12 +1531,7 @@
             "amount": "9007199254740993",
             "asset_id": "1.3.0"
           },
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "3a010000000000200000000007010100000000002000000100",
@@ -1848,12 +1555,7 @@
           "share_asset": "1.3.0",
           "taker_fee_percent": 7,
           "withdrawal_fee_percent": 7,
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "3b01000000000020000000000000070007000100",
@@ -1873,12 +1575,7 @@
           },
           "account": "1.2.0",
           "pool": "1.19.0",
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "3c01000000000020000000000100",
@@ -1906,12 +1603,7 @@
             "amount": "9007199254740993",
             "asset_id": "1.3.0"
           },
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "3d01000000000020000000000100000000002000000100000000002000000100",
@@ -1935,12 +1627,7 @@
             "amount": "9007199254740993",
             "asset_id": "1.3.0"
           },
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "3e01000000000020000000000100000000002000000100",
@@ -1968,12 +1655,7 @@
             "amount": "9007199254740993",
             "asset_id": "1.3.0"
           },
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "3f01000000000020000000000100000000002000000100000000002000000100",
@@ -1995,12 +1677,7 @@
           "asset_type": "1.3.0",
           "balance": "9007199254740993",
           "fee_rate": 7,
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "4001000000000020000000000100000000002000070000000100",
@@ -2020,12 +1697,7 @@
           },
           "owner_account": "1.2.0",
           "fund_id": "1.20.0",
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "4101000000000020000000000100",
@@ -2050,12 +1722,7 @@
             "asset_id": "1.3.0"
           },
           "new_fee_rate": 7,
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "4201000000000020000000000101000000000020000001070000000100",
@@ -2079,12 +1746,7 @@
             "amount": "9007199254740993",
             "asset_id": "1.3.0"
           },
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "4301000000000020000000000100000000002000000100",
@@ -2112,12 +1774,7 @@
             "amount": "9007199254740993",
             "asset_id": "1.3.0"
           },
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "4401000000000020000000000100000000002000000100000000002000000100",
@@ -2158,18 +1815,8 @@
               }
             ]
           ],
-          "acceptable_borrowers": [
-            [
-              "1.2.0",
-              "9007199254740993"
-            ]
-          ],
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "acceptable_borrowers": [["1.2.0", "9007199254740993"]],
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "4501000000000020000000000100000000002000070000000700000001000000000020000180ffba6a0100010000000000200000010000000000200000010001000000000020000100",
@@ -2189,12 +1836,7 @@
           },
           "owner_account": "1.2.0",
           "offer_id": "1.21.0",
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "4601000000000020000000000100",
@@ -2238,18 +1880,8 @@
               }
             ]
           ],
-          "acceptable_borrowers": [
-            [
-              "1.2.0",
-              "9007199254740993"
-            ]
-          ],
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "acceptable_borrowers": [["1.2.0", "9007199254740993"]],
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "470100000000002000000000010100000000002000000107000000010700000001010000000000200001010180ffba6a01010001000000000020000001000000000020000001010001000000000020000100",
@@ -2307,12 +1939,7 @@
             "amount": "9007199254740993",
             "asset_id": "1.3.0"
           },
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "4901000000000020000000000100000000002000000100000000002000000100",
@@ -2334,12 +1961,7 @@
           "pool": "1.19.0",
           "taker_fee_percent": 7,
           "withdrawal_fee_percent": 7,
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "4b01000000000020000000000107000107000100",
@@ -2360,12 +1982,7 @@
           "account": "1.2.0",
           "deal_id": "1.22.0",
           "auto_repay": 7,
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "4c0100000000002000000000070100",
@@ -2409,21 +2026,11 @@
                 "size_percent": 7,
                 "expiration_seconds": 7,
                 "repeat": true,
-                "extensions": [
-                  [
-                    0,
-                    {}
-                  ]
-                ]
+                "extensions": [[0, {}]]
               }
             ]
           ],
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "4d010000000000200000000001010000000000200000010000000000200000010100000000002000000180ffba6a0101000007000700070000000101000100",
@@ -2444,10 +2051,7 @@
           "owner": "1.2.0",
           "name": "public-fixture",
           "description": "public-fixture",
-          "subject": [
-            0,
-            {}
-          ],
+          "subject": [0, {}],
           "room_key": "public-fixture",
           "extensions": {
             "write_policy": 7
@@ -2473,17 +2077,9 @@
           "room": "1.23.0",
           "new_name": "public-fixture",
           "new_description": "public-fixture",
-          "new_subject": [
-            0,
-            {}
-          ],
+          "new_subject": [0, {}],
           "new_owner": "1.2.0",
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "4f0100000000002000000000010e7075626c69632d66697874757265010e7075626c69632d66697874757265010001000100",
@@ -2503,12 +2099,7 @@
           },
           "caller": "1.2.0",
           "room": "1.23.0",
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "5001000000000020000000000100",
@@ -2528,17 +2119,9 @@
           },
           "caller": "1.2.0",
           "room": "1.23.0",
-          "member": [
-            0,
-            "1.2.0"
-          ],
+          "member": [0, "1.2.0"],
           "member_key": "public-fixture",
-          "epoch_keys": [
-            [
-              7,
-              "public-fixture"
-            ]
-          ],
+          "epoch_keys": [[7, "public-fixture"]],
           "permissions": 7,
           "extensions": {
             "expected_access_state": "public-fixture"
@@ -2562,10 +2145,7 @@
           },
           "caller": "1.2.0",
           "room": "1.23.0",
-          "member": [
-            0,
-            "1.2.0"
-          ],
+          "member": [0, "1.2.0"],
           "permissions": 7,
           "extensions": {
             "expected_access_state": "public-fixture"
@@ -2589,10 +2169,7 @@
           },
           "caller": "1.2.0",
           "room": "1.23.0",
-          "member": [
-            0,
-            "1.2.0"
-          ],
+          "member": [0, "1.2.0"],
           "extensions": {
             "expected_access_state": "public-fixture"
           }
@@ -2615,15 +2192,7 @@
           },
           "caller": "1.2.0",
           "room": "1.23.0",
-          "member_keys": [
-            [
-              [
-                0,
-                "1.2.0"
-              ],
-              "public-fixture"
-            ]
-          ],
+          "member_keys": [[[0, "1.2.0"], "public-fixture"]],
           "extensions": {
             "expected_access_state": "public-fixture"
           }
@@ -2645,10 +2214,7 @@
             "asset_id": "1.3.0"
           },
           "payer": "1.2.0",
-          "author": [
-            0,
-            "1.2.0"
-          ],
+          "author": [0, "1.2.0"],
           "room": "1.23.0",
           "hash": "public-fixture",
           "url": "public-fixture",
@@ -2656,12 +2222,7 @@
           "description": "public-fixture",
           "content_key": "public-fixture",
           "storage_data": "public-fixture",
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "55010000000000200000000000000e7075626c69632d666978747572650e7075626c69632d666978747572650e7075626c69632d666978747572650e7075626c69632d666978747572650e7075626c69632d666978747572650e7075626c69632d666978747572650100",
@@ -2680,10 +2241,7 @@
             "asset_id": "1.3.0"
           },
           "payer": "1.2.0",
-          "caller": [
-            0,
-            "1.2.0"
-          ],
+          "caller": [0, "1.2.0"],
           "content_id": "1.26.0",
           "new_hash": "public-fixture",
           "new_url": "public-fixture",
@@ -2712,10 +2270,7 @@
             "asset_id": "1.3.0"
           },
           "payer": "1.2.0",
-          "caller": [
-            0,
-            "1.2.0"
-          ],
+          "caller": [0, "1.2.0"],
           "content_id": "1.26.0",
           "extensions": {
             "expected_hash": "public-fixture"
@@ -2781,17 +2336,9 @@
           },
           "granter": "1.2.0",
           "content_id": "1.26.0",
-          "grantee": [
-            0,
-            "1.2.0"
-          ],
+          "grantee": [0, "1.2.0"],
           "key": "public-fixture",
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "5a010000000000200000000000000e7075626c69632d666978747572650100",
@@ -2811,12 +2358,7 @@
           },
           "caller": "1.2.0",
           "grant_id": "1.28.0",
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "5b01000000000020000000000100",
@@ -2835,19 +2377,11 @@
             "asset_id": "1.3.0"
           },
           "payer": "1.2.0",
-          "caller": [
-            0,
-            "1.2.0"
-          ],
+          "caller": [0, "1.2.0"],
           "content_id": "1.26.0",
           "room": "1.23.0",
           "link_key": "public-fixture",
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "5c01000000000020000000000000000e7075626c69632d666978747572650100",
@@ -2866,18 +2400,10 @@
             "asset_id": "1.3.0"
           },
           "payer": "1.2.0",
-          "caller": [
-            0,
-            "1.2.0"
-          ],
+          "caller": [0, "1.2.0"],
           "link_id": "1.29.0",
           "new_link_key": "public-fixture",
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "5d010000000000200000000000000e7075626c69632d666978747572650100",
@@ -2896,17 +2422,9 @@
             "asset_id": "1.3.0"
           },
           "payer": "1.2.0",
-          "caller": [
-            0,
-            "1.2.0"
-          ],
+          "caller": [0, "1.2.0"],
           "link_id": "1.29.0",
-          "extensions": [
-            [
-              0,
-              {}
-            ]
-          ]
+          "extensions": [[0, {}]]
         }
       ],
       "hex": "5e010000000000200000000000000100",

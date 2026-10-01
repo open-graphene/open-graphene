@@ -1,4 +1,4 @@
 packages:
-  - "graphene-*"
-  - "graphene-chain-*/*"
-  - "graphene"
+  - 'graphene-*'
+  - 'graphene-chain-*/*'
+  - 'graphene'

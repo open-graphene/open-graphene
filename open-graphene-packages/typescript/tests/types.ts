@@ -1,37 +1,72 @@
-import { AccountId, AssetId, operation, DatabaseGetObjects, type TransferOperation } from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
+import {
+  AccountId,
+  AssetId,
+  operation,
+  DatabaseGetObjects,
+  type TransferOperation,
+} from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
 import { AccountId as BitSharesAccountId } from '../graphene-chain-bitshares/graphene-chain-bitshares-bindings/dist/index.js';
 const account = AccountId('1.2.1');
 const asset = AssetId('1.3.0');
-const transfer: TransferOperation = { from: account, to: account, fee: { amount: 0n, asset_id: asset }, amount: { amount: 1n, asset_id: asset }, extensions: [] };
+const transfer: TransferOperation = {
+  from: account,
+  to: account,
+  fee: { amount: 0n, asset_id: asset },
+  amount: { amount: 1n, asset_id: asset },
+  extensions: [],
+};
 const tag: 0 = operation.transfer(transfer)[0];
 void tag;
 // @ts-expect-error Asset IDs must not be accepted as account IDs.
 const wrongAccount: AccountId = asset;
 // @ts-expect-error IDs of different chains must not be interchangeable.
 const wrongChain: AccountId = BitSharesAccountId('1.2.1');
-// @ts-expect-error Generated amount fields must preserve 64-bit precision.
-const wrongAmount: TransferOperation = { ...transfer, amount: { amount: 1, asset_id: asset } };
+const wrongAmount: TransferOperation = {
+  ...transfer,
+  // @ts-expect-error Generated amount fields must preserve 64-bit precision.
+  amount: { amount: 1, asset_id: asset },
+};
 // @ts-expect-error Required RPC parameters may not be omitted.
 DatabaseGetObjects.encodeParams({});
 void [wrongAccount, wrongChain, wrongAmount];
 
-import { BitSharesClient, type SignedTransfer as BitSharesSignedTransfer } from '../graphene-chain-bitshares/graphene-chain-bitshares-api/dist/index.js';
+import {
+  BitSharesClient,
+  type SignedTransfer as BitSharesSignedTransfer,
+} from '../graphene-chain-bitshares/graphene-chain-bitshares-api/dist/index.js';
 import type { SwaplockClient } from '../graphene-chain-swaplock/graphene-chain-swaplock-api/dist/index.js';
-function chainIsolation(bitshares: BitSharesClient, swaplock: SwaplockClient, signed: BitSharesSignedTransfer) {
+function chainIsolation(
+  bitshares: BitSharesClient,
+  swaplock: SwaplockClient,
+  signed: BitSharesSignedTransfer,
+) {
   void bitshares.broadcast(signed);
   // @ts-expect-error Signed transactions belong to their chain-specific API.
   void swaplock.broadcast(signed);
 }
 void chainIsolation;
 
-import { useAccount, useDatabaseGetAccounts, usePrepareTransfer, useSignTransaction, accountOptions, SwaplockProvider, useRoom } from '@open-graphene/chain-swaplock-react';
+import {
+  useAccount,
+  useDatabaseGetAccounts,
+  usePrepareTransfer,
+  useSignTransaction,
+  accountOptions,
+  SwaplockProvider,
+  useRoom,
+} from '@open-graphene/chain-swaplock-react';
 import { QueryClient } from '@tanstack/react-query';
 import { DataRoomId } from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
 function reactTypes(client: SwaplockClient, other: BitSharesClient) {
-  const selected: string | undefined = useAccount('alice', { live: true, select: account => account.name }).data;
+  const selected: string | undefined = useAccount('alice', {
+    live: true,
+    select: (account) => account.name,
+  }).data;
   const raw = useDatabaseGetAccounts({ account_names_or_ids: ['alice'] });
   const name: string | undefined = raw.data?.[0]?.name;
-  const cached = new QueryClient().getQueryData(accountOptions(client, 'alice').queryKey);
+  const cached = new QueryClient().getQueryData(
+    accountOptions(client, 'alice').queryKey,
+  );
   const cachedName: string | undefined = cached?.name;
   useRoom(DataRoomId('1.23.1'), { live: true });
   // @ts-expect-error Generated RPC reads without a mapped subscription must reject live.
@@ -53,24 +88,56 @@ function reactTypes(client: SwaplockClient, other: BitSharesClient) {
 }
 void reactTypes;
 
-import { usePrepareDataRoomCreate, usePrepareTransferOperation, prepareDataRoomCreate, useCryptoBlind, useNetworkBroadcastBroadcastTransaction } from '@open-graphene/chain-swaplock-react';
+import {
+  usePrepareDataRoomCreate,
+  usePrepareTransferOperation,
+  prepareDataRoomCreate,
+  useCryptoBlind,
+  useNetworkBroadcastBroadcastTransaction,
+} from '@open-graphene/chain-swaplock-react';
 import { usePrepareTransferOperation as useBitSharesPrepareTransferOperation } from '@open-graphene/chain-bitshares-react';
 function generatedMutationTypes(client: SwaplockClient) {
   const room = usePrepareDataRoomCreate({ maxFee: 300000n });
-  room.mutate({ owner: AccountId('1.2.100'), name: 'room', description: '', subject: [0, {}], extensions: { write_policy: 1 } });
-  // @ts-expect-error Operation owner must be an account, not an asset ID.
-  room.mutate({ owner: AssetId('1.3.0'), name: 'room', description: '', subject: [0, {}] });
+  room.mutate({
+    owner: AccountId('1.2.100'),
+    name: 'room',
+    description: '',
+    subject: [0, {}],
+    extensions: { write_policy: 1 },
+  });
+  room.mutate({
+    // @ts-expect-error Operation owner must be an account, not an asset ID.
+    owner: AssetId('1.3.0'),
+    name: 'room',
+    description: '',
+    subject: [0, {}],
+  });
   // @ts-expect-error Required operation fields cannot be omitted.
   room.mutate({ name: 'room' });
   const raw = usePrepareTransferOperation();
-  raw.mutate({ from: account, to: account, amount: { amount: 1n, asset_id: asset } });
+  raw.mutate({
+    from: account,
+    to: account,
+    amount: { amount: 1n, asset_id: asset },
+  });
   // @ts-expect-error Generated transfer amounts are raw bigint asset amounts.
   raw.mutate({ from: account, to: account, amount: '0.01' });
-  // @ts-expect-error Operation hooks preserve chain-specific IDs.
-  useBitSharesPrepareTransferOperation().mutate({ from: account, to: account, amount: { amount: 1n, asset_id: asset } });
+  useBitSharesPrepareTransferOperation().mutate({
+    // @ts-expect-error Operation hooks preserve chain-specific sender IDs.
+    from: account,
+    // @ts-expect-error Operation hooks preserve chain-specific recipient IDs.
+    to: account,
+    // @ts-expect-error Operation hooks preserve chain-specific asset IDs.
+    amount: { amount: 1n, asset_id: asset },
+  });
   useCryptoBlind().mutate({ blind: new Uint8Array(32), value: 1n });
   // @ts-expect-error Broadcast takes a checked typed signed transaction, not arbitrary JSON.
   useNetworkBroadcastBroadcastTransaction().mutate({ trx: 'raw JSON' });
-  void prepareDataRoomCreate(client, { owner: account, name: 'room', description: '', subject: [0, {}] });
+  void prepareDataRoomCreate(client, {
+    owner: account,
+    name: 'room',
+    description: '',
+    subject: [0, {}],
+  });
 }
 void generatedMutationTypes;
