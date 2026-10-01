@@ -29,6 +29,9 @@ importers:
       jsdom:
         specifier: 26.1.0
         version: 26.1.0
+      prettier:
+        specifier: 3.9.9
+        version: 3.9.9
       react:
         specifier: 19.3.0
         version: 19.3.0
@@ -62,6 +65,10 @@ importers:
       '@open-graphene/transport':
         specifier: workspace:*
         version: link:../graphene-transport
+    devDependencies:
+      prettier:
+        specifier: 3.9.9
+        version: 3.9.9
 
   graphene-chain-bitshares/graphene-chain-bitshares-api:
     dependencies:
@@ -83,6 +90,10 @@ importers:
       '@open-graphene/transport':
         specifier: workspace:*
         version: link:../../graphene-transport
+    devDependencies:
+      prettier:
+        specifier: 3.9.9
+        version: 3.9.9
 
   graphene-chain-bitshares/graphene-chain-bitshares-bindings:
     dependencies:
@@ -95,6 +106,10 @@ importers:
       '@open-graphene/primitives':
         specifier: workspace:*
         version: link:../../graphene-primitives
+    devDependencies:
+      prettier:
+        specifier: 3.9.9
+        version: 3.9.9
 
   graphene-chain-bitshares/graphene-chain-bitshares-react:
     dependencies:
@@ -117,6 +132,9 @@ importers:
       '@types/react':
         specifier: 19.3.0
         version: 19.3.0
+      prettier:
+        specifier: 3.9.9
+        version: 3.9.9
       react:
         specifier: 19.3.0
         version: 19.3.0
@@ -141,6 +159,10 @@ importers:
       '@open-graphene/transport':
         specifier: workspace:*
         version: link:../../graphene-transport
+    devDependencies:
+      prettier:
+        specifier: 3.9.9
+        version: 3.9.9
 
   graphene-chain-swaplock/graphene-chain-swaplock-bindings:
     dependencies:
@@ -153,6 +175,10 @@ importers:
       '@open-graphene/primitives':
         specifier: workspace:*
         version: link:../../graphene-primitives
+    devDependencies:
+      prettier:
+        specifier: 3.9.9
+        version: 3.9.9
 
   graphene-chain-swaplock/graphene-chain-swaplock-react:
     dependencies:
@@ -178,6 +204,9 @@ importers:
       '@types/react':
         specifier: 19.3.0
         version: 19.3.0
+      prettier:
+        specifier: 3.9.9
+        version: 3.9.9
       react:
         specifier: 19.3.0
         version: 19.3.0
@@ -193,12 +222,20 @@ importers:
       lossless-json:
         specifier: 4.3.1
         version: 4.3.1
+    devDependencies:
+      prettier:
+        specifier: 3.9.9
+        version: 3.9.9
 
   graphene-core:
     dependencies:
       '@open-graphene/primitives':
         specifier: workspace:*
         version: link:../graphene-primitives
+    devDependencies:
+      prettier:
+        specifier: 3.9.9
+        version: 3.9.9
 
   graphene-fc:
     dependencies:
@@ -214,8 +251,16 @@ importers:
       '@scure/base':
         specifier: 2.4.0
         version: 2.4.0
+    devDependencies:
+      prettier:
+        specifier: 3.9.9
+        version: 3.9.9
 
-  graphene-primitives: {}
+  graphene-primitives:
+    devDependencies:
+      prettier:
+        specifier: 3.9.9
+        version: 3.9.9
 
   graphene-react-core:
     dependencies:
@@ -232,6 +277,9 @@ importers:
       '@types/react':
         specifier: 19.3.0
         version: 19.3.0
+      prettier:
+        specifier: 3.9.9
+        version: 3.9.9
       react:
         specifier: 19.3.0
         version: 19.3.0
@@ -241,6 +289,10 @@ importers:
       '@open-graphene/codec':
         specifier: workspace:*
         version: link:../graphene-codec
+    devDependencies:
+      prettier:
+        specifier: 3.9.9
+        version: 3.9.9
 
 packages:
 
@@ -674,6 +726,11 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
+  prettier@3.9.9:
+    resolution: {integrity: sha512-Z/CJHIkdujO/OtN7nXUii0Rf3VT5SRuhjBA82Xvu2XhBUgX3nhP67T0LHceBdQLex7OOFGTox+Q5Yg8Jk2Qivg==}
+    engines: {node: '>=14'}
+    hasBin: true
+
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
@@ -1091,6 +1148,8 @@ snapshots:
   playwright@1.63.0:
     dependencies:
       playwright-core: 1.63.0
+
+  prettier@3.9.9: {}
 
   punycode@2.3.1: {}
 

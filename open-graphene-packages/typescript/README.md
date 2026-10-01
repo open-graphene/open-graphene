@@ -40,6 +40,15 @@ packages are available when you only need one chain.
 | `@open-graphene/codec` | Lossless JSON and checked runtime codecs |
 | `@open-graphene/primitives` | IDs, timestamps and byte conversions |
 
+## Formatting
+
+Run `pnpm format` from this workspace to format all packages, scripts, tests and
+documentation, or run it inside an individual package to format only that package.
+Use `pnpm format:check` to verify formatting without changing files. All packages
+inherit the workspace `.prettierrc.json` configuration. Generated sources,
+build output and the lockfile are excluded; use `pnpm generate:check` to verify
+generated sources.
+
 ## React applications
 
 Use [`@open-graphene/chain-swaplock-react`](graphene-chain-swaplock/graphene-chain-swaplock-react/README.md)

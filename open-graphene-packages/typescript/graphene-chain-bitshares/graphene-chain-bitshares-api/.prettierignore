@@ -1,0 +1,11 @@
+node_modules/
+**/node_modules/
+**/dist/
+**/*.tsbuildinfo
+coverage/
+playwright-report/
+test-results/
+pnpm-lock.yaml
+
+# Generated output is checked against its generators by pnpm generate:check.
+**/src/generated/

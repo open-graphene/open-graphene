@@ -21,7 +21,9 @@
     "test:react:live": "pnpm build && node scripts/test-react-browser.mjs --live",
     "test:react:matrix": "node scripts/test-react-matrix.mjs",
     "test:packages": "pnpm build && node scripts/test-packed-packages.mjs",
-    "test:react:room:live": "pnpm build && node scripts/test-react-room-live.mjs"
+    "test:react:room:live": "pnpm build && node scripts/test-react-room-live.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "typescript": "7.0.2",
@@ -35,6 +37,7 @@
     "@open-graphene/chain-bitshares-react": "workspace:*",
     "react18": "npm:react@18.3.1",
     "react-dom18": "npm:react-dom@18.3.1",
-    "jsdom": "26.1.0"
+    "jsdom": "26.1.0",
+    "prettier": "3.9.9"
   }
 }
