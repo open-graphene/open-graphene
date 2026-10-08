@@ -316,3 +316,8 @@ export function useContentCard<D = Card>(
       onBlocks(c, () => c.database.getContentCardById({ content_id: id })),
   );
 }
+
+export {
+  SwaplockConnectionProvider,
+  useSwaplockConnection,
+} from './connection.js';

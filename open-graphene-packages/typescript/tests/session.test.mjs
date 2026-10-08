@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   RpcClient,
   GrapheneSession,
+  createSharedConnection,
   RpcSubscription,
   ChainStore,
 } from '../graphene-transport/dist/index.js';
@@ -49,6 +50,7 @@ class Socket extends EventTarget {
       }
       if (method === 'login') this.reply(m.id, true);
       else if (method === 'database') this.reply(m.id, 2 + this.index);
+      else if (method === 'network_broadcast') this.reply(m.id, 3 + this.index);
       else if (method === 'get_chain_id') this.reply(m.id, chain);
       else if (method === 'set_subscribe_callback') {
         this.callback = m.params[2][0];
@@ -183,4 +185,147 @@ test('reconnect terminates old subscriptions explicitly instead of silently reta
   await pending;
   assert.equal(await session.invoke(probe, {}), 'connected-0');
   session.close();
+});
+
+test('shared connection coalesces consumers and leases close independently', async () => {
+  const sockets = [];
+  const connection = createSharedConnection({
+    endpoints: ['ws://fixture'],
+    expectedChainId: chain,
+    createSocket() {
+      const socket = new Socket();
+      sockets.push(socket);
+      return socket;
+    },
+  });
+  const [first, second] = await Promise.all([
+    GrapheneSession.connect('ws://fixture', {
+      connection,
+      expectedChainId: chain,
+    }),
+    GrapheneSession.connect('ws://fixture', {
+      connection,
+      expectedChainId: chain,
+    }),
+  ]);
+  try {
+    assert.equal(sockets.length, 1);
+    const notices = await first.databaseNotices();
+    first.close();
+    assert.equal((await notices.next()).done, true);
+    assert.equal(sockets[0].readyState, 1);
+    assert.equal(await second.invoke(probe, {}), 'connected-0');
+    connection.close();
+    assert.equal(sockets[0].readyState, 3);
+    await assert.rejects(second.invoke(probe, {}));
+  } finally {
+    first.close();
+    second.close();
+    connection.close();
+  }
+});
+
+test('shared request cancellation leaves other callers and the socket active', async () => {
+  let held;
+  let socket;
+  const connection = createSharedConnection({
+    endpoints: ['ws://fixture'],
+    expectedChainId: chain,
+    createSocket() {
+      socket = new Socket(0, (message) => {
+        if (message.params[1] === 'get_held') {
+          held = message.id;
+          return 'held';
+        }
+      });
+      return socket;
+    },
+  });
+  const cancel = new AbortController();
+  const first = await GrapheneSession.connect('ws://fixture', {
+    connection,
+    signal: cancel.signal,
+  });
+  const second = await GrapheneSession.connect('ws://fixture', { connection });
+  try {
+    const read = first.request('database', 'get_held', []);
+    const rejected = assert.rejects(read, /cancel query/);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    cancel.abort(new Error('cancel query'));
+    await rejected;
+    assert.equal(await second.invoke(probe, {}), 'connected-0');
+    socket.reply(held, 'late');
+    assert.equal(socket.readyState, 1);
+  } finally {
+    first.close();
+    second.close();
+    connection.close();
+  }
+});
+
+test('shared reconnect is coalesced, retires the old socket, and keeps chain pinning', async () => {
+  const sockets = [];
+  const connection = createSharedConnection({
+    endpoints: ['ws://fixture'],
+    expectedChainId: chain,
+    createSocket() {
+      assert.equal(
+        sockets.filter((socket) => socket.readyState === 1).length,
+        0,
+      );
+      const socket = new Socket(sockets.length);
+      sockets.push(socket);
+      return socket;
+    },
+  });
+  const first = await GrapheneSession.connect('ws://fixture', { connection });
+  const second = await GrapheneSession.connect('ws://fixture', { connection });
+  try {
+    await Promise.all([first.reconnect(), second.reconnect()]);
+    assert.equal(sockets.length, 2);
+    assert.equal(await first.invoke(probe, {}), 'connected-1');
+    assert.equal(await second.invoke(probe, {}), 'connected-1');
+    await assert.rejects(
+      GrapheneSession.connect('ws://fixture', {
+        connection,
+        expectedChainId: 'cd'.repeat(32),
+      }),
+      /different chain/,
+    );
+    assert.equal(sockets.length, 2);
+  } finally {
+    first.close();
+    second.close();
+    connection.close();
+  }
+});
+
+test('shared connection never retries a submitted mutation after transport failure', async () => {
+  let submitted = 0;
+  let opened = 0;
+  const connection = createSharedConnection({
+    endpoints: ['ws://fixture'],
+    expectedChainId: chain,
+    createSocket() {
+      opened += 1;
+      return new Socket(0, (message, socket) => {
+        if (message.params[1] === 'broadcast_transaction') {
+          submitted += 1;
+          socket.close();
+          return 'held';
+        }
+      });
+    },
+  });
+  const session = await GrapheneSession.connect('ws://fixture', { connection });
+  try {
+    await assert.rejects(
+      session.request('network_broadcast', 'broadcast_transaction', []),
+    );
+    assert.equal(submitted, 1);
+    assert.equal(opened, 1);
+  } finally {
+    session.close();
+    connection.close();
+  }
 });

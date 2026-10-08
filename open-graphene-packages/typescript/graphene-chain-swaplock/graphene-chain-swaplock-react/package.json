@@ -26,7 +26,8 @@
     "@open-graphene/chain-swaplock-bindings": "workspace:*",
     "@open-graphene/react-core": "workspace:*",
     "@open-graphene/fc": "workspace:*",
-    "@open-graphene/primitives": "workspace:*"
+    "@open-graphene/primitives": "workspace:*",
+    "@open-graphene/transport": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.3.0 || ^19.0.0",

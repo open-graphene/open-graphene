@@ -1,5 +1,9 @@
 import * as b from '@open-graphene/chain-bitshares-bindings';
-import { RpcSubscription, RpcRemoteError } from '@open-graphene/transport';
+import {
+  RpcSubscription,
+  RpcRemoteError,
+  type SharedSubscription,
+} from '@open-graphene/transport';
 import { smallInteger, vector, type WireValue } from '@open-graphene/codec';
 import { parseTimePointSec, objectId } from '@open-graphene/primitives';
 import {
@@ -182,7 +186,7 @@ export class Queries {
       Date.now() / 1000
     )
       throw new Error('Signed transaction expired');
-    let stream: RpcSubscription;
+    let stream: SharedSubscription;
     try {
       stream = await this.client.rpc.subscribe(
         'network_broadcast',

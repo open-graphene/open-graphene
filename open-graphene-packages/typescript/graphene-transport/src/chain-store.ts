@@ -1,5 +1,6 @@
 import { parseJson, stringifyJson, type WireValue } from '@open-graphene/codec';
 import { RpcSubscription } from './subscription.js';
+import type { SharedSubscription } from './shared-connection.js';
 import type { GrapheneSession } from './session.js';
 const clone = (value: WireValue) => parseJson(stringifyJson(value));
 export class ChainStore implements AsyncIterable<
@@ -10,7 +11,7 @@ export class ChainStore implements AsyncIterable<
   #closed = false;
   readonly changes: RpcSubscription<ReadonlyMap<string, WireValue>>;
   private constructor(
-    private readonly notices: RpcSubscription,
+    private readonly notices: SharedSubscription,
     ids: readonly string[],
   ) {
     this.#ids = new Set(ids);

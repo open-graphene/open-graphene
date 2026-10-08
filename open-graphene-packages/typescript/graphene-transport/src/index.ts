@@ -388,3 +388,10 @@ export {
   type ServerLatency,
 } from './session.js';
 export { ChainStore } from './chain-store.js';
+
+export {
+  createSharedConnection,
+  type SharedConnection,
+  type ConnectionLease,
+  type SharedSubscription,
+} from './shared-connection.js';

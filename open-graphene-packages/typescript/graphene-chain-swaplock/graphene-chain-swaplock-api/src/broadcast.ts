@@ -6,7 +6,7 @@ import {
   RpcTransportError,
   RpcSubscriptionTimeoutError,
   type GrapheneSession,
-  type RpcSubscription,
+  type SharedSubscription,
 } from '@open-graphene/transport';
 import { BroadcastOutcomeUnknown, type SignedTransfer } from './index.js';
 
@@ -111,7 +111,7 @@ export async function sendTransactionWithCallback(
     );
   }
 
-  let stream: RpcSubscription;
+  let stream: SharedSubscription;
   try {
     stream = await rpc.subscribe(
       'network_broadcast',
@@ -142,7 +142,11 @@ export async function sendTransactionWithCallback(
         try {
           notice = await stream.nextTimeout(timeoutMs);
         } catch (error) {
-          if (error instanceof RpcSubscriptionTimeoutError) {
+          if (
+            error instanceof RpcSubscriptionTimeoutError ||
+            (error instanceof Error &&
+              error.name === 'RpcSubscriptionTimeoutError')
+          ) {
             throw new TransactionBroadcastError(
               'timeout',
               'Broadcast confirmation timed out; submission outcome is unknown',

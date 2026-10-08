@@ -2,15 +2,52 @@ import { ChainIdMismatchError } from './chain-id.js';
 import {
   RpcClient,
   RpcTransportError,
+  RpcRemoteError,
   type ConnectionOptions,
 } from './index.js';
 import type { RpcMethod, WireValue } from '@open-graphene/codec';
-import type { RpcSubscription } from './subscription.js';
+import type {
+  ConnectionLease,
+  SharedConnection,
+  SharedSubscription,
+} from './shared-connection.js';
+// Shared leases may come from a separately bundled SDK. Recreate transport
+// errors locally so existing retry and broadcast-delivery checks keep their meaning.
+function localTransportError(error: unknown): unknown {
+  if (!(error instanceof Error)) {
+    return error;
+  }
+  if (
+    error.name === 'RpcTransportError' &&
+    'sent' in error &&
+    typeof error.sent === 'boolean'
+  ) {
+    return new RpcTransportError(error.message, error.sent);
+  }
+  if (error.name === 'RpcRemoteError' && 'detail' in error) {
+    return new RpcRemoteError(error.detail as WireValue);
+  }
+  if (
+    error.name === 'ChainIdMismatchError' &&
+    'expectedChainId' in error &&
+    'actualChainId' in error &&
+    typeof error.expectedChainId === 'string' &&
+    typeof error.actualChainId === 'string'
+  ) {
+    return new ChainIdMismatchError({
+      expectedChainId: error.expectedChainId,
+      actualChainId: error.actualChainId,
+    });
+  }
+  return error;
+}
+
 export interface ReconnectPolicy {
   readonly maxRetries: number;
   readonly delayMs: number;
 }
 export interface SessionOptions extends ConnectionOptions {
+  readonly connection?: SharedConnection;
   readonly expectedChainId?: string;
   readonly strategy?: 'first-available' | 'lowest-latency';
   readonly reconnect?: ReconnectPolicy;
@@ -21,14 +58,14 @@ export interface ServerLatency {
   readonly chainId: string;
 }
 export class GrapheneSession {
-  #client: RpcClient;
+  #client: RpcClient | ConnectionLease;
   #reconnecting: Promise<void> | undefined;
   #policy: ReconnectPolicy;
   #lifetime = new AbortController();
   #signal: AbortSignal;
 
   private constructor(
-    client: RpcClient,
+    client: RpcClient | ConnectionLease,
     readonly endpoint: string,
     readonly chainId: string,
     private readonly options: SessionOptions,
@@ -81,6 +118,15 @@ export class GrapheneSession {
     const endpoints = typeof servers === 'string' ? [servers] : [...servers];
     if (!endpoints.length) {
       throw new Error('No RPC endpoints');
+    }
+
+    if (options.connection) {
+      const lease = await options.connection
+        .acquire(options)
+        .catch((error: unknown) => {
+          throw localTransportError(error);
+        });
+      return new GrapheneSession(lease, lease.endpoint, lease.chainId, options);
     }
 
     if (options.strategy === 'lowest-latency') {
@@ -172,7 +218,18 @@ export class GrapheneSession {
       return this.#reconnecting;
     }
 
+    if ('reconnect' in this.#client) {
+      try {
+        await this.#client.reconnect();
+      } catch (error) {
+        throw localTransportError(error);
+      }
+      return;
+    }
+
     this.#reconnecting = (async () => {
+      // Retire the previous socket before opening its replacement.
+      this.#client.close();
       const next = await GrapheneSession.#open(this.endpoint, {
         ...this.options,
         signal: this.#signal,
@@ -197,7 +254,11 @@ export class GrapheneSession {
   ): Promise<WireValue> {
     this.#signal.throwIfAborted();
     // Raw requests, broadcasts and callback registration are never retried.
-    return this.#client.request(api, method, args);
+    try {
+      return await this.#client.request(api, method, args);
+    } catch (error) {
+      throw localTransportError(error);
+    }
   }
 
   async invoke<P, R>(descriptor: RpcMethod<P, R>, params: P): Promise<R> {
@@ -260,12 +321,16 @@ export class GrapheneSession {
     api: string,
     method: string,
     args: (id: number) => readonly WireValue[],
-  ): Promise<RpcSubscription> {
+  ): Promise<SharedSubscription> {
     this.#signal.throwIfAborted();
-    return this.#client.subscribe(api, method, args);
+    try {
+      return await this.#client.subscribe(api, method, args);
+    } catch (error) {
+      throw localTransportError(error);
+    }
   }
 
-  async databaseNotices(): Promise<RpcSubscription> {
+  async databaseNotices(): Promise<SharedSubscription> {
     this.#signal.throwIfAborted();
     return this.#client.databaseNotices();
   }

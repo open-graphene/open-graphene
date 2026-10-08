@@ -36,3 +36,19 @@ hooks. Signing and broadcasting are separate explicit steps.
 
 See the [complete React guide](../../../../docs/TYPESCRIPT-REACT.md) for connection,
 subscriptions, operation hooks, transactions, prefetching and SSR hydration.
+
+## Sharing a connection across SDKs
+
+Create one lazy `createSharedConnection({ endpoints, expectedChainId })` from
+`@open-graphene/transport` for the host lifetime, and provide it through
+`<SwaplockConnectionProvider connection={connection}>`. Consumers use
+`useSwaplockConnection()` and pass the result as `connection` in their SDK's
+network options. In Atom this is `chain.connection` for room access, creation,
+membership, discovery and identity creation.
+
+Each SDK session borrows the same physical WebSocket. Closing a session cancels
+only its own requests and subscriptions. The host must call `connection.close()`
+on shutdown; the provider borrows it and does not close it on React remounts.
+Connection establishment and reconnection are coalesced, chain pinning is
+preserved, and broadcasts are never automatically retried. Mounting the provider
+does not connect to the network or require a loading screen.
