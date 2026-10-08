@@ -1,5 +1,24 @@
+export {
+  ChainIdMismatchError,
+  hasChainIdMismatch,
+} from '@open-graphene/transport';
+export {
+  restoreSignedTransaction,
+  TransactionRestorationError,
+  type RestoreSignedTransactionOptions,
+} from './restoration.js';
+import {
+  inspectTransactionInBlock,
+  type TransactionBlockInspectionOptions,
+} from './inclusion.js';
+export {
+  TransactionInspectionError,
+  type TransactionBlockInspectionOptions,
+  type TransactionBlockInclusion,
+} from './inclusion.js';
 import { decimalToRawAmount } from '@open-graphene/core';
 import { Queries } from './queries.js';
+import { requireChainId } from './network.js';
 export { Queries } from './queries.js';
 export * from '@open-graphene/core';
 import {
@@ -8,7 +27,11 @@ import {
   type TransactionOptions,
 } from './transactions.js';
 export {
+  TransactionPreparationError,
+  TransactionSigningError,
+  type TransactionSigningOptions,
   PreparedTransaction,
+  type PreparedTransactionOptions,
   TransactionBuilder,
   prepareOperations,
   type TransactionOptions,
@@ -40,6 +63,17 @@ export interface TransferRequest {
   readonly memo?: b.MemoData;
   readonly expirationSeconds?: number;
   readonly maxFee: bigint;
+}
+
+export interface SwaplockConnectionOptions extends SessionOptions {
+  readonly expectedChainId: string;
+}
+
+export interface PreparedTransferOptions {
+  readonly transaction: b.Transaction;
+  readonly authority: b.Authority;
+  readonly startBlock: number;
+  readonly chainId: string;
 }
 export function transactionId(transaction: b.Transaction): string {
   return bytesToHex(sha256(b.encodeTransaction(transaction)).slice(0, 20));
@@ -111,11 +145,15 @@ export class PreparedTransfer {
   #wire: string;
   #authority: b.Authority;
   readonly id: string;
-  constructor(
-    transaction: b.Transaction,
-    authority: b.Authority,
-    readonly startBlock: number,
-  ) {
+  readonly startBlock: number;
+  readonly chainId: string;
+
+  constructor(options: PreparedTransferOptions) {
+    const transaction = options.transaction;
+    const authority = options.authority;
+    this.chainId = requireChainId(options.chainId);
+    this.startBlock = options.startBlock;
+
     b.encodeTransaction(transaction);
     this.#wire = stringifyJson(b.TransactionCodec.encode(transaction));
     this.#authority = b.AuthorityCodec.decode(
@@ -134,37 +172,58 @@ export class PreparedTransfer {
     const signers: readonly Signer[] = Array.isArray(input)
       ? input
       : [input as Signer];
-    const tx = this.transaction;
-    if (parseTimePointSec(tx.expiration) <= Date.now() / 1000)
+    const transaction = this.transaction;
+    if (parseTimePointSec(transaction.expiration) <= Date.now() / 1000) {
       throw new Error('Prepared transaction expired');
+    }
+
     const unique = new Map<string, Signer>();
-    for (const signer of signers)
-      unique.set(
-        encodePublicKey(signer.publicKey, b.CHAIN.publicKeyPrefix),
-        signer,
+    for (const signer of signers) {
+      const address = encodePublicKey(
+        signer.publicKey,
+        b.CHAIN.publicKeyPrefix,
       );
+      unique.set(address, signer);
+    }
+
     let weight = 0;
     for (const key of unique.keys()) {
       const contribution =
         this.#authority.key_auths.find(([k]) => k === key)?.[1] ?? 0;
-      if (!contribution)
+      if (!contribution) {
         throw new Error('Signer is not part of active key authority');
+      }
+
       weight += contribution;
     }
-    if (weight < this.#authority.weight_threshold || !unique.size)
+
+    if (weight < this.#authority.weight_threshold || !unique.size) {
       throw new Error('Signing keys do not satisfy active authority');
-    const digest = transactionDigest(b.CHAIN.chainId, b.encodeTransaction(tx)),
-      signatures: Uint8Array[] = [];
+    }
+
+    const transactionBytes = b.encodeTransaction(transaction);
+    const digest = transactionDigest(this.chainId, transactionBytes);
+    const signatures: Uint8Array[] = [];
+
     for (const [address, signer] of unique) {
       const key = signer.publicKey.slice();
-      if (encodePublicKey(key, b.CHAIN.publicKeyPrefix) !== address)
+      if (encodePublicKey(key, b.CHAIN.publicKeyPrefix) !== address) {
         throw new Error('Signer public key changed');
+      }
+
       const signature = await signer.signDigest(digest.slice());
-      if (!verifyDigestCompact(digest, signature, key))
+      if (!verifyDigestCompact(digest, signature, key)) {
         throw new Error('Signer returned an invalid signature');
+      }
+
       signatures.push(signature);
     }
-    return new SignedTransfer({ ...tx, signatures }, this.startBlock);
+
+    const signedTransaction = {
+      ...transaction,
+      signatures,
+    };
+    return new SignedTransfer(signedTransaction, this.startBlock);
   }
 }
 export interface Inclusion {
@@ -227,21 +286,16 @@ export class SwaplockClient {
   }
   static async connect(
     endpoint: string | readonly string[],
-    options?: SessionOptions,
+    options: SwaplockConnectionOptions,
   ): Promise<SwaplockClient> {
+    options?.signal?.throwIfAborted();
+    const expectedChainId = requireChainId(options?.expectedChainId);
     const rpc = await GrapheneSession.connect(endpoint, {
       ...options,
-      expectedChainId: b.CHAIN.chainId,
+      expectedChainId,
     });
-    try {
-      const chainId = await rpc.invoke(b.DatabaseGetChainId, {});
-      if (chainId !== b.CHAIN.chainId)
-        throw new Error('Connected node has a different chain ID');
-      return new SwaplockClient(rpc);
-    } catch (error) {
-      rpc.close();
-      throw error;
-    }
+
+    return new SwaplockClient(rpc);
   }
   async prepareTransfer(request: TransferRequest): Promise<PreparedTransfer> {
     if (
@@ -317,7 +371,12 @@ export class SwaplockClient {
       operations: [b.operation.transfer({ ...operation[1], fee })],
       extensions: [],
     };
-    return new PreparedTransfer(tx, from.active, head.head_block_number);
+    return new PreparedTransfer({
+      transaction: tx,
+      authority: from.active,
+      startBlock: head.head_block_number,
+      chainId: this.chainId,
+    });
   }
   async broadcast(
     transaction: SignedTransfer,
@@ -337,6 +396,10 @@ export class SwaplockClient {
     }
     return { transactionId: transaction.id, status: 'submitted' };
   }
+  async inspectTransactionInBlock(options: TransactionBlockInspectionOptions) {
+    return inspectTransactionInBlock(this.rpc, options);
+  }
+
   async waitForInclusion(
     transaction: SignedTransfer,
     timeoutMs = 60000,
@@ -383,11 +446,14 @@ export class SwaplockClient {
   }
   static probeLatencies(
     endpoints: readonly string[],
-    options?: SessionOptions,
+    options: SwaplockConnectionOptions,
   ) {
+    options?.signal?.throwIfAborted();
+    const expectedChainId = requireChainId(options?.expectedChainId);
+
     return GrapheneSession.probeLatencies(endpoints, {
       ...options,
-      expectedChainId: b.CHAIN.chainId,
+      expectedChainId,
     });
   }
   chainStore(ids: readonly string[]) {
@@ -408,3 +474,8 @@ export class SwaplockClient {
 }
 
 export * from './room-access.js';
+
+export {
+  TransactionBroadcastError,
+  type BroadcastConfirmation,
+} from './broadcast.js';

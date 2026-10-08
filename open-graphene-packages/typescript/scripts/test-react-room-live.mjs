@@ -12,13 +12,17 @@ const result = await withReactDom(
   `
  export {runRoomLifecycle} from './tests/react-room-lifecycle.mjs';
  export {SwaplockClient} from './graphene-chain-swaplock/graphene-chain-swaplock-api/dist/index.js';
+ export {CHAIN} from './graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
  export {PrivateKey} from './graphene-fc/dist/wallet.js';
 `,
   async (module) => {
     // Connect before loading secret material; this also checks the pinned chain identity.
     const client = await module.SwaplockClient.connect(
       'wss://node01.swaplock.chainpool.online:8090',
-      { timeoutMs: 5000 },
+      {
+        expectedChainId: module.CHAIN.chainId,
+        timeoutMs: 5000,
+      },
     );
     let signer;
     try {

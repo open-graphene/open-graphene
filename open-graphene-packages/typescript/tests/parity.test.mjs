@@ -94,7 +94,11 @@ test('generic transactions collect distinct signatures without changing transact
     ...v,
     expiration: new Date(Date.now() + 60000).toISOString().slice(0, 19),
   });
-  const prepared = new PreparedTransaction(tx, 10);
+  const prepared = new PreparedTransaction({
+    transaction: tx,
+    startBlock: 10,
+    chainId: b.CHAIN.chainId,
+  });
   const alice = new WifSigner(
     encodeWif(privateKeyFromSeed(new TextEncoder().encode('alice'))),
   );
@@ -251,6 +255,7 @@ test('recursive proposal fees are written to nested operations and included in f
     });
   const fee = (n) => ({ amount: n, asset_id: b.AssetId('1.3.0') });
   const client = {
+    chainId: b.CHAIN.chainId,
     rpc: {
       invoke: async (d) =>
         d.method === 'get_required_fees'

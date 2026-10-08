@@ -1,4 +1,7 @@
-import { SwaplockClient } from '@open-graphene/chain-swaplock-api';
+import {
+  SwaplockClient,
+  type SwaplockConnectionOptions,
+} from '@open-graphene/chain-swaplock-api';
 import { BitSharesClient } from '@open-graphene/chain-bitshares-api';
 import type { SessionOptions } from '@open-graphene/transport';
 export { SwaplockClient, BitSharesClient };
@@ -8,7 +11,7 @@ export * from '@open-graphene/core';
 export class Graphene {
   static swaplock(
     endpoints: string | readonly string[],
-    options?: SessionOptions,
+    options: SwaplockConnectionOptions,
   ) {
     return SwaplockClient.connect(endpoints, options);
   }
@@ -21,7 +24,7 @@ export class Graphene {
   static connect(
     chain: 'swaplock',
     endpoints: string | readonly string[],
-    options?: SessionOptions,
+    options: SwaplockConnectionOptions,
   ): Promise<SwaplockClient>;
   static connect(
     chain: 'bitshares',
@@ -33,8 +36,21 @@ export class Graphene {
     endpoints: string | readonly string[],
     options?: SessionOptions,
   ) {
-    if (chain === 'swaplock') return this.swaplock(endpoints, options);
-    if (chain === 'bitshares') return this.bitshares(endpoints, options);
+    if (chain === 'swaplock') {
+      if (!options?.expectedChainId) {
+        throw new Error('Expected chain ID is required for Swaplock');
+      }
+
+      return this.swaplock(endpoints, {
+        ...options,
+        expectedChainId: options.expectedChainId,
+      });
+    }
+
+    if (chain === 'bitshares') {
+      return this.bitshares(endpoints, options);
+    }
+
     throw new Error('Unsupported chain');
   }
 }

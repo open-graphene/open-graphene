@@ -17,6 +17,9 @@ import {
 export async function fixtureWriter(genesisPath, journalPath) {
   const client = await SwaplockClient.connect(
     'wss://node01.swaplock.chainpool.online:8090',
+    {
+      expectedChainId: b.CHAIN.chainId,
+    },
   );
   const genesis = JSON.parse(await readFile(genesisPath, 'utf8'));
   const record = genesis.initial_accounts.find((a) => a.name === 'swaplock');

@@ -91,7 +91,12 @@ test('prepared transaction is isolated from mutations and validates external sig
     ...fixture.transfer.transaction,
     expiration: new Date(Date.now() + 60000).toISOString().slice(0, 19),
   });
-  const prepared = new PreparedTransfer(tx, authority, 1);
+  const prepared = new PreparedTransfer({
+    transaction: tx,
+    authority,
+    startBlock: 1,
+    chainId: b.CHAIN.chainId,
+  });
   const original = bytesToHex(prepared.bytes);
   tx.operations[0][1].amount.amount = 99n;
   prepared.transaction.operations[0][1].amount.amount = 100n;

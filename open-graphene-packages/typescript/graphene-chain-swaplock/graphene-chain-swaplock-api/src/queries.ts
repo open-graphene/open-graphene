@@ -1,12 +1,10 @@
 import * as b from '@open-graphene/chain-swaplock-bindings';
-import { RpcSubscription, RpcRemoteError } from '@open-graphene/transport';
-import { smallInteger, vector, type WireValue } from '@open-graphene/codec';
-import { parseTimePointSec, objectId } from '@open-graphene/primitives';
-import {
-  type SwaplockClient,
-  type SignedTransfer,
-  BroadcastOutcomeUnknown,
-} from './index.js';
+import { RpcSubscription } from '@open-graphene/transport';
+import { vector, type WireValue } from '@open-graphene/codec';
+import { objectId } from '@open-graphene/primitives';
+import { type SwaplockClient, type SignedTransfer } from './index.js';
+
+import { sendTransactionWithCallback } from './broadcast.js';
 
 export class Queries {
   constructor(private readonly client: SwaplockClient) {}
@@ -177,52 +175,6 @@ export class Queries {
     return output;
   }
   async broadcastWithCallback(transaction: SignedTransfer) {
-    if (
-      parseTimePointSec(transaction.transaction.expiration) <=
-      Date.now() / 1000
-    )
-      throw new Error('Signed transaction expired');
-    let stream: RpcSubscription;
-    try {
-      stream = await this.client.rpc.subscribe(
-        'network_broadcast',
-        'broadcast_transaction_with_callback',
-        (id) => [id, transaction.toJSON()],
-      );
-    } catch (e) {
-      if (e instanceof RpcRemoteError) throw e;
-      throw new BroadcastOutcomeUnknown(transaction.id);
-    }
-    return {
-      transactionId: transaction.id,
-      close: () => stream.close(),
-      wait: async (timeoutMs = 60000) => {
-        try {
-          const notice = await stream.nextTimeout(timeoutMs);
-          if (notice.done) throw new Error('Broadcast callback closed');
-          const value = Array.isArray(notice.value)
-            ? notice.value[0]
-            : notice.value;
-          if (
-            !value ||
-            typeof value !== 'object' ||
-            Array.isArray(value) ||
-            !('block_num' in value) ||
-            !('trx_num' in value) ||
-            !('trx' in value) ||
-            !('id' in value)
-          )
-            throw new Error('Malformed broadcast confirmation');
-          return {
-            id: value.id,
-            blockNumber: smallInteger(0, 0xffffffff).decode(value.block_num),
-            transactionIndex: smallInteger(0, 0xffffffff).decode(value.trx_num),
-            transaction: value.trx,
-          };
-        } finally {
-          stream.close();
-        }
-      },
-    };
+    return sendTransactionWithCallback(this.client.rpc, transaction);
   }
 }

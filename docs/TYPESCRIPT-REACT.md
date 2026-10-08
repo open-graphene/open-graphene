@@ -44,11 +44,17 @@ key management. It does not close the client on unmount.
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Graphene } from '@open-graphene/graphene';
 import { SwaplockProvider, useAccountBalances } from '@open-graphene/chain-swaplock-react';
+import { CHAIN } from '@open-graphene/chain-swaplock-bindings';
 
-const sdk = await Graphene.swaplock([
-  'wss://node01.swaplock.chainpool.online:8090',
-  'wss://node02.swaplock.chainpool.online:8090',
-]);
+const sdk = await Graphene.swaplock(
+  [
+    'wss://node01.swaplock.chainpool.online:8090',
+    'wss://node02.swaplock.chainpool.online:8090',
+  ],
+  {
+    expectedChainId: CHAIN.chainId,
+  },
+);
 const queryClient = new QueryClient();
 
 export function App() {

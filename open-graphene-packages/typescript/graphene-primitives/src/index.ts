@@ -99,3 +99,52 @@ export function hexToBytes(value: unknown, length?: number): Uint8Array {
     throw new Error(`Expected ${length} bytes`);
   return bytes;
 }
+
+export interface HeadFreshnessLimits {
+  readonly maxHeadAgeSeconds: number;
+  readonly maxHeadTimeAheadSeconds: number;
+}
+
+/** Check a decoded head against explicit age and clock-lead limits. */
+export function isHeadFresh(
+  head: {
+    readonly head_block_number: number;
+    readonly time: string;
+  },
+  limits: HeadFreshnessLimits,
+): boolean {
+  if (
+    !Number.isSafeInteger(limits.maxHeadAgeSeconds) ||
+    limits.maxHeadAgeSeconds < 0 ||
+    !Number.isSafeInteger(limits.maxHeadTimeAheadSeconds) ||
+    limits.maxHeadTimeAheadSeconds < 0
+  ) {
+    throw new RangeError('Invalid head freshness limits');
+  }
+
+  const ageSeconds = Date.now() / 1000 - parseTimePointSec(head.time);
+  return (
+    Number.isSafeInteger(head.head_block_number) &&
+    head.head_block_number >= 1 &&
+    head.head_block_number <= 0xffffffff &&
+    ageSeconds <= limits.maxHeadAgeSeconds &&
+    ageSeconds >= -limits.maxHeadTimeAheadSeconds
+  );
+}
+
+/** Equality of decoded head positions does not establish an atomic snapshot. */
+export function isSameHead(
+  before: {
+    readonly head_block_number: number;
+    readonly head_block_id: Uint8Array;
+  },
+  after: {
+    readonly head_block_number: number;
+    readonly head_block_id: Uint8Array;
+  },
+): boolean {
+  return (
+    before.head_block_number === after.head_block_number &&
+    bytesToHex(before.head_block_id) === bytesToHex(after.head_block_id)
+  );
+}

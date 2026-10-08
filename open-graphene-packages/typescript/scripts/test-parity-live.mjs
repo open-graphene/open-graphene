@@ -35,6 +35,9 @@ const signers = records.map(
 );
 const c = await SwaplockClient.connect(
   'wss://node01.swaplock.chainpool.online:8090',
+  {
+    expectedChainId: b.CHAIN.chainId,
+  },
 );
 let report;
 try {

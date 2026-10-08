@@ -25,7 +25,9 @@ export async function testAllMethods(
       .map((d) => ({ method: `${d.api}.${d.method}`, status: 'not_tested' })),
     scenarios: [],
   };
-  const client = await SwaplockClient.connect(endpoint);
+  const client = await SwaplockClient.connect(endpoint, {
+    expectedChainId: b.CHAIN.chainId,
+  });
   const row = (d) =>
     report.methods.find((r) => r.method === `${d.api}.${d.method}`);
   const call = async (d, params = {}, verify = () => {}) => {
@@ -478,7 +480,9 @@ export async function testAllMethods(
           const peerEndpoint = endpoint.includes('node01.')
             ? endpoint.replace('node01.', 'node02.')
             : endpoint.replace('node02.', 'node01.');
-          const peer = await SwaplockClient.connect(peerEndpoint);
+          const peer = await SwaplockClient.connect(peerEndpoint, {
+            expectedChainId: b.CHAIN.chainId,
+          });
           try {
             const result = await peer.rpc.invoke(b.CryptoVerifyRange, {
               commit,

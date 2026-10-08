@@ -42,6 +42,37 @@ export function isAccountName(name: string, allowShort = false): boolean {
 export function isCheapName(name: string): boolean {
   return /[0-9-]/.test(name) || !/[aeiouy]/.test(name);
 }
+/**
+ * Whether one directly listed key alone reaches the authority threshold.
+ * Does not resolve account/address authorities or verify possession of a key.
+ */
+export function canKeySatisfyAuthority(
+  authority: {
+    readonly weight_threshold: number;
+    readonly key_auths: readonly (readonly [string, number])[];
+  },
+  publicKey: string,
+): boolean {
+  const threshold = authority.weight_threshold;
+  if (
+    !Number.isSafeInteger(threshold) ||
+    threshold < 1 ||
+    threshold > 0xffffffff
+  ) {
+    return false;
+  }
+
+  const matchingKeys = authority.key_auths.filter(([key]) => key === publicKey);
+  if (matchingKeys.length !== 1) {
+    return false;
+  }
+
+  const weight = matchingKeys[0]![1];
+  return (
+    Number.isSafeInteger(weight) && weight >= threshold && weight <= 0xffff
+  );
+}
+
 export interface WeightedMember {
   readonly id: string;
   readonly weight: number;

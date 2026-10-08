@@ -29,7 +29,9 @@ const { values } = parseArgs({
 if (!values.genesis)
   throw new Error('Provide --genesis /local/path/genesis.private.json');
 const genesis = JSON.parse(await readFile(values.genesis, 'utf8'));
-const client = await SwaplockClient.connect(values.endpoint);
+const client = await SwaplockClient.connect(values.endpoint, {
+  expectedChainId: b.CHAIN.chainId,
+});
 let signer;
 let verifier;
 const report = {
@@ -145,7 +147,9 @@ try {
     await persist();
     report.inclusion = await client.waitForInclusion(signed);
     await persist();
-    verifier = await SwaplockClient.connect(values.verifyEndpoint);
+    verifier = await SwaplockClient.connect(values.verifyEndpoint, {
+      expectedChainId: b.CHAIN.chainId,
+    });
     report.secondNodeInclusion = {
       endpoint: values.verifyEndpoint,
       ...(await verifier.waitForInclusion(signed)),

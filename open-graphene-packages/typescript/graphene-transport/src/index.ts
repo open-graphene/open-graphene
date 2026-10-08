@@ -1,5 +1,9 @@
+export { ChainIdMismatchError, hasChainIdMismatch } from './chain-id.js';
 import { RpcSubscription } from './subscription.js';
-export { RpcSubscription } from './subscription.js';
+export {
+  RpcSubscription,
+  RpcSubscriptionTimeoutError,
+} from './subscription.js';
 import {
   parseJson,
   stringifyJson,
@@ -25,10 +29,12 @@ export class RpcTransportError extends Error {
 }
 interface Pending {
   resolve(value: WireValue): void;
-  reject(error: Error): void;
+  reject(error: unknown): void;
   timer: ReturnType<typeof setTimeout>;
 }
 export interface ConnectionOptions {
+  /** Cancels connection setup and the entire lifetime of the connection. */
+  readonly signal?: AbortSignal;
   readonly timeoutMs?: number;
   readonly createSocket?: (endpoint: string) => WebSocket;
 }
@@ -42,115 +48,219 @@ export class RpcClient {
   #timeout: number;
   #callbacks = new Map<number, Set<RpcSubscription>>();
   #databaseCallback: Promise<number> | undefined;
-  private constructor(socket: WebSocket, timeout: number) {
+  #closed = false;
+  #signal: AbortSignal | undefined;
+
+  private constructor(
+    socket: WebSocket,
+    timeout: number,
+    signal: AbortSignal | undefined,
+  ) {
     this.#socket = socket;
     this.#timeout = timeout;
-    socket.addEventListener('message', (event) => {
-      try {
-        if (typeof event.data !== 'string')
-          throw new Error('Expected text RPC frame');
-        const envelope = parseJson(event.data);
-        if (
-          !envelope ||
-          typeof envelope !== 'object' ||
-          Array.isArray(envelope)
-        )
-          throw new Error('Invalid RPC envelope');
-        const message = envelope as Record<string, WireValue>;
-        if (message.method === 'notice') {
-          if (!Array.isArray(message.params) || message.params.length !== 2)
-            throw new Error('Invalid callback notice');
-          const callback = smallInteger(0, Number.MAX_SAFE_INTEGER).decode(
-            message.params[0],
-          );
-          for (const stream of this.#callbacks.get(callback) ?? [])
-            stream.push(message.params[1]!);
-          return;
-        }
-        if (message.id === undefined) return;
-        const id = smallInteger(0, Number.MAX_SAFE_INTEGER).decode(message.id);
-        const pending = this.#pending.get(id);
-        if (!pending) return;
-        this.#pending.delete(id);
-        clearTimeout(pending.timer);
-        if (message.error !== undefined)
-          pending.reject(new RpcRemoteError(message.error));
-        else if (Object.hasOwn(message, 'result'))
-          pending.resolve(message.result!);
-        else
-          pending.reject(
-            new RpcTransportError('RPC response has no result', true),
-          );
-      } catch {
-        this.#rejectAll(new RpcTransportError('Malformed RPC response', true));
-        this.#socket.close();
-      }
+    this.#signal = signal;
+
+    socket.addEventListener('message', this.#onMessage);
+    socket.addEventListener('close', this.#onClose);
+    socket.addEventListener('error', this.#onError);
+    signal?.addEventListener('abort', this.#onAbort, {
+      once: true,
     });
-    socket.addEventListener('close', () =>
-      this.#rejectAll(new RpcTransportError('Connection closed', true)),
-    );
-    socket.addEventListener('error', () =>
-      this.#rejectAll(new RpcTransportError('Connection failed', true)),
-    );
+
+    // A custom socket factory can cancel the signal before returning its socket.
+    if (signal?.aborted) {
+      this.#onAbort();
+    }
   }
-  #rejectAll(error: Error): void {
-    for (const p of this.#pending.values()) {
-      clearTimeout(p.timer);
-      p.reject(error);
+
+  #onMessage = (event: MessageEvent): void => {
+    try {
+      if (typeof event.data !== 'string') {
+        throw new Error('Expected text RPC frame');
+      }
+
+      const envelope = parseJson(event.data);
+      if (
+        !envelope ||
+        typeof envelope !== 'object' ||
+        Array.isArray(envelope)
+      ) {
+        throw new Error('Invalid RPC envelope');
+      }
+
+      const message = envelope as Record<string, WireValue>;
+      if (message.method === 'notice') {
+        if (!Array.isArray(message.params) || message.params.length !== 2) {
+          throw new Error('Invalid callback notice');
+        }
+
+        const callback = smallInteger(0, Number.MAX_SAFE_INTEGER).decode(
+          message.params[0],
+        );
+        for (const stream of this.#callbacks.get(callback) ?? []) {
+          stream.push(message.params[1]!);
+        }
+
+        return;
+      }
+
+      if (message.id === undefined) {
+        return;
+      }
+
+      const id = smallInteger(0, Number.MAX_SAFE_INTEGER).decode(message.id);
+      const pending = this.#pending.get(id);
+      if (!pending) {
+        return;
+      }
+
+      this.#pending.delete(id);
+      clearTimeout(pending.timer);
+
+      if (message.error !== undefined) {
+        pending.reject(new RpcRemoteError(message.error));
+      } else if (Object.hasOwn(message, 'result')) {
+        pending.resolve(message.result!);
+      } else {
+        pending.reject(
+          new RpcTransportError('RPC response has no result', true),
+        );
+      }
+    } catch {
+      this.#shutdown(new RpcTransportError('Malformed RPC response', true));
+    }
+  };
+
+  #onClose = (): void => {
+    this.#shutdown(new RpcTransportError('Connection closed', true));
+  };
+
+  #onError = (): void => {
+    this.#shutdown(new RpcTransportError('Connection failed', true));
+  };
+
+  #onAbort = (): void => {
+    this.#shutdown(this.#signal?.reason);
+  };
+
+  #shutdown(reason: unknown): void {
+    if (this.#closed) {
+      return;
+    }
+
+    this.#closed = true;
+    this.#signal?.removeEventListener('abort', this.#onAbort);
+    this.#socket.removeEventListener('message', this.#onMessage);
+    this.#socket.removeEventListener('close', this.#onClose);
+    this.#socket.removeEventListener('error', this.#onError);
+
+    this.#rejectAll(reason);
+
+    if (this.#socket.readyState < 2) {
+      this.#socket.close();
+    }
+  }
+
+  #rejectAll(error: unknown): void {
+    for (const pending of this.#pending.values()) {
+      clearTimeout(pending.timer);
+      pending.reject(error);
     }
     this.#pending.clear();
-    for (const streams of [...this.#callbacks.values()])
-      for (const stream of [...streams]) stream.fail(error);
+
+    for (const streams of [...this.#callbacks.values()]) {
+      for (const stream of [...streams]) {
+        stream.fail(error);
+      }
+    }
     this.#callbacks.clear();
   }
+
   static async connect(
     endpoint: string,
     options: ConnectionOptions = {},
   ): Promise<RpcClient> {
-    if (!/^wss?:\/\//.test(endpoint))
+    const signal = options.signal;
+    signal?.throwIfAborted();
+
+    if (!/^wss?:\/\//.test(endpoint)) {
       throw new Error('Expected WebSocket endpoint');
+    }
+
     const timeout = options.timeoutMs ?? 12000;
-    if (!Number.isSafeInteger(timeout) || timeout < 1 || timeout > 2147483647)
+    if (!Number.isSafeInteger(timeout) || timeout < 1 || timeout > 2147483647) {
       throw new Error('Invalid RPC timeout');
-    const socket = (options.createSocket ?? ((url) => new WebSocket(url)))(
-      endpoint,
-    );
-    const client = new RpcClient(socket, timeout);
+    }
+
+    const createSocket = options.createSocket ?? ((url) => new WebSocket(url));
+    const socket = createSocket(endpoint);
+    const client = new RpcClient(socket, timeout, signal);
+
     try {
+      signal?.throwIfAborted();
       await new Promise<void>((resolve, reject) => {
-        const finish = (error?: Error) => {
+        const cleanup = () => {
           clearTimeout(timer);
           socket.removeEventListener('open', open);
           socket.removeEventListener('error', failed);
           socket.removeEventListener('close', failed);
-          error ? reject(error) : resolve();
+          signal?.removeEventListener('abort', aborted);
         };
-        const open = () => finish();
-        const failed = () =>
-          finish(new RpcTransportError('WebSocket connection failed', false));
+        const open = () => {
+          cleanup();
+          resolve();
+        };
+        const fail = (error: unknown) => {
+          cleanup();
+          reject(error);
+        };
+        const failed = () => {
+          fail(new RpcTransportError('WebSocket connection failed', false));
+        };
+        const aborted = () => {
+          // Do not wait for the peer to acknowledge closing the socket.
+          fail(signal?.reason);
+        };
         const timer = setTimeout(
-          () => finish(new RpcTransportError('Connection timeout', false)),
+          () => fail(new RpcTransportError('Connection timeout', false)),
           timeout,
         );
         socket.addEventListener('open', open);
         socket.addEventListener('error', failed);
         socket.addEventListener('close', failed);
+        signal?.addEventListener('abort', aborted, {
+          once: true,
+        });
       });
-      if ((await client.#call(1, 'login', ['', ''])) !== true)
+
+      const loggedIn = await client.#call(1, 'login', ['', '']);
+      signal?.throwIfAborted();
+
+      if (loggedIn !== true) {
         throw new Error('Anonymous RPC login refused');
+      }
+
       return client;
     } catch (error) {
       client.close();
+      signal?.throwIfAborted();
       throw error;
     }
   }
+
   #call(
     api: number,
     method: string,
     args: readonly WireValue[],
   ): Promise<WireValue> {
-    if (this.#socket.readyState !== 1)
+    if (this.#signal?.aborted) {
+      return Promise.reject(this.#signal.reason);
+    }
+
+    if (this.#closed || this.#socket.readyState !== 1) {
       return Promise.reject(new RpcTransportError('Socket is not open', false));
+    }
+
     const id = ++this.#nextId;
     const payload = stringifyJson({
       id,
@@ -162,7 +272,12 @@ export class RpcClient {
         this.#pending.delete(id);
         reject(new RpcTransportError(`RPC timeout: ${method}`, true));
       }, this.#timeout);
-      this.#pending.set(id, { resolve, reject, timer });
+      this.#pending.set(id, {
+        resolve,
+        reject,
+        timer,
+      });
+
       try {
         this.#socket.send(payload);
       } catch {
@@ -172,6 +287,7 @@ export class RpcClient {
       }
     });
   }
+
   async request(
     api: string,
     method: string,
@@ -184,17 +300,31 @@ export class RpcClient {
       );
       this.#apis.set(api, discovery);
     }
-    return this.#call(await discovery, method, args);
+    const apiId = await discovery;
+    const result = await this.#call(apiId, method, args);
+    this.#signal?.throwIfAborted();
+
+    return result;
   }
+
   async invoke<P, R>(descriptor: RpcMethod<P, R>, params: P): Promise<R> {
     const args = descriptor.encodeParams(params);
-    return descriptor.parseReturns(
-      await this.request(descriptor.api, descriptor.method, args),
+    const response = await this.request(
+      descriptor.api,
+      descriptor.method,
+      args,
     );
+
+    return descriptor.parseReturns(response);
   }
+
   callback(id = ++this.#nextId): RpcSubscription {
-    if (this.#socket.readyState !== 1)
+    this.#signal?.throwIfAborted();
+
+    if (this.#closed || this.#socket.readyState !== 1) {
       throw new RpcTransportError('Connection closed', false);
+    }
+
     let streams = this.#callbacks.get(id);
     if (!streams) {
       streams = new Set();
@@ -203,25 +333,32 @@ export class RpcClient {
     const target = streams;
     const stream = new RpcSubscription(id, () => {
       target.delete(stream);
-      if (!target.size) this.#callbacks.delete(id);
+      if (!target.size) {
+        this.#callbacks.delete(id);
+      }
     });
     target.add(stream);
     return stream;
   }
+
   async subscribe(
     api: string,
     method: string,
     args: (callbackId: number) => readonly WireValue[],
   ): Promise<RpcSubscription> {
     const stream = this.callback();
+
     try {
-      await this.request(api, method, args(stream.callbackId));
+      const params = args(stream.callbackId);
+      await this.request(api, method, params);
+      this.#signal?.throwIfAborted();
       return stream;
     } catch (error) {
       stream.close();
       throw error;
     }
   }
+
   async databaseNotices(): Promise<RpcSubscription> {
     if (!this.#databaseCallback) {
       const id = ++this.#nextId;
@@ -234,11 +371,13 @@ export class RpcClient {
         this.#databaseCallback = undefined;
       });
     }
-    return this.callback(await this.#databaseCallback);
+    const callbackId = await this.#databaseCallback;
+
+    return this.callback(callbackId);
   }
+
   close(): void {
-    this.#rejectAll(new RpcTransportError('Client closed', true));
-    this.#socket.close();
+    this.#shutdown(new RpcTransportError('Client closed', true));
   }
 }
 

@@ -34,7 +34,39 @@ import {
   BitSharesClient,
   type SignedTransfer as BitSharesSignedTransfer,
 } from '../graphene-chain-bitshares/graphene-chain-bitshares-api/dist/index.js';
-import type { SwaplockClient } from '../graphene-chain-swaplock/graphene-chain-swaplock-api/dist/index.js';
+import {
+  SwaplockClient,
+  type PreparedTransfer,
+  type PreparedTransaction,
+} from '../graphene-chain-swaplock/graphene-chain-swaplock-api/dist/index.js';
+import { Graphene } from '../graphene/dist/index.js';
+
+function explicitSwaplockNetwork(
+  expectedChainId: string,
+  prepared: PreparedTransfer | PreparedTransaction,
+) {
+  const options = {
+    expectedChainId,
+  };
+  void SwaplockClient.connect('ws://fixture', options);
+  void SwaplockClient.probeLatencies(['ws://fixture'], options);
+  void Graphene.swaplock('ws://fixture', options);
+  void Graphene.connect('swaplock', 'ws://fixture', options);
+
+  // @ts-expect-error Swaplock connections require an explicit expected network.
+  void SwaplockClient.connect('ws://fixture');
+  // @ts-expect-error Connection settings without a network are incomplete.
+  void SwaplockClient.connect('ws://fixture', { timeoutMs: 100 });
+  // @ts-expect-error Probes must also verify the expected network.
+  void SwaplockClient.probeLatencies(['ws://fixture']);
+  // @ts-expect-error The facade must not restore an implicit network default.
+  void Graphene.swaplock('ws://fixture');
+  // @ts-expect-error The Swaplock overload requires the network setting.
+  void Graphene.connect('swaplock', 'ws://fixture');
+  // @ts-expect-error A prepared transaction cannot change its signing network.
+  prepared.chainId = expectedChainId;
+}
+void explicitSwaplockNetwork;
 function chainIsolation(
   bitshares: BitSharesClient,
   swaplock: SwaplockClient,

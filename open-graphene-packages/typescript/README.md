@@ -69,11 +69,17 @@ and closes the connection. Read-only calls do not need a private key.
 
 ```ts
 import { Graphene, formatRawAmount } from '@open-graphene/graphene';
+import { CHAIN } from '@open-graphene/chain-swaplock-bindings';
 
-const client = await Graphene.swaplock([
-  'wss://node01.swaplock.chainpool.online:8090',
-  'wss://node02.swaplock.chainpool.online:8090',
-]);
+const client = await Graphene.swaplock(
+  [
+    'wss://node01.swaplock.chainpool.online:8090',
+    'wss://node02.swaplock.chainpool.online:8090',
+  ],
+  {
+    expectedChainId: CHAIN.chainId,
+  },
+);
 
 try {
   const account = await client.database.account('swaplock');
@@ -91,9 +97,231 @@ try {
 }
 ```
 
-The client checks the chain ID. An endpoint list provides connection fallback;
+`SwaplockClient.connect`, `Graphene.swaplock`, `Graphene.connect('swaplock', ...)`
+and `SwaplockClient.probeLatencies` require `expectedChainId`: the trusted lowercase
+64-character hex ID of your deployment. `CHAIN.chainId` selects the bundled testnet;
+pass your deployment ID for another Swaplock network. The client verifies that ID
+before exposing the connection and on every reconnect. Do not derive the expected
+ID from the untrusted node you are about to connect to.
+
+`prepareTransfer` and `prepareOperations` capture the verified ID in the immutable
+`prepared.chainId`. Both external signers and `signWithWifs` sign the digest for that
+network. Direct constructors also require it: `new PreparedTransaction({ transaction,
+startBlock, chainId })` and `new PreparedTransfer({ transaction, authority, startBlock,
+chainId })`. Network selection does not change the Swaplock protocol or key prefix.
+The React provider remains restricted to the bundled network.
+
+`prepareOperations(operations, options)` accepts `maxHeadAgeSeconds` and
+`maxHeadTimeAheadSeconds` (both default to 120). The limits apply to the exact
+reference block used in the prepared transaction. Use stricter application limits
+when needed, for example `{ maxFee: 1000n, expirationSeconds: 120,
+maxHeadAgeSeconds: 30, maxHeadTimeAheadSeconds: 5 }`. Options are captured before
+RPC work. Preparation only estimates fees and constructs the unsigned transaction;
+it never signs or broadcasts.
+
+`TransactionPreparationError.code` distinguishes `invalid-fee` (wrong count,
+asset, negative amount or unexpected recursive structure), `fee-limit` and
+`invalid-head` (block zero or a timestamp outside the configured limits). Decoder,
+transport and cancellation errors propagate unchanged. Callers still own authority,
+balance and application-intent checks.
+
+`PreparedTransaction.sign(signer, { signal })` and
+`signWithWifs(keys, { signal })` can stop waiting for an external signer, even if
+it ignores cancellation. The caller still forwards the signal to its signing
+provider when that provider supports cancellation. An already aborted signal
+invokes no signer. Cancellation rejects with `signal.reason`, releases the abort
+listener, ignores late results and never requests another signature. It cannot
+undo work already started in a signing device.
+
+`TransactionSigningError.code` distinguishes `expired`, `invalid-signature`,
+`no-signers` and the WIF-specific `key-mismatch`. Expiration is checked before
+signing and after each signer returns. Provider exceptions propagate unchanged;
+applications should sanitize them at their public boundary. Public keys and
+returned signatures are copied before verification so signer-owned buffers cannot
+change an accepted signature while another key is being requested.
+
+An endpoint list provides connection fallback;
 `{ strategy: 'lowest-latency' }` selects by measured connection latency.
 Automatic reconnect uses the selected endpoint and checks the chain ID again.
+
+Pass an `AbortSignal` to cancel connection setup and the entire session lifetime:
+
+```ts
+import { SwaplockClient } from '@open-graphene/chain-swaplock-api';
+import { CHAIN } from '@open-graphene/chain-swaplock-bindings';
+
+const controller = new AbortController();
+const client = await SwaplockClient.connect(
+  'wss://node01.swaplock.chainpool.online:8090',
+  {
+    expectedChainId: CHAIN.chainId,
+    signal: controller.signal,
+  },
+);
+
+try {
+  // The owner of this operation can call controller.abort() at any time.
+  const account = await client.database.account('swaplock');
+  console.log(account.id);
+} finally {
+  client.close();
+}
+```
+
+The same option is available on `RpcClient` and `GrapheneSession`. An already
+aborted signal opens no socket. Cancellation rejects pending connection setup,
+RPC calls and subscription waits with `signal.reason`, closes the socket, and
+prevents endpoint fallback or reconnect. It does not wait for a server close
+acknowledgement. Explicit `close()` also cancels pending reconnect work. Both
+paths release socket listeners, abort listeners and pending timers.
+
+Cancellation after sending a transaction does not undo it or prove rejection.
+Check inclusion before considering another submission; broadcasts are never
+retried automatically. Use a new signal and connection for a new session.
+
+### Classify a chain mismatch
+
+`@open-graphene/transport` exports `ChainIdMismatchError` with
+`expectedChainId` and `actualChainId`. Connection setup and reconnection throw it
+when a node returns a valid chain ID different from the required one. The failed
+connection is closed. Invalid chain-ID responses and transport failures remain
+separate errors. Swaplock's chain API re-exports the error and helper.
+
+`hasChainIdMismatch(error)` recognizes the typed error directly or inside nested
+`AggregateError` instances, including cyclic aggregates. It does not inspect
+message text or follow arbitrary `cause` properties. A `true` result means that
+**at least one** failure is a mismatch; other endpoints may have been unavailable.
+This preserves diagnostics when all connection attempts fail. Fallback and
+latency selection still use a compatible endpoint if one succeeds. Cancellation
+takes precedence and stops further fallback attempts.
+
+### Restore a saved signed transaction
+
+`restoreSignedTransaction` decodes a saved transaction, checks its expected ID,
+and verifies exactly one compact signature against the supplied chain ID and
+compressed public key. It is synchronous and does not access the network or
+request a new signature.
+
+```ts
+import { restoreSignedTransaction } from '@open-graphene/chain-swaplock-api';
+
+const signed = restoreSignedTransaction({
+  serializedTransaction: saved.signedTransaction,
+  chainId: saved.chainId,
+  expectedTransactionId: saved.transactionId,
+  expectedPublicKey: signerPublicKeyBytes,
+  startBlock: saved.startBlock,
+});
+```
+
+`TransactionRestorationError.code` distinguishes `invalid-input`,
+`invalid-transaction`, `transaction-mismatch` and `invalid-signature`. Decode
+errors do not expose the serialized transaction in their messages. The returned
+`SignedTransfer` owns its serialized snapshot; changing a decoded copy does not
+change the restored transaction.
+
+Expired transactions remain restorable so recovery can inspect earlier
+inclusion. Restoring is not permission to send again; submission checks expiry
+separately. Callers must still validate their approved domain intent and trust
+or validate the supplied expectations. `startBlock` is a caller-owned search
+hint, not signed metadata. This API supports one expected signer and does not
+resolve account authority or multisignature thresholds.
+
+### Broadcast callbacks
+
+`client.networkBroadcast.sendTransactionWithCallback(signed)` submits once and
+returns a handle with `wait(timeoutMs)` and `close()`. `wait` returns a typed
+`BroadcastConfirmation`: transaction ID, block number, transaction index and a
+decoded `ProcessedTransaction`. The SDK validates the callback shape, positions,
+transaction ID, exact signed transaction bytes and operation result count. Every
+settled wait closes its subscription; close the handle if you do not call wait.
+
+`TransactionBroadcastError.code` distinguishes `expired` (rejected locally before
+sending), `invalid-confirmation`, `transaction-mismatch`, `timeout` and `closed`.
+A malformed or missing callback does not prove that the transaction failed.
+Lost registration acknowledgements, cancellation and connection loss can produce
+`BroadcastOutcomeUnknown`; no broadcast is retried automatically. Recovery must
+check the original transaction before considering another submission.
+
+A callback is a node report, not proof of canonical inclusion or irreversible
+execution. Applications still verify the canonical block and domain effects,
+and own durable submission records and recovery policy.
+
+### Check direct single-key authority
+
+`canKeySatisfyAuthority(authority, publicKey)` from `@open-graphene/core` (also
+re-exported by the chain APIs) checks whether a directly listed public key alone
+reaches a positive `weight_threshold`. The key must occur exactly once in
+`key_auths`; duplicate entries do not add weight. Invalid threshold or selected
+key weight ranges return `false`.
+
+This synchronous check does not resolve delegated account/address authorities,
+combine several signers, validate public-key encoding or prove possession of a
+private key. `false` means the selected direct key cannot independently satisfy
+this check, not that the account cannot authorize a transaction by other means.
+A sufficient direct key remains sufficient when other authority members exist.
+Applications still verify the account, key possession, current memo key and any
+domain-specific permissions. Exact expected authority composition is a separate
+application rule.
+
+### Check head freshness and identity
+
+`@open-graphene/primitives` exports `isHeadFresh(head, limits)` and
+`isSameHead(before, after)` for decoded Graphene heads. These helpers make no RPC
+calls and do not retry reads. Callers retain their own error mapping and retry
+policy.
+
+```ts
+import { isHeadFresh, isSameHead } from '@open-graphene/primitives';
+
+const fresh = isHeadFresh(after, {
+  maxHeadAgeSeconds: 30,
+  maxHeadTimeAheadSeconds: 5,
+});
+const unchanged = isSameHead(before, after);
+```
+
+Freshness uses the local clock with subsecond precision and inclusive limits.
+Both limits are explicit nonnegative integers; invalid limits throw `RangeError`.
+Block numbers must be positive uint32 values; malformed protocol times throw
+rather than count as fresh. Head identity compares both the number and ID bytes,
+so a same-height reorganization is a change. Matching heads do not establish an
+atomic snapshot or independently verified consensus.
+
+### Inspect a known transaction position
+
+Use `client.inspectTransactionInBlock(options)` for a single inspection of a
+position reported by a callback or indexer:
+
+```ts
+const inclusion = await client.inspectTransactionInBlock({
+  transactionId: signed.id,
+  blockNumber: confirmation.blockNumber,
+  transactionIndex: confirmation.transactionIndex,
+  maxHeadAgeSeconds: 30,
+  maxHeadTimeAheadSeconds: 5,
+});
+```
+
+The SDK reads head, block and head again, checks both heads for freshness and
+requires matching head numbers and IDs. Each freshness limit defaults to 120
+seconds. `TransactionInspectionError` reports `invalid-head` or `head-changed`;
+RPC and decoding failures propagate. Session cancellation also cancels these
+reads. This method does not poll or submit transactions.
+
+A missing block, missing position, position above the observed head or different
+transaction ID returns `undefined`. This does not prove rejection and must not
+implicitly authorize a replacement transaction. A successful
+`TransactionBlockInclusion` contains the decoded block and transaction,
+`observedAt`, and `irreversible` based on the node's last irreversible block.
+`blockFingerprint` is SHA-256 of the serialized signed header, **not** the
+protocol's block ID. Retaining it lets a later inspection detect a replacement
+block even if the same transaction occupies the same position.
+
+The result is one node's observation, not independent consensus verification.
+Applications still validate domain intent and effects and decide how a changed
+or missing inclusion affects their durable records. `waitForInclusion` remains
+a separate scanning helper; it does not perform this stable-head inspection.
 
 ## Read history and market data
 
