@@ -10,27 +10,46 @@ export interface ObjectIdParts {
   readonly instance: bigint;
 }
 
+/** Largest instance in Graphene's 8-bit space, 8-bit type, 48-bit instance ID. */
+export const MAX_OBJECT_ID_INSTANCE = 0xffffffffffffn;
+
+/** Parse canonical decimal components without leading zeros. */
 export function parseObjectId(
   value: unknown,
   space?: number,
   type?: number,
 ): ObjectIdParts {
-  if (typeof value !== 'string' || !/^\d+\.\d+\.\d+$/.test(value))
+  if (typeof value !== 'string') {
     throw new Error('Invalid object ID');
-  const parts = value.split('.');
-  const s = BigInt(parts[0]!);
-  const t = BigInt(parts[1]!);
-  const instance = BigInt(parts[2]!);
+  }
+
+  const match =
+    /^(0|[1-9][0-9]{0,2})\.(0|[1-9][0-9]{0,2})\.(0|[1-9][0-9]{0,14})$/.exec(
+      value,
+    );
+  if (!match || match[0] !== value) {
+    throw new Error('Expected a canonical object ID');
+  }
+
+  const parsedSpace = Number(match[1]);
+  const parsedType = Number(match[2]);
+  const instance = BigInt(match[3]!);
+
   if (
-    s > 255n ||
-    t > 255n ||
-    instance > 0xffffffffffffn ||
-    (space !== undefined && s !== BigInt(space)) ||
-    (type !== undefined && t !== BigInt(type))
+    parsedSpace > 255 ||
+    parsedType > 255 ||
+    instance > MAX_OBJECT_ID_INSTANCE ||
+    (space !== undefined && parsedSpace !== space) ||
+    (type !== undefined && parsedType !== type)
   ) {
     throw new Error('Object ID has an invalid range or object type');
   }
-  return { space: Number(s), type: Number(t), instance };
+
+  return {
+    space: parsedSpace,
+    type: parsedType,
+    instance,
+  };
 }
 
 export function objectId(value: string): ObjectId {

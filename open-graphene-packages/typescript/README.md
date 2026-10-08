@@ -766,3 +766,13 @@ For full Swaplock RPC checks, fixture setup/cleanup and explicit transaction tes
 see the [live testing guide](../../docs/TYPESCRIPT-LIVE-TESTING.md).
 The [original implementation plan](../../docs/TYPESCRIPT-PLAN.md) and
 [reference fixtures](tests/fixtures/README.md) explain the design and test inputs.
+
+### Canonical object IDs
+
+`@open-graphene/primitives` provides `parseObjectId(value, space?, type?)`
+and `MAX_OBJECT_ID_INSTANCE`. IDs use canonical decimal `space.type.instance`
+components: no leading zeros, whitespace or signs. Zero is valid; space and type
+are limited to 255, and instance to 281474976710655 (48 bits). The parser returns
+an exact `bigint` instance and rejects an unexpected space or type. Branded ID
+constructors and FC object-ID encoding use the same validation. Noncanonical
+strings such as `1.2.003` are rejected rather than normalized.
