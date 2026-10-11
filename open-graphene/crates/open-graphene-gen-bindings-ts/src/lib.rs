@@ -373,7 +373,7 @@ pub fn render(protocol: &Protocol, spec_hash: &str) -> Result<BTreeMap<String, S
     }
     files.insert("ids.ts".into(), ids);
     let mut types = String::from(
-        "import type { ObjectId, PublicKey, TimePointSec, VoteId } from './ids.js';\nexport type { ObjectId, PublicKey, TimePointSec, VoteId } from './ids.js';\n",
+        "import type { ObjectId, PublicKey, TimePointSec, VoteId } from './ids.js';\nexport type { ObjectId, PublicKey, TimePointSec, VoteId };\n",
     );
     let id_names = protocol
         .object_types
@@ -385,7 +385,7 @@ pub fn render(protocol: &Protocol, spec_hash: &str) -> Result<BTreeMap<String, S
     if !id_names.is_empty() {
         writeln!(
             types,
-            "import type {{ {id_names} }} from './ids.js';\nexport type {{ {id_names} }} from './ids.js';"
+            "import type {{ {id_names} }} from './ids.js';\nexport type {{ {id_names} }};"
         )?;
     }
     let mut json_code = String::from(

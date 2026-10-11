@@ -9,33 +9,39 @@
   "files": [
     "dist",
     "LICENSE-MIT",
-    "LICENSE-APACHE"
+    "LICENSE-APACHE",
+    "src"
   ],
   "sideEffects": false,
   "exports": {
     "./signing": {
+      "workspace-source": "./src/signing.ts",
       "types": "./dist/signing.d.ts",
       "import": "./dist/signing.js"
     },
     ".": {
+      "workspace-source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./memo": {
+      "workspace-source": "./src/memo.ts",
       "types": "./dist/memo.d.ts",
       "import": "./dist/memo.js"
     },
     "./wallet": {
+      "workspace-source": "./src/wallet.ts",
       "types": "./dist/wallet.d.ts",
       "import": "./dist/wallet.js"
     },
     "./hash": {
+      "workspace-source": "./src/hash.ts",
       "types": "./dist/hash.d.ts",
       "import": "./dist/hash.js"
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
@@ -47,7 +53,29 @@
     "@scure/base": "2.4.0"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "exports": {
+      "./signing": {
+        "types": "./dist/signing.d.ts",
+        "import": "./dist/signing.js"
+      },
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./memo": {
+        "types": "./dist/memo.d.ts",
+        "import": "./dist/memo.js"
+      },
+      "./wallet": {
+        "types": "./dist/wallet.d.ts",
+        "import": "./dist/wallet.js"
+      },
+      "./hash": {
+        "types": "./dist/hash.d.ts",
+        "import": "./dist/hash.js"
+      }
+    }
   },
   "devDependencies": {
     "prettier": "3.9.9"

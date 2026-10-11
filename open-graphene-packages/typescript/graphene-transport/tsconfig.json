@@ -1,8 +1,8 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist"
+    "noEmit": true,
+    "customConditions": ["workspace-source"]
   },
   "include": ["src"]
 }
