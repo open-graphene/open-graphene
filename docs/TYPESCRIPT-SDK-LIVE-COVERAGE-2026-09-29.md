@@ -31,7 +31,7 @@ Pierwsza próba utworzenia karty została odrzucona przez walidację z powodu pu
 ## Dlaczego crypto_api jest niedostępne
 
 Sprawdzono wskazane przez użytkownika stacki:
-`platforms/chainpool-platform/stacks/chainpool-platform-swaplock-network/chainpool-platform-swaplock-network-rpc-node01/main.go`
+`mirrorboards-platform/chainpool-platform/stacks/chainpool-platform-swaplock-network/chainpool-platform-swaplock-network-rpc-node01/main.go`
 oraz odpowiednik node02. Oba używają obrazu `ghcr.io/swaplock/swaplock-core:access-cas-7b471be9` i `NewSeedNodeWithSharedPVC`. Nie konfigurują pliku dostępu API.
 
 Wspólny komponent `mirrorboards-utils/mirrorboards-pulumi/blockchain/actaboards/seednodewithsharedPVC.go` nie przekazuje `--api-access`. Domyślna lista w `swaplock-core/libraries/app/application.cpp:313–322` zawiera database, broadcast, history, orders i custom_operations, ale **nie crypto_api**. Oba publiczne endpointy potwierdzają to błędem `is_allowed: Access denied`.
