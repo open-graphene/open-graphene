@@ -72,8 +72,15 @@ for (const name of order) {
   const entries = run('tar', ['-tf', tarball], root).trim().split('\n');
   if (JSON.stringify(manifest).includes('workspace:'))
     throw Error('Unrewritten workspace dependency: ' + name);
-  if (entries.some((entry) => /(^|\/)(src|node_modules)\//.test(entry)))
+  const containsDependencies = entries.some((entry) =>
+    /(^|\/)node_modules\//.test(entry),
+  );
+  const containsUndeclaredSources =
+    !manifest.files?.includes('src') &&
+    entries.some((entry) => /^package\/src\//.test(entry));
+  if (containsDependencies || containsUndeclaredSources) {
     throw Error('Unwanted source/dependency files in ' + name);
+  }
   for (const license of ['LICENSE-MIT', 'LICENSE-APACHE'])
     if (!entries.includes('package/' + license))
       throw Error('Missing license in ' + name);
@@ -95,7 +102,14 @@ const overrides = Object.fromEntries(
   artifacts.map((item) => [item.name, 'file:' + join(destination, item.file)]),
 );
 const consumerResults = [];
-for (const chain of ['swaplock', 'bitshares']) {
+const chains = ['swaplock', 'bitshares', 'rsquared'];
+for (const chain of chains) {
+  const clientName = {
+    swaplock: 'Swaplock',
+    bitshares: 'BitShares',
+    rsquared: 'RSquared',
+  }[chain];
+  const operationCount = { swaplock: 88, bitshares: 71, rsquared: 59 }[chain];
   const consumer = join(destination, 'consumer-' + chain);
   await mkdir(consumer);
   const packageName = '@open-graphene/chain-' + chain + '-react';
@@ -130,10 +144,10 @@ for (const chain of ['swaplock', 'bitshares']) {
   await writeFile(
     join(consumer, 'check.ts'),
     `
-import { ${chain === 'swaplock' ? 'Swaplock' : 'BitShares'}Provider, useAccount, usePrepareLimitOrderCreate } from '${packageName}';
+import { ${clientName}Provider, useAccount, usePrepareLimitOrderCreate } from '${packageName}';
 import { serializeCache } from '@open-graphene/react-core';
 function typecheck() { const account = useAccount('alice', { live: true, select: a => a.name }); const name: string | undefined = account.data; void name; return usePrepareLimitOrderCreate({ maxFee: 1n }); }
-void [typecheck, ${chain === 'swaplock' ? 'Swaplock' : 'BitShares'}Provider, serializeCache];
+void [typecheck, ${clientName}Provider, serializeCache];
 `,
   );
   await writeFile(
@@ -155,7 +169,7 @@ void [typecheck, ${chain === 'swaplock' ? 'Swaplock' : 'BitShares'}Provider, ser
     [
       '--input-type=module',
       '-e',
-      `const m = await import('${packageName}'); if(m.generatedPrepareOperations.length !== ${chain === 'swaplock' ? 88 : 71}) throw Error('Operation inventory'); const core = await import('@open-graphene/react-core'); if(!core.serializeCache({amount:9007199254740993n})) throw Error('Serialization'); console.log('ok');`,
+      `const m = await import('${packageName}'); if(m.generatedPrepareOperations.length !== ${operationCount}) throw Error('Operation inventory'); const core = await import('@open-graphene/react-core'); if(!core.serializeCache({amount:9007199254740993n})) throw Error('Serialization'); console.log('ok');`,
     ],
     consumer,
   ).trim();
@@ -165,13 +179,13 @@ void [typecheck, ${chain === 'swaplock' ? 'Swaplock' : 'BitShares'}Provider, ser
     ['list', '--depth', 'Infinity', '--json'],
     consumer,
   );
-  if (
-    installed.includes(
-      '@open-graphene/chain-' +
-        (chain === 'swaplock' ? 'bitshares' : 'swaplock'),
-    )
-  )
+  const importsOtherChain = chains.some(
+    (other) =>
+      other !== chain && installed.includes('@open-graphene/chain-' + other),
+  );
+  if (importsOtherChain) {
     throw Error('Cross-chain dependency in packed consumer');
+  }
   consumerResults.push({
     chain,
     esm: 'passed',

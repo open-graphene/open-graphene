@@ -7264,6 +7264,77 @@
       }
     },
     {
+      "name": "condition_info_hash_lock_info",
+      "sourceName": "graphene::chain::htlc_object::condition_info::hash_lock_info",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "preimage_hash",
+          "type": {
+            "kind": "static_variant_ref",
+            "name": "htlc_hash"
+          },
+          "source": {
+            "name": "preimage_hash",
+            "file": "libraries/chain/include/graphene/chain/htlc_object.hpp",
+            "line": 50
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "preimage_size",
+          "type": {
+            "kind": "uint16"
+          },
+          "source": {
+            "name": "preimage_size",
+            "file": "libraries/chain/include/graphene/chain/htlc_object.hpp",
+            "line": 51
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
+      }
+    },
+    {
+      "name": "condition_info_time_lock_info",
+      "sourceName": "graphene::chain::htlc_object::condition_info::time_lock_info",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "expiration",
+          "type": {
+            "kind": "time_point_sec"
+          },
+          "source": {
+            "name": "expiration",
+            "file": "libraries/chain/include/graphene/chain/htlc_object.hpp",
+            "line": 55
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
+      }
+    },
+    {
       "name": "content_card_create_operation",
       "kind": "struct",
       "fields": [
@@ -15120,8 +15191,8 @@
           "index": 1,
           "name": "transfer",
           "type": {
-            "kind": "any_json",
-            "reason": "unsupported C++ type mapping: transfer_info"
+            "kind": "ref",
+            "name": "htlc_object_transfer_info"
           },
           "source": {
             "name": "transfer",
@@ -15137,8 +15208,8 @@
           "index": 2,
           "name": "conditions",
           "type": {
-            "kind": "any_json",
-            "reason": "unsupported C++ type mapping: condition_info"
+            "kind": "ref",
+            "name": "htlc_object_condition_info"
           },
           "source": {
             "name": "conditions",
@@ -15174,6 +15245,129 @@
       "support": {
         "status": "provisional",
         "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
+      "name": "htlc_object_condition_info",
+      "sourceName": "graphene::chain::htlc_object::condition_info",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "hash_lock",
+          "type": {
+            "kind": "ref",
+            "name": "condition_info_hash_lock_info"
+          },
+          "source": {
+            "name": "hash_lock",
+            "file": "libraries/chain/include/graphene/chain/htlc_object.hpp",
+            "line": 58
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "time_lock",
+          "type": {
+            "kind": "ref",
+            "name": "condition_info_time_lock_info"
+          },
+          "source": {
+            "name": "time_lock",
+            "file": "libraries/chain/include/graphene/chain/htlc_object.hpp",
+            "line": 59
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
+      }
+    },
+    {
+      "name": "htlc_object_transfer_info",
+      "sourceName": "graphene::chain::htlc_object::transfer_info",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "from",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "from",
+            "file": "libraries/chain/include/graphene/chain/htlc_object.hpp",
+            "line": 42
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "to",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "to",
+            "file": "libraries/chain/include/graphene/chain/htlc_object.hpp",
+            "line": 43
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "amount",
+          "type": {
+            "kind": "int64"
+          },
+          "source": {
+            "name": "amount",
+            "file": "libraries/chain/include/graphene/chain/htlc_object.hpp",
+            "line": 44
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "asset_id",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "asset"
+          },
+          "source": {
+            "name": "asset_id",
+            "file": "libraries/chain/include/graphene/chain/htlc_object.hpp",
+            "line": 45
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
       }
     },
     {

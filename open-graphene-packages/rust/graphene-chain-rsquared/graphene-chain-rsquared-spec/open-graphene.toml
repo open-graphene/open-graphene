@@ -1,0 +1,73 @@
+object_structs = [
+  "asset_object",
+]
+
+[chain]
+id = "rsquared"
+public_key_prefix = "RQRX"
+chain_id = "a89f8a1cd2a699e5c521b87cc6210198ed0aad9e2a483322c6db2c391b278f64"
+
+[source]
+chain_repo = "../../../../blockchains/rsquared/R-Squared-core"
+
+[output]
+dist = "./dist/rsquared.open-graphene.json"
+
+[[rpc_apis]]
+name = "database"
+class = "database_api"
+discover_method = "database"
+methods = [
+  "get_objects",
+  "get_block_header",
+  "get_block",
+  "get_account_balances",
+  "get_accounts",
+  "get_full_accounts",
+  "get_chain_properties",
+  "get_dynamic_global_properties",
+  "get_global_properties",
+  "get_limit_orders",
+  "get_chain_id",
+  "get_config",
+  "get_key_references",
+  "get_assets",
+  "lookup_asset_symbols",
+  "list_assets",
+  "lookup_accounts",
+  "get_ticker",
+  "get_required_fees",
+  "get_personal_data",
+  "get_last_personal_data",
+  "get_content_card_by_id",
+  "get_content_cards",
+  "get_permission_by_id",
+  "get_permissions",
+]
+
+[[rpc_apis]]
+name = "history"
+class = "history_api"
+discover_method = "history"
+methods = [
+  "get_account_history",
+  "get_fill_order_history",
+  "get_market_history",
+]
+
+[[rpc_apis]]
+name = "orders"
+class = "orders_api"
+discover_method = "orders"
+methods = [
+  "get_tracked_groups",
+  "get_grouped_limit_orders",
+]
+
+[[rpc_apis]]
+name = "network_broadcast"
+class = "network_broadcast_api"
+discover_method = "network_broadcast"
+methods = [
+  "broadcast_transaction",
+]

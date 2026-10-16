@@ -154,7 +154,14 @@ fn extract_fields_from_class_body(body: &str, file: &Path, class_line: usize) ->
             '}' => {
                 brace_depth = brace_depth.saturating_sub(1);
                 if brace_depth == 0 {
-                    statement_start = index + ch.len_utf8();
+                    let declaration =
+                        strip_access_labels(body[statement_start..index].trim()).trim();
+                    let is_inline_record =
+                        declaration.starts_with("struct ") || declaration.starts_with("class ");
+
+                    if !is_inline_record {
+                        statement_start = index + ch.len_utf8();
+                    }
                 }
             }
             ';' if paren_depth == 0 && angle_depth == 0 && brace_depth == 0 => {
@@ -197,7 +204,23 @@ fn class_local_extension_alias_is_resolved_without_leaking_to_other_classes() {
 
 fn parse_field_statement(statement: &str, file: &Path, line: usize) -> Vec<RawField> {
     let statement = collapse_whitespace(statement);
-    let statement = strip_access_labels(&statement).trim().to_string();
+    let mut statement = strip_access_labels(&statement).trim().to_string();
+    if statement.starts_with("struct ") || statement.starts_with("class ") {
+        let Some(open) = statement.find('{') else {
+            return vec![];
+        };
+        let Some(close) = find_matching_brace(&statement, open) else {
+            return vec![];
+        };
+        let record_name = statement[..open].split_whitespace().nth(1).unwrap_or("");
+        let declarator = statement[close + 1..].trim();
+        if declarator.is_empty() {
+            return vec![];
+        }
+
+        statement = format!("{record_name} {declarator}");
+    }
+
     if statement.is_empty()
         || statement.starts_with("typedef ")
         || statement.starts_with("using ")
@@ -744,4 +767,33 @@ mod tests {
             Some("application_options::get_default().api_limit_get_account_history")
         );
     }
+}
+
+#[test]
+fn extracts_fields_declared_after_nested_record_bodies() {
+    let classes = extract_classes(
+        "class htlc { public: struct transfer_info { uint64_t amount; } transfer; struct condition_info { struct lock_info { uint16_t size; } hash_lock; } conditions; uint32_t tail; };",
+        Path::new("htlc.hpp"),
+    );
+    let htlc = classes.iter().find(|class| class.name == "htlc").unwrap();
+    let fields: Vec<_> = htlc
+        .fields
+        .iter()
+        .map(|field| (field.name.as_str(), field.type_expr.as_str()))
+        .collect();
+
+    assert_eq!(
+        fields,
+        vec![
+            ("transfer", "transfer_info"),
+            ("conditions", "condition_info"),
+            ("tail", "uint32_t")
+        ]
+    );
+    let conditions = classes
+        .iter()
+        .find(|class| class.name == "condition_info")
+        .unwrap();
+    assert_eq!(conditions.fields[0].name, "hash_lock");
+    assert_eq!(conditions.fields[0].type_expr, "lock_info");
 }

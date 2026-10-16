@@ -7,6 +7,7 @@ This directory contains the active Rust runtime crates, pure SDK helper crates, 
 - `graphene` (`graphene`): top-level user-facing facade for chain clients and examples.
 - `graphene-chain-swaplock-api`: current high-level Swaplock API surface used by the top-level `graphene` facade.
 - `graphene-chain-swaplock-bindings`: generated Swaplock protocol and wire bindings.
+- `graphene-chain-rsquared-bindings`: generated R-Squared protocol, JSON/RPC and FC wire bindings. See [R-Squared](../../docs/RSQUARED.md) for generation and coverage.
 - `graphene-chain-bitshares-bindings`: generated BitShares protocol and wire bindings used to keep cross-chain generation honest.
 - `graphene-fc` (`open-graphene-fc`): FC serialization, signing, digest, and WIF helpers.
 - `graphene-primitives` (`open-graphene-primitives`): stable chain-agnostic SDK value references and validators such as object IDs, account IDs, asset IDs, asset amounts, limit-order IDs, and operation-history IDs.

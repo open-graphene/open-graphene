@@ -1,6 +1,6 @@
 # Open Graphene SDK for TypeScript
 
-Build applications for **Swaplock and BitShares** in Node.js and the browser.
+Build applications for **Swaplock, BitShares and R-Squared** in Node.js and the browser.
 Read accounts and balances, send transactions, encrypt memos, work with Swaplock
 rooms, and subscribe to changes through a typed API.
 
@@ -28,8 +28,11 @@ packages are available when you only need one chain.
 | ----------------------------------------- | ------------------------------------------------------------------------ |
 | `@open-graphene/chain-swaplock-react`     | Swaplock React hooks, live updates and operation preparation             |
 | `@open-graphene/chain-bitshares-react`    | BitShares React hooks, live updates and operation preparation            |
+| `@open-graphene/chain-rsquared-react`     | R-Squared React hooks and operation preparation                          |
+| `@open-graphene/chain-rsquared-api`       | R-Squared transactions, queries and subscriptions                        |
+| `@open-graphene/chain-rsquared-bindings`  | R-Squared protocol types, operation factories and codecs                 |
 | `@open-graphene/react-core`               | Shared React adapter and cache utilities                                 |
-| `@open-graphene/graphene`                 | Connect to either chain; access wallet, memo and amount helpers          |
+| `@open-graphene/graphene`                 | Connect to any supported chain; access wallet, memo and amount helpers   |
 | `@open-graphene/chain-swaplock-api`       | Swaplock transactions, queries and room-access helpers                   |
 | `@open-graphene/chain-bitshares-api`      | BitShares transactions and queries                                       |
 | `@open-graphene/chain-swaplock-bindings`  | Swaplock protocol types, operation factories and codecs                  |
@@ -39,6 +42,8 @@ packages are available when you only need one chain.
 | `@open-graphene/transport`                | WebSocket sessions, subscriptions and ChainStore                         |
 | `@open-graphene/codec`                    | Lossless JSON and checked runtime codecs                                 |
 | `@open-graphene/primitives`               | IDs, timestamps and byte conversions                                     |
+
+See [R-Squared support](../../docs/RSQUARED.md) for chain identity, domain operations and validation limits.
 
 ## Formatting
 

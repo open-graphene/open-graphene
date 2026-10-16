@@ -15,6 +15,11 @@ import {
   useAccount as useBitSharesAccount,
   useDynamicGlobalProperties as useBitSharesHead,
 } from '@open-graphene/chain-bitshares-react';
+import {
+  RSquaredProvider,
+  useAccount as useRSquaredAccount,
+} from '@open-graphene/chain-rsquared-react';
+import { CHAIN as RQRX } from '../graphene-chain-rsquared/graphene-chain-rsquared-bindings/dist/index.js';
 import { CHAIN } from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
 import { CHAIN as BTS } from '../graphene-chain-bitshares/graphene-chain-bitshares-bindings/dist/index.js';
 import * as swaplockHooks from '@open-graphene/chain-swaplock-react';
@@ -233,6 +238,11 @@ export async function runReactChecks() {
       'inclusion did not invalidate scoped reads',
     );
     const bt = fake(BTS.chainId);
+    const rq = fake(RQRX.chainId);
+    function RSquaredAccount() {
+      latest.rsquared = useRSquaredAccount('rsquared-account');
+      return null;
+    }
     function BitAccount() {
       const result = useBitSharesAccount('bit-account');
       latest.bit = result;
@@ -250,6 +260,7 @@ export async function runReactChecks() {
             null,
             h(SwaplockProvider, { client: b.client }, h(Generated)),
             h(BitSharesProvider, { client: bt.client }, h(BitAccount)),
+            h(RSquaredProvider, { client: rq.client }, h(RSquaredAccount)),
           ),
         ),
       ),
@@ -257,7 +268,8 @@ export async function runReactChecks() {
     await settle();
     assert(
       latest.chain.data === CHAIN.chainId &&
-        latest.bit.data.name === 'bit-account',
+        latest.bit.data.name === 'bit-account' &&
+        latest.rsquared.data.name === 'rsquared-account',
       'generated reads/chain providers',
     );
     const symbols = (name) =>
@@ -369,6 +381,7 @@ export async function runReactChecks() {
       scopedInvalidation: true,
       generatedQueries: true,
       bitshares: true,
+      rsquared: true,
       generatedPreparations: preparedCount,
       imperativeCrypto: true,
     };

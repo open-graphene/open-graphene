@@ -1,0 +1,41 @@
+{
+  "name": "@open-graphene/chain-rsquared-api",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT OR Apache-2.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "files": [
+    "dist",
+    "LICENSE-MIT",
+    "LICENSE-APACHE"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@open-graphene/primitives": "workspace:*",
+    "@open-graphene/codec": "workspace:*",
+    "@open-graphene/fc": "workspace:*",
+    "@open-graphene/transport": "workspace:*",
+    "@open-graphene/chain-rsquared-bindings": "workspace:*",
+    "@open-graphene/core": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "prettier": "3.9.9"
+  }
+}

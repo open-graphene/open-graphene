@@ -1,0 +1,43 @@
+{
+  "name": "@open-graphene/chain-rsquared-react",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT OR Apache-2.0",
+  "files": [
+    "dist",
+    "LICENSE-MIT",
+    "LICENSE-APACHE"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@open-graphene/chain-rsquared-api": "workspace:*",
+    "@open-graphene/chain-rsquared-bindings": "workspace:*",
+    "@open-graphene/react-core": "workspace:*",
+    "@open-graphene/fc": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^18.3.0 || ^19.0.0",
+    "@tanstack/react-query": "^5.104.0"
+  },
+  "devDependencies": {
+    "react": "19.3.0",
+    "@types/react": "19.3.0",
+    "@tanstack/react-query": "5.104.0",
+    "prettier": "3.9.9"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -5,8 +5,9 @@ SDK tooling for [Graphene](https://github.com/cryptonomex/graphene)-based blockc
 chain's C++ sources, and language bindings are generated from that specification.
 
 Swaplock has the broadest SDK coverage. Native TypeScript APIs support operation construction, FC encoding,
-multisignature transactions, encrypted memo and live subscriptions for **Swaplock and BitShares**; both consume generated bindings.
-The Acta and R-Squared crates remain empty placeholders.
+multisignature transactions, encrypted memo and live subscriptions for **Swaplock, BitShares and R-Squared**; both consume generated bindings.
+R-Squared includes generated Rust bindings and independent TypeScript API/React packages.
+The Acta crate remains an empty placeholder.
 
 ## Pipeline
 
@@ -38,7 +39,7 @@ operation FC encoders, plus compound transactions verified on the Swaplock testn
 [TypeScript workspace](open-graphene-packages/typescript/README.md) for setup,
 tests and the [Rust parity report](docs/TYPESCRIPT-RUST-PARITY-2026-09-29.md).
 
-React applications can use the [separate React / TanStack Query packages](docs/TYPESCRIPT-REACT.md), with generated read hooks and shared live subscriptions for both chains.
+React applications can use the [separate React / TanStack Query packages](docs/TYPESCRIPT-REACT.md), with generated read hooks and shared live subscriptions for all three chains.
 
 ## Repository layout
 
@@ -52,6 +53,7 @@ React applications can use the [separate React / TanStack Query packages](docs/T
 | `open-graphene-packages/typescript` | Native TypeScript workspace; bindings, RPC, transactions, wallets and subscriptions |
 | `open-graphene-packages/rust/graphene` | SDK facade (currently Swaplock-only) |
 | `open-graphene-packages/rust/graphene-chain-swaplock` | Swaplock spec, generated bindings, and hand-written API layer |
+| `open-graphene-packages/rust/graphene-chain-rsquared` | R-Squared spec and generated bindings; see [support details](docs/RSQUARED.md) |
 | `open-graphene-packages/rust/graphene-chain-bitshares` | BitShares spec + bindings (cross-chain sanity check) |
 | `open-graphene-packages/rust/graphene-fc` | FC wire primitives: keys, signing, base58, memo crypto |
 | `open-graphene-packages/rust/graphene-core` | Pure chain helpers: amounts, tx headers, name validation |

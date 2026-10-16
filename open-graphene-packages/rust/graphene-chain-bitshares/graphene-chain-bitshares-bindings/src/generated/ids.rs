@@ -9,7 +9,7 @@ pub const CHAIN_ID: &str = "bitshares";
 pub const CHAIN_ID_HEX: &str = "4018d7844c78f6a6c41c6a552b898022310fc5dec06da467ee7905a8dad512c8";
 pub const PUBLIC_KEY_PREFIX: &str = "BTS";
 
-pub const STRUCT_COUNT: usize = 232;
+pub const STRUCT_COUNT: usize = 236;
 pub const ENUM_COUNT: usize = 11;
 pub const STATIC_VARIANT_COUNT: usize = 11;
 pub const OPERATION_COUNT: usize = 78;

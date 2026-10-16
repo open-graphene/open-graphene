@@ -1047,6 +1047,21 @@ impl FcSerialize for crate::generated::types::CommitteeMemberUpdateOperationFeeP
     }
 }
 
+impl FcSerialize for crate::generated::types::ConditionInfoHashLockInfo {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.preimage_hash.fc_serialize(out)?;
+        self.preimage_size.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::ConditionInfoTimeLockInfo {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        write_time_point_sec(&self.expiration, out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::CreateTakeProfitOrderAction {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee_asset_id.fc_serialize(out)?;
@@ -1306,6 +1321,34 @@ impl FcSerialize for crate::generated::types::HtlcExtendOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
         self.fee_per_day.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::HtlcObject {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.id.fc_serialize(out)?;
+        self.transfer.fc_serialize(out)?;
+        self.conditions.fc_serialize(out)?;
+        self.memo.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::HtlcObjectConditionInfo {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.hash_lock.fc_serialize(out)?;
+        self.time_lock.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::HtlcObjectTransferInfo {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.from.fc_serialize(out)?;
+        self.to.fc_serialize(out)?;
+        self.amount.fc_serialize(out)?;
+        self.asset_id.fc_serialize(out)?;
         Ok(())
     }
 }

@@ -425,6 +425,14 @@ dependencies = [
 [[package]]
 name = "graphene-chain-rsquared-bindings"
 version = "0.1.0"
+dependencies = [
+ "open-graphene-core",
+ "open-graphene-fc",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "utoipa",
+]
 
 [[package]]
 name = "graphene-chain-swaplock-api"

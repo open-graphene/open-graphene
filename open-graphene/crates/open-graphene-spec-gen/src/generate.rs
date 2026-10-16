@@ -621,7 +621,14 @@ fn fee_parameters_static_variant_to_def(facts: &SourceFacts) -> Option<StaticVar
             .iter()
             .enumerate()
             .map(|(index, operation_name)| {
-                let fee_params_name = nested_struct_name(operation_name, "fee_params_t");
+                let has_legacy_fee_parameters =
+                    nested_reflect_for(operation_name, "fee_parameters_type", facts).is_some();
+                let nested_name = if has_legacy_fee_parameters {
+                    "fee_parameters_type"
+                } else {
+                    "fee_params_t"
+                };
+                let fee_params_name = nested_struct_name(operation_name, nested_name);
                 StaticVariantArmDef {
                     tag: index as u32,
                     name: fee_params_name.clone(),
@@ -631,8 +638,7 @@ fn fee_parameters_static_variant_to_def(facts: &SourceFacts) -> Option<StaticVar
                     support: Some(SupportDef {
                         status: SupportStatus::Provisional,
                         reason: Some(
-                            "fee_parameters arm synthesized from operation static_variant arm and nested fee_params_t"
-                                .to_string(),
+                            format!("fee_parameters arm synthesized from operation static_variant arm and nested {nested_name}"),
                         ),
                     }),
                 }
@@ -981,6 +987,12 @@ fn resolve_field_type(type_expr: &str, class: &RawClass, facts: &SourceFacts) ->
     {
         return TypeRef::Ref {
             name: nested_struct_name(&class.name, inner),
+        };
+    }
+
+    if nested_reflect_for(&class.name, type_expr.trim(), facts).is_some() {
+        return TypeRef::Ref {
+            name: nested_struct_name(&class.name, type_expr.trim()),
         };
     }
 
@@ -1877,6 +1889,12 @@ mod tests {
 
     #[test]
     fn build_protocol_synthesizes_fee_parameters_static_variant() {
+        assert_fee_parameters_variant("fee_params_t");
+        assert_fee_parameters_variant("fee_parameters_type");
+    }
+
+    fn assert_fee_parameters_variant(nested_name: &str) {
+        let expected_name = format!("transfer_operation_{nested_name}");
         let config: GeneratorConfig = toml::from_str(
             r#"
             [chain]
@@ -1921,8 +1939,8 @@ mod tests {
                     },
                 },
                 RawClass {
-                    name: "fee_params_t".to_string(),
-                    qualified_name: Some("transfer_operation::fee_params_t".to_string()),
+                    name: nested_name.to_string(),
+                    qualified_name: Some(format!("transfer_operation::{nested_name}")),
                     methods: vec![],
                     fields: vec![RawField {
                         name: "fee".to_string(),
@@ -1958,7 +1976,7 @@ mod tests {
                     derived: false,
                 },
                 RawReflect {
-                    type_name: "graphene::protocol::transfer_operation::fee_params_t".to_string(),
+                    type_name: format!("graphene::protocol::transfer_operation::{nested_name}"),
                     bases: vec![],
                     fields: vec!["fee".to_string()],
                     source: SourceLoc {
@@ -2006,20 +2024,17 @@ mod tests {
             .find(|variant| variant.name == "fee_parameters")
             .expect("fee_parameters emitted");
         assert_eq!(fee_parameters.variants[0].tag, 0);
-        assert_eq!(
-            fee_parameters.variants[0].name,
-            "transfer_operation_fee_params_t"
-        );
+        assert_eq!(fee_parameters.variants[0].name, expected_name);
         assert_eq!(
             fee_parameters.variants[0].ty,
             TypeRef::Ref {
-                name: "transfer_operation_fee_params_t".to_string()
+                name: expected_name.clone()
             }
         );
         let fee_params = protocol
             .structs
             .iter()
-            .find(|struct_def| struct_def.name == "transfer_operation_fee_params_t")
+            .find(|struct_def| struct_def.name == expected_name)
             .expect("fee_params_t emitted");
         assert_eq!(fee_params.fields[0].name, "fee");
     }

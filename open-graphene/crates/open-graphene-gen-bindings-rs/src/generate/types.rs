@@ -451,84 +451,20 @@ pub(crate) fn protocol_uses_fixed_bytes(protocol: &Protocol) -> bool {
 }
 
 pub(crate) fn fixed_byte_lengths(protocol: &Protocol) -> BTreeSet<usize> {
-    let mut lengths = BTreeSet::new();
+    let fields = protocol
+        .structs
+        .iter()
+        .flat_map(|item| &item.fields)
+        .chain(protocol.operations.iter().flat_map(|item| &item.fields));
 
-    for struct_def in &protocol.structs {
-        for field in &struct_def.fields {
-            collect_fixed_byte_lengths_from_type(&field.ty, &mut lengths);
-        }
-    }
-    for operation in &protocol.operations {
-        for field in &operation.fields {
-            collect_fixed_byte_lengths_from_type(&field.ty, &mut lengths);
-        }
-    }
-    for static_variant in &protocol.static_variants {
-        for arm in &static_variant.variants {
-            collect_fixed_byte_lengths_from_type(&arm.ty, &mut lengths);
-        }
-    }
-    for method in &protocol.rpc_methods {
-        for param in &method.params {
-            collect_fixed_byte_lengths_from_type(&param.ty, &mut lengths);
-        }
-        if let Some(returns) = &method.returns {
-            collect_fixed_byte_lengths_from_type(returns, &mut lengths);
-        }
-        for notice in &method.notices {
-            if let Some(payload) = &notice.payload {
-                collect_fixed_byte_lengths_from_type(payload, &mut lengths);
-            }
-        }
-    }
-
-    lengths
-}
-
-pub(crate) fn collect_fixed_byte_lengths_from_type(ty: &TypeRef, lengths: &mut BTreeSet<usize>) {
-    match ty {
-        TypeRef::FixedBytes { bytes } => {
-            lengths.insert(*bytes as usize);
-        }
-        TypeRef::Optional { inner } | TypeRef::Vector { inner } | TypeRef::Set { inner, .. } => {
-            collect_fixed_byte_lengths_from_type(inner, lengths);
-        }
-        TypeRef::Map { key, value, .. } | TypeRef::FlatMap { key, value, .. } => {
-            collect_fixed_byte_lengths_from_type(key, lengths);
-            collect_fixed_byte_lengths_from_type(value, lengths);
-        }
-        TypeRef::Pair { first, second } => {
-            collect_fixed_byte_lengths_from_type(first, lengths);
-            collect_fixed_byte_lengths_from_type(second, lengths);
-        }
-        TypeRef::Void
-        | TypeRef::Bool
-        | TypeRef::Uint8
-        | TypeRef::Uint16
-        | TypeRef::Uint32
-        | TypeRef::Int32 { .. }
-        | TypeRef::Int64 { .. }
-        | TypeRef::Uint64 { .. }
-        | TypeRef::Uint128 { .. }
-        | TypeRef::UnsignedVarint
-        | TypeRef::CallbackHandle
-        | TypeRef::String
-        | TypeRef::Bytes
-        | TypeRef::FixedHex { .. }
-        | TypeRef::TimePointSec
-        | TypeRef::TimePoint
-        | TypeRef::PublicKey { .. }
-        | TypeRef::Address
-        | TypeRef::Signature
-        | TypeRef::ObjectId
-        | TypeRef::ProtocolObjectId { .. }
-        | TypeRef::ProtocolObjectUnion { .. }
-        | TypeRef::VoteId
-        | TypeRef::Ref { .. }
-        | TypeRef::StaticVariantRef { .. }
-        | TypeRef::AnyJson { .. }
-        | TypeRef::Unsupported { .. } => {}
-    }
+    // Only direct fields use the per-length serde wrappers. Variant arms and
+    // nested containers are decoded by their own wire codecs.
+    fields
+        .filter_map(|field| match field.ty {
+            TypeRef::FixedBytes { bytes } => Some(bytes as usize),
+            _ => None,
+        })
+        .collect()
 }
 
 #[cfg(test)]

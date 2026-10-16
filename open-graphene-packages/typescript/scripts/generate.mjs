@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../../../', import.meta.url));
-for (const chain of ['swaplock', 'bitshares']) {
+for (const chain of ['swaplock', 'bitshares', 'rsquared']) {
   const family = `graphene-chain-${chain}`;
   const result = spawnSync(
     'cargo',

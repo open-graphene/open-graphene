@@ -29,7 +29,8 @@
     "@open-graphene/chain-bitshares-api": "workspace:*",
     "@open-graphene/core": "workspace:*",
     "@open-graphene/transport": "workspace:*",
-    "@open-graphene/fc": "workspace:*"
+    "@open-graphene/fc": "workspace:*",
+    "@open-graphene/chain-rsquared-api": "workspace:*"
   },
   "publishConfig": {
     "access": "public"

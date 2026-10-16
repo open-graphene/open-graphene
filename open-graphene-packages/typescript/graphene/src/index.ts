@@ -3,8 +3,10 @@ import {
   type SwaplockConnectionOptions,
 } from '@open-graphene/chain-swaplock-api';
 import { BitSharesClient } from '@open-graphene/chain-bitshares-api';
+import { RSquaredClient } from '@open-graphene/chain-rsquared-api';
 import type { SessionOptions } from '@open-graphene/transport';
-export { SwaplockClient, BitSharesClient };
+export { SwaplockClient, BitSharesClient, RSquaredClient };
+export * as rsquared from '@open-graphene/chain-rsquared-api';
 export * as swaplock from '@open-graphene/chain-swaplock-api';
 export * as bitshares from '@open-graphene/chain-bitshares-api';
 export * from '@open-graphene/core';
@@ -21,6 +23,12 @@ export class Graphene {
   ) {
     return BitSharesClient.connect(endpoints, options);
   }
+  static rsquared(
+    endpoints: string | readonly string[],
+    options?: SessionOptions,
+  ) {
+    return RSquaredClient.connect(endpoints, options);
+  }
   static connect(
     chain: 'swaplock',
     endpoints: string | readonly string[],
@@ -32,7 +40,12 @@ export class Graphene {
     options?: SessionOptions,
   ): Promise<BitSharesClient>;
   static connect(
-    chain: 'swaplock' | 'bitshares',
+    chain: 'rsquared',
+    endpoints: string | readonly string[],
+    options?: SessionOptions,
+  ): Promise<RSquaredClient>;
+  static connect(
+    chain: 'swaplock' | 'bitshares' | 'rsquared',
     endpoints: string | readonly string[],
     options?: SessionOptions,
   ) {
@@ -49,6 +62,10 @@ export class Graphene {
 
     if (chain === 'bitshares') {
       return this.bitshares(endpoints, options);
+    }
+
+    if (chain === 'rsquared') {
+      return this.rsquared(endpoints, options);
     }
 
     throw new Error('Unsupported chain');

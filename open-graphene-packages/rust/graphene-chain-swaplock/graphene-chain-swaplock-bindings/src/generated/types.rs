@@ -1193,6 +1193,21 @@ pub struct CommitteeMemberUpdateOperationFeeParamsT {
     pub fee: u64,
 }
 
+/// Raw protocol struct `condition_info_hash_lock_info`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockConditionInfoHashLockInfo)]
+pub struct ConditionInfoHashLockInfo {
+    pub preimage_hash: crate::generated::static_variants::HtlcHash,
+    pub preimage_size: u16,
+}
+
+/// Raw protocol struct `condition_info_time_lock_info`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockConditionInfoTimeLockInfo)]
+pub struct ConditionInfoTimeLockInfo {
+    pub expiration: String,
+}
+
 /// Raw protocol struct `content_card_create_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneSwaplockContentCardCreateOperationFeeParamsT)]
@@ -1920,10 +1935,31 @@ pub struct HtlcExtendOperationFeeParamsT {
 #[schema(as = GrapheneSwaplockHtlcObject)]
 pub struct HtlcObject {
     pub id: crate::generated::ids::HtlcId,
-    pub transfer: serde_json::Value,
-    pub conditions: serde_json::Value,
+    pub transfer: crate::generated::types::HtlcObjectTransferInfo,
+    pub conditions: crate::generated::types::HtlcObjectConditionInfo,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub memo: Option<crate::generated::types::MemoData>,
+}
+
+/// Raw protocol struct `htlc_object_condition_info`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockHtlcObjectConditionInfo)]
+pub struct HtlcObjectConditionInfo {
+    pub hash_lock: crate::generated::types::ConditionInfoHashLockInfo,
+    pub time_lock: crate::generated::types::ConditionInfoTimeLockInfo,
+}
+
+/// Raw protocol struct `htlc_object_transfer_info`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneSwaplockHtlcObjectTransferInfo)]
+pub struct HtlcObjectTransferInfo {
+    pub from: crate::generated::ids::AccountId,
+    pub to: crate::generated::ids::AccountId,
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
+    pub amount: i64,
+    pub asset_id: crate::generated::ids::AssetId,
 }
 
 /// Raw protocol struct `htlc_options`.

@@ -9,6 +9,7 @@ env:
   CARGO_TERM_COLOR: always
   # Pinned vendored-source revisions used to regenerate the committed specs.
   SWAPLOCK_CORE_COMMIT: 7b471be9d1cc051e7a3563a639a9ee98979de9d8
+  RSQUARED_CORE_COMMIT: 137a5b7c1e2da23b29ea101631229e165a15a851
   BITSHARES_CORE_COMMIT: b92b82ba3e57381d111f28383e8cfa89a8356966
 
 jobs:
@@ -74,12 +75,16 @@ jobs:
           .github/source-snapshots/unpack-swaplock.sh "$SWAPLOCK_CORE_COMMIT"
           fetch https://github.com/bitshares/bitshares-core.git \
             blockchains/bitshares/bitshares-core "$BITSHARES_CORE_COMMIT"
+          fetch https://github.com/R-Squared-Project/R-Squared-core.git \
+            blockchains/rsquared/R-Squared-core "$RSQUARED_CORE_COMMIT"
       - name: Regenerate specs and bindings
         run: |
           open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/bin/gen.sh
           open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-bindings/bin/gen.sh
           open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-spec/bin/gen.sh
           open-graphene-packages/rust/graphene-chain-bitshares/graphene-chain-bitshares-bindings/bin/gen.sh
+          open-graphene-packages/rust/graphene-chain-rsquared/graphene-chain-rsquared-spec/bin/gen.sh
+          open-graphene-packages/rust/graphene-chain-rsquared/graphene-chain-rsquared-bindings/bin/gen.sh
       - name: Committed output must match the generators
         run: |
           git add -N .
