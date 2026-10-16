@@ -1,0 +1,54 @@
+---
+title: Swaplock
+description: Connect to Swaplock and use its TypeScript and React packages.
+---
+
+Follow the [workspace setup](./index.mdx) first. Choose a WebSocket endpoint you trust for Swaplock and pass it to your application; the SDK does not require a private key for reads.
+
+## Connect and read
+
+```ts
+import { SwaplockClient } from "@open-graphene/chain-swaplock-api";
+import { CHAIN } from "@open-graphene/chain-swaplock-bindings";
+
+export async function readAccount(endpoint: string, nameOrId: string) {
+  const client = await SwaplockClient.connect([endpoint], {
+    expectedChainId: CHAIN.chainId,
+  });
+
+  try {
+    const account = await client.database.account(nameOrId);
+    const balances = await client.database.accountBalances(account.id);
+
+    return {
+      account,
+      balances,
+    };
+  } finally {
+    client.close();
+  }
+}
+```
+
+## Network identity
+
+Swaplock requires an explicit trusted `expectedChainId`. `CHAIN.chainId` selects the bundled testnet. For another deployment, supply its trusted chain ID; do not learn that expected value from the node you are about to trust. The client verifies network identity on connection and reconnection. The current React adapter is restricted to the bundled network.
+
+## Use React
+
+Use `SwaplockProvider` and hooks from `@open-graphene/chain-swaplock-react`. Mount the chain provider inside `QueryClientProvider`, passing an already connected `SwaplockClient`. Your application owns the connection and closes it when it is no longer needed.
+
+The [React guide](./react.mdx) explains query state, live reads, mutation hooks and prefetching.
+
+## Full API catalogs
+
+- [TypeScript API](../reference/swaplock/typescript/index.md): `SwaplockClient`, queries, transaction preparation and public helpers.
+- [React API](../reference/swaplock/react/index.md): all exported hooks, providers, options factories and input types.
+- [Protocol bindings](../reference/swaplock/bindings/index.md): RPC descriptors, operations, protocol types and codecs.
+- [Shared packages](../reference/shared/index.md): transport, signing, memo, amounts and cache utilities.
+
+## Methods and operations
+
+The client groups RPC methods under namespaces such as `database`, `history`, `crypto`, `orders` and `networkBroadcast`. The [SwaplockClient reference](../reference/swaplock/typescript/classes/SwaplockClient.md) lists the actual members of each namespace, with parameter and return types.
+
+Use `client.transaction()` for a transaction builder or `client.prepareOperations(...)` to prepare existing operations. Preparation, signing, broadcast and inclusion are separate steps; see [Transactions](./transactions.mdx).

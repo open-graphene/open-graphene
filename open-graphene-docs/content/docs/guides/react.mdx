@@ -1,0 +1,112 @@
+---
+title: React integration
+description: Providers, query hooks, live subscriptions, mutations and prefetching.
+---
+
+Import hooks from the package for your chain. The packages have matching conventions, but their types and available methods are chain-specific.
+
+| Chain     | Package                                | Provider            |
+| --------- | -------------------------------------- | ------------------- |
+| BitShares | `@open-graphene/chain-bitshares-react` | `BitSharesProvider` |
+| Swaplock  | `@open-graphene/chain-swaplock-react`  | `SwaplockProvider`  |
+| R-Squared | `@open-graphene/chain-rsquared-react`  | `RSquaredProvider`  |
+
+## Mount a provider
+
+Create a connected SDK client and a TanStack Query client outside component rendering. This example receives both from the application so their lifetimes remain explicit.
+
+```tsx
+import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
+import type { BitSharesClient } from "@open-graphene/chain-bitshares-api";
+import {
+  BitSharesProvider,
+  useAccountBalances,
+} from "@open-graphene/chain-bitshares-react";
+
+interface AppProps {
+  client: BitSharesClient;
+  queryClient: QueryClient;
+  account: string;
+}
+
+export function App(props: AppProps) {
+  return (
+    <QueryClientProvider client={props.queryClient}>
+      <BitSharesProvider client={props.client}>
+        <Balances account={props.account} />
+      </BitSharesProvider>
+    </QueryClientProvider>
+  );
+}
+
+function Balances(props: { account: string }) {
+  const balances = useAccountBalances(props.account, {
+    live: true,
+  });
+
+  if (balances.isPending) {
+    return <p>Loading balances…</p>;
+  }
+
+  if (balances.isError) {
+    return <p>{balances.error.message}</p>;
+  }
+
+  return (
+    <section>
+      <p>Live updates: {balances.live.status}</p>
+      {balances.data.map((balance) => (
+        <p key={balance.asset_id}>
+          {balance.asset_id}: {balance.amount.toString()} raw units
+        </p>
+      ))}
+    </section>
+  );
+}
+```
+
+The provider does not close the SDK client on unmount. Call `client.close()` when the application is finished with that connection. For Swaplock or R-Squared, use the corresponding client, provider and hook imports together.
+
+## Read hooks and options factories
+
+Generated RPC read hooks are named after the namespace and method, for example `useDatabaseGetObjects(params, options)`. Their matching options factories, such as `databaseGetObjectsOptions(client, params)`, support TanStack Query prefetching and loaders.
+
+Convenience hooks include `useAccount`, `useAccountBalances`, `useAccountOrders`, `useAccountHistory`, `useAsset` and `useDynamicGlobalProperties`. The chain catalogs list all generated hooks and their exact parameter types.
+
+```ts
+import { accountOptions } from "@open-graphene/chain-bitshares-react";
+
+await queryClient.prefetchQuery(accountOptions(client, "your-account"));
+```
+
+Read options include `enabled`, `select`, cache timing and the other options allowed by the hook's exported type. Check the function's reference page for the exact contract.
+
+## Live reads
+
+Convenience live hooks default to `live: false`. Set `live: true` to subscribe to refreshed snapshots. Identical reads share a subscription for the same client and retry policy. A stream closes when its final live consumer unmounts, disables it or changes parameters.
+
+Inspect `result.live.status` separately from query state: a query can have cached data while its subscription is reconnecting or has failed. The live states are `disabled`, `connecting`, `live`, `reconnecting` and `error`. Use `live.error` for the subscription error and `restartLive()` to restart it.
+
+The provider's `livePolicy` bounds reconnect retries. History reads refresh snapshots; they are not an append-only event feed. Swaplock additionally exposes room and content-card hooks; those refresh from database notices rather than field-level patches.
+
+## Mutations and transaction preparation
+
+Generated `usePrepare...` hooks prepare the corresponding operation. Preparation does not sign or broadcast. Use separate signing, broadcasting and inclusion hooks where exported by your chain package:
+
+- `usePrepareOperations` prepares a collection of operations.
+- `useSignTransaction` captures signers in the callback rather than putting them in mutation variables.
+- `useBroadcastTransaction` submits a signed transaction.
+- `useWaitForInclusion` waits for observed inclusion and then invalidates this client's reads.
+
+Use `mutateAsync` to sequence dependent steps and handle failures at the step that failed. An unknown broadcast outcome must be checked before retrying; submission alone is not proof of inclusion. See [Transactions](./transactions.mdx).
+
+## Cache serialization
+
+The shared React core exports `serializeCache` and `deserializeCache` for lossless cache hydration. Ordinary JSON serialization does not preserve SDK `bigint` and byte values. Keep signing keys out of query caches and dehydrated state.
+
+## Complete references
+
+- [BitShares React](../reference/bitshares/react/index.md)
+- [Swaplock React](../reference/swaplock/react/index.md)
+- [R-Squared React](../reference/rsquared/react/index.md)
+- [Shared React core](../reference/shared/react-core/index.md)

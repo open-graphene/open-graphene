@@ -1,0 +1,49 @@
+---
+title: R-Squared
+description: Connect to R-Squared and use its TypeScript and React packages.
+---
+
+Follow the [workspace setup](./index.mdx) first. Choose a WebSocket endpoint you trust for R-Squared and pass it to your application; the SDK does not require a private key for reads.
+
+## Connect and read
+
+```ts
+import { RSquaredClient } from "@open-graphene/chain-rsquared-api";
+
+export async function readAccount(endpoint: string, nameOrId: string) {
+  const client = await RSquaredClient.connect([endpoint]);
+
+  try {
+    const account = await client.database.account(nameOrId);
+    const balances = await client.database.accountBalances(account.id);
+
+    return {
+      account,
+      balances,
+    };
+  } finally {
+    client.close();
+  }
+}
+```
+
+The client uses the chain identity bundled with its bindings and verifies the connection. Select endpoints for that chain.
+
+## Use React
+
+Use `RSquaredProvider` and hooks from `@open-graphene/chain-rsquared-react`. Mount the chain provider inside `QueryClientProvider`, passing an already connected `RSquaredClient`. Your application owns the connection and closes it when it is no longer needed.
+
+The [React guide](./react.mdx) explains query state, live reads, mutation hooks and prefetching.
+
+## Full API catalogs
+
+- [TypeScript API](../reference/rsquared/typescript/index.md): `RSquaredClient`, queries, transaction preparation and public helpers.
+- [React API](../reference/rsquared/react/index.md): all exported hooks, providers, options factories and input types.
+- [Protocol bindings](../reference/rsquared/bindings/index.md): RPC descriptors, operations, protocol types and codecs.
+- [Shared packages](../reference/shared/index.md): transport, signing, memo, amounts and cache utilities.
+
+## Methods and operations
+
+The client groups RPC methods under namespaces such as `database`, `history`, `crypto`, `orders` and `networkBroadcast`. The [RSquaredClient reference](../reference/rsquared/typescript/classes/RSquaredClient.md) lists the actual members of each namespace, with parameter and return types.
+
+Use `client.transaction()` for a transaction builder or `client.prepareOperations(...)` to prepare existing operations. Preparation, signing, broadcast and inclusion are separate steps; see [Transactions](./transactions.mdx).

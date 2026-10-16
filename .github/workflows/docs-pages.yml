@@ -5,10 +5,12 @@ on:
     branches: [main]
     paths:
       - 'open-graphene-docs/**'
+      - 'open-graphene-packages/typescript/**'
       - '.github/workflows/docs-pages.yml'
   pull_request:
     paths:
       - 'open-graphene-docs/**'
+      - 'open-graphene-packages/typescript/**'
       - '.github/workflows/docs-pages.yml'
   workflow_dispatch:
 
@@ -35,6 +37,9 @@ jobs:
           node-version: 22
           cache: pnpm
           cache-dependency-path: open-graphene-docs/pnpm-lock.yaml
+      - name: Install SDK dependencies for API extraction
+        run: pnpm install --frozen-lockfile
+        working-directory: open-graphene-packages/typescript
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
       - run: pnpm build

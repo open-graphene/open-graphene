@@ -1,0 +1,42 @@
+---
+title: Getting started
+description: Choose your chain, then use the TypeScript client or React hooks.
+---
+
+Open Graphene provides native TypeScript SDKs for **BitShares**, **Swaplock**, and **R-Squared**. Each chain has separate API, bindings and React packages. Use packages from the same chain together.
+
+## Set up the workspace
+
+The packages are currently developed in this repository; the SDK README marks npm publication as pending. Use a local workspace dependency rather than assuming that these package versions are available from the registry.
+
+```sh
+git clone https://github.com/open-graphene/open-graphene.git
+cd open-graphene/open-graphene-packages/typescript
+pnpm install --frozen-lockfile
+pnpm build
+```
+
+Use Node.js 22.12 or newer and pnpm 10.15.0. The packages are ESM and also support modern browsers. Memo encryption in the browser requires Web Crypto in a secure context.
+
+In an application in the same pnpm workspace, declare the packages you import with `workspace:*`. React applications also need React 18.3 or 19 and TanStack Query 5.104 or newer in the v5 series.
+
+## Choose a chain
+
+- [BitShares](./bitshares.mdx)
+- [Swaplock](./swaplock.mdx)
+- [R-Squared](./rsquared.mdx)
+
+Each guide includes a connection example and links to that chain's complete TypeScript, React and bindings reference.
+
+## Choose an API layer
+
+| Layer           | Purpose                                                                            |
+| --------------- | ---------------------------------------------------------------------------------- |
+| Chain API       | Connection, typed RPC namespaces, convenient reads, subscriptions and transactions |
+| Chain React     | Providers, query hooks, live reads, mutation hooks and query-options factories     |
+| Chain bindings  | Protocol types, operation factories, RPC descriptors and JSON/FC codecs            |
+| Shared packages | Transport, amounts, signing, memo encryption and React cache utilities             |
+
+The [API reference](../reference/index.md) is generated from public exports, including re-exports and subpath exports. Each symbol page includes its signature, parameter types, return type and source link. A method being exported does not imply that every node enables the corresponding RPC service.
+
+For raw amounts use `bigint` or the string forms accepted by the specific API. Avoid floating-point arithmetic for token amounts. Use the shared codec/cache helpers when serializing values containing `bigint` and bytes.

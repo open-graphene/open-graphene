@@ -1,20 +1,22 @@
 ---
 title: What is Open Graphene?
-description: SDK tooling for Graphene-based blockchains.
+description: TypeScript and React SDKs for BitShares, Swaplock and R-Squared.
 ---
 
-Open Graphene turns blockchain protocol definitions into tools that applications can use.
-It extracts a machine-readable specification from a chain's C++ sources, then generates Rust and TypeScript bindings from that specification.
+Open Graphene turns blockchain protocol definitions into application tools. It extracts a machine-readable specification from a chain's C++ sources and generates typed bindings from it.
 
-## Supported chains
+## Choose your blockchain
 
-The project includes tooling for **Swaplock**, **BitShares**, and **R-Squared**.
-Available features vary by chain and language; Swaplock has the broadest SDK coverage.
+| Blockchain | Start here                      | TypeScript API                                                  | React API                                                   | Bindings                                            |
+| ---------- | ------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------------- |
+| BitShares  | [Guide](./guides/bitshares.mdx) | [Client and helpers](./reference/bitshares/typescript/index.md) | [Hooks and providers](./reference/bitshares/react/index.md) | [Protocol](./reference/bitshares/bindings/index.md) |
+| Swaplock   | [Guide](./guides/swaplock.mdx)  | [Client and helpers](./reference/swaplock/typescript/index.md)  | [Hooks and providers](./reference/swaplock/react/index.md)  | [Protocol](./reference/swaplock/bindings/index.md)  |
+| R-Squared  | [Guide](./guides/rsquared.mdx)  | [Client and helpers](./reference/rsquared/typescript/index.md)  | [Hooks and providers](./reference/rsquared/react/index.md)  | [Protocol](./reference/rsquared/bindings/index.md)  |
 
-## Explore the project
+## Build an application
 
-- [How the toolchain fits together](./toolchain.mdx)
-- [Source code and development instructions](https://github.com/open-graphene/open-graphene)
-- [TypeScript packages](https://github.com/open-graphene/open-graphene/tree/main/open-graphene-packages/typescript)
+Start with [workspace setup](./guides/index.mdx), then follow [React integration](./guides/react.mdx) or the [transaction lifecycle](./guides/transactions.mdx).
 
-This documentation is an initial introduction. The repository contains the detailed implementation notes and package documentation.
+The [complete API reference](./reference/index.md) follows the public exports of all three SDKs and their [shared packages](./reference/shared/index.md). It covers methods, hooks, providers, options factories, operations, codecs and types. Signatures and source links are generated from the repository at build time.
+
+The current reference covers TypeScript and React. See [Toolchain](./toolchain.mdx) for the wider project architecture and the [repository](https://github.com/open-graphene/open-graphene) for source code.

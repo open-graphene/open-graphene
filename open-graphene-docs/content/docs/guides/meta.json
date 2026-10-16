@@ -1,0 +1,11 @@
+{
+  "title": "Guides",
+  "pages": [
+    "index",
+    "bitshares",
+    "swaplock",
+    "rsquared",
+    "react",
+    "transactions"
+  ]
+}

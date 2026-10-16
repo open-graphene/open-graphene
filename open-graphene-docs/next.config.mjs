@@ -7,6 +7,7 @@ const withVanillaExtract = createVanillaExtractPlugin();
 /** @type {import('next').NextConfig} */
 const config = {
   output: "export",
+  agentRules: false,
   turbopack: {
     root: import.meta.dirname,
   },

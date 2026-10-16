@@ -4,3 +4,6 @@ out
 .source
 pnpm-lock.yaml
 next-env.d.ts
+
+.reference/
+content/docs/reference/

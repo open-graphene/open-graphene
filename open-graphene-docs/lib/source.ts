@@ -21,6 +21,11 @@ export const source = loader({
   baseUrl: docsRoute,
   source: docs.toFumadocsSource(),
   plugins: [],
+  pageTree: {
+    // Symbol pages are reached through catalogs and search. Do not serialize
+    // thousands of hidden entries into the navigation of every static page.
+    generateFallback: false,
+  },
 });
 
 export const docsLlms = llms(source, {

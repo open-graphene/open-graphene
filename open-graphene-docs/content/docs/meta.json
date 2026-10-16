@@ -1,1 +1,3 @@
-{ "pages": ["index", "toolchain"] }
+{
+  "pages": ["index", "guides", "reference", "toolchain"]
+}

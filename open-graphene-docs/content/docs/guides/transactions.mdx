@@ -1,0 +1,48 @@
+---
+title: Transactions and subscriptions
+description: Preparation, signatures, submission, inclusion and connection ownership.
+---
+
+## Transaction lifecycle
+
+The TypeScript clients separate transaction preparation, signing, broadcast and inclusion. Each chain's reference documents its exact options and result types.
+
+1. Construct operations with the chain's `operations` factories or transaction builder.
+2. Prepare them with `client.prepareOperations(...)`, providing a fee limit and any application-specific expiration policy.
+3. Inspect the prepared transaction and obtain the required signatures.
+4. Submit the signed transaction with `client.broadcast(...)`.
+5. Wait for inclusion with `client.waitForInclusion(...)` before treating the operation as included.
+
+Preparation estimates fees and constructs an unsigned transaction. It does not perform authority, balance or application-intent checks on your behalf beyond the validations documented by the chosen helper. Never confuse a prepared transaction with a signed or confirmed one.
+
+## Chain-specific contracts
+
+| Chain     | Client                                                                          | Prepared transactions                                                                   | Builder                                                                               |
+| --------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| BitShares | [BitSharesClient](../reference/bitshares/typescript/classes/BitSharesClient.md) | [PreparedTransaction](../reference/bitshares/typescript/classes/PreparedTransaction.md) | [TransactionBuilder](../reference/bitshares/typescript/classes/TransactionBuilder.md) |
+| Swaplock  | [SwaplockClient](../reference/swaplock/typescript/classes/SwaplockClient.md)    | [PreparedTransaction](../reference/swaplock/typescript/classes/PreparedTransaction.md)  | [TransactionBuilder](../reference/swaplock/typescript/classes/TransactionBuilder.md)  |
+| R-Squared | [RSquaredClient](../reference/rsquared/typescript/classes/RSquaredClient.md)    | [PreparedTransaction](../reference/rsquared/typescript/classes/PreparedTransaction.md)  | [TransactionBuilder](../reference/rsquared/typescript/classes/TransactionBuilder.md)  |
+
+BitShares and R-Squared use their chain-specific legacy signature profile. Use the signer implementation documented for the chain. The shared [signing package](../reference/shared/fc/signing/index.md) describes signer contracts and key conversion helpers.
+
+Swaplock preparation captures the verified chain ID. Its transaction options include reference-block freshness limits; its signing API supports cancellation while waiting for an external signer. These options are specific to the exported Swaplock contract and should not be assumed to exist on other chains.
+
+## Failed or uncertain submission
+
+A transport failure after submission can leave the outcome unknown. The SDK exposes `BroadcastOutcomeUnknown` for this case. Check whether the transaction was included before retrying a write. An inclusion timeout only means inclusion was not observed within that wait period.
+
+Read RPCs can also fail because the node does not expose the requested API or returns a value outside the protocol schema. Handle these as errors rather than empty results.
+
+## TypeScript subscriptions
+
+Convenience query APIs include watch methods for accounts, balances, orders, assets, block properties and history. Use the returned stream's documented lifecycle and close it when finished. The [transport reference](../reference/shared/transport/index.md) includes sessions, subscriptions, reconnection and `ChainStore`.
+
+The application owns SDK connections. Close the client on application shutdown or when switching to a new connection. React live hooks manage their own shared streams, while the application still owns the underlying client.
+
+## Protocol operations
+
+The bindings catalogs include every exported operation factory and its input type. The React catalogs contain the matching preparation hooks for supported user operations. Virtual operations can appear in chain history, but are not user-submittable operations.
+
+- [BitShares bindings](../reference/bitshares/bindings/index.md)
+- [Swaplock bindings](../reference/swaplock/bindings/index.md)
+- [R-Squared bindings](../reference/rsquared/bindings/index.md)
