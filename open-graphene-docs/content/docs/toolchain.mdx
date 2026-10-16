@@ -1,0 +1,18 @@
+---
+title: Toolchain
+description: From protocol definitions to application code.
+---
+
+## Protocol specification
+
+The specification generator reads the chain's C++ sources and extracts protocol types, operations, and RPC definitions into a machine-readable JSON specification.
+
+## Generated bindings
+
+Rust and TypeScript generators consume that specification. Generated files are committed alongside the project and should be updated by running the generators, rather than edited by hand.
+
+## Application APIs
+
+The API packages build on the generated bindings to support chain connections, transaction construction, signing, and subscriptions. React packages provide hooks built on TanStack Query.
+
+See the [repository overview](https://github.com/open-graphene/open-graphene#readme) for the current package layout and chain support.

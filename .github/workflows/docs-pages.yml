@@ -1,0 +1,60 @@
+name: Documentation Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'open-graphene-docs/**'
+      - '.github/workflows/docs-pages.yml'
+  pull_request:
+    paths:
+      - 'open-graphene-docs/**'
+      - '.github/workflows/docs-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: open-graphene-docs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: open-graphene-docs/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm build
+      - run: pnpm types:check
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: open-graphene-docs/out
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Deploy documentation
+        id: deployment
+        uses: actions/deploy-pages@v4

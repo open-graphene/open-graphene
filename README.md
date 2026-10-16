@@ -9,6 +9,11 @@ multisignature transactions, encrypted memo and live subscriptions for **Swaploc
 R-Squared includes generated Rust bindings and independent TypeScript API/React packages.
 The Acta crate remains an empty placeholder.
 
+## Documentation
+
+[Read the documentation](https://open-graphene.github.io/open-graphene/).
+The static site source lives in [`open-graphene-docs`](open-graphene-docs).
+
 ## Pipeline
 
 ```

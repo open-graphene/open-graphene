@@ -69,3 +69,6 @@ open-graphene-packages/target/
 open-graphene-packages/target/**
 open-graphene-packages/**/target/
 open-graphene-packages/**/target/**
+
+!open-graphene-docs/
+!open-graphene-docs/**
