@@ -39,7 +39,10 @@ pnpm build
 import { RSquaredClient } from '@open-graphene/chain-rsquared-api';
 import { AccountId } from '@open-graphene/chain-rsquared-bindings';
 
-const client = await RSquaredClient.connect(endpoint);
+const client = await RSquaredClient.connect([
+  'wss://node01.rsquared.digital:8090',
+  'wss://node02.rsquared.digital:8090',
+]);
 try {
   const head = await client.database.getDynamicGlobalProperties({});
   console.log(head.head_block_number);
@@ -77,6 +80,31 @@ RPC exports, transaction signing with the chain digest, wrong-chain rejection,
 fee/balance/head checks and ambiguous broadcast responses. Packed-package tests
 check that a standalone R-Squared consumer imports no other chain SDK.
 
-A read-only connection attempt to the upstream example endpoint
-`wss://node.rsquared.digital` failed during local validation. No live transaction
-was signed or broadcast; live network interoperability remains unverified.
+Live validation on 2026-10-16 confirmed both endpoints:
+
+- `wss://node01.rsquared.digital:8090`
+- `wss://node02.rsquared.digital:8090`
+
+On each node, seven of eight checks passed: chain identity was verified during
+connection, and the checks covered head/block decoding, core asset and account
+reads, the full 64-entry fee schedule, personal-data and permission queries,
+personal-data operation preparation with live fee pricing, and a subscription
+receiving a newer block. The personal-data and permission queries returned empty
+lists for `committee-account`; populated domain-object decoding was not verified.
+
+`database.get_content_cards` was rejected on both nodes because the server's
+`content_cards` plugin is disabled. This is an endpoint capability limitation;
+the test retains the failure and exits nonzero rather than reporting full coverage.
+No transaction was signed or broadcast, so live submission and inclusion remain
+unverified.
+
+Repeat this read-only check from the TypeScript workspace:
+
+```sh
+pnpm test:rsquared:live
+# Optional report path followed by custom endpoints:
+pnpm test:rsquared:live /tmp/rsquared-sdk-live.json wss://node01.rsquared.digital:8090
+```
+
+The default JSON report is `/tmp/rsquared-sdk-live.json`. The script closes every
+subscription and client after the checks.

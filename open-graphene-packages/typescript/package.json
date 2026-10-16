@@ -23,7 +23,8 @@
     "test:packages": "pnpm build && node scripts/test-packed-packages.mjs",
     "test:react:room:live": "pnpm build && node scripts/test-react-room-live.mjs",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test:rsquared:live": "pnpm build && node scripts/test-rsquared-live.mjs"
   },
   "devDependencies": {
     "typescript": "7.0.2",
