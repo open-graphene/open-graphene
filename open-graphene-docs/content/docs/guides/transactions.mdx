@@ -1,7 +1,53 @@
 ---
-title: Transactions and subscriptions
+title: Prepare and send a transaction
 description: Preparation, signatures, submission, inclusion and connection ownership.
 ---
+
+## Prepare a token transfer
+
+This BitShares example uses `prepareTransfer`, which resolves accounts and assets, estimates the fee and checks liquid balances. Run it with a connected client from your application. Preparing does not move tokens or require a private key.
+
+```ts
+import type { BitSharesClient } from "@open-graphene/chain-bitshares-api";
+import type { Signer } from "@open-graphene/fc/signing";
+
+export async function prepareTokenTransfer(client: BitSharesClient) {
+  return client.prepareTransfer({
+    from: "YOUR-SENDER",
+    to: "YOUR-RECIPIENT",
+    asset: "1.3.0",
+    amount: "1.25",
+    maxFee: 100000n,
+    expirationSeconds: 120,
+  });
+}
+
+export async function sendReviewedTransfer(
+  client: BitSharesClient,
+  prepared: Awaited<ReturnType<typeof prepareTokenTransfer>>,
+  signer: Signer,
+) {
+  const signed = await prepared.sign(signer);
+  console.info("Submitting transaction", signed.id);
+
+  await client.broadcast(signed);
+  return client.waitForInclusion(signed, 60_000);
+}
+```
+
+Add `@open-graphene/fc` as a `workspace:*` dependency for the signer type import. Replace both account names. `1.3.0` selects the core asset of the connected chain. The string `"1.25"` is a decimal token amount; a bigint would be **raw units**. `maxFee` is also in raw units of the fee asset (the core asset by default): `100000n` is an example cap, not a fee recommendation.
+
+Call `const prepared = await prepareTokenTransfer(client)` and inspect `prepared.transaction` to display the recipient, asset, amount and estimated fee. Ask the user to approve those actual values in your app, then call `sendReviewedTransfer(client, prepared, signer)`. Approval must happen before the transaction expires; prepare again if it expires.
+
+`signer` is supplied by your wallet integration or trusted signing environment. It must implement the [Signer contract](../reference/shared/fc/signing/interfaces/Signer.md). For BitShares, signatures must use the Graphene legacy profile; the API exports `BitSharesWifSigner` for applications that already securely manage WIF keys. Never put a private key into a browser build or query cache. This guide does not create a wallet or provision an account.
+
+The result of `sendReviewedTransfer` contains the observed block number, transaction index and transaction ID. Keep the ID for recovery. This function intentionally propagates errors; handle uncertain submission as described below, without automatically sending a second transfer. Observed inclusion is not a guarantee of irreversible finality.
+
+R-Squared also exposes `prepareTransfer` on `RSquaredClient`. Swaplock's preparation and network identity contracts differ; use its linked client and prepared-transaction signatures below when adapting the flow.
+
+## Other operations
+
+For an operation other than a simple transfer, find its factory in your chain's bindings catalog. Construct the operation with that factory's typed fields, then call `client.prepareOperations([operation], { maxFee })`. Review the resulting transaction before signing. React's `usePrepare…` hooks provide the corresponding preparation step, not an automatic wallet approval flow.
 
 ## Transaction lifecycle
 

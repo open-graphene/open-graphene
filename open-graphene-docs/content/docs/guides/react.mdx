@@ -11,17 +11,72 @@ Import hooks from the package for your chain. The packages have matching convent
 | Swaplock  | `@open-graphene/chain-swaplock-react`  | `SwaplockProvider`  |
 | R-Squared | `@open-graphene/chain-rsquared-react`  | `RSquaredProvider`  |
 
-## Mount a provider
+## Create a React entry point
 
-Create a connected SDK client and a TanStack Query client outside component rendering. This example receives both from the application so their lifetimes remain explicit.
+Use the `graphene-my-app` workspace app from [Start here](./index.mdx). For BitShares, install the UI dependencies and a development server:
+
+```sh
+pnpm add react@19.3.0 react-dom@19.3.0 @tanstack/react-query@5.104.0 '@open-graphene/chain-bitshares-react@workspace:*'
+pnpm add -D vite
+```
+
+Create `index.html`:
+
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Account balances</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/main.tsx"></script>
+  </body>
+</html>
+```
+
+Replace `main.ts` with `main.tsx` below. Set `endpoint` and `accountName` to the same values that worked in your read-only script. Connection happens once, before mounting React. The surrounding `try` catches connection failures; the component handles read failures.
 
 ```tsx
-import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
-import type { BitSharesClient } from "@open-graphene/chain-bitshares-api";
+import React from "react";
+import { createRoot } from "react-dom/client";
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { BitSharesClient } from "@open-graphene/chain-bitshares-api";
 import {
   BitSharesProvider,
   useAccountBalances,
 } from "@open-graphene/chain-bitshares-react";
+
+const endpoint = "wss://YOUR-NODE";
+const accountName = "YOUR-ACCOUNT";
+const container = document.getElementById("root");
+
+if (!container) {
+  throw new Error("Missing #root element in index.html");
+}
+
+try {
+  const client = await BitSharesClient.connect([endpoint]);
+  const queryClient = new QueryClient();
+  const root = createRoot(container);
+
+  root.render(
+    <App client={client} queryClient={queryClient} account={accountName} />,
+  );
+
+  window.addEventListener(
+    "pagehide",
+    () => {
+      root.unmount();
+      queryClient.clear();
+      client.close();
+    },
+    { once: true },
+  );
+} catch (error) {
+  container.textContent = `Connection failed: ${String(error)}`;
+}
 
 interface AppProps {
   client: BitSharesClient;
@@ -64,6 +119,8 @@ function Balances(props: { account: string }) {
   );
 }
 ```
+
+Start the app with `pnpm exec vite`, then open the local URL it prints. You should see a balance list and a live status. Raw amounts are labelled explicitly; use the asset lookup and `formatRawAmount` from [Read and display data](./reads.mdx) when presenting token amounts to users.
 
 The provider does not close the SDK client on unmount. Call `client.close()` when the application is finished with that connection. For Swaplock or R-Squared, use the corresponding client, provider and hook imports together.
 

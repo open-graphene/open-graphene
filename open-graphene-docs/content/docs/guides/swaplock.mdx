@@ -7,6 +7,8 @@ Follow the [workspace setup](./index.mdx) first. Choose a WebSocket endpoint you
 
 ## Connect and read
 
+Save this as `read-account.ts` in the app created by [Start here](./index.mdx), then run it with that guide's `main.ts`. `nameOrId` accepts an account name or object ID such as `1.2.123`; it is not a private key.
+
 ```ts
 import { SwaplockClient } from "@open-graphene/chain-swaplock-api";
 import { CHAIN } from "@open-graphene/chain-swaplock-bindings";
@@ -33,6 +35,8 @@ export async function readAccount(endpoint: string, nameOrId: string) {
 ## Network identity
 
 Swaplock requires an explicit trusted `expectedChainId`. `CHAIN.chainId` selects the bundled testnet. For another deployment, supply its trusted chain ID; do not learn that expected value from the node you are about to trust. The client verifies network identity on connection and reconnection. The current React adapter is restricted to the bundled network.
+
+The returned balance amounts are raw integers. Continue with [Read and display data](./reads.mdx) to resolve asset symbols and format them.
 
 ## Use React
 

@@ -1,0 +1,61 @@
+---
+title: Read and display data
+description: Resolve accounts and assets, format balances and choose between helpers, RPC methods and live hooks.
+---
+
+Complete [your first account read](./index.mdx) first. Keep one connected client for the lifetime of a long-running application; short scripts can close it in `finally`.
+
+## Turn balances into display values
+
+A balance contains an asset ID and a raw amount. Fetch the asset to obtain its symbol and precision. This BitShares function works with the connected client from your application:
+
+```ts
+import type { BitSharesClient } from "@open-graphene/chain-bitshares-api";
+import { formatRawAmount } from "@open-graphene/core";
+
+export async function readDisplayBalances(
+  client: BitSharesClient,
+  accountName: string,
+) {
+  const account = await client.database.account(accountName);
+  const balances = await client.database.accountBalances(account.id);
+  const rows = [];
+
+  for (const balance of balances) {
+    const asset = await client.database.asset(balance.asset_id);
+    rows.push({
+      symbol: asset.symbol,
+      amount: formatRawAmount(balance.amount, asset.precision),
+    });
+  }
+
+  return rows;
+}
+```
+
+Call `await readDisplayBalances(client, "YOUR-ACCOUNT")` before closing your client. The result is an array of `{ symbol, amount }` display strings. For example, raw `123456n` at precision `5` represents `1.23456` tokens. Do not convert bigint amounts to `Number` for calculations; large balances lose precision.
+
+For Swaplock or R-Squared, change the client type import to `SwaplockClient` or `RSquaredClient` from that chain's API package. The account, balances and asset helpers have the same usage.
+
+## Choose a method
+
+Start with the convenience helper when one exists. Generated RPC methods use the node's protocol parameter names and are useful for requests beyond those helpers.
+
+| Task                     | TypeScript entry point                      | React entry point               |
+| ------------------------ | ------------------------------------------- | ------------------------------- |
+| Account by name or ID    | `client.database.account(nameOrId)`         | `useAccount(nameOrId)`          |
+| Account balances         | `client.database.accountBalances(nameOrId)` | `useAccountBalances(nameOrId)`  |
+| Asset by symbol or ID    | `client.database.asset(symbolOrId)`         | `useAsset(symbolOrId)`          |
+| Arbitrary objects by IDs | `client.database.getObjects(params)`        | `useDatabaseGetObjects(params)` |
+
+To find a method's arguments, open your chain's client reference, find the namespace (for example `database`) and the member (for example `getObjects`). Follow the parameter type to see its fields. In React, open the corresponding hook's page. A generated method being present does not mean every node enables that RPC service.
+
+- BitShares: [client methods](../reference/bitshares/typescript/classes/BitSharesClient.md) · [hooks](../reference/bitshares/react/index.md)
+- Swaplock: [client methods](../reference/swaplock/typescript/classes/SwaplockClient.md) · [hooks](../reference/swaplock/react/index.md)
+- R-Squared: [client methods](../reference/rsquared/typescript/classes/RSquaredClient.md) · [hooks](../reference/rsquared/react/index.md)
+
+## Snapshot or live data?
+
+An awaited TypeScript read gives one snapshot. It does not update your UI later. In React, start with `useAccountBalances(accountName)` for a query, then pass `{ live: true }` when the screen should follow changes. The [React example](./react.mdx) includes loading, errors and live connection state.
+
+A query failure means the read failed; do not turn it into an empty balance list. An empty successful list means the account has no balances in that response.

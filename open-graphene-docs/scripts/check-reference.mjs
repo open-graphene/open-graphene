@@ -63,8 +63,8 @@ const pageRoutes = new Set(
 );
 let checkedLinks = 0;
 
-for (const file of markdownFiles) {
-  const filePath = path.join(outputRoot, file);
+for (const file of contentFiles.filter((file) => /\.mdx?$/.test(file))) {
+  const filePath = path.join(contentRoot, file);
   const content = await readFile(filePath, "utf8");
   assert.match(content, /^---\ntitle: /, `Missing Fumadocs title: ${file}`);
 
@@ -131,7 +131,7 @@ for (const [chain, client] of Object.entries(clients)) {
 }
 
 console.log(
-  `Verified all exports of ${inventory.length} entry points, ${markdownFiles.length} pages and ${checkedLinks} local reference links.`,
+  `Verified all exports of ${inventory.length} entry points, ${markdownFiles.length} pages and ${checkedLinks} local documentation links.`,
 );
 
 const examplesDirectory = path.join(docsRoot, ".reference/examples");
@@ -145,7 +145,15 @@ await writeFile(
 );
 
 const exampleFiles = [];
-for (const guide of ["bitshares", "swaplock", "rsquared", "react"]) {
+for (const guide of [
+  "bitshares",
+  "swaplock",
+  "rsquared",
+  "react",
+  "reads",
+  "transactions",
+  "index",
+]) {
   const guidePath = path.join(docsRoot, "content/docs/guides", `${guide}.mdx`);
   const content = await readFile(guidePath, "utf8");
   const language = guide === "react" ? "tsx" : "ts";
@@ -159,6 +167,11 @@ for (const guide of ["bitshares", "swaplock", "rsquared", "react"]) {
   exampleFiles.push(examplePath);
 }
 
+await writeFile(
+  path.join(examplesDirectory, "read-account.ts"),
+  await readFile(path.join(examplesDirectory, "bitshares.ts"), "utf8"),
+);
+
 const queryPackageRoot = path.join(
   repositoryRoot,
   "open-graphene-packages/typescript/node_modules/@tanstack/react-query",
@@ -169,6 +182,9 @@ const queryManifest = JSON.parse(
 
 const examplesProgram = ts.createProgram(exampleFiles, {
   ...config.options,
+  allowImportingTsExtensions: true,
+  types: ["node"],
+  typeRoots: [path.join(docsRoot, "node_modules/@types")],
   paths: {
     ...config.options.paths,
     "@tanstack/react-query": [path.join(queryPackageRoot, queryManifest.types)],
@@ -185,5 +201,5 @@ assert.equal(
   }),
 );
 console.log(
-  "Typechecked the three chain connection examples and the React provider example against SDK source.",
+  "Typechecked the CLI entry point, chain readers, React entry point, balance formatting and transaction examples against SDK source.",
 );

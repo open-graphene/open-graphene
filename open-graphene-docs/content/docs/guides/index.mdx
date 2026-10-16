@@ -1,42 +1,112 @@
 ---
-title: Getting started
-description: Choose your chain, then use the TypeScript client or React hooks.
+title: "Start here: your first account read"
+description: Create a local TypeScript app, connect to a chain and print an account and its balances.
 ---
 
-Open Graphene provides native TypeScript SDKs for **BitShares**, **Swaplock**, and **R-Squared**. Each chain has separate API, bindings and React packages. Use packages from the same chain together.
+Start with a read-only script. You need a **WebSocket RPC endpoint** for your chosen chain and an **existing account name or ID** on that network. You do not need a wallet or private key to read data.
 
-## Set up the workspace
+## 1. Get the SDK
 
-The packages are currently developed in this repository; the SDK README marks npm publication as pending. Use a local workspace dependency rather than assuming that these package versions are available from the registry.
+Use Node.js **22.18 or newer** (to run TypeScript directly) and pnpm **10.15.0**. SDK packages are not yet published to npm; this walkthrough creates a consumer inside the SDK workspace.
 
 ```sh
 git clone https://github.com/open-graphene/open-graphene.git
 cd open-graphene/open-graphene-packages/typescript
 pnpm install --frozen-lockfile
 pnpm build
+mkdir graphene-my-app
+cd graphene-my-app
 ```
 
-Use Node.js 22.12 or newer and pnpm 10.15.0. The packages are ESM and also support modern browsers. Memo encryption in the browser requires Web Crypto in a secure context.
+The directory name matters: `graphene-my-app` matches the existing workspace's `graphene-*` package pattern. All following files go in this directory.
 
-In an application in the same pnpm workspace, declare the packages you import with `workspace:*`. React applications also need React 18.3 or 19 and TanStack Query 5.104 or newer in the v5 series.
+## 2. Declare your dependencies
 
-## Choose a chain
+Create `package.json`. This example uses BitShares:
 
-- [BitShares](./bitshares.mdx)
-- [Swaplock](./swaplock.mdx)
-- [R-Squared](./rsquared.mdx)
+```json
+{
+  "name": "graphene-my-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node main.ts"
+  },
+  "dependencies": {
+    "@open-graphene/chain-bitshares-api": "workspace:*",
+    "@open-graphene/core": "workspace:*"
+  }
+}
+```
 
-Each guide includes a connection example and links to that chain's complete TypeScript, React and bindings reference.
+For R-Squared, replace `chain-bitshares-api` with `chain-rsquared-api`. For Swaplock, use `chain-swaplock-api` and also add `@open-graphene/chain-swaplock-bindings` with version `workspace:*` for its network identity.
 
-## Choose an API layer
+```sh
+pnpm install
+```
 
-| Layer           | Purpose                                                                            |
-| --------------- | ---------------------------------------------------------------------------------- |
-| Chain API       | Connection, typed RPC namespaces, convenient reads, subscriptions and transactions |
-| Chain React     | Providers, query hooks, live reads, mutation hooks and query-options factories     |
-| Chain bindings  | Protocol types, operation factories, RPC descriptors and JSON/FC codecs            |
-| Shared packages | Transport, amounts, signing, memo encryption and React cache utilities             |
+`workspace:*` resolves local packages; it will not work in an unrelated directory outside this workspace. Re-run `pnpm build` from the SDK root after changing SDK source.
 
-The [API reference](../reference/index.md) is generated from public exports, including re-exports and subpath exports. Each symbol page includes its signature, parameter types, return type and source link. A method being exported does not imply that every node enables the corresponding RPC service.
+## 3. Add the account reader
 
-For raw amounts use `bigint` or the string forms accepted by the specific API. Avoid floating-point arithmetic for token amounts. Use the shared codec/cache helpers when serializing values containing `bigint` and bytes.
+Choose your chain and copy its **Connect and read** code into `read-account.ts`:
+
+- [BitShares account reader](./bitshares.mdx#connect-and-read)
+- [Swaplock account reader](./swaplock.mdx#connect-and-read)
+- [R-Squared account reader](./rsquared.mdx#connect-and-read)
+
+Create `main.ts` alongside it:
+
+```ts
+import { readAccount } from "./read-account.ts";
+
+const endpoint = process.env.GRAPHENE_ENDPOINT;
+const accountName = process.env.GRAPHENE_ACCOUNT;
+
+if (!endpoint || !accountName) {
+  throw new Error("Set GRAPHENE_ENDPOINT and GRAPHENE_ACCOUNT before running.");
+}
+
+try {
+  const result = await readAccount(endpoint, accountName);
+  console.dir(result, { depth: null });
+} catch (error) {
+  console.error("Could not read the account:", error);
+  process.exitCode = 1;
+}
+```
+
+## 4. Run it
+
+Replace both values with your network's endpoint and an existing account:
+
+```sh
+GRAPHENE_ENDPOINT='wss://YOUR-NODE' GRAPHENE_ACCOUNT='YOUR-ACCOUNT' pnpm start
+```
+
+The result has `account` (including `id` and `name`) and `balances` (an array of `asset_id` and `amount`). An empty balance array is valid. Raw amounts print as bigint values such as `100000n`; they are not decimal token quantities. The script closes its connection after reading and exits.
+
+Use your network operator's published RPC endpoint. An HTTPS block explorer URL is not a WebSocket RPC URL. The examples deliberately accept network configuration instead of assuming one public node will always be available.
+
+## What should I use next?
+
+| I want to…                               | Use                                                           | Next guide                                           |
+| ---------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------- |
+| Show account data or balances            | Chain API `client.database` helpers                           | [Read and display data](./reads.mdx)                 |
+| Build a React screen that refreshes live | Chain React provider and convenience hooks                    | [React integration](./react.mdx)                     |
+| Transfer tokens                          | `prepareTransfer`, then sign, broadcast and observe inclusion | [Transactions](./transactions.mdx)                   |
+| Call an RPC without a convenience helper | A generated method on the client's namespace                  | [Read and display data](./reads.mdx#choose-a-method) |
+| Build another protocol operation         | Chain bindings plus `prepareOperations`                       | [Transactions](./transactions.mdx#other-operations)  |
+| Look up an exact signature               | Your chain's API catalog                                      | [Reference](../reference/index.md)                   |
+
+Use packages from the same chain together. Most applications start with `chain-…-api`; add `chain-…-react` for React. Bindings expose lower-level protocol types and operation factories; you do not need to learn them before your first read.
+
+## If the first run fails
+
+| Symptom                   | What to check                                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Package cannot be found   | Run `pnpm install` inside the workspace and build the SDK; check the `graphene-my-app` directory name. |
+| Cannot connect            | Check `wss://`, node availability and whether that endpoint exposes RPC.                               |
+| Chain ID mismatch         | The endpoint serves a different network. Choose the correct endpoint and trusted chain identity.       |
+| Account not found         | Use an account on that network, not a public key or wallet label.                                      |
+| JSON serialization throws | SDK values include bigint and bytes. Use `console.dir` for inspection or the SDK codec for storage.    |
