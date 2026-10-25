@@ -73,6 +73,73 @@ export function canKeySatisfyAuthority(
   );
 }
 
+/** Graphene's `GRAPHENE_MAX_SIG_CHECK_DEPTH`. */
+export const MAX_ACCOUNT_AUTHORITY_DEPTH = 2;
+
+/** An active authority with the accounts it delegates to. */
+export type DelegatingAuthority = {
+  readonly weight_threshold: number;
+  readonly key_auths: readonly (readonly [string, number])[];
+  readonly account_auths: readonly (readonly [string, number])[];
+};
+
+/**
+ * Whether one key alone signs for an account: listed directly with enough
+ * weight (`canKeySatisfyAuthority`), or signing alone for an account listed
+ * in `account_auths` with enough weight, at most
+ * `MAX_ACCOUNT_AUTHORITY_DEPTH` accounts deep. E.g. a company account with
+ * `account_auths = [[mateusz, 80], [ania, 20]]` at threshold 50 is signed
+ * for by Mateusz's key alone. One signature never adds weights up.
+ *
+ * `activeAuthorities` returns the current active authorities of the given
+ * account IDs in order; reading them at one chain head is the caller's job.
+ */
+export async function canKeySignAlone(options: {
+  authority: DelegatingAuthority;
+  publicKey: string;
+  activeAuthorities(
+    accountIds: readonly string[],
+  ): Promise<readonly DelegatingAuthority[]>;
+}): Promise<boolean> {
+  let level: readonly DelegatingAuthority[] = [options.authority];
+  const visited = new Set<string>();
+
+  for (let depth = 0; ; depth += 1) {
+    const signedDirectly = level.some((authority) =>
+      canKeySatisfyAuthority(authority, options.publicKey),
+    );
+    if (signedDirectly) {
+      return true;
+    }
+    if (depth === MAX_ACCOUNT_AUTHORITY_DEPTH) {
+      return false;
+    }
+
+    const delegates: string[] = [];
+    for (const authority of level) {
+      for (const [account, weight] of authority.account_auths) {
+        const sufficient =
+          Number.isSafeInteger(weight) && weight >= authority.weight_threshold;
+        if (authority.weight_threshold < 1 || !sufficient) {
+          continue;
+        }
+        if (!visited.has(account)) {
+          visited.add(account);
+          delegates.push(account);
+        }
+      }
+    }
+    if (delegates.length === 0) {
+      return false;
+    }
+
+    level = await options.activeAuthorities(delegates);
+    if (level.length !== delegates.length) {
+      throw new Error('Delegate account authorities are missing');
+    }
+  }
+}
+
 export interface WeightedMember {
   readonly id: string;
   readonly weight: number;

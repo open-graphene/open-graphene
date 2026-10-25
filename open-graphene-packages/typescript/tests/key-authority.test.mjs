@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { canKeySatisfyAuthority } from '../graphene-core/dist/index.js';
+import {
+  canKeySatisfyAuthority,
+  canKeySignAlone,
+} from '../graphene-core/dist/index.js';
 
 const key = 'selected-key';
 const other = 'other-key';
@@ -106,4 +109,96 @@ test('delegated accounts and addresses cannot supply the missing direct key weig
   assert.equal(canKeySatisfyAuthority(authority, key), false);
   authority.key_auths[0][1] = 2;
   assert.equal(canKeySatisfyAuthority(authority, key), true);
+});
+
+const company = 'company-account';
+const mateusz = '1.2.254';
+const ania = '1.2.255';
+const deeper = '1.2.256';
+
+/** Authorities by account ID, read in the order asked. */
+function chainOf(authorities) {
+  const reads = [];
+  return {
+    reads,
+    activeAuthorities: async (accountIds) => {
+      reads.push([...accountIds]);
+      return accountIds.map((id) => authorities[id]);
+    },
+  };
+}
+
+function authorityOf(threshold, keys, accounts = []) {
+  return {
+    weight_threshold: threshold,
+    key_auths: keys,
+    account_auths: accounts,
+  };
+}
+
+test('a delegate account with enough weight signs alone for the account', async () => {
+  const chain = chainOf({
+    [mateusz]: authorityOf(1, [[key, 1]]),
+    [ania]: authorityOf(1, [[other, 1]]),
+  });
+
+  const signs = await canKeySignAlone({
+    authority: authorityOf(
+      50,
+      [],
+      [
+        [mateusz, 80],
+        [ania, 20],
+      ],
+    ),
+    publicKey: key,
+    activeAuthorities: chain.activeAuthorities,
+  });
+
+  assert.equal(signs, true);
+  // Only the delegate with enough weight is read.
+  assert.deepEqual(chain.reads, [[mateusz]]);
+  const aniaSigns = await canKeySignAlone({
+    authority: authorityOf(
+      50,
+      [],
+      [
+        [mateusz, 80],
+        [ania, 20],
+      ],
+    ),
+    publicKey: other,
+    activeAuthorities: chain.activeAuthorities,
+  });
+  assert.equal(aniaSigns, false);
+});
+
+test('account authorities are followed at most two accounts deep', async () => {
+  const chain = chainOf({
+    [mateusz]: authorityOf(1, [], [[ania, 1]]),
+    [ania]: authorityOf(1, [], [[deeper, 1]]),
+    [deeper]: authorityOf(1, [[key, 1]]),
+  });
+
+  const signs = await canKeySignAlone({
+    authority: authorityOf(1, [], [[mateusz, 1]]),
+    publicKey: key,
+    activeAuthorities: chain.activeAuthorities,
+  });
+
+  assert.equal(signs, false);
+  assert.deepEqual(chain.reads, [[mateusz], [ania]]);
+});
+
+test('a directly listed key signs without reading delegates', async () => {
+  const chain = chainOf({});
+
+  const signs = await canKeySignAlone({
+    authority: authorityOf(1, [[key, 1]], [[mateusz, 1]]),
+    publicKey: key,
+    activeAuthorities: chain.activeAuthorities,
+  });
+
+  assert.equal(signs, true);
+  assert.deepEqual(chain.reads, []);
 });
