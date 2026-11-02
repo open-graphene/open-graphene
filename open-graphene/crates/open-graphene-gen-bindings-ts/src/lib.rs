@@ -1,8 +1,6 @@
 //! Deterministic TypeScript emission. Protocol definitions come exclusively from
 //! the shared IR; the hand-written runtime supplies checked JSON primitives.
-use open_graphene_codegen_common::{
-    DEFAULT_FIELDS, LEGACY_ACCESS_OPERATIONS, PROFILE_VERSION, RPC_SYNTHETIC_REFS,
-};
+use open_graphene_codegen_common::{PROFILE_VERSION, RPC_SYNTHETIC_REFS};
 use open_graphene_json_schema::{FieldDef, JsonShape, Protocol, TypeRef};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -446,24 +444,15 @@ pub fn render(protocol: &Protocol, spec_hash: &str) -> Result<BTreeMap<String, S
                 if optional { "?" } else { "" },
                 ts(ty)
             )?;
-            let mut expr = codec_expr(ty, protocol);
-            if field.name == "extensions" && LEGACY_ACCESS_OPERATIONS.contains(&source_name) {
-                expr = "AccessExtensionsCodec".into();
-            }
-            let default =
-                if !optional && DEFAULT_FIELDS.contains(&(source_name, field.name.as_str())) {
-                    ", defaultValue: 0"
-                } else {
-                    ""
-                };
+            let expr = codec_expr(ty, protocol);
             writeln!(
                 json_code,
-                "  {{ name: {}, codec: {expr}, optional: {optional}{default} }},",
+                "  {{ name: {}, codec: {expr}, optional: {optional} }},",
                 q(&field.name)
             )?;
         }
         types.push_str("}\n");
-        let strict = source_name.ends_with("_ext") || source_name == "data_room_access_extensions";
+        let strict = source_name.ends_with("_ext");
         writeln!(json_code, "], {{ rejectUnknown: {strict} }}));")?;
     }
     for def in &protocol.static_variants {
@@ -536,13 +525,6 @@ pub fn render(protocol: &Protocol, spec_hash: &str) -> Result<BTreeMap<String, S
         "export const ProtocolObjectCodec: c.Codec<t.ProtocolObject> = c.lazy(() => c.objectUnion<t.ProtocolObject>({{ {} }}));",
         routes.join(", ")
     )?;
-    if protocol
-        .structs
-        .iter()
-        .any(|s| s.name == "data_room_access_extensions")
-    {
-        json_code.push_str("const AccessExtensionsCodec: c.Codec<t.DataRoomAccessExtensions> = c.struct([{ name: 'expected_access_state', codec: c.text, optional: true }], { legacyEmptyArray: true, rejectUnknown: true });\n");
-    }
     files.insert("types.ts".into(), types);
     files.insert("json.ts".into(), json_code);
     let mut operations =
@@ -690,7 +672,7 @@ pub fn render(protocol: &Protocol, spec_hash: &str) -> Result<BTreeMap<String, S
     files.insert("support.json".into(), serde_json::to_string_pretty(&json!({
         "chain": protocol.chain.id, "schemaVersion": protocol.schema_version, "profileVersion": PROFILE_VERSION, "specSha256": spec_hash,
         "stage": "rust-fc-parity", "dynamicFields": dynamic,
-        "operations": protocol.operations.iter().map(|op| json!({"name":op.name, "tag":op.wire_tag, "virtual":op.is_virtual, "type":true, "json":"generated", "fc": if op.is_virtual { "rejected_virtual" } else { "generated_rust_extension_profile" }, "signing": if op.is_virtual { "not_broadcastable" } else if protocol.chain.id == "swaplock" { "swaplock-low-s" } else { "graphene-legacy" }, "builder":!op.is_virtual})).collect::<Vec<_>>(),
+        "operations": protocol.operations.iter().map(|op| json!({"name":op.name, "tag":op.wire_tag, "virtual":op.is_virtual, "type":true, "json":"generated", "fc": if op.is_virtual { "rejected_virtual" } else { "generated_rust_extension_profile" }, "signing": if op.is_virtual { "not_broadcastable" } else { "graphene-legacy" }, "builder":!op.is_virtual})).collect::<Vec<_>>(),
         "rpc": protocol.rpc_methods.iter().map(|m| json!({"api":m.api_name,"method":m.name,"descriptor":true,"highLevel":true,"subscription":false})).collect::<Vec<_>>()
     }))? + "\n");
     Ok(files)
@@ -791,7 +773,7 @@ mod tests {
     static NEXT: AtomicUsize = AtomicUsize::new(0);
 
     fn fixture() -> Protocol {
-        serde_json::from_str(include_str!("../../../../open-graphene-packages/rust/graphene-chain-swaplock/graphene-chain-swaplock-spec/dist/swaplock.open-graphene.json")).unwrap()
+        serde_json::from_str(include_str!("../../../../open-graphene-packages/rust/graphene-chain-actanet/graphene-chain-actanet-spec/dist/actanet.open-graphene.json")).unwrap()
     }
     #[test]
     fn rejects_ambiguous_or_missing_protocol_definitions() {

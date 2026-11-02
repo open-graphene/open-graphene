@@ -4,7 +4,7 @@ use open_graphene_transport::GrapheneSession;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let rpc_url = std::env::var("SWAPLOCK_RPC_URL")?;
+    let rpc_url = std::env::var("GRAPHENE_RPC_URL")?;
     let session = GrapheneSession::connect(&rpc_url).await?;
 
     println!("chain_id={}", session.chain_id());

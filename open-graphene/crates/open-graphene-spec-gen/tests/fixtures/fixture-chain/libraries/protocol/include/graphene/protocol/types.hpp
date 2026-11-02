@@ -20,7 +20,7 @@ GRAPHENE_DEFINE_IDS(protocol, protocol_ids, /*protocol objects are not prefixed*
                     /* 1.3.x  */ (asset))
 
 // Note: members deliberately listed in a different order than the enum body,
-// matching the real BitShares/Swaplock sources.
+// matching the real BitShares and actanet-core sources.
 FC_REFLECT_ENUM( graphene::protocol::asset_issuer_permission_flags,
    (charge_market_fee)
    (white_list)

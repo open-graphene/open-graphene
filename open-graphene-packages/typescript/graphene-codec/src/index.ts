@@ -275,10 +275,8 @@ export interface Field {
   readonly name: string;
   readonly codec: Codec<unknown>;
   readonly optional?: boolean;
-  readonly defaultValue?: unknown;
 }
 export interface StructOptions {
-  readonly legacyEmptyArray?: boolean;
   readonly rejectUnknown?: boolean;
 }
 export function struct<T extends object>(
@@ -289,10 +287,7 @@ export function struct<T extends object>(
     value: unknown,
     encode: boolean,
   ): Record<string, unknown> => {
-    const input =
-      options.legacyEmptyArray && Array.isArray(value) && value.length === 0
-        ? {}
-        : record(value);
+    const input = record(value);
     if (encode || options.rejectUnknown) {
       const names = new Set(fields.map((field) => field.name));
       if (Object.keys(input).some((key) => !names.has(key)))
@@ -300,12 +295,10 @@ export function struct<T extends object>(
     }
     const entries: [string, unknown][] = [];
     for (const field of fields) {
-      let member = Object.hasOwn(input, field.name)
+      const member = Object.hasOwn(input, field.name)
         ? input[field.name]
         : undefined;
       if (member == null && field.optional) continue;
-      if (member === undefined && Object.hasOwn(field, 'defaultValue'))
-        member = field.defaultValue;
       entries.push([
         field.name,
         at(field.name, () =>
@@ -317,12 +310,7 @@ export function struct<T extends object>(
   };
   return codec(
     (value) => transform(value, false) as T,
-    (value) => {
-      const result = transform(value, true) as { [key: string]: WireValue };
-      return options.legacyEmptyArray && Object.keys(result).length === 0
-        ? []
-        : result;
-    },
+    (value) => transform(value, true) as { [key: string]: WireValue },
   );
 }
 export function variant<T>(

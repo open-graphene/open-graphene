@@ -178,6 +178,8 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         | "block_header"
         | "chain_parameters"
         | "custom_authority_options_type"
+        | "fee_grant_options_type"
+        | "grant_payer"
         | "generic_operation_result"
         | "generic_exchange_operation_result"
         | "htlc_options"
@@ -231,14 +233,11 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         "limit_order_auto_action" => TypeRef::StaticVariantRef {
             name: "limit_order_auto_action".to_string(),
         },
-        "data_room_access_state" | "data_room_access_member_state" => TypeRef::Ref {
-            name: normalized.to_string(),
-        },
-        "data_room_subject" => TypeRef::StaticVariantRef {
-            name: "data_room_subject".to_string(),
-        },
         "data_room_member_ref" => TypeRef::StaticVariantRef {
             name: "data_room_member_ref".to_string(),
+        },
+        "fee_payer_ref" => TypeRef::StaticVariantRef {
+            name: "fee_payer_ref".to_string(),
         },
         "special_authority" => TypeRef::StaticVariantRef {
             name: "special_authority".to_string(),
@@ -525,9 +524,9 @@ mod tests {
             }
         );
         assert_eq!(
-            resolve_cpp_type("data_room_subject"),
+            resolve_cpp_type("fee_payer_ref"),
             TypeRef::StaticVariantRef {
-                name: "data_room_subject".to_string()
+                name: "fee_payer_ref".to_string()
             }
         );
         assert_eq!(

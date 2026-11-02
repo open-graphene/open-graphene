@@ -6,8 +6,8 @@ import {
   RpcClient,
   GrapheneSession,
 } from '../graphene-transport/dist/index.js';
-import { SwaplockClient } from '../graphene-chain-swaplock/graphene-chain-swaplock-api/dist/index.js';
-import { CHAIN } from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
+import { ActanetClient } from '../graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
+import { CHAIN } from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
 import { rpc, text } from '../graphene-codec/dist/index.js';
 
 // Closing deliberately has no acknowledgement: cancellation must settle locally.
@@ -111,7 +111,7 @@ function assertReleased(socket, signal) {
 
 const probe = rpc('database', 'get_probe', [], text);
 
-for (const Client of [RpcClient, GrapheneSession, SwaplockClient]) {
+for (const Client of [RpcClient, GrapheneSession, ActanetClient]) {
   test(`${Client.name} rejects a pre-aborted signal without opening a socket`, async () => {
     const controller = new AbortController();
     const reason = new Error('selection ended');
@@ -249,7 +249,7 @@ test(
 );
 
 test(
-  'SwaplockClient forwards lifetime cancellation and never retries a sent broadcast',
+  'ActanetClient forwards lifetime cancellation and never retries a sent broadcast',
   {
     timeout: 1000,
   },
@@ -259,7 +259,7 @@ test(
       heldMethod: 'broadcast_transaction_with_callback',
     });
     let connections = 0;
-    const client = await SwaplockClient.connect('ws://fixture', {
+    const client = await ActanetClient.connect('ws://fixture', {
       expectedChainId: CHAIN.chainId,
       signal: controller.signal,
       createSocket() {

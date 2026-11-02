@@ -3,7 +3,9 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 const rich = process.argv.includes('--rich');
-const chain = process.argv.includes('--bitshares') ? 'bitshares' : 'swaplock';
+const chain =
+  ['bitshares', 'actanet'].find((c) => process.argv.includes('--' + c)) ??
+  'actanet';
 const b = await import(
   '../graphene-chain-' +
     chain +
@@ -33,7 +35,10 @@ const defs = new Map(
   [...spec.structs, ...spec.operations].map((s) => [s.name, s]),
 );
 const variants = new Map(spec.staticVariants.map((s) => [s.name, s]));
-const publicKey = 'BTS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV';
+// The prefix is not part of the key bytes, so every chain encodes the same key.
+const publicKey =
+  b.CHAIN.publicKeyPrefix +
+  '6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV';
 function value(t, depth = 0) {
   if (depth > 25) throw Error('Recursive fixture');
   switch (t.kind) {
@@ -128,10 +133,16 @@ for (const op of spec.operations.filter((o) => !o.isVirtual)) {
     vectors.push({ name: op.name, operation, error: e.message });
   }
 }
+// Each bindings crate builds on its own: `cargo build --example fc_oracle[_<chain>]` in it.
 const oracle = spawnSync(
   root +
-    'target/debug/examples/fc_oracle' +
-    (chain === 'bitshares' ? '_bitshares' : ''),
+    'open-graphene-packages/rust/graphene-chain-' +
+    chain +
+    '/graphene-chain-' +
+    chain +
+    '-bindings/target/debug/examples/fc_oracle' +
+    '_' +
+    chain,
   [],
   {
     input:
@@ -147,13 +158,18 @@ const oracle = spawnSync(
 );
 if (oracle.status !== 0) throw Error(oracle.stderr || oracle.error);
 const answers = oracle.stdout.trim().split('\n').map(JSON.parse);
+const nativeNodes = {
+  bitshares: 'wss://api.dex.trading/',
+};
+// --node=<url> compares with another node, e.g. a local one of a chain without a public node
+const nodeUrl =
+  process.argv.find((a) => a.startsWith('--node='))?.slice('--node='.length) ??
+  nativeNodes[chain];
 let client;
-if (process.argv.includes('--live'))
-  client = await RpcClient.connect(
-    chain === 'swaplock'
-      ? 'wss://node01.swaplock.chainpool.online:8090'
-      : 'wss://api.dex.trading/',
-  );
+if (process.argv.includes('--live')) {
+  if (!nodeUrl) throw Error('No public ' + chain + ' node to compare with');
+  client = await RpcClient.connect(nodeUrl);
+}
 try {
   for (const [i, v] of vectors.entries()) {
     v.rust = answers[i];

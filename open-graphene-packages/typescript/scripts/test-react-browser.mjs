@@ -7,10 +7,10 @@ const bundle = await build({
   stdin: {
     contents: `
  import {runReactChecks,runLiveReact} from './tests/react.browser.mjs';
- import {SwaplockClient} from './graphene-chain-swaplock/graphene-chain-swaplock-api/dist/index.js';
+ import {ActanetClient} from './graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
  import {BitSharesClient} from './graphene-chain-bitshares/graphene-chain-bitshares-api/dist/index.js';
  globalThis.runReactChecks=runReactChecks;
- globalThis.runLiveReact=async({chain,endpoint})=>{const c=await (chain==='swaplock'?SwaplockClient:BitSharesClient).connect(endpoint);try{return {chain,endpoint,...await runLiveReact(c,chain)};}finally{c.close();}};
+ globalThis.runLiveReact=async({chain,endpoint})=>{const c=await (chain==='actanet'?ActanetClient:BitSharesClient).connect(endpoint);try{return {chain,endpoint,...await runLiveReact(c,chain)};}finally{c.close();}};
  `,
     resolveDir: fileURLToPath(new URL('../', import.meta.url)),
     sourcefile: 'react-browser-test.js',
@@ -41,8 +41,6 @@ try {
   if (live) {
     const runs = [];
     for (const [chain, endpoint] of [
-      ['swaplock', 'wss://node01.swaplock.chainpool.online:8090'],
-      ['swaplock', 'wss://node02.swaplock.chainpool.online:8090'],
       ['bitshares', 'wss://api.dex.trading/'],
       ['bitshares', 'wss://public.xbts.io/ws'],
     ]) {

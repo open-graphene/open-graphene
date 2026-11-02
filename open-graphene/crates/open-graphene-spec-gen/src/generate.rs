@@ -16,6 +16,7 @@ use crate::extract::{
     RawClass, RawEnum, RawEnumDefinition, RawObjectType, RawReflect, RawStaticVariant, SourceFacts,
     SourceLoc, extract_source_facts,
 };
+use crate::genesis::resolve_chain_id;
 use crate::resolve::{resolve_cpp_type, resolve_rpc_methods};
 use crate::source::discover_sources;
 
@@ -1155,8 +1156,9 @@ fn source_meta(name: &str, source: &SourceLoc) -> SourceMeta {
 
 pub fn generate_from_config(path: impl AsRef<Path>) -> Result<GenerateResult> {
     let config_path = path.as_ref();
-    let config = load_config(config_path)?;
+    let mut config = load_config(config_path)?;
     let source_set = discover_sources(config_path, &config.source)?;
+    config.chain.chain_id = resolve_chain_id(&config.chain, &source_set.chain_repo)?;
     let facts = extract_source_facts(&source_set)?;
     let rpc_resolution = resolve_rpc_methods(&config, &facts);
     let resolved_rpc_method_count = rpc_resolution.methods.len();

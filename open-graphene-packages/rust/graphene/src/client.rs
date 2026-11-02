@@ -1,6 +1,6 @@
-use graphene_chain_swaplock_api::ConnectionStrategy;
+use graphene_chain_actanet_api::ConnectionStrategy;
 
-use crate::chain::{Acta, BitShares, ChainClientBuilder, Swaplock};
+use crate::chain::{Actanet, BitShares, ChainClientBuilder, RSquared};
 use crate::error::GrapheneConfigError;
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -97,7 +97,7 @@ impl GrapheneClient {
         &self.config
     }
 
-    pub fn swaplock(self) -> ChainClientBuilder<Swaplock> {
+    pub fn actanet(self) -> ChainClientBuilder<Actanet> {
         ChainClientBuilder::from_config(self.config)
     }
 
@@ -105,7 +105,7 @@ impl GrapheneClient {
         ChainClientBuilder::from_config(self.config)
     }
 
-    pub fn acta(self) -> ChainClientBuilder<Acta> {
+    pub fn rsquared(self) -> ChainClientBuilder<RSquared> {
         ChainClientBuilder::from_config(self.config)
     }
 }

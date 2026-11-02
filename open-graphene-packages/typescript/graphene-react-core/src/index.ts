@@ -5,6 +5,10 @@ export {
   deserializeCache,
 } from './keys.js';
 export { createChainAdapter } from './adapter.js';
+export {
+  createConnectionContext,
+  type ConnectionContext,
+} from './connection.js';
 export type {
   SdkClient,
   ChainAdapter,

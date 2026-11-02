@@ -12,7 +12,10 @@ import type {
   AssetId,
 } from '@open-graphene/chain-rsquared-bindings';
 import type { Signer } from '@open-graphene/fc/signing';
-import type { LiveReadOptions } from '@open-graphene/react-core';
+import {
+  createConnectionContext,
+  type LiveReadOptions,
+} from '@open-graphene/react-core';
 export * from './generated/index.js';
 export const RSquaredProvider = adapter.Provider;
 export const useRSquaredClient = adapter.useClient;
@@ -247,3 +250,9 @@ export function useWaitForInclusion() {
     true,
   );
 }
+
+const connection = createConnectionContext('RSquared');
+/** Supplies a host-owned `SharedConnection` to every RSquared consumer below it. */
+export const RSquaredConnectionProvider = connection.ConnectionProvider;
+/** The shared connection of the nearest `RSquaredConnectionProvider`. */
+export const useRSquaredConnection = connection.useConnection;

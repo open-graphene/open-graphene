@@ -8,7 +8,7 @@ import {
 } from '../graphene-primitives/dist/index.js';
 import { objectId as objectIdCodec } from '../graphene-codec/dist/index.js';
 import { FcWriter } from '../graphene-fc/dist/index.js';
-import * as swaplock from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
+import * as actanet from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
 import * as bitshares from '../graphene-chain-bitshares/graphene-chain-bitshares-bindings/dist/index.js';
 
 test('canonical object IDs preserve zero and the largest packed ID', () => {
@@ -57,7 +57,7 @@ for (const value of [
     assert.throws(() => objectIdCodec().encode(value));
     assert.throws(() => objectIdCodec().decode(value));
 
-    for (const chain of [swaplock, bitshares]) {
+    for (const chain of [actanet, bitshares]) {
       assert.throws(() => chain.AccountId(value));
       assert.throws(() =>
         chain.DatabaseGetObjects.encodeParams({
@@ -88,7 +88,7 @@ test('enforces the requested space and type without rejecting instance zero', ()
   assert.throws(() => parseObjectId('2.24.0', 1, 24));
   assert.throws(() => parseObjectId('1.23.0', 1, 24));
 
-  for (const chain of [swaplock, bitshares]) {
+  for (const chain of [actanet, bitshares]) {
     assert.equal(chain.AccountId('1.2.0'), '1.2.0');
     assert.throws(() => chain.AccountId('1.3.0'));
   }

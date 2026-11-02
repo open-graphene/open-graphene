@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import * as b from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
+import * as b from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
 import {
   prepareOperations,
   TransactionPreparationError,
-} from '../graphene-chain-swaplock/graphene-chain-swaplock-api/dist/index.js';
+} from '../graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
 import { CodecError } from '../graphene-codec/dist/index.js';
 
 const now = Date.UTC(2026, 9, 8, 12);
@@ -17,13 +17,13 @@ function fixture(options = {}) {
   const calls = [];
   const builders = b.bindOperationBuilders((operation) => operation);
   const operation = builders.data_room_create({
+    payer: [0, b.AccountId('1.2.100')],
+    caller: [0, b.AccountId('1.2.100')],
     owner: b.AccountId('1.2.100'),
     name: 'room',
     description: '',
-    subject: [0, {}],
-    extensions: {
-      write_policy: 1,
-    },
+    caller_permissions: 15,
+    extensions: [],
   });
   const head = {
     head_block_number: 0x10064,
@@ -91,10 +91,7 @@ test('preparation prices a room operation and derives reference block and expira
   assert.equal(prepared.transaction.ref_block_prefix, 0x44332211);
   assert.equal(prepared.transaction.expiration, '2026-10-08T12:02:00');
   assert.equal(prepared.transaction.operations[0][1].fee.amount, 100n);
-  assert.equal(
-    prepared.transaction.operations[0][1].extensions.write_policy,
-    1,
-  );
+  assert.deepEqual(prepared.transaction.operations[0][1].payer, [0, '1.2.100']);
   assert.deepEqual(state.operation, original);
   assert.deepEqual(state.calls, [
     'get_required_fees',

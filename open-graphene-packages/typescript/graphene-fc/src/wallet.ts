@@ -68,11 +68,11 @@ export class PrivateKey implements Signer {
   }
   static fromBytes(
     bytes: Uint8Array,
-    profile: SigningProfile = 'swaplock-low-s',
+    profile: SigningProfile = 'graphene-legacy',
   ) {
     return new PrivateKey(bytes, profile);
   }
-  static fromWif(wif: string, profile: SigningProfile = 'swaplock-low-s') {
+  static fromWif(wif: string, profile: SigningProfile = 'graphene-legacy') {
     const key = decodeWif(wif);
     try {
       return this.fromBytes(key, profile);
@@ -82,7 +82,7 @@ export class PrivateKey implements Signer {
   }
   static fromSeed(
     seed: Uint8Array,
-    profile: SigningProfile = 'swaplock-low-s',
+    profile: SigningProfile = 'graphene-legacy',
   ) {
     const key = privateKeyFromSeed(seed);
     try {
@@ -158,7 +158,7 @@ export class BrainKey {
     if (this.#disposed) throw new Error('Brain key disposed');
     return new TextDecoder().decode(this.#words);
   }
-  privateKey(sequence = 0, profile: SigningProfile = 'swaplock-low-s') {
+  privateKey(sequence = 0, profile: SigningProfile = 'graphene-legacy') {
     integer(sequence, 0, 0xffffffff);
     const seed = new TextEncoder().encode(this.words + ' ' + sequence);
     const key = sha256(sha512(seed));
@@ -181,7 +181,7 @@ export function accountRoleKey(
   account: string,
   password: string,
   role: string,
-  profile: SigningProfile = 'swaplock-low-s',
+  profile: SigningProfile = 'graphene-legacy',
 ) {
   const seed = new TextEncoder().encode(
     normalizeBrainKey(account + role + password),
@@ -201,7 +201,7 @@ export class AccountKeys {
   static derive(
     account: string,
     password: string,
-    profile: SigningProfile = 'swaplock-low-s',
+    profile: SigningProfile = 'graphene-legacy',
   ) {
     return new AccountKeys(
       accountRoleKey(account, password, 'owner', profile),

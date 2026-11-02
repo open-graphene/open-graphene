@@ -50,30 +50,6 @@ pub(crate) fn render_types(
         }
     }
 
-    if protocol
-        .structs
-        .iter()
-        .any(|s| s.name == "data_room_access_extensions")
-    {
-        out.push_str(r#"
-// Typed extension payloads retain legacy [] JSON when empty.
-pub(crate) fn serialize_access_extensions<S: serde::Serializer>(value: &DataRoomAccessExtensions, serializer: S) -> Result<S::Ok, S::Error> {
-    if value.expected_access_state.is_none() {
-        Vec::<serde_json::Value>::new().serialize(serializer)
-    } else {
-        value.serialize(serializer)
-    }
-}
-pub(crate) fn deserialize_access_extensions<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<DataRoomAccessExtensions, D::Error> {
-    let value = serde_json::Value::deserialize(deserializer)?;
-    if value.as_array().is_some_and(|v| v.is_empty()) {
-        return Ok(DataRoomAccessExtensions { expected_access_state: None });
-    }
-    serde_json::from_value(value).map_err(serde::de::Error::custom)
-}
-"#);
-    }
-
     let mut emitted = BTreeSet::new();
     if protocol_uses_signature(protocol) {
         ensure_unique(&mut emitted, "Signature", "type")?;
@@ -181,9 +157,6 @@ pub(crate) fn render_struct(
         "#[schema(as = {})]\n",
         openapi_schema_name(protocol, &struct_name)
     ));
-    if struct_def.name == "data_room_access_extensions" {
-        out.push_str("#[serde(deny_unknown_fields)]\n");
-    }
     out.push_str(&format!("pub struct {struct_name} {{\n"));
     render_fields(
         out,
@@ -299,22 +272,6 @@ pub(crate) fn render_fields(
         let field_name = rust_field_name(&field.name);
         ensure_unique(&mut emitted, &field_name, "field")?;
         let ty = render_type_ref(protocol, &field.ty)?;
-        // Older Swaplock nodes omit the immutable room policy. Treat their rooms
-        // as legacy; missing policy must never accidentally enable strict writes.
-        if open_graphene_codegen_common::DEFAULT_FIELDS.iter().any(
-            |(source_owner, source_field)| {
-                owner == rust_type_name(source_owner) && field.name == *source_field
-            },
-        ) {
-            out.push_str("    #[serde(default)]\n");
-        }
-        if field.name == "extensions"
-            && open_graphene_codegen_common::LEGACY_ACCESS_OPERATIONS
-                .iter()
-                .any(|name| owner == rust_type_name(name))
-        {
-            out.push_str("    #[serde(serialize_with = \"crate::generated::types::serialize_access_extensions\", deserialize_with = \"crate::generated::types::deserialize_access_extensions\")]\n");
-        }
         out.push_str(&serde_rename_attr("    ", &field.name, &field_name));
         // fc renders integers past 2^53 as strings, so a 64-bit field can arrive either way
         // depending on its value. Accept both rather than guessing per field.

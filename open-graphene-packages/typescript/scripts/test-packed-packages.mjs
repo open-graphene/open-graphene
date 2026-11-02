@@ -102,14 +102,18 @@ const overrides = Object.fromEntries(
   artifacts.map((item) => [item.name, 'file:' + join(destination, item.file)]),
 );
 const consumerResults = [];
-const chains = ['swaplock', 'bitshares', 'rsquared'];
+const chains = ['bitshares', 'rsquared', 'actanet'];
 for (const chain of chains) {
   const clientName = {
-    swaplock: 'Swaplock',
     bitshares: 'BitShares',
     rsquared: 'RSquared',
+    actanet: 'Actanet',
   }[chain];
-  const operationCount = { swaplock: 88, bitshares: 71, rsquared: 59 }[chain];
+  const operationCount = {
+    bitshares: 71,
+    rsquared: 59,
+    actanet: 88,
+  }[chain];
   const consumer = join(destination, 'consumer-' + chain);
   await mkdir(consumer);
   const packageName = '@open-graphene/chain-' + chain + '-react';

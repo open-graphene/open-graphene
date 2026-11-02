@@ -12,11 +12,11 @@ import {
   RpcTransportError,
   RpcRemoteError,
 } from '../graphene-transport/dist/index.js';
-import * as swaplock from '@open-graphene/chain-swaplock-react';
+import * as actanet from '@open-graphene/chain-actanet-react';
 import * as bitshares from '@open-graphene/chain-bitshares-react';
-import { CHAIN } from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
+import { CHAIN } from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
 import { readFileSync } from 'node:fs';
-import * as swaplockBindings from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
+import * as actanetBindings from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
 import * as bitsharesBindings from '../graphene-chain-bitshares/graphene-chain-bitshares-bindings/dist/index.js';
 import { bytesToHex } from '../graphene-primitives/dist/index.js';
 const pause = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -71,7 +71,7 @@ test('React query keys isolate clients, chains and tagged values; hydrate bigint
 });
 test('generated RPC inventory covers reads and imperative methods with distinct lifecycles', async () => {
   for (const [chain, exports] of [
-    ['swaplock', swaplock],
+    ['actanet', actanet],
     ['bitshares', bitshares],
   ]) {
     const spec = JSON.parse(
@@ -91,7 +91,7 @@ test('generated RPC inventory covers reads and imperative methods with distinct 
       )
       .map((m) => m.apiName + '.' + m.name);
     assert.deepEqual(exports.generatedQueryMethods, expected);
-    assert.equal(expected.length, chain === 'swaplock' ? 39 : 24);
+    assert.equal(expected.length, chain === 'actanet' ? 41 : 24);
     assert.equal(
       typeof exports.useNetworkBroadcastBroadcastTransaction,
       'function',
@@ -110,7 +110,7 @@ test('generated RPC inventory covers reads and imperative methods with distinct 
     rpc: { invoke: async () => [{ amount: 5n, asset_id: '1.3.0' }] },
   };
   const q = cache();
-  const options = swaplock.databaseGetAccountBalancesOptions(client, {
+  const options = actanet.databaseGetAccountBalancesOptions(client, {
     account_name_or_id: 'alice',
     assets: [],
   });
@@ -119,7 +119,7 @@ test('generated RPC inventory covers reads and imperative methods with distinct 
   ]);
   assert.throws(
     () =>
-      swaplock.databaseGetObjectsOptions(client, { ids: [], subscribe: true }),
+      actanet.databaseGetObjectsOptions(client, { ids: [], subscribe: true }),
     /live hook/,
   );
   q.clear();
@@ -310,15 +310,15 @@ test('public options for explicit hydration scopes share data without mixing cha
       database: { account: async () => ({ name: 'alice' }) },
     },
     b = { ...a };
-  const server = swaplock.accountOptions(a, 'alice', 'public-ssr');
+  const server = actanet.accountOptions(a, 'alice', 'public-ssr');
   await q.fetchQuery(server);
   assert.equal(
-    q.getQueryData(swaplock.accountOptions(b, 'alice', 'public-ssr').queryKey)
+    q.getQueryData(actanet.accountOptions(b, 'alice', 'public-ssr').queryKey)
       .name,
     'alice',
   );
   assert.equal(
-    q.getQueryData(swaplock.accountOptions(b, 'alice').queryKey),
+    q.getQueryData(actanet.accountOptions(b, 'alice').queryKey),
     undefined,
   );
   q.clear();
@@ -358,7 +358,7 @@ const operationSymbol = (name) =>
         .join('');
 test('every generated operation preparation preserves the independently verified payload and transaction options', async () => {
   for (const [chain, api, b] of [
-    ['swaplock', swaplock, swaplockBindings],
+    ['actanet', actanet, actanetBindings],
     ['bitshares', bitshares, bitsharesBindings],
   ]) {
     const spec = JSON.parse(
@@ -373,7 +373,7 @@ test('every generated operation preparation preserves the independently verified
       .filter((op) => !op.isVirtual)
       .map((op) => op.name.replace(/_operation$/, ''));
     assert.deepEqual(api.generatedPrepareOperations, names);
-    assert.equal(names.length, chain === 'swaplock' ? 88 : 71);
+    assert.equal(names.length, chain === 'actanet' ? 88 : 71);
     const client = {
       prepareOperations: async (operations, options) => ({
         operations,
@@ -414,21 +414,25 @@ test('room preparation supplies fee/extensions defaults without generating keys 
       submitted++;
     },
   };
-  const result = await swaplock.prepareDataRoomCreate(client, {
-    owner: swaplockBindings.AccountId('1.2.100'),
+  const result = await actanet.prepareDataRoomCreate(client, {
+    payer: [0, actanetBindings.AccountId('1.2.100')],
+    caller: [0, actanetBindings.AccountId('1.2.100')],
+    owner: actanetBindings.AccountId('1.2.100'),
     name: 'room',
     description: '',
-    subject: [0, {}],
+    caller_permissions: 15,
   });
   assert.deepEqual(result.operations[0], [
-    78,
+    80,
     {
+      payer: [0, '1.2.100'],
+      caller: [0, '1.2.100'],
       owner: '1.2.100',
       name: 'room',
       description: '',
-      subject: [0, {}],
+      caller_permissions: 15,
       fee: { amount: 0n, asset_id: '1.3.0' },
-      extensions: {},
+      extensions: [],
     },
   ]);
   assert.equal(submitted, 0);
@@ -447,7 +451,7 @@ test('chain React packages have isolated dependency graphs and browser bundles',
     'graphene-primitives',
     'graphene-core',
   ];
-  for (const chain of ['swaplock', 'bitshares'])
+  for (const chain of ['actanet', 'bitshares'])
     for (const suffix of ['api', 'bindings', 'react'])
       folders.push(`graphene-chain-${chain}/graphene-chain-${chain}-${suffix}`);
   for (const folder of folders) {
@@ -456,8 +460,8 @@ test('chain React packages have isolated dependency graphs and browser bundles',
     );
     manifests.set(manifest.name, manifest);
   }
-  for (const chain of ['swaplock', 'bitshares']) {
-    const other = chain === 'swaplock' ? 'bitshares' : 'swaplock',
+  for (const chain of ['actanet', 'bitshares']) {
+    const other = chain === 'actanet' ? 'bitshares' : 'actanet',
       name = `@open-graphene/chain-${chain}-react`,
       visited = new Set();
     function visit(name) {

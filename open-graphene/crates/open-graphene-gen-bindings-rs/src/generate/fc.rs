@@ -128,8 +128,8 @@ pub(crate) fn render_fc_transfer_path_impls(out: &mut String, protocol: &Protoco
         "vesting_policy_initializer",
         "worker_initializer",
         "limit_order_auto_action",
-        "data_room_subject",
         "data_room_member_ref",
+        "fee_payer_ref",
     ] {
         render_fc_tagged_static_variant_impl(out, protocol, spec_name)?;
     }
@@ -277,25 +277,24 @@ pub(crate) fn render_fc_extension_struct_impl(out: &mut String, struct_def: &Str
     let mut fields = struct_def.fields.clone();
     fields.sort_by_key(|field| field.index);
 
-    // This extension has one optional string at FC index 0. Keep other extension
-    // families fail-closed until their non-empty wire formats have coverage.
+    // Actanet's content card extensions have one optional field, expected_revision, at
+    // FC index 0. Keep other extension families fail-closed until their non-empty wire
+    // formats have coverage.
     if matches!(
         struct_def.name.as_str(),
         "content_card_update_operation_ext" | "content_card_remove_operation_ext"
-    ) {
-        out.push_str("        match &self.expected_hash {\n");
+    ) && fields.len() == 1
+        && matches!(fields[0].ty, TypeRef::Optional { .. })
+    {
+        out.push_str(&format!(
+            "        match &self.{} {{\n",
+            rust_field_name(&fields[0].name)
+        ));
         out.push_str("            None => write_varint(0u64, out),\n");
-        out.push_str("            Some(hash) => { write_varint(1u64, out); write_varint(0u64, out); hash.fc_serialize(out)?; }\n");
-        out.push_str("        }\n        Ok(())\n");
-    } else if struct_def.name == "data_room_access_extensions" {
-        out.push_str("        match &self.expected_access_state {\n");
-        out.push_str("            None => write_varint(0u64, out),\n");
-        out.push_str("            Some(hash) => { write_varint(1u64, out); write_varint(0u64, out); hash.fc_serialize(out)?; }\n");
-        out.push_str("        }\n        Ok(())\n");
-    } else if struct_def.name == "data_room_create_operation_ext" {
-        out.push_str("        match &self.write_policy {\n");
-        out.push_str("            None => write_varint(0u64, out),\n");
-        out.push_str("            Some(policy) => { write_varint(1u64, out); write_varint(0u64, out); policy.fc_serialize(out)?; }\n");
+        out.push_str(&format!(
+            "            Some(value) => {{ write_varint(1u64, out); write_varint({}u64, out); value.fc_serialize(out)?; }}\n",
+            fields[0].index
+        ));
         out.push_str("        }\n        Ok(())\n");
     } else if fields.is_empty() {
         out.push_str("        write_varint(0u64, out);\n");
@@ -1206,8 +1205,8 @@ pub(crate) fn is_fc_supported_type(ty: &TypeRef, supported_structs: &BTreeSet<St
                 || name == "fee_parameters"
                 || name == "argument_type"
                 || name == "operation"
-                || name == "data_room_subject"
                 || name == "data_room_member_ref"
+                || name == "fee_payer_ref"
         }
         TypeRef::Optional { inner } | TypeRef::Vector { inner } => {
             is_fc_supported_type(inner, supported_structs)

@@ -21,6 +21,13 @@ pub struct ChainConfig {
     pub id: String,
     pub public_key_prefix: String,
     pub chain_id: Option<String>,
+    /// Genesis file, relative to the chain repository, that the chain ID is computed from.
+    ///
+    /// The chain ID is the SHA-256 of the file's raw bytes, as the node computes it, so it
+    /// follows the genesis whenever the spec is regenerated. A `chain_id` set alongside it must
+    /// agree with it.
+    #[serde(default)]
+    pub genesis: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]

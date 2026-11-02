@@ -643,11 +643,11 @@ mod tests {
         assert_authority_fields(&authority.fields);
     }
 
+    /// A verbatim copy of actanet-core's `libraries/protocol/include/graphene/protocol/authority.hpp`
+    /// (unchanged from BitShares), kept in the crate so the test needs no chain checkout.
     #[test]
-    fn extracts_real_swaplock_authority_fields() {
-        let source = include_str!(
-            "../../../../../blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/authority.hpp"
-        );
+    fn extracts_real_actanet_authority_fields() {
+        let source = include_str!("../../tests/fixtures/sources/actanet-core/authority.hpp");
         let classes = extract_classes(source, &PathBuf::from("authority.hpp"));
         let authority = classes
             .iter()

@@ -538,13 +538,27 @@ const SECP256K1_HALF_ORDER: [u8; 32] = [
     0x5d, 0x57, 0x6e, 0x73, 0x57, 0xa4, 0x50, 0x1d, 0xdf, 0xe9, 0x2f, 0x46, 0x68, 0x1b, 0x20, 0xa0,
 ];
 
-/// Kanoniczność jak w Bitcoinie (BIP-62/BIP-146): wyłącznie low-S
-/// (`s <= n/2`), `r` bez ograniczeń — lustrzane odbicie
-/// `fc::ecc::public_key::is_canonical` w swaplock-fc. Historyczna reguła
-/// Graphene odrzucała też wysoki bit pierwszego bajtu `r`/`s`, czego
-/// deterministyczne podpisy HSM (WebAuthn/DFNS) nie są w stanie ominąć.
+/// Kanoniczny podpis węzłów Graphene: lustrzane odbicie `fc::ecc::public_key::is_canonical`
+/// w BitShares, R-Squared i actanet-fc. `r` i `s` to 32-bajtowe liczby w minimalnym DER, czyli
+/// żadna nie ma ustawionego wysokiego bitu pierwszego bajtu ani zbędnego zera na początku.
+/// Podpis spoza tej reguły węzeł odrzuca, dlatego [`sign_digest_compact`] losuje do skutku.
 #[cfg(feature = "signing")]
 pub fn is_graphene_canonical_compact_signature(signature: &[u8]) -> bool {
+    signature.len() == 65
+        && (31..=34).contains(&signature[0])
+        && signature[1] & 0x80 == 0
+        && !(signature[1] == 0 && signature[2] & 0x80 == 0)
+        && signature[33] & 0x80 == 0
+        && !(signature[33] == 0 && signature[34] & 0x80 == 0)
+}
+
+/// Kanoniczność jak w Bitcoinie (BIP-62/BIP-146): wyłącznie low-S (`s <= n/2`), `r` bez
+/// ograniczeń. Tę regułę przyjmuje fc, które poluzowano dla deterministycznych podpisów HSM
+/// (WebAuthn/DFNS), niezdolnych do ponawiania losowania. Żaden obsługiwany dziś łańcuch jej nie
+/// stosuje; węzły BitShares, R-Squared i actanet wymagają
+/// [`is_graphene_canonical_compact_signature`].
+#[cfg(feature = "signing")]
+pub fn is_low_s_compact_signature(signature: &[u8]) -> bool {
     signature.len() == 65
         && (31..=34).contains(&signature[0])
         && signature[33..65] <= SECP256K1_HALF_ORDER[..]
@@ -912,6 +926,28 @@ mod tests {
     }
 
     #[test]
+    fn signatures_follow_the_node_canonical_rule() {
+        // Low-S alone would leave about half of these with a high bit in `r`, which the
+        // nodes reject; signing must retry until both integers are minimal DER.
+        for i in 0u8..64 {
+            let digest = sha256_bytes(&[i]);
+            let signature = sign_digest_compact(digest, [7u8; 32]).expect("sign digest");
+            assert!(is_graphene_canonical_compact_signature(&signature), "digest {i}");
+        }
+    }
+
+    #[test]
+    fn canonical_rule_rejects_a_high_bit_in_r_that_low_s_accepts() {
+        let mut signature = [0u8; 65];
+        signature[0] = 31;
+        signature[1] = 0x80;
+        signature[2] = 0x01;
+        signature[33] = 0x01;
+        assert!(is_low_s_compact_signature(&signature));
+        assert!(!is_graphene_canonical_compact_signature(&signature));
+    }
+
+    #[test]
     fn signing_helpers_sign_digest_with_non_secret_private_key_fixture() {
         let digest =
             decode_chain_id_hex("b459775b7ac4c1f0d1e5988d112846c0a9b75c8b8bbbd613f80499366d9be635")
@@ -985,8 +1021,8 @@ mod tests {
 
     #[test]
     fn signing_helpers_decode_wif_and_match_bitsharesjs_fixture() {
-        let Ok(wif) = std::env::var("SWAPLOCK_ACTIVE_WIF") else {
-            eprintln!("skipping signing fixture test because SWAPLOCK_ACTIVE_WIF is not set");
+        let Ok(wif) = std::env::var("GRAPHENE_TEST_ACTIVE_WIF") else {
+            eprintln!("skipping signing fixture test because GRAPHENE_TEST_ACTIVE_WIF is not set");
             return;
         };
         let digest =

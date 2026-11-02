@@ -1,63 +1,66 @@
 import {
-  SwaplockClient,
-  type SwaplockConnectionOptions,
-} from '@open-graphene/chain-swaplock-api';
-import { BitSharesClient } from '@open-graphene/chain-bitshares-api';
-import { RSquaredClient } from '@open-graphene/chain-rsquared-api';
-import type { SessionOptions } from '@open-graphene/transport';
-export { SwaplockClient, BitSharesClient, RSquaredClient };
-export * as rsquared from '@open-graphene/chain-rsquared-api';
-export * as swaplock from '@open-graphene/chain-swaplock-api';
+  ActanetClient,
+  type ActanetConnectionOptions,
+} from '@open-graphene/chain-actanet-api';
+import {
+  BitSharesClient,
+  type BitSharesConnectionOptions,
+} from '@open-graphene/chain-bitshares-api';
+import {
+  RSquaredClient,
+  type RSquaredConnectionOptions,
+} from '@open-graphene/chain-rsquared-api';
+export { ActanetClient, BitSharesClient, RSquaredClient };
+export type {
+  ActanetConnectionOptions,
+  BitSharesConnectionOptions,
+  RSquaredConnectionOptions,
+};
+export * as actanet from '@open-graphene/chain-actanet-api';
 export * as bitshares from '@open-graphene/chain-bitshares-api';
+export * as rsquared from '@open-graphene/chain-rsquared-api';
 export * from '@open-graphene/core';
 export class Graphene {
-  static swaplock(
+  static actanet(
     endpoints: string | readonly string[],
-    options: SwaplockConnectionOptions,
+    options?: ActanetConnectionOptions,
   ) {
-    return SwaplockClient.connect(endpoints, options);
+    return ActanetClient.connect(endpoints, options);
   }
   static bitshares(
     endpoints: string | readonly string[],
-    options?: SessionOptions,
+    options?: BitSharesConnectionOptions,
   ) {
     return BitSharesClient.connect(endpoints, options);
   }
   static rsquared(
     endpoints: string | readonly string[],
-    options?: SessionOptions,
+    options?: RSquaredConnectionOptions,
   ) {
     return RSquaredClient.connect(endpoints, options);
   }
   static connect(
-    chain: 'swaplock',
+    chain: 'actanet',
     endpoints: string | readonly string[],
-    options: SwaplockConnectionOptions,
-  ): Promise<SwaplockClient>;
+    options?: ActanetConnectionOptions,
+  ): Promise<ActanetClient>;
   static connect(
     chain: 'bitshares',
     endpoints: string | readonly string[],
-    options?: SessionOptions,
+    options?: BitSharesConnectionOptions,
   ): Promise<BitSharesClient>;
   static connect(
     chain: 'rsquared',
     endpoints: string | readonly string[],
-    options?: SessionOptions,
+    options?: RSquaredConnectionOptions,
   ): Promise<RSquaredClient>;
   static connect(
-    chain: 'swaplock' | 'bitshares' | 'rsquared',
+    chain: 'actanet' | 'bitshares' | 'rsquared',
     endpoints: string | readonly string[],
-    options?: SessionOptions,
+    options?: ActanetConnectionOptions,
   ) {
-    if (chain === 'swaplock') {
-      if (!options?.expectedChainId) {
-        throw new Error('Expected chain ID is required for Swaplock');
-      }
-
-      return this.swaplock(endpoints, {
-        ...options,
-        expectedChainId: options.expectedChainId,
-      });
+    if (chain === 'actanet') {
+      return this.actanet(endpoints, options);
     }
 
     if (chain === 'bitshares') {

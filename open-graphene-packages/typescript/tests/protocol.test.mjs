@@ -4,8 +4,8 @@ import { readFileSync } from 'node:fs';
 import * as p from '../graphene-primitives/dist/index.js';
 import * as fc from '../graphene-fc/dist/index.js';
 import * as c from '../graphene-codec/dist/index.js';
-import * as swaplock from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
 import * as bitshares from '../graphene-chain-bitshares/graphene-chain-bitshares-bindings/dist/index.js';
+import * as actanet from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
 
 const vectors = JSON.parse(
   readFileSync(new URL('fixtures/protocol-vectors.json', import.meta.url)),
@@ -22,7 +22,7 @@ test('generic packed IDs and typed varints match shared Rust/native-source vecto
   }
   for (const id of vectors.invalidObjectIds)
     assert.throws(() => p.parseObjectId(id));
-  assert.throws(() => swaplock.AccountId('1.3.1'));
+  assert.throws(() => actanet.AccountId('1.3.1'));
 });
 test('integer boundaries survive wire JSON and FC without rounding', () => {
   for (const v of vectors.integers) {
@@ -40,8 +40,8 @@ test('integer boundaries survive wire JSON and FC without rounding', () => {
   assert.throws(() => new fc.FcWriter().int(1, 1.5));
 });
 for (const [name, chain] of [
-  ['swaplock', swaplock],
   ['bitshares', bitshares],
+  ['actanet', actanet],
 ]) {
   test(`${name}: generated transaction codecs round trip a public transfer`, () => {
     const tx = chain.TransactionCodec.decode(vectors.transfer.transaction);
@@ -94,39 +94,38 @@ test('recursive proposal fee responses retain bigint amounts', () => {
     { amount: '9007199254740993', asset_id: '1.3.0' },
     [{ amount: 2, asset_id: '1.3.0' }],
   ];
-  const result = swaplock.RequiredFeeCodec.decode(value);
+  const result = actanet.RequiredFeeCodec.decode(value);
   assert.equal(result[0].amount, 9007199254740993n);
   assert.equal(result[1][0].amount, 2n);
   assert.match(
-    c.stringifyJson(swaplock.RequiredFeeCodec.encode(result)),
+    c.stringifyJson(actanet.RequiredFeeCodec.encode(result)),
     /9007199254740993/,
   );
 });
-test('extension compatibility accepts legacy empty arrays and rejects unknown guards', () => {
+test('actanet: a content card guard extension round trips and rejects unknown guards', () => {
   const operation = {
     fee: { amount: 0, asset_id: '1.3.0' },
-    caller: '1.2.1',
-    room: '1.23.7',
-    member: [0, '1.2.2'],
-    member_key: 'envelope',
-    epoch_keys: [],
-    permissions: 255,
-    extensions: [],
+    payer: [1, { grant: '1.29.4', sponsor: '1.2.100' }],
+    caller: [0, '1.2.101'],
+    content_id: '1.27.7',
+    new_hash: 'hash',
+    extensions: {},
   };
-  const codec = swaplock.DataRoomMemberAddOperationCodec;
+  const codec = actanet.ContentCardUpdateOperationCodec;
   assert.deepEqual(codec.decode(operation).extensions, {});
-  assert.deepEqual(codec.encode(codec.decode(operation)).extensions, []);
-  for (const fixture of vectors.extensions) {
-    const decoded = codec.decode({ ...operation, extensions: fixture.value });
-    assert.deepEqual(decoded.extensions, fixture.value);
-  }
+  const guarded = codec.decode({
+    ...operation,
+    extensions: { expected_revision: 3 },
+  });
+  assert.equal(guarded.extensions.expected_revision, 3);
+  assert.deepEqual(JSON.parse(c.stringifyJson(codec.encode(guarded))), {
+    ...operation,
+    extensions: { expected_revision: 3 },
+  });
   assert.throws(() =>
-    codec.decode({ ...operation, extensions: { misspelled_guard: 'hash' } }),
+    codec.decode({ ...operation, extensions: { misspelled_guard: 3 } }),
   );
   assert.throws(() => codec.decode({ ...operation, extensions: [1] }));
-  assert.throws(() =>
-    swaplock.DataRoomAccessExtensionsCodec.decode({ unknown_guard: true }),
-  );
 });
 test('RPC optional positional holes and nonnullable nulls fail locally', () => {
   const method = c.rpc(
@@ -158,7 +157,7 @@ test('errors locate nested invalid fields', () => {
   const tx = structuredClone(vectors.transfer.transaction);
   tx.operations[0][1].amount.amount = '9223372036854775808';
   assert.throws(
-    () => swaplock.TransactionCodec.decode(tx),
+    () => actanet.TransactionCodec.decode(tx),
     (error) => {
       assert.deepEqual(error.path, ['operations', 0, 0, 'amount', 'amount']);
       return true;
@@ -167,8 +166,8 @@ test('errors locate nested invalid fields', () => {
 });
 
 for (const [name, chain] of [
-  ['swaplock', swaplock],
   ['bitshares', bitshares],
+  ['actanet', actanet],
 ]) {
   test(`${name}: market operation extensions use class-local C++ options objects`, () => {
     const order = {

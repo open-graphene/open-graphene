@@ -39,7 +39,13 @@ export function decodeWif(wif: string): Uint8Array {
     decoded?.fill(0);
   }
 }
-export type SigningProfile = 'swaplock-low-s' | 'graphene-legacy';
+/**
+ * Which compact signatures the target chain's nodes accept. `graphene-legacy` is the rule of
+ * BitShares, R-Squared and Actanet nodes (`fc::ecc::public_key::is_canonical`): `r` and `s` are
+ * minimal 32-byte DER integers. `low-s` only requires a low `s`, for nodes whose fc was relaxed
+ * for deterministic HSM signatures that cannot retry.
+ */
+export type SigningProfile = 'graphene-legacy' | 'low-s';
 /** FC/bitsharesjs canonical compact integers: exactly 32 DER bytes for r and s. */
 export function isCanonicalCompactSignature(signature: Uint8Array): boolean {
   return (
@@ -56,12 +62,12 @@ export function isCanonicalCompactSignature(signature: Uint8Array): boolean {
 export function signDigestCompact(
   digest: Uint8Array,
   privateKey: Uint8Array,
-  profile: SigningProfile = 'swaplock-low-s',
+  profile: SigningProfile = 'graphene-legacy',
 ): Uint8Array {
   digest32(digest);
   if (!secp256k1.utils.isValidSecretKey(privateKey))
     throw new Error('Invalid private key');
-  if (profile !== 'swaplock-low-s' && profile !== 'graphene-legacy')
+  if (profile !== 'low-s' && profile !== 'graphene-legacy')
     throw new Error('Unknown signing profile');
   // RFC6979 with deterministic extra entropy on retries. Signatures need not be
   // byte-identical to bitsharesjs; the signed digest and FC canonical rules are identical.
@@ -75,7 +81,7 @@ export function signDigestCompact(
       extraEntropy: attempt === 0 ? false : entropy,
     });
     result[0] = result[0]! + 31;
-    if (profile === 'swaplock-low-s' || isCanonicalCompactSignature(result))
+    if (profile === 'low-s' || isCanonicalCompactSignature(result))
       return result;
   }
   throw new Error('Unable to produce a canonical compact signature');
@@ -120,7 +126,7 @@ export class WifSigner implements Signer {
   #disposed = false;
   constructor(
     wif: string,
-    private readonly profile: SigningProfile = 'swaplock-low-s',
+    private readonly profile: SigningProfile = 'graphene-legacy',
   ) {
     this.#key = decodeWif(wif);
     this.#publicKey = secp256k1.getPublicKey(this.#key, true);

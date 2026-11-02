@@ -2,73 +2,28 @@ mod chain;
 mod client;
 mod error;
 
-pub use chain::{Acta, ActaClient, BitShares, BitSharesClient, ChainClientBuilder, Swaplock};
+pub use chain::{Actanet, BitShares, ChainClientBuilder, RSquared};
 pub use client::{GrapheneClient, GrapheneClientBuilder, GrapheneClientConfig};
 pub use error::{GrapheneConfigError, GrapheneConnectError};
-pub use graphene_chain_swaplock_api::{
-    AccountCreateRequest, AccountHistoryPage, AccountHistorySubscription, AccountId,
-    AccountTransferRequest, AccountUpdateRequest, AccountUpgradeRequest, AccountWhitelistRequest,
-    ArgumentType, AssertRequest, Asset, AssetClaimFeesRequest, AssetClaimPoolRequest,
-    AssetCreateRequest, AssetFundFeePoolRequest, AssetGlobalSettleRequest, AssetId,
-    AssetIssueOperation, AssetIssueRequest, AssetObject, AssetPublishFeedRequest,
-    AssetReserveOperation, AssetReserveRequest, AssetSettleRequest, AssetUpdateBitassetRequest,
-    AssetUpdateFeedProducersRequest, AssetUpdateIssuerRequest, AssetUpdateRequest, Authority,
-    BalanceClaimRequest, BidCollateralRequest, BlindRequest, BlindSumRequest, BlindTransferRequest,
-    BlindingFactor, BroadcastConfirmation, BroadcastReceipt, CallOrderUpdateRequest,
-    ChainParameters, ChainPropertyObject, ChainStore, Commitment, CommitteeMemberCreateRequest,
-    CommitteeMemberUpdateGlobalParametersRequest, CommitteeMemberUpdateRequest, ConnectionStrategy,
-    ContentCardByIdRequest, ContentCardCreateRequest, ContentCardObject, ContentCardRemoveRequest,
-    ContentCardUpdateRequest, ContentCardsByAuthorRequest, ContentCardsByRoomRequest,
-    CreditDealRepayRequest, CreditDealUpdateRequest, CreditOfferAcceptRequest,
-    CreditOfferCreateRequest, CreditOfferDeleteRequest, CreditOfferUpdateRequest, CryptoApi,
-    CustomAuthorityCreateRequest, CustomAuthorityDeleteRequest, CustomAuthorityUpdateRequest,
-    CustomRequest, DATA_ROOM_PERM_ADD_MEMBERS, DATA_ROOM_PERM_ALL, DATA_ROOM_PERM_CREATE_CONTENT,
-    DATA_ROOM_PERM_MANAGE_CONTENT, DATA_ROOM_PERM_MANAGE_PERMISSIONS,
-    DATA_ROOM_PERM_REMOVE_MEMBERS, DATA_ROOM_PERM_ROTATE_KEYS, DATA_ROOM_PERM_UPDATE_ROOM,
-    DEFAULT_ACCOUNT_HISTORY_LIMIT, DEFAULT_ACCOUNT_HISTORY_OFFSET,
-    DEFAULT_FILL_ORDER_HISTORY_LIMIT, DEFAULT_GET_LIMIT_ORDERS_LIMIT,
-    DEFAULT_GROUPED_LIMIT_ORDERS_LIMIT, DEFAULT_LIST_ASSETS_LIMIT, DEFAULT_LOOKUP_ACCOUNTS_LIMIT,
-    DEFAULT_MARKET_HISTORY_BUCKET_SECONDS, DataRoomAccessStateRequest, DataRoomByIdRequest,
-    DataRoomCreateRequest, DataRoomDeleteRequest, DataRoomKeyEpochObject, DataRoomKeyEpochRequest,
-    DataRoomKeyEpochsRequest, DataRoomMemberAddRequest, DataRoomMemberObject,
-    DataRoomMemberRemoveRequest, DataRoomMemberRequest, DataRoomMemberUpdateRequest,
-    DataRoomMembersRequest, DataRoomObject, DataRoomRotateKeyRequest, DataRoomSubject,
-    DataRoomUpdateRequest, DataRoomsByMemberRequest, DataRoomsByOwnerRequest,
-    DataRoomsBySubjectRequest, DynamicGlobalPropertyObject, FillOrderHistoryRequest,
-    GetBlockHeaderRequest, GetBlockRequest, GetConfigRequest, GetKeyReferencesRequest,
-    GetLimitOrdersRequest, GetObjectsRequest, GetTickerRequest, GlobalPropertyObject,
-    GroupedLimitOrdersRequest, HistoryKey, HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest,
-    LimitOrderCancelOperation, LimitOrderCancelRequest, LimitOrderCreateOperation,
-    LimitOrderCreateRequest, LimitOrderGroup, LimitOrderId, LimitOrderObject,
-    LimitOrderUpdateOperation, LimitOrderUpdateRequest, LiquidityPoolCreateRequest,
-    LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest, LiquidityPoolExchangeRequest,
-    LiquidityPoolUpdateRequest, LiquidityPoolWithdrawRequest, ListAssetsRequest,
-    LookupAccountsRequest, MAX_ACCOUNT_HISTORY_LIMIT, MAX_FILL_ORDER_HISTORY_LIMIT,
-    MarketHistoryRequest, MaybeSignedBlockHeader, NetworkBroadcastApi, Operation,
-    OperationHistoryObject, OrderHistoryObject, OrdersApi, OverrideTransferRequest,
-    PreparedTransaction, PreparedTransfer, Price, ProcessedTransaction, ProposalCreateRequest,
-    ProposalDeleteRequest, ProposalUpdateRequest, RangeGetInfoRequest, RangeProof, RangeProofInfo,
-    RangeProofSignRequest, ReconnectPolicy, Restriction, RoomAccessPrecondition, SWAPLOCK_CHAIN_ID,
-    SametFundBorrowRequest, SametFundCreateRequest, SametFundDeleteRequest, SametFundRepayRequest,
-    SametFundUpdateRequest, ServerLatency, SignedBlock, SignedTransactionEnvelope, SignedTransfer,
-    SwaplockApi, SwaplockApiError, SwaplockLiveAccountBalancesByIdRequest,
-    SwaplockLiveAccountBalancesSubscription, SwaplockLiveAccountByIdRequest,
-    SwaplockLiveAccountHistoryByIdRequest, SwaplockLiveAccountHistoryRequest,
-    SwaplockLiveAccountHistorySubscription, SwaplockLiveAccountOrdersByIdRequest,
-    SwaplockLiveAccountOrdersSubscription, SwaplockLiveAccountSubscription, SwaplockLiveApi,
-    SwaplockLiveAssetByIdRequest, SwaplockLiveAssetSubscription, SwaplockLiveDatabaseApi,
-    SwaplockLiveDynamicGlobalPropertiesSubscription, SwaplockLiveHistoryApi,
-    SwaplockLiveMarketSubscription, SwaplockLiveNetworkBroadcastApi,
-    SwaplockLivePendingBroadcastConfirmation, Ticker, TicketCreateRequest, TicketUpdateRequest,
-    TrackedGroupsRequest, TransactionBuilder, TransferFromBlindRequest, TransferOperation,
-    TransferRequest, TransferToBlindRequest, VerifyRangeProofRewindRequest,
-    VerifyRangeProofRewindResult, VerifyRangeRequest, VerifyRangeResult, VerifySumRequest,
-    VestingBalanceCreateRequest, VestingBalanceWithdrawRequest, WithdrawPermissionClaimRequest,
-    WithdrawPermissionCreateRequest, WithdrawPermissionDeleteRequest,
-    WithdrawPermissionUpdateRequest, WitnessCreateRequest, WitnessUpdateRequest,
-    WorkerCreateRequest, is_account_name, is_account_name_allow_short, is_cheap_name,
-    is_public_key, member_add_operation, member_ref, member_remove_operation, rotate_key_operation,
-};
+
+/// The Actanet API, which is also re-exported at the crate root.
+pub mod actanet {
+    pub use graphene_chain_actanet_api::*;
+}
+
+/// The BitShares API.
+pub mod bitshares {
+    pub use graphene_chain_bitshares_api::*;
+}
+
+/// The R-Squared API. R-Squared lacks what BitShares 7 added (blind transfers, credit offers,
+/// liquidity pools, samet funds and more), so neither do its builders.
+pub mod rsquared {
+    pub use graphene_chain_rsquared_api::*;
+}
+
+// Actanet is the default chain: its whole API sits at the crate root.
+pub use graphene_chain_actanet_api::*;
 pub use open_graphene_fc::hash;
 pub use open_graphene_fc::{
     AccountKeys, Address, BrainKey, PrivateKey, PublicKey, SUGGESTED_BRAIN_KEY_WORDS, Signature,
@@ -82,7 +37,7 @@ impl Graphene {
         GrapheneClientBuilder::new()
     }
 
-    pub fn swaplock() -> ChainClientBuilder<Swaplock> {
+    pub fn actanet() -> ChainClientBuilder<Actanet> {
         ChainClientBuilder::from_config(GrapheneClientConfig::default())
     }
 
@@ -90,7 +45,7 @@ impl Graphene {
         ChainClientBuilder::from_config(GrapheneClientConfig::default())
     }
 
-    pub fn acta() -> ChainClientBuilder<Acta> {
+    pub fn rsquared() -> ChainClientBuilder<RSquared> {
         ChainClientBuilder::from_config(GrapheneClientConfig::default())
     }
 }
@@ -100,43 +55,43 @@ mod tests {
     use super::*;
 
     #[test]
-    fn generic_builder_selects_swaplock_api() {
+    fn generic_builder_selects_actanet_api() {
         let builder = Graphene::builder()
-            .servers(["wss://node01.swaplock.chainpool.online:8090"])
+            .servers(["wss://node01.example.org:8090"])
             .chain_id("chain-id")
-            .prefix("BTS")
+            .prefix("ACTA")
             .build()
             .expect("valid generic Graphene config")
-            .swaplock();
+            .actanet();
 
         assert_eq!(
             builder.config().servers(),
-            &["wss://node01.swaplock.chainpool.online:8090".to_string()]
+            &["wss://node01.example.org:8090".to_string()]
         );
         assert_eq!(builder.config().chain_id(), Some("chain-id"));
-        assert_eq!(builder.config().prefix(), Some("BTS"));
+        assert_eq!(builder.config().prefix(), Some("ACTA"));
     }
 
     #[test]
     fn chain_first_builder_collects_servers() {
-        let builder = Graphene::swaplock()
-            .server("wss://node01.swaplock.chainpool.online:8090")
-            .server("wss://node02.swaplock.chainpool.online:8090")
+        let builder = Graphene::actanet()
+            .server("wss://node01.example.org:8090")
+            .server("wss://node02.example.org:8090")
             .chain_id("chain-id")
-            .prefix("BTS")
+            .prefix("ACTA")
             .build()
-            .expect("valid Swaplock config");
+            .expect("valid Actanet config");
 
         assert_eq!(builder.config().servers().len(), 2);
         assert_eq!(builder.config().chain_id(), Some("chain-id"));
-        assert_eq!(builder.config().prefix(), Some("BTS"));
+        assert_eq!(builder.config().prefix(), Some("ACTA"));
     }
 
     #[test]
     fn builder_rejects_missing_servers() {
         let error = Graphene::builder()
             .chain_id("chain-id")
-            .prefix("BTS")
+            .prefix("ACTA")
             .build()
             .expect_err("servers are required");
 

@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { getEventListeners } from 'node:events';
 import { createHash } from 'node:crypto';
-import * as b from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
+import * as b from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
 import {
-  SwaplockClient,
+  ActanetClient,
   transactionId,
   TransactionInspectionError,
-} from '../graphene-chain-swaplock/graphene-chain-swaplock-api/dist/index.js';
+} from '../graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
 
 const vectors = JSON.parse(
   readFileSync(new URL('fixtures/protocol-vectors.json', import.meta.url)),
@@ -109,7 +109,7 @@ async function fixture(t) {
   t.mock.method(Date, 'now', () => now);
   const socket = new Socket();
   const controller = new AbortController();
-  const client = await SwaplockClient.connect('ws://fixture', {
+  const client = await ActanetClient.connect('ws://fixture', {
     expectedChainId: b.CHAIN.chainId,
     signal: controller.signal,
     timeoutMs: 1000,

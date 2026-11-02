@@ -1,10 +1,11 @@
 import {
   AccountId,
   AssetId,
+  FeeGrantId,
   operation,
   DatabaseGetObjects,
   type TransferOperation,
-} from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
+} from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
 import { AccountId as BitSharesAccountId } from '../graphene-chain-bitshares/graphene-chain-bitshares-bindings/dist/index.js';
 const account = AccountId('1.2.1');
 const asset = AssetId('1.3.0');
@@ -35,46 +36,41 @@ import {
   type SignedTransfer as BitSharesSignedTransfer,
 } from '../graphene-chain-bitshares/graphene-chain-bitshares-api/dist/index.js';
 import {
-  SwaplockClient,
+  ActanetClient,
   type PreparedTransfer,
   type PreparedTransaction,
-} from '../graphene-chain-swaplock/graphene-chain-swaplock-api/dist/index.js';
+} from '../graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
 import { Graphene } from '../graphene/dist/index.js';
 
-function explicitSwaplockNetwork(
+function networkOptions(
   expectedChainId: string,
   prepared: PreparedTransfer | PreparedTransaction,
 ) {
   const options = {
     expectedChainId,
   };
-  void SwaplockClient.connect('ws://fixture', options);
-  void SwaplockClient.probeLatencies(['ws://fixture'], options);
-  void Graphene.swaplock('ws://fixture', options);
-  void Graphene.connect('swaplock', 'ws://fixture', options);
+  void ActanetClient.connect('ws://fixture', options);
+  void ActanetClient.probeLatencies(['ws://fixture'], options);
+  void Graphene.actanet('ws://fixture', options);
+  void Graphene.connect('actanet', 'ws://fixture', options);
+  // Without an expected network, a client pins the chain ID of its bindings.
+  void ActanetClient.connect('ws://fixture');
+  void Graphene.connect('bitshares', 'ws://fixture');
 
-  // @ts-expect-error Swaplock connections require an explicit expected network.
-  void SwaplockClient.connect('ws://fixture');
-  // @ts-expect-error Connection settings without a network are incomplete.
-  void SwaplockClient.connect('ws://fixture', { timeoutMs: 100 });
-  // @ts-expect-error Probes must also verify the expected network.
-  void SwaplockClient.probeLatencies(['ws://fixture']);
-  // @ts-expect-error The facade must not restore an implicit network default.
-  void Graphene.swaplock('ws://fixture');
-  // @ts-expect-error The Swaplock overload requires the network setting.
-  void Graphene.connect('swaplock', 'ws://fixture');
+  // @ts-expect-error The expected network is a chain ID string.
+  void ActanetClient.connect('ws://fixture', { expectedChainId: 1 });
   // @ts-expect-error A prepared transaction cannot change its signing network.
   prepared.chainId = expectedChainId;
 }
-void explicitSwaplockNetwork;
+void networkOptions;
 function chainIsolation(
   bitshares: BitSharesClient,
-  swaplock: SwaplockClient,
+  actanet: ActanetClient,
   signed: BitSharesSignedTransfer,
 ) {
   void bitshares.broadcast(signed);
   // @ts-expect-error Signed transactions belong to their chain-specific API.
-  void swaplock.broadcast(signed);
+  void actanet.broadcast(signed);
 }
 void chainIsolation;
 
@@ -84,12 +80,14 @@ import {
   usePrepareTransfer,
   useSignTransaction,
   accountOptions,
-  SwaplockProvider,
-  useRoom,
-} from '@open-graphene/chain-swaplock-react';
+  ActanetProvider,
+  ActanetConnectionProvider,
+  useActanetConnection,
+} from '@open-graphene/chain-actanet-react';
+import { useBitSharesConnection } from '@open-graphene/chain-bitshares-react';
 import { QueryClient } from '@tanstack/react-query';
-import { DataRoomId } from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
-function reactTypes(client: SwaplockClient, other: BitSharesClient) {
+import type { SharedConnection } from '../graphene-transport/dist/index.js';
+function reactTypes(client: ActanetClient, other: BitSharesClient) {
   const selected: string | undefined = useAccount('alice', {
     live: true,
     select: (account) => account.name,
@@ -100,7 +98,11 @@ function reactTypes(client: SwaplockClient, other: BitSharesClient) {
     accountOptions(client, 'alice').queryKey,
   );
   const cachedName: string | undefined = cached?.name;
-  useRoom(DataRoomId('1.23.1'), { live: true });
+  const connection: SharedConnection = useActanetConnection();
+  const sameType: SharedConnection = useBitSharesConnection();
+  void ActanetConnectionProvider({ connection, children: null });
+  // @ts-expect-error The connection provider requires a connection.
+  void ActanetConnectionProvider({ children: null });
   // @ts-expect-error Generated RPC reads without a mapped subscription must reject live.
   useDatabaseGetAccounts({ account_names_or_ids: ['alice'] }, { live: true });
   // @ts-expect-error Required RPC parameters remain required.
@@ -108,15 +110,13 @@ function reactTypes(client: SwaplockClient, other: BitSharesClient) {
   // @ts-expect-error Chain-specific query helpers cannot accept the other SDK client.
   accountOptions(other, 'alice');
   // @ts-expect-error Provider client types preserve chain isolation.
-  SwaplockProvider({ client: other });
-  // @ts-expect-error Room IDs are distinct from account IDs.
-  useRoom(AccountId('1.2.1'));
+  ActanetProvider({ client: other });
   const transfer = usePrepareTransfer();
   // @ts-expect-error Monetary values are exact decimal strings or bigint, not number.
   transfer.mutate({ from: 'a', to: 'b', amount: 1, maxFee: 1n });
   // @ts-expect-error A private key string is not a Signer and must not become a mutation variable.
   useSignTransaction('wif');
-  void [selected, name, cachedName];
+  void [selected, name, cachedName, sameType];
 }
 void reactTypes;
 
@@ -126,23 +126,35 @@ import {
   prepareDataRoomCreate,
   useCryptoBlind,
   useNetworkBroadcastBroadcastTransaction,
-} from '@open-graphene/chain-swaplock-react';
+} from '@open-graphene/chain-actanet-react';
 import { usePrepareTransferOperation as useBitSharesPrepareTransferOperation } from '@open-graphene/chain-bitshares-react';
-function generatedMutationTypes(client: SwaplockClient) {
+function generatedMutationTypes(client: ActanetClient) {
   const room = usePrepareDataRoomCreate({ maxFee: 300000n });
   room.mutate({
+    payer: [1, { grant: FeeGrantId('1.29.1'), sponsor: AccountId('1.2.100') }],
+    caller: [0, AccountId('1.2.101')],
     owner: AccountId('1.2.100'),
     name: 'room',
     description: '',
-    subject: [0, {}],
-    extensions: { write_policy: 1 },
+    caller_permissions: 15,
   });
   room.mutate({
+    payer: [0, AccountId('1.2.100')],
+    caller: [0, AccountId('1.2.100')],
     // @ts-expect-error Operation owner must be an account, not an asset ID.
     owner: AssetId('1.3.0'),
     name: 'room',
     description: '',
-    subject: [0, {}],
+    caller_permissions: 15,
+  });
+  room.mutate({
+    // @ts-expect-error A grant payer names its grant by a fee grant ID.
+    payer: [1, { grant: AccountId('1.2.1'), sponsor: AccountId('1.2.100') }],
+    caller: [0, AccountId('1.2.101')],
+    owner: AccountId('1.2.100'),
+    name: 'room',
+    description: '',
+    caller_permissions: 15,
   });
   // @ts-expect-error Required operation fields cannot be omitted.
   room.mutate({ name: 'room' });
@@ -166,10 +178,12 @@ function generatedMutationTypes(client: SwaplockClient) {
   // @ts-expect-error Broadcast takes a checked typed signed transaction, not arbitrary JSON.
   useNetworkBroadcastBroadcastTransaction().mutate({ trx: 'raw JSON' });
   void prepareDataRoomCreate(client, {
+    payer: [0, account],
+    caller: [0, account],
     owner: account,
     name: 'room',
     description: '',
-    subject: [0, {}],
+    caller_permissions: 15,
   });
 }
 void generatedMutationTypes;

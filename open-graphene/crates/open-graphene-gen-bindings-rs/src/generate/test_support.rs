@@ -65,7 +65,7 @@ pub(crate) fn minimal_protocol() -> Protocol {
     Protocol {
         schema_version: 1,
         chain: ChainDef {
-            id: "swaplock".to_string(),
+            id: "fixture".to_string(),
             public_key_prefix: "BTS".to_string(),
             chain_id: None,
         },

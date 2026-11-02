@@ -2,7 +2,7 @@
 
 `open-graphene-transport` is the chain-agnostic JSON-RPC transport crate for Graphene-family chains.
 
-It owns the reusable wire/session layer that sits below public chain API crates such as `graphene-chain-swaplock-api`. It does not import generated chain bindings and does not interpret chain-specific protocol objects.
+It owns the reusable wire/session layer that sits below the public chain API crates (`graphene-chain-actanet-api`, `graphene-chain-bitshares-api`, `graphene-chain-rsquared-api`). It does not import generated chain bindings and does not interpret chain-specific protocol objects.
 
 ## What this crate provides
 
@@ -153,10 +153,11 @@ Once the dispatcher starts, it owns the WebSocket reader. Do not continue using 
 
 Multiple `LiveSubscription`s may listen to the same callback id. The dispatcher multicasts each subscription notice payload to every active subscriber for that id and prunes closed subscription channels without blocking the remaining subscribers. Pending one-shot callback notices, such as `network_broadcast.broadcast_transaction_with_callback`, still take precedence over subscriptions with the same callback id so confirmations cannot be consumed by long-lived subscribers.
 
-For a live smoke test against Swaplock:
+For a live smoke test against a node (`GRAPHENE_RPC_URL`, a local node by default):
 
 ```bash
-cargo run -p open-graphene-transport --example live_dispatcher_smoke
+GRAPHENE_RPC_URL=ws://127.0.0.1:8090 \
+  cargo run -p open-graphene-transport --example live_dispatcher_smoke
 ```
 
 
@@ -185,7 +186,7 @@ The session does not hardcode database/history/broadcast API ids.
 For a smoke test against a live node:
 
 ```bash
-SWAPLOCK_RPC_URL=wss://node02.swaplock.chainpool.online:8090 \
+GRAPHENE_RPC_URL=ws://127.0.0.1:8090 \
   cargo run --manifest-path open-graphene-packages/rust/graphene-transport/Cargo.toml \
   --example session_smoke
 ```
@@ -232,7 +233,7 @@ let history = get_account_history(&mut session, &query)?;
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
-`AccountHistoryQuery::recent(account)` preserves the Graphene wire shape currently used by the live Swaplock helpers:
+`AccountHistoryQuery::recent(account)` preserves the Graphene wire shape used by the live helpers of the chain API crates:
 
 ```json
 ["1.2.100", "1.11.0", 20, "1.11.0"]
@@ -276,4 +277,4 @@ A chain SDK crate should use this crate for transport/session/RPC envelopes, the
 - confirmation matchers;
 - object-specific validation and error messages.
 
-For example, `graphene-chain-swaplock-api` uses these helpers behind its database, history, operations, and broadcast request builders while keeping Swaplock-specific parsing, signing policy, and confirmation matchers in the chain API crate.
+For example, the chain API crates built from `graphene-chain-api` use these helpers behind their database, history, operations, and broadcast request builders while keeping chain-specific parsing, signing policy, and confirmation matchers in the chain API crate.

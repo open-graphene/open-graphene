@@ -1,8 +1,0 @@
-{
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "noEmit": true,
-    "customConditions": ["workspace-source"]
-  },
-  "include": ["src"]
-}

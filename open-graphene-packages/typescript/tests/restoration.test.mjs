@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import * as b from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
+import * as b from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
 import {
   SignedTransfer,
   restoreSignedTransaction,
   TransactionRestorationError,
   transactionId,
-} from '../graphene-chain-swaplock/graphene-chain-swaplock-api/dist/index.js';
+} from '../graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
 import { transactionDigest } from '../graphene-fc/dist/index.js';
 import {
   signDigestCompact,

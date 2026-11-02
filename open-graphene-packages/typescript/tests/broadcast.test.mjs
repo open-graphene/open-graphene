@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { getEventListeners } from 'node:events';
 import {
-  SwaplockClient,
+  ActanetClient,
   SignedTransfer,
   TransactionBroadcastError,
   BroadcastOutcomeUnknown,
-} from '../graphene-chain-swaplock/graphene-chain-swaplock-api/dist/index.js';
-import * as b from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
+} from '../graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
+import * as b from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
 import {
   RpcSubscription,
   RpcSubscriptionTimeoutError,
@@ -20,6 +20,16 @@ const vectors = JSON.parse(
   readFileSync(new URL('fixtures/protocol-vectors.json', import.meta.url)),
 );
 
+/** A placeholder that passes the node's canonical rule: recovery id 31, r and s with a
+ * non-zero first byte below 0x80. */
+function canonicalSignature() {
+  const signature = new Uint8Array(65);
+  signature[0] = 31;
+  signature[1] = 1;
+  signature[33] = 1;
+  return signature;
+}
+
 function transaction(expiration = Date.now() + 60000) {
   const unsigned = b.TransactionCodec.decode({
     ...vectors.transfer.transaction,
@@ -28,7 +38,7 @@ function transaction(expiration = Date.now() + 60000) {
   return new SignedTransfer(
     {
       ...unsigned,
-      signatures: [new Uint8Array(65)],
+      signatures: [canonicalSignature()],
     },
     100,
   );
@@ -142,7 +152,7 @@ async function connect(t, options = {}) {
   socket.expectedId = signed.id;
   const controller = new AbortController();
   let connections = 0;
-  const client = await SwaplockClient.connect('ws://fixture', {
+  const client = await ActanetClient.connect('ws://fixture', {
     expectedChainId: b.CHAIN.chainId,
     signal: controller.signal,
     timeoutMs: 25,

@@ -4,9 +4,9 @@ This note captures the local source evidence for implementing raw Graphene/BitSh
 
 ## Source evidence
 
-### C++ Swaplock transaction digest and signing
+### C++ transaction digest and signing (actanet-core)
 
-`blockchains/swaplock/swaplock-core/libraries/protocol/transaction.cpp` shows the signature digest and signing path:
+[actanet-core](https://github.com/actanet/actanet-core) `libraries/protocol/transaction.cpp` shows the signature digest and signing path, unchanged from BitShares:
 
 ```cpp
 digest_type transaction::sig_digest( const chain_id_type& chain_id )const
@@ -30,14 +30,14 @@ const signature_type& graphene::protocol::signed_transaction::sign(
 
 Important implication: the mutating signed-transaction signing path signs the base `transaction` digest, not a payload that already includes signatures.
 
-`blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/types.hpp` defines:
+actanet-core `libraries/protocol/include/graphene/protocol/types.hpp` defines:
 
 ```cpp
 using digest_type = fc::sha256;
 using signature_type = fc::ecc::compact_signature;
 ```
 
-`blockchains/swaplock/swaplock-core/libraries/protocol/include/graphene/protocol/transaction.hpp` reflects signed transactions as base transaction fields plus signatures:
+actanet-core `libraries/protocol/include/graphene/protocol/transaction.hpp` reflects signed transactions as base transaction fields plus signatures:
 
 ```cpp
 vector<signature_type> signatures;
@@ -208,4 +208,4 @@ The raw-signature slice is implemented in the generated Rust bindings:
 transaction_fc_bytes || varint(signature_count) || signature_65_bytes...
 ```
 
-The current live testnet transfer example is `open-graphene-packages/rust/graphene/examples/swaplock/operations_transfer_broadcast.rs`. It uses the public `graphene` facade and `graphene-chain-swaplock-api` flow to prepare a typed transfer, discover the account active public key when a single active key is present, sign locally, broadcast through `network_broadcast.broadcast_transaction`, and confirm the transfer by matching sender account history. The example loads `.env` automatically, requires `SWAPLOCK_ACTIVE_WIF` and `SWAPLOCK_ACCOUNT`, defaults `SWAPLOCK_TO_ACCOUNT` to `1.2.0`, and does not print secrets or signed transaction bytes.
+The live transfer example is `open-graphene-packages/rust/graphene/examples/actanet/operations_transfer_broadcast.rs`, for an Actanet node named by `ACTANET_RPC_SERVERS` (default `ws://127.0.0.1:8090`). It uses the public `graphene` facade and `graphene-chain-actanet-api` flow to prepare a typed transfer, discover the account active public key when a single active key is present, sign locally, broadcast through `network_broadcast.broadcast_transaction`, and confirm the transfer by matching sender account history. The example loads `.env` automatically, requires `ACTANET_ACTIVE_WIF` and `ACTANET_ACCOUNT`, defaults `ACTANET_TO_ACCOUNT` to `1.2.0`, and does not print secrets or signed transaction bytes.

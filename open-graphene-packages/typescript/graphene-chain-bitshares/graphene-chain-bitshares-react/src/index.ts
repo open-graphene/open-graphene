@@ -12,7 +12,10 @@ import type {
   AssetId,
 } from '@open-graphene/chain-bitshares-bindings';
 import type { Signer } from '@open-graphene/fc/signing';
-import type { LiveReadOptions } from '@open-graphene/react-core';
+import {
+  createConnectionContext,
+  type LiveReadOptions,
+} from '@open-graphene/react-core';
 export * from './generated/index.js';
 export const BitSharesProvider = adapter.Provider;
 export const useBitSharesClient = adapter.useClient;
@@ -222,3 +225,9 @@ export function useWaitForInclusion() {
     true,
   );
 }
+
+const connection = createConnectionContext('BitShares');
+/** Supplies a host-owned `SharedConnection` to every BitShares consumer below it. */
+export const BitSharesConnectionProvider = connection.ConnectionProvider;
+/** The shared connection of the nearest `BitSharesConnectionProvider`. */
+export const useBitSharesConnection = connection.useConnection;

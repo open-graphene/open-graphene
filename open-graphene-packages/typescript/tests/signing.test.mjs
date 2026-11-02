@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import * as b from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
+import * as b from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
 import { bytesToHex, hexToBytes } from '../graphene-primitives/dist/index.js';
 import { transactionDigest } from '../graphene-fc/dist/index.js';
 import {
@@ -11,7 +11,7 @@ import {
   WifSigner,
   encodePublicKey,
 } from '../graphene-fc/dist/signing.js';
-import { PreparedTransfer } from '../graphene-chain-swaplock/graphene-chain-swaplock-api/dist/index.js';
+import { PreparedTransfer } from '../graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
 const fixture = JSON.parse(
   readFileSync(new URL('fixtures/protocol-vectors.json', import.meta.url)),
 );
@@ -59,7 +59,7 @@ test('generated FC transaction bytes and digest equal shared Rust vectors', () =
     /sorted and unique/,
   );
 });
-test('Swaplock low-S signature matches Rust, recovers key, rejects tampering', () => {
+test('canonical signature matches Rust, recovers key, rejects tampering', () => {
   const digest = hexToBytes(fixture.signing.digestHex);
   const key = hexToBytes(fixture.signing.publicTestPrivateKeyHex);
   const signature = signDigestCompact(digest, key);
@@ -84,7 +84,7 @@ test('prepared transaction is isolated from mutations and validates external sig
   const authority = b.AuthorityCodec.decode({
     weight_threshold: 1,
     account_auths: [],
-    key_auths: [[encodePublicKey(publicKey, 'BTS'), 1]],
+    key_auths: [[encodePublicKey(publicKey, b.CHAIN.publicKeyPrefix), 1]],
     address_auths: [],
   });
   const tx = b.TransactionCodec.decode({
@@ -104,7 +104,7 @@ test('prepared transaction is isolated from mutations and validates external sig
   assert.equal(bytesToHex(prepared.bytes), original);
   await assert.rejects(
     prepared.sign({ publicKey, signDigest: async () => new Uint8Array(65) }),
-    /invalid signature/,
+    /non-canonical/,
   );
   const signed = await prepared.sign({
     publicKey,

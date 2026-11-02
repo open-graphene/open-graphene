@@ -64,8 +64,8 @@ mod tests {
         let protocol = Protocol {
             schema_version: 1,
             chain: ChainDef {
-                id: "swaplock-minimal".to_string(),
-                public_key_prefix: "SWP".to_string(),
+                id: "fixture-minimal".to_string(),
+                public_key_prefix: "TEST".to_string(),
                 chain_id: None,
             },
             structs: vec![],
@@ -80,7 +80,7 @@ mod tests {
 
         let json = serde_json::to_value(&protocol).expect("serialize protocol");
         assert_eq!(json["schemaVersion"], 1);
-        assert_eq!(json["chain"]["publicKeyPrefix"], "SWP");
+        assert_eq!(json["chain"]["publicKeyPrefix"], "TEST");
     }
 
     #[test]
@@ -109,12 +109,12 @@ mod tests {
         assert_eq!(account_id["objectType"], "account");
 
         let public_key = serde_json::to_value(TypeRef::PublicKey {
-            chain_prefix: Some("SWP".to_string()),
+            chain_prefix: Some("TEST".to_string()),
             prefix_ref: None,
         })
         .expect("serialize public key");
         assert_eq!(public_key["kind"], "public_key");
-        assert_eq!(public_key["chainPrefix"], "SWP");
+        assert_eq!(public_key["chainPrefix"], "TEST");
 
         let void = serde_json::to_value(TypeRef::Void).expect("serialize void");
         assert_eq!(void["kind"], "void");
@@ -129,8 +129,8 @@ mod tests {
         let json = serde_json::json!({
             "schemaVersion": 1,
             "chain": {
-                "id": "swaplock-minimal",
-                "publicKeyPrefix": "SWP"
+                "id": "fixture-minimal",
+                "publicKeyPrefix": "TEST"
             },
             "structs": [],
             "enums": [],
@@ -211,8 +211,8 @@ mod tests {
         let protocol = Protocol {
             schema_version: 1,
             chain: ChainDef {
-                id: "swaplock-minimal".to_string(),
-                public_key_prefix: "SWP".to_string(),
+                id: "fixture-minimal".to_string(),
+                public_key_prefix: "TEST".to_string(),
                 chain_id: None,
             },
             structs: vec![],

@@ -385,6 +385,7 @@ mod tests {
                 id: "bitshares".to_string(),
                 public_key_prefix: "BTS".to_string(),
                 chain_id: None,
+                genesis: None,
             },
             source: SourceConfig {
                 chain_repo: "../../blockchains/bitshares/bitshares-core".to_string(),

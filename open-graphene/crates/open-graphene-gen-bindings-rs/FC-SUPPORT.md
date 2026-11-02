@@ -30,7 +30,7 @@ This crate generates raw Rust bindings from an Open Graphene protocol spec. FC s
   - `limit_order_auto_action`
   - `fee_parameters`
   - `argument_type`
-- Guarded `flat_set` / `flat_map` cases used by Swaplock operation FC coverage, including protocol object IDs, public keys, scalar sets, fixed-byte sets, fee parameter sets, and selected flat maps.
+- Guarded `flat_set` / `flat_map` cases used by operation FC coverage, including protocol object IDs, public keys, scalar sets, fixed-byte sets, fee parameter sets, and selected flat maps.
 
 ## Intentionally fail-closed
 
@@ -75,8 +75,8 @@ When changing FC support, run at minimum:
 cargo test -p open-graphene-fc
 cargo test -p open-graphene-gen-bindings-rs
 cargo test -p open-graphene-spec-gen
-cargo test -p graphene-chain-swaplock-bindings
-cargo test -p graphene-chain-swaplock-api -p graphene
+cargo test -p graphene-chain-actanet-bindings -p graphene-chain-bitshares-bindings
+cargo test -p graphene-chain-actanet-api -p graphene-chain-bitshares-api -p graphene-chain-rsquared-api -p graphene
 cargo check -p graphene --examples
 ```
 

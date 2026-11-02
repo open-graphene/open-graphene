@@ -33,6 +33,18 @@ pub enum SpecGenError {
     },
     #[error("source chain repository does not exist or is not a directory: {path}")]
     SourceRootMissing { path: PathBuf },
+    #[error("failed to read genesis file {path}: {source}")]
+    ReadGenesis {
+        path: PathBuf,
+        #[source]
+        source: std::io::Error,
+    },
+    #[error("configured chain_id {configured} differs from the chain ID of {path}: {computed}")]
+    ChainIdMismatch {
+        path: PathBuf,
+        computed: String,
+        configured: String,
+    },
     #[error("failed to discover source files under {path}: {source}")]
     DiscoverSources {
         path: PathBuf,

@@ -1,20 +1,21 @@
 use std::marker::PhantomData;
 
-use graphene_chain_swaplock_api::{
-    ConnectionStrategy, ServerLatency, SwaplockApi, SwaplockLiveApi,
-};
+use graphene_chain_actanet_api::{ConnectionStrategy, ServerLatency};
 
 use crate::client::{GrapheneClientConfig, validate_config};
 use crate::error::{GrapheneConfigError, GrapheneConnectError};
 
+/// Actanet: the default chain of this facade, whose API is also re-exported at the crate root.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Swaplock;
+pub struct Actanet;
 
+/// BitShares.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct BitShares;
 
+/// R-Squared.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Acta;
+pub struct RSquared;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ChainClientBuilder<C> {
@@ -75,84 +76,45 @@ impl<C> ChainClientBuilder<C> {
     }
 }
 
-impl ChainClientBuilder<Swaplock> {
-    pub async fn connect(self) -> Result<SwaplockApi, GrapheneConnectError> {
-        validate_config(&self.config)?;
-        let servers = self.config.servers;
-        let expected_chain_id = self.config.chain_id;
-        let strategy = self.config.strategy;
-        Ok(
-            SwaplockApi::connect_with_strategy(servers, expected_chain_id.as_deref(), strategy)
-                .await?,
-        )
-    }
+/// `connect`, `connect_live` and `probe_latencies` for one chain, built from its API crate.
+macro_rules! chain_connect {
+    ($marker:ty, $api:ident) => {
+        impl ChainClientBuilder<$marker> {
+            pub async fn connect(self) -> Result<$api::ChainApi, GrapheneConnectError> {
+                validate_config(&self.config)?;
+                let servers = self.config.servers;
+                let expected_chain_id = self.config.chain_id;
+                let strategy = self.config.strategy;
+                Ok(
+                    $api::ChainApi::connect_with_strategy(
+                        servers,
+                        expected_chain_id.as_deref(),
+                        strategy,
+                    )
+                    .await?,
+                )
+            }
 
-    pub async fn connect_live(self) -> Result<SwaplockLiveApi, GrapheneConnectError> {
-        Ok(self.connect().await?.into_live()?)
-    }
+            pub async fn connect_live(self) -> Result<$api::ChainLiveApi, GrapheneConnectError> {
+                Ok(self.connect().await?.into_live()?)
+            }
 
-    /// Measure connect latency for every configured server, sorted fastest-first.
-    ///
-    /// Borrows the builder so you can inspect the report and then `connect()` separately.
-    /// Unreachable servers are omitted from the report.
-    pub async fn probe_latencies(&self) -> Result<Vec<ServerLatency>, GrapheneConnectError> {
-        validate_config(&self.config)?;
-        Ok(SwaplockApi::probe_latencies(
-            self.config.servers.clone(),
-            self.config.chain_id.as_deref(),
-        )
-        .await?)
-    }
+            /// Measure connect latency for every configured server, sorted fastest-first.
+            ///
+            /// Borrows the builder so you can inspect the report and then `connect()` separately.
+            /// Unreachable servers are omitted from the report.
+            pub async fn probe_latencies(&self) -> Result<Vec<ServerLatency>, GrapheneConnectError> {
+                validate_config(&self.config)?;
+                Ok($api::ChainApi::probe_latencies(
+                    self.config.servers.clone(),
+                    self.config.chain_id.as_deref(),
+                )
+                .await?)
+            }
+        }
+    };
 }
 
-impl ChainClientBuilder<BitShares> {
-    /// PLACEHOLDER: validates the config and returns a stub that holds it —
-    /// no connection is made and no RPC surface exists yet. Swaplock is the
-    /// only chain with a working client; see [`BitSharesClient`].
-    pub async fn connect(self) -> Result<BitSharesClient, GrapheneConnectError> {
-        validate_config(&self.config)?;
-        Ok(BitSharesClient {
-            config: self.config,
-        })
-    }
-}
-
-impl ChainClientBuilder<Acta> {
-    /// PLACEHOLDER: validates the config and returns a stub that holds it —
-    /// no connection is made and no RPC surface exists yet. Swaplock is the
-    /// only chain with a working client; see [`ActaClient`].
-    pub async fn connect(self) -> Result<ActaClient, GrapheneConnectError> {
-        validate_config(&self.config)?;
-        Ok(ActaClient {
-            config: self.config,
-        })
-    }
-}
-
-/// PLACEHOLDER client: holds the validated config and nothing else. It does
-/// not connect to any node and exposes no chain API. Kept so the multi-chain
-/// builder surface is exercised until real BitShares support lands.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BitSharesClient {
-    config: GrapheneClientConfig,
-}
-
-impl BitSharesClient {
-    pub fn config(&self) -> &GrapheneClientConfig {
-        &self.config
-    }
-}
-
-/// PLACEHOLDER client: holds the validated config and nothing else. It does
-/// not connect to any node and exposes no chain API. Kept so the multi-chain
-/// builder surface is exercised until real Acta support lands.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActaClient {
-    config: GrapheneClientConfig,
-}
-
-impl ActaClient {
-    pub fn config(&self) -> &GrapheneClientConfig {
-        &self.config
-    }
-}
+chain_connect!(Actanet, graphene_chain_actanet_api);
+chain_connect!(BitShares, graphene_chain_bitshares_api);
+chain_connect!(RSquared, graphene_chain_rsquared_api);

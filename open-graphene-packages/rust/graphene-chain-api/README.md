@@ -1,0 +1,39 @@
+# graphene-chain-api
+
+The high-level Rust API of Open Graphene, shared by every chain: sessions, database, history,
+orders and crypto queries, live subscriptions, operation builders, transaction preparation,
+signing and broadcast.
+
+This directory is not a crate of its own. Each chain has a thin crate that builds this source
+against its generated bindings:
+
+| Crate | Bindings | Features |
+|---|---|---|
+| `graphene-chain-actanet-api` | `graphene-chain-actanet-bindings` | `bitshares7` |
+| `graphene-chain-bitshares-api` | `graphene-chain-bitshares-bindings` | `bitshares7` |
+| `graphene-chain-rsquared-api` | `graphene-chain-rsquared-bindings` | none |
+
+A chain crate points its `[lib] path` at `src/lib.rs` here and depends on its bindings under the
+name `bindings`:
+
+```toml
+[lib]
+path = "../../graphene-chain-api/src/lib.rs"
+
+[dependencies]
+bindings = { package = "graphene-chain-actanet-bindings", path = "../graphene-chain-actanet-bindings" }
+```
+
+The generated types have the same names on every Graphene chain, but they are distinct types in
+each bindings crate, so the source is compiled once per chain rather than made generic over them.
+
+## The `bitshares7` feature
+
+Turns on what BitShares 7 has and older Graphene chains such as R-Squared lack: blind transfers,
+collateral bids and call order options, credit offers and deals, limit order updates and options,
+liquidity pools, samet funds, and the witness signature in `get_block_header`. A chain crate
+enables it when its bindings have these operations.
+
+Chain constants come from the bindings: `CHAIN_NAME`, `CHAIN_ID` (the genesis hash) and
+`PUBLIC_KEY_PREFIX`. Code and tests in this source must not assume one chain's prefix, operation
+numbering or chain id.

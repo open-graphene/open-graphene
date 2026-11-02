@@ -225,7 +225,7 @@ mod tests {
 
         assert!(output.contains("pub mod ids;"));
         assert!(output.contains("pub use types::*;"));
-        assert!(ids.contains("pub const CHAIN_ID: &str = \"swaplock\";"));
+        assert!(ids.contains("pub const CHAIN_ID: &str = \"fixture\";"));
         assert!(ids.contains("pub const RPC_METHOD_COUNT: usize = 0;"));
         assert!(ids.contains("impl ObjectId"));
         assert!(ids.contains("pub fn new(value: impl Into<String>) -> Self"));

@@ -78,42 +78,10 @@
     "digestHex": "c1f5d76e25d012affb0b10275197d4f16823f28d749eb69c27a1607a76caac89"
   },
   "signing": {
-    "profile": "swaplock-low-s",
+    "profile": "graphene-legacy",
     "publicTestPrivateKeyHex": "0101010101010101010101010101010101010101010101010101010101010101",
     "signatureHex": "2077f9ad0a1b61b861eea448f7391f2abb79598870807f18ddb856b14ea3a4dc880571b89c5c759a40bb9a45fb24692e219f0ec1d83b0bc96fe90bfe0e0ccba43b",
     "publicKeyHex": "031b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f",
     "digestHex": "b459775b7ac4c1f0d1e5988d112846c0a9b75c8b8bbbd613f80499366d9be635"
-  },
-  "extensions": [
-    {
-      "type": "data_room_access_extensions",
-      "value": {},
-      "hex": "00"
-    },
-    {
-      "type": "data_room_access_extensions",
-      "value": {
-        "expected_access_state": "abababababababababababababababababababababababababababababababab"
-      },
-      "hex": "01004061626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162"
-    }
-  ],
-  "accessSnapshot": {
-    "value": {
-      "domain": "swaplock:data-room-access:v1",
-      "room": "1.23.7",
-      "owner": "1.2.2",
-      "encrypted": true,
-      "current_epoch": 3,
-      "members": [
-        {
-          "membership_instance": 9,
-          "member": [0, "1.2.2"],
-          "permissions": 255,
-          "member_key": "envelope"
-        }
-      ]
-    },
-    "digestHex": "3ef3e7a0f3b8dc2a2ea389b800623fa84c9dafe0ffde9f1c1e194e6516efcfbf"
   }
 }

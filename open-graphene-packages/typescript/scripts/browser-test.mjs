@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 const result = await build({
   stdin: {
     contents: `
-    import { TransactionCodec, encodeTransaction } from './graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
+    import { TransactionCodec, encodeTransaction } from './graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
     import { signDigestCompact, recoverPublicKey, isCanonicalCompactSignature } from './graphene-fc/dist/signing.js';
     import { BitSharesWifSigner, BitSharesClient } from './graphene-chain-bitshares/graphene-chain-bitshares-api/dist/index.js';
     import { parseJson, stringifyJson } from './graphene-codec/dist/index.js';
@@ -13,9 +13,9 @@ const result = await build({
     import { bytesToHex, hexToBytes } from './graphene-primitives/dist/index.js';
     import fixture from './tests/fixtures/protocol-vectors.json';
     import memo from './tests/fixtures/memo-rust.json';
-    import swaplockVectors from './tests/fixtures/swaplock-fc-parity-rich.json';
+    import actanetVectors from './tests/fixtures/actanet-fc-parity-rich.json';
     import bitsharesVectors from './tests/fixtures/bitshares-fc-parity-rich.json';
-    import * as swaplockBindings from './graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
+    import * as actanetBindings from './graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
     import * as bitsharesBindings from './graphene-chain-bitshares/graphene-chain-bitshares-bindings/dist/index.js';
     import { encryptMemo, decryptMemo } from './graphene-fc/dist/memo.js';
     globalThis.parity = async () => {
@@ -24,7 +24,7 @@ const result = await build({
       const plain=await decryptMemo(hexToBytes(memo.bobPrivateKeyHex),hexToBytes(memo.alicePublicKeyHex),BigInt(memo.nonce),cipher);
       if(new TextDecoder().decode(plain)!==memo.message)throw new Error('Browser memo decryption');
       let checked=0;
-      for(const [b,fixture] of [[swaplockBindings,swaplockVectors],[bitsharesBindings,bitsharesVectors]]) {
+      for(const [b,fixture] of [[actanetBindings,actanetVectors],[bitsharesBindings,bitsharesVectors]]) {
         for(const vector of fixture.vectors) {
           if(bytesToHex(b.encodeOperation(b.OperationCodec.decode(vector.operation)))!==vector.rust.hex)throw new Error('Browser FC differs: '+vector.name);
           checked++;

@@ -257,7 +257,7 @@ test('legacy profile grinds canonical r/s, preserves recovery, and rejects nonca
   for (let n = 0; n < 32; n++) {
     const digest = new Uint8Array(32);
     digest[31] = n;
-    const plain = signDigestCompact(digest, key);
+    const plain = signDigestCompact(digest, key, 'low-s');
     const legacy = signDigestCompact(digest, key, 'graphene-legacy');
     if (!isCanonicalCompactSignature(plain)) ground++;
     assert.ok(isCanonicalCompactSignature(legacy));
@@ -272,11 +272,12 @@ test('legacy profile grinds canonical r/s, preserves recovery, and rejects nonca
     ...vectors.transfer.transaction,
     expiration: new Date(Date.now() + 60000).toISOString().slice(0, 19),
   });
-  const prepared = new PreparedTransfer(
-    tx,
-    b.AuthorityCodec.decode(authority),
-    1,
-  );
+  const prepared = new PreparedTransfer({
+    transaction: tx,
+    authority: b.AuthorityCodec.decode(authority),
+    startBlock: 1,
+    chainId: b.CHAIN.chainId,
+  });
   const bad = new Uint8Array(65);
   bad[0] = 31;
   bad[1] = 128;

@@ -1,8 +1,8 @@
 # Open Graphene SDK for TypeScript
 
-Build applications for **Swaplock, BitShares and R-Squared** in Node.js and the browser.
-Read accounts and balances, send transactions, encrypt memos, work with Swaplock
-rooms, and subscribe to changes through a typed API.
+Build applications for **Actanet, BitShares and R-Squared** in Node.js and the browser.
+Read accounts and balances, send transactions, encrypt memos and subscribe to
+changes through a typed API.
 
 The SDK is native TypeScript. Its protocol bindings come from the same C++ source
 specifications as the Rust SDK. It uses neither a bitsharesjs wrapper nor WASM.
@@ -26,16 +26,16 @@ packages are available when you only need one chain.
 
 | Package                                   | Use it for                                                               |
 | ----------------------------------------- | ------------------------------------------------------------------------ |
-| `@open-graphene/chain-swaplock-react`     | Swaplock React hooks, live updates and operation preparation             |
+| `@open-graphene/chain-actanet-react`      | Actanet React hooks, live updates and operation preparation              |
 | `@open-graphene/chain-bitshares-react`    | BitShares React hooks, live updates and operation preparation            |
 | `@open-graphene/chain-rsquared-react`     | R-Squared React hooks and operation preparation                          |
 | `@open-graphene/chain-rsquared-api`       | R-Squared transactions, queries and subscriptions                        |
 | `@open-graphene/chain-rsquared-bindings`  | R-Squared protocol types, operation factories and codecs                 |
 | `@open-graphene/react-core`               | Shared React adapter and cache utilities                                 |
 | `@open-graphene/graphene`                 | Connect to any supported chain; access wallet, memo and amount helpers   |
-| `@open-graphene/chain-swaplock-api`       | Swaplock transactions, queries and room-access helpers                   |
+| `@open-graphene/chain-actanet-api`        | Actanet transactions, queries and subscriptions                          |
 | `@open-graphene/chain-bitshares-api`      | BitShares transactions and queries                                       |
-| `@open-graphene/chain-swaplock-bindings`  | Swaplock protocol types, operation factories and codecs                  |
+| `@open-graphene/chain-actanet-bindings`   | Actanet protocol types, operation factories and codecs                   |
 | `@open-graphene/chain-bitshares-bindings` | BitShares protocol types, operation factories and codecs                 |
 | `@open-graphene/core`                     | Amount formatting, account-name validation and authority analysis        |
 | `@open-graphene/fc`                       | Binary serialization; `/signing`, `/memo`, `/wallet` and `/hash` exports |
@@ -44,6 +44,11 @@ packages are available when you only need one chain.
 | `@open-graphene/primitives`               | IDs, timestamps and byte conversions                                     |
 
 See [R-Squared support](../../docs/RSQUARED.md) for chain identity, domain operations and validation limits.
+
+The three chain API packages are built from one source, `graphene-chain-api/src`.
+`pnpm generate` copies it into each package's `src/shared`, next to a short
+`src/bindings.ts` that names the chain's bindings, its signature rule and how its
+block header is serialized. Edit `graphene-chain-api/src`, never `src/shared`.
 
 ## Formatting
 
@@ -56,7 +61,7 @@ generated sources.
 
 ## React applications
 
-Use [`@open-graphene/chain-swaplock-react`](graphene-chain-swaplock/graphene-chain-swaplock-react/README.md)
+Use `@open-graphene/chain-actanet-react`
 or [`@open-graphene/chain-bitshares-react`](graphene-chain-bitshares/graphene-chain-bitshares-react/README.md)
 for TanStack Query hooks, live subscriptions and dedicated preparation hooks for
 every user operation. The adapters share `@open-graphene/react-core` and keep
@@ -64,30 +69,23 @@ React dependencies out of the core SDK. See the
 [React integration guide](../../docs/TYPESCRIPT-REACT.md) for examples.
 
 See the [release guide](../../docs/TYPESCRIPT-RELEASE.md) for package artifact
-checks, React 18/19 validation and the opt-in live room transaction test. The
+checks and React 18/19 validation. The
 current `0.1.0` manifests are release candidates; npm publication is pending.
 
 ## Connect and read an account
 
-This example connects to the Swaplock testnet, reads an account and its balances,
+This example connects to an Actanet node, reads an account and its balances,
 and closes the connection. Read-only calls do not need a private key.
 
 ```ts
 import { Graphene, formatRawAmount } from '@open-graphene/graphene';
-import { CHAIN } from '@open-graphene/chain-swaplock-bindings';
 
-const client = await Graphene.swaplock(
-  [
-    'wss://node01.swaplock.chainpool.online:8090',
-    'wss://node02.swaplock.chainpool.online:8090',
-  ],
-  {
-    expectedChainId: CHAIN.chainId,
-  },
-);
+const client = await Graphene.actanet(['ws://127.0.0.1:8090'], {
+  expectedChainId: ACTANET_CHAIN_ID, // The network you trust, e.g. the testnet.
+});
 
 try {
-  const account = await client.database.account('swaplock');
+  const account = await client.database.account('actanet');
   const balances = await client.database.accountBalances(account.id);
   const core = await client.database.asset('1.3.0');
   const balance = balances.find((item) => item.asset_id === core.id);
@@ -102,18 +100,18 @@ try {
 }
 ```
 
-`SwaplockClient.connect`, `Graphene.swaplock`, `Graphene.connect('swaplock', ...)`
-and `SwaplockClient.probeLatencies` require `expectedChainId`: the trusted lowercase
-64-character hex ID of your deployment. `CHAIN.chainId` selects the bundled testnet;
-pass your deployment ID for another Swaplock network. The client verifies that ID
-before exposing the connection and on every reconnect. Do not derive the expected
-ID from the untrusted node you are about to connect to.
+`connect`, `probeLatencies`, `Graphene.actanet` and `Graphene.connect(chain, ...)`
+take `expectedChainId`: the trusted lowercase 64-character hex ID of the network.
+Without it a client expects `CHAIN.chainId` from its bindings; pass the ID of
+another network of the chain, such as a testnet, to use that one. The client
+verifies the ID before exposing the connection and on every reconnect. Do not
+derive the expected ID from the untrusted node you are about to connect to.
 
 `prepareTransfer` and `prepareOperations` capture the verified ID in the immutable
 `prepared.chainId`. Both external signers and `signWithWifs` sign the digest for that
 network. Direct constructors also require it: `new PreparedTransaction({ transaction,
 startBlock, chainId })` and `new PreparedTransfer({ transaction, authority, startBlock,
-chainId })`. Network selection does not change the Swaplock protocol or key prefix.
+chainId })`. Network selection does not change the chain's protocol or key prefix.
 The React provider remains restricted to the bundled network.
 
 `prepareOperations(operations, options)` accepts `maxHeadAgeSeconds` and
@@ -152,21 +150,17 @@ Automatic reconnect uses the selected endpoint and checks the chain ID again.
 Pass an `AbortSignal` to cancel connection setup and the entire session lifetime:
 
 ```ts
-import { SwaplockClient } from '@open-graphene/chain-swaplock-api';
-import { CHAIN } from '@open-graphene/chain-swaplock-bindings';
+import { ActanetClient } from '@open-graphene/chain-actanet-api';
 
 const controller = new AbortController();
-const client = await SwaplockClient.connect(
-  'wss://node01.swaplock.chainpool.online:8090',
-  {
-    expectedChainId: CHAIN.chainId,
-    signal: controller.signal,
-  },
-);
+const client = await ActanetClient.connect('ws://127.0.0.1:8090', {
+  expectedChainId: ACTANET_CHAIN_ID,
+  signal: controller.signal,
+});
 
 try {
   // The owner of this operation can call controller.abort() at any time.
-  const account = await client.database.account('swaplock');
+  const account = await client.database.account('actanet');
   console.log(account.id);
 } finally {
   client.close();
@@ -190,7 +184,7 @@ retried automatically. Use a new signal and connection for a new session.
 `expectedChainId` and `actualChainId`. Connection setup and reconnection throw it
 when a node returns a valid chain ID different from the required one. The failed
 connection is closed. Invalid chain-ID responses and transport failures remain
-separate errors. Swaplock's chain API re-exports the error and helper.
+separate errors. Every chain API re-exports the error and helper.
 
 `hasChainIdMismatch(error)` recognizes the typed error directly or inside nested
 `AggregateError` instances, including cyclic aggregates. It does not inspect
@@ -208,7 +202,7 @@ compressed public key. It is synchronous and does not access the network or
 request a new signature.
 
 ```ts
-import { restoreSignedTransaction } from '@open-graphene/chain-swaplock-api';
+import { restoreSignedTransaction } from '@open-graphene/chain-actanet-api';
 
 const signed = restoreSignedTransaction({
   serializedTransaction: saved.signedTransaction,
@@ -335,9 +329,9 @@ and `client.crypto` directly. Generated RPC method names use camelCase; their
 parameter objects retain the protocol's snake_case field names.
 
 ```ts
-import type { SwaplockClient } from '@open-graphene/chain-swaplock-api';
+import type { ActanetClient } from '@open-graphene/chain-actanet-api';
 
-async function inspectAccount(client: SwaplockClient, accountName: string) {
+async function inspectAccount(client: ActanetClient, accountName: string) {
   const page = await client.history.accountHistory(accountName, 20, 0);
   console.log(page.items);
 
@@ -360,7 +354,7 @@ History takes `(accountNameOrId, limit, offset)`; `limit + offset` must be at mo
 `client.database.getTicker({ base: 'BTS', quote: 'USD' })` on a chain where both
 assets exist.
 
-## Send a transfer on Swaplock
+## Send a transfer on Actanet
 
 A transfer has four steps: **prepare → sign → broadcast → wait for inclusion**.
 Preparation resolves accounts/assets, obtains fees and checks the liquid balance.
@@ -372,10 +366,10 @@ Use accounts you control and obtain keys from your application's key storage.
 
 ```ts
 import { PrivateKey } from '@open-graphene/graphene';
-import type { SwaplockClient } from '@open-graphene/chain-swaplock-api';
+import type { ActanetClient } from '@open-graphene/chain-actanet-api';
 
 async function sendTransfer(
-  client: SwaplockClient,
+  client: ActanetClient,
   activeWif: string,
   from: string,
   to: string,
@@ -386,8 +380,8 @@ async function sendTransfer(
       from,
       to,
       amount: '0.01', // Decimal asset units, expressed as a string.
-      asset: 'BTS',
-      maxFee: 300000n, // Raw fee units: 3 BTS when precision is 5.
+      asset: 'ACTA',
+      maxFee: 300000n, // Raw fee units: 3 ACTA when precision is 5.
     });
 
     const signed = await prepared.sign(signer);
@@ -409,8 +403,7 @@ transaction before attempting another send. The SDK does not retry broadcasts.
 
 ## Use BitShares
 
-BitShares has the same transfer lifecycle. Use its signer to produce the legacy
-canonical signature format required by that chain.
+BitShares has the same transfer lifecycle and the same signature rule.
 
 ```ts
 import { Graphene } from '@open-graphene/graphene';
@@ -440,9 +433,15 @@ async function prepareBitSharesTransfer(wif: string, from: string, to: string) {
 }
 ```
 
-This function prepares and signs without broadcasting. For the wallet API,
-`PrivateKey.fromWif(wif, 'graphene-legacy')` selects the same signing profile.
-The default `PrivateKey` profile is for Swaplock.
+This function prepares and signs without broadcasting.
+
+Actanet, BitShares and R-Squared nodes accept only signatures that pass
+`fc::ecc::public_key::is_canonical`: no high bit in the first byte of r or s.
+Signers and `PrivateKey` use that rule (`'graphene-legacy'`) by default and retry
+with another nonce until a signature passes it. The chain APIs reject a signature
+from an external signer that does not pass it before anything is sent. The
+`'low-s'` profile signs with plain low-S only, which these nodes reject about half
+of the time.
 
 ## Combine operations in one transaction
 
@@ -452,14 +451,14 @@ fees with the values returned by the node. Operation names and fields use the
 protocol's snake_case spelling.
 
 ```ts
-import type { SwaplockClient } from '@open-graphene/chain-swaplock-api';
+import type { ActanetClient } from '@open-graphene/chain-actanet-api';
 import {
   AccountId,
   AssetId,
   bindOperationBuilders,
-} from '@open-graphene/chain-swaplock-bindings';
+} from '@open-graphene/chain-actanet-bindings';
 
-async function prepareTwoTransfers(client: SwaplockClient) {
+async function prepareTwoTransfers(client: ActanetClient) {
   const op = bindOperationBuilders((operation) => operation);
   const from = AccountId('1.2.100');
   const to = AccountId('1.2.101');
@@ -474,7 +473,7 @@ async function prepareTwoTransfers(client: SwaplockClient) {
   );
 }
 
-async function prepareOneTransfer(client: SwaplockClient) {
+async function prepareOneTransfer(client: ActanetClient) {
   return client.operations
     .transfer({
       from: AccountId('1.2.100'),
@@ -488,8 +487,8 @@ async function prepareOneTransfer(client: SwaplockClient) {
 ```
 
 Replace the example IDs with accounts on your chain. Other factories include
-`limit_order_create`, `account_update`, `proposal_create` and Swaplock's
-`data_room_create`. Their TypeScript inputs describe the required fields.
+`limit_order_create`, `account_update`, `proposal_create` and Actanet's
+`data_room_create` and `fee_grant_create`. Their TypeScript inputs describe the required fields.
 The generic path validates encoding and fees; chain-state rules are enforced by
 the node. It does not perform every operation-specific balance/authority check.
 
@@ -500,7 +499,7 @@ checks each returned signature. Supply all keys needed by the on-chain authority
 
 ```ts
 import { PrivateKey } from '@open-graphene/graphene';
-import type { PreparedTransaction } from '@open-graphene/chain-swaplock-api';
+import type { PreparedTransaction } from '@open-graphene/chain-actanet-api';
 
 async function signWithTwoKeys(
   prepared: PreparedTransaction,
@@ -534,14 +533,15 @@ import {
   decryptMemoWithWif,
   uniqueNonce,
 } from '@open-graphene/graphene';
-import type { SwaplockClient } from '@open-graphene/chain-swaplock-api';
+import type { ActanetClient } from '@open-graphene/chain-actanet-api';
 import {
+  CHAIN,
   MemoDataCodec,
   type MemoData,
-} from '@open-graphene/chain-swaplock-bindings';
+} from '@open-graphene/chain-actanet-bindings';
 
 async function prepareWithMemo(
-  client: SwaplockClient,
+  client: ActanetClient,
   memoWif: string,
   from: string,
   to: string,
@@ -551,13 +551,17 @@ async function prepareWithMemo(
   const recipient = await client.database.account(to);
   const memoKey = PrivateKey.fromWif(memoWif);
   try {
-    if (memoKey.toPublicKey().toString('BTS') !== sender.options.memo_key) {
+    if (
+      memoKey.toPublicKey().toString(CHAIN.publicKeyPrefix) !==
+      sender.options.memo_key
+    ) {
       throw new Error('The supplied key does not match the sender memo key');
     }
     const nonce = uniqueNonce();
     const message = await encryptMemoWithWif(
       memoWif,
-      PublicKey.fromString(recipient.options.memo_key, 'BTS').bytes,
+      PublicKey.fromString(recipient.options.memo_key, CHAIN.publicKeyPrefix)
+        .bytes,
       nonce,
       new TextEncoder().encode(text),
     );
@@ -571,7 +575,7 @@ async function prepareWithMemo(
       from,
       to,
       amount: '0.01',
-      asset: 'BTS',
+      asset: 'ACTA',
       maxFee: 300000n,
       memo,
     });
@@ -583,7 +587,7 @@ async function prepareWithMemo(
 async function readMemo(recipientMemoWif: string, memo: MemoData) {
   const plaintext = await decryptMemoWithWif(
     recipientMemoWif,
-    PublicKey.fromString(memo.from, 'BTS').bytes,
+    PublicKey.fromString(memo.from, CHAIN.publicKeyPrefix).bytes,
     memo.nonce,
     memo.message,
   );
@@ -591,7 +595,8 @@ async function readMemo(recipientMemoWif: string, memo: MemoData) {
 }
 ```
 
-Both current chain profiles use the `BTS` public-key prefix. `dispose()` clears
+Public keys carry the chain's prefix: `ACTA` on Actanet, `BTS` on BitShares and
+`RQRX` on R-Squared (`CHAIN.publicKeyPrefix`). `dispose()` clears
 owned key bytes; JavaScript cannot erase immutable WIF strings or copies retained
 by your application.
 
@@ -601,9 +606,9 @@ Watches return async iterators. They emit an initial snapshot, then refreshed
 values when notices arrive. Close the stream when the screen or task is finished.
 
 ```ts
-import type { SwaplockClient } from '@open-graphene/chain-swaplock-api';
+import type { ActanetClient } from '@open-graphene/chain-actanet-api';
 
-async function watchFiveBlocks(client: SwaplockClient) {
+async function watchFiveBlocks(client: ActanetClient) {
   const stream = await client.database.watchDynamicGlobalProperties();
   try {
     let snapshots = 0;
@@ -634,9 +639,9 @@ Its snapshots contain raw lossless JSON values; use generated codecs when you
 need a specific typed object.
 
 ```ts
-import type { SwaplockClient } from '@open-graphene/chain-swaplock-api';
+import type { ActanetClient } from '@open-graphene/chain-actanet-api';
 
-async function watchObjects(client: SwaplockClient) {
+async function watchObjects(client: ActanetClient) {
   const store = await client.chainStore(['1.2.100', '2.1.0']);
   try {
     console.log('Initial account:', store.get('1.2.100'));
@@ -650,42 +655,12 @@ async function watchObjects(client: SwaplockClient) {
 }
 ```
 
-## Guard a Swaplock room mutation
+## Data rooms, content cards and fee grants
 
-An access precondition ties a mutation to the room state you just read. If another
-transaction changes that state first, the node rejects the guarded mutation.
-Read the new state and reconsider the change before preparing another transaction.
-
-```ts
-import {
-  RoomAccessPrecondition,
-  memberRemoveOperation,
-  type SwaplockClient,
-} from '@open-graphene/chain-swaplock-api';
-import { DataRoomId } from '@open-graphene/chain-swaplock-bindings';
-
-async function prepareMemberRemoval(
-  client: SwaplockClient,
-  callerId: string,
-  roomId: string,
-  memberId: string,
-) {
-  const state = await client.database.getDataRoomAccessState({
-    room_id: DataRoomId(roomId),
-  });
-  if (!state) throw new Error('Room not found');
-
-  const guard = RoomAccessPrecondition.fromSnapshot(state);
-  const operation = memberRemoveOperation(callerId, roomId, memberId);
-  return client.prepareOperations([guard.guard(operation)], {
-    maxFee: 300000n,
-  });
-}
-```
-
-The caller must have the required room permission. Helpers also cover member
-addition, key rotation and content-card grants; all room/card operation factories
-are available in the Swaplock bindings.
+The Actanet bindings have typed factories, codecs and RPC methods for every data
+room, content card and fee grant operation (operations 80 to 94) and query
+(`client.database.getDataRoomById`, `getContentCardsByRoom`, `getFeeGrantsByGrantee`
+and others). A higher level data room API is not part of this SDK yet.
 
 ## Preserve large numbers when working with JSON
 
@@ -698,7 +673,7 @@ import {
   TransactionCodec,
   parseJson,
   stringifyJson,
-} from '@open-graphene/chain-swaplock-bindings';
+} from '@open-graphene/chain-actanet-bindings';
 
 function roundTripTransaction(rawRpcJson: string) {
   const transaction = TransactionCodec.decode(parseJson(rawRpcJson));
@@ -712,22 +687,23 @@ cannot serialize `bigint` directly. For a signed transaction, use
 
 ## What is supported and tested?
 
-| Capability                                           | Swaplock | BitShares |
-| ---------------------------------------------------- | -------: | --------: |
-| Operation variants with generated JSON bindings      |       95 |        78 |
-| User operations with FC encoding and typed factories |       88 |        71 |
-| Generated RPC methods                                |       47 |        32 |
-| RPC methods confirmed live in the dated report       |       47 |        24 |
+| Capability                                           | Actanet | BitShares | R-Squared |
+| ---------------------------------------------------- | ------: | --------: | --------: |
+| Operation variants with generated JSON bindings      |      95 |        78 |        64 |
+| User operations with FC encoding and typed factories |      88 |        71 |        59 |
+| Generated RPC methods                                |      49 |        32 |        31 |
 
-Each chain has seven additional **virtual operations**: records produced by the
+The remaining operations are **virtual operations**: records produced by the
 blockchain, not operations a user can sign. FC is Graphene's binary transaction
-format. All user-operation encoders were compared with Rust and native C++ using
-318 baseline/rich vectors in total.
+format. Every Actanet and BitShares user-operation encoder was compared with Rust
+and with a native C++ node, using the baseline and rich vectors in
+`tests/fixtures`. Actanet has no public node yet, so its vectors were checked on a
+local actanet-core node.
 
-Both clients support compound transactions, memo, multiple signers, wallets,
-reconnect, subscriptions and ChainStore. Swaplock transactions were also confirmed
-live and irreversible. On the tested BitShares public nodes, seven crypto methods
-were denied by permissions; mainnet broadcast was not performed.
+All clients support compound transactions, memo, multiple signers, wallets,
+reconnect, subscriptions and ChainStore. On the tested BitShares public nodes,
+seven crypto methods were denied by permissions; mainnet broadcast was not
+performed.
 
 This is capability parity with Rust's supported profile, not exhaustive coverage
 of every payload or chain-state scenario. Unsupported populated extensions and
@@ -759,16 +735,15 @@ Offline tests use public fixtures and do not need private keys. Live checks are
 opt-in and depend on node availability and permissions:
 
 ```sh
-# Read/fee-estimation smoke tests on Swaplock:
-pnpm test:testnet
-pnpm test:testnet:browser
 # Read-only BitShares checks; no mainnet broadcast:
 pnpm test:bitshares:live /tmp/bitshares-node.json
 pnpm test:bitshares:live /tmp/bitshares-browser.json --browser
+# Read-only R-Squared checks:
+pnpm test:rsquared:live
+# A transfer between genesis accounts on an Actanet node you run:
+node examples/live-transfer.mjs --genesis genesis.private.json --chainId <id> [--broadcast]
 ```
 
-For full Swaplock RPC checks, fixture setup/cleanup and explicit transaction tests,
-see the [live testing guide](../../docs/TYPESCRIPT-LIVE-TESTING.md).
 The [original implementation plan](../../docs/TYPESCRIPT-PLAN.md) and
 [reference fixtures](tests/fixtures/README.md) explain the design and test inputs.
 

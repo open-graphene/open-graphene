@@ -11,7 +11,7 @@ This is a design spike, not an implementation contract. The current committed im
 
 Manual SDK adapters now exist across two generated chain binding crates:
 
-| Flow | Swaplock | BitShares |
+| Flow | Swaplock testnet (retired) | BitShares |
 | --- | --- | --- |
 | `transfer` | live proven | local proven |
 | `account_create` | live proven | local proven |
@@ -171,7 +171,7 @@ Default CLI remains protocol-only:
 
 ```bash
 open-graphene-gen-bindings-rs \
-  --spec ./dist/swaplock.open-graphene.json \
+  --spec ./dist/actanet.open-graphene.json \
   --out-dir ./src/generated
 ```
 
@@ -179,7 +179,7 @@ Common adapter generation is opt-in:
 
 ```bash
 open-graphene-gen-bindings-rs \
-  --spec ./dist/swaplock.open-graphene.json \
+  --spec ./dist/actanet.open-graphene.json \
   --out-dir ./src/generated \
   --sdk-out-dir ./src/sdk/generated \
   --sdk-profile common-chain
@@ -314,7 +314,7 @@ Design A has the smallest public API and the best separation from operation-spec
 
 Design B is the most flexible and the most explicit. It can express custom fields, guards, helpers, and future extension points without changing generator source. Its weakness is that it creates a second schema language for SDK adapters. That is premature while only four flows have been proven and the unsupported branches are still intentionally narrow.
 
-Design C fits the current evidence best. It keeps default protocol generation pure, gives chain packages a simple opt-in for the four common proven flows, and leaves a future `Explicit` mode for more advanced adapter shapes. Its main trade-off is that the generator will contain curated knowledge for common Graphene operations, but that knowledge already exists in the manual adapters and is now backed by tests and live Swaplock proofs.
+Design C fits the current evidence best. It keeps default protocol generation pure, gives chain packages a simple opt-in for the four common proven flows, and leaves a future `Explicit` mode for more advanced adapter shapes. Its main trade-off is that the generator will contain curated knowledge for common Graphene operations, but that knowledge already exists in the manual adapters and is now backed by tests and by live proofs on the former Swaplock testnet.
 
 ## Recommendation
 
@@ -335,7 +335,7 @@ This gives a low-friction path to replace duplicated manual adapters while keepi
 - Fail generation with clear diagnostics when requested common operations are absent.
 - Keep all RPC, signing, fee lookup, balance checks, and broadcast orchestration outside generated adapters.
 - Preserve fail-closed JSON rendering for unproven fields.
-- Golden-test generated output against current manual Swaplock and BitShares adapter behavior before replacing manual modules.
+- Golden-test generated output against the manual Actanet and BitShares adapter behavior before replacing manual modules.
 
 ## Proven unsupported branches to preserve
 
@@ -357,7 +357,7 @@ The first generated adapters must reject or omit these exactly as the manual ada
 
 ## Notes from live asset_create proof
 
-The Swaplock live asset-create proof exposed two protocol details that generated SDK adapters must respect:
+The live asset-create proof on the former Swaplock testnet exposed two protocol details that generated SDK adapters must respect:
 
 1. `asset_options.core_exchange_rate` is required protocol data and appears in `FC_REFLECT`; the spec generator must retain fields with function-call default initializers.
 2. `additional_asset_options` is a Graphene extension set. Empty values FC-serialize as `varint(0)` and render as `[]` in broadcast JSON. Serializing the struct as several optional fields creates a digest mismatch and invalid signatures.

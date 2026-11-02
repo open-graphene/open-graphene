@@ -10,8 +10,8 @@ const WAIT_TIMEOUT: Duration = Duration::from_secs(15);
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let rpc_url = std::env::var("SWAPLOCK_RPC_URL")
-        .unwrap_or_else(|_| "wss://node02.swaplock.chainpool.online:8090".to_string());
+    let rpc_url =
+        std::env::var("GRAPHENE_RPC_URL").unwrap_or_else(|_| "ws://127.0.0.1:8090".to_string());
     let session = GrapheneSession::connect(&rpc_url).await?;
     let database_api_id = session.api_ids().database;
     let chain_id = session.chain_id().to_string();

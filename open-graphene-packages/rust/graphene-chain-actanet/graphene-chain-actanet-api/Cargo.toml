@@ -1,0 +1,31 @@
+[package]
+name = "graphene-chain-actanet-api"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "High-level Actanet API surface for Open Graphene."
+repository = "https://github.com/open-graphene/open-graphene"
+
+# The source is shared by every chain (../../graphene-chain-api); this crate builds it against
+# the Actanet bindings, which it imports under the name `bindings`.
+[lib]
+path = "../../graphene-chain-api/src/lib.rs"
+
+[features]
+default = ["bitshares7"]
+# Operations BitShares 7 added to Graphene: blind transfers, collateral bids, credit offers,
+# limit order updates, liquidity pools and samet funds. Off for chains that lack them.
+bitshares7 = []
+
+[dependencies]
+bindings = { package = "graphene-chain-actanet-bindings", path = "../graphene-chain-actanet-bindings" }
+hex = "0.4"
+open-graphene-core = { path = "../../graphene-core" }
+open-graphene-fc = { path = "../../graphene-fc" }
+open-graphene-transport = { path = "../../graphene-transport" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+thiserror = "2"
+tokio = { version = "1", features = ["rt", "time"] }
+utoipa = "5"

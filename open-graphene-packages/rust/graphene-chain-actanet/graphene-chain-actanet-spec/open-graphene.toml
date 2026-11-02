@@ -1,0 +1,113 @@
+object_structs = [
+  "asset_object",
+  "data_room_object",
+  "data_room_member_object",
+  "data_room_key_epoch_object",
+  "content_card_object",
+  "content_card_grant_object",
+  "fee_grant_object",
+]
+
+[chain]
+id = "actanet"
+public_key_prefix = "ACTA"
+# The chain ID is the SHA-256 of this file in actanet-core, so it follows the genesis on every
+# regeneration. The dev genesis is the only one a node starts from today: the embedded
+# genesis.json is still the BitShares mainnet snapshot. Switch to libraries/egenesis/genesis.json
+# once the Actanet genesis replaces it.
+# A node started with --genesis-timestamp or --dbg-init-key hashes the file with "BOGUS"
+# appended, so its chain ID differs from this one.
+genesis = "libraries/egenesis/genesis-dev.json"
+
+[source]
+# Default: the actanet-core clone next to this workspace (mirrorboards-core/mirrorboards-actanet).
+chain_repo = "../../../../../mirrorboards-actanet/actanet-core"
+# Point this at another checkout to generate from it instead.
+chain_repo_env = "ACTANET_CORE_REPO"
+
+[output]
+dist = "./dist/actanet.open-graphene.json"
+
+[[rpc_apis]]
+name = "database"
+class = "database_api"
+discover_method = "database"
+methods = [
+  "get_objects",
+  "get_block_header",
+  "get_block",
+  "get_account_balances",
+  "get_accounts",
+  "get_full_accounts",
+  "get_chain_properties",
+  "get_dynamic_global_properties",
+  "get_global_properties",
+  "get_limit_orders",
+  "get_chain_id",
+  "get_config",
+  "get_key_references",
+  "get_assets",
+  "lookup_asset_symbols",
+  "list_assets",
+  "lookup_accounts",
+  "get_ticker",
+  "get_required_fees",
+  "get_data_room_by_id",
+  "get_data_rooms_by_owner",
+  "get_data_room_members",
+  "get_data_room_member",
+  "get_data_rooms_by_member",
+  "get_data_room_key_epochs",
+  "get_data_room_key_epoch",
+  "get_content_card_by_id",
+  "get_content_cards_by_room",
+  "get_content_cards_by_author",
+  "get_content_card_grants_by_card",
+  "get_content_card_grant",
+  "get_content_card_grants_by_grantee",
+  "get_fee_grant_by_id",
+  "get_fee_grants_by_grantor",
+  "get_fee_grants_by_grantee",
+  "get_fee_grants_by_parent",
+]
+
+[[rpc_apis]]
+name = "history"
+class = "history_api"
+discover_method = "history"
+methods = [
+  "get_account_history",
+  "get_fill_order_history",
+  "get_market_history",
+]
+
+[[rpc_apis]]
+name = "orders"
+class = "orders_api"
+discover_method = "orders"
+methods = [
+  "get_tracked_groups",
+  "get_grouped_limit_orders",
+]
+
+[[rpc_apis]]
+name = "crypto"
+class = "crypto_api"
+discover_method = "crypto"
+methods = [
+  "blind",
+  "blind_sum",
+  "verify_sum",
+  "verify_range",
+  "range_proof_sign",
+  "verify_range_proof_rewind",
+  "range_get_info",
+]
+
+[[rpc_apis]]
+name = "network_broadcast"
+class = "network_broadcast_api"
+discover_method = "network_broadcast"
+methods = [
+  "broadcast_transaction",
+]

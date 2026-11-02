@@ -4,17 +4,13 @@
 All private key material here is deliberately public test data (`01` repeated 32
 times), unrelated to an account or environment secret. Tests never load `.env`.
 
-`baseline.json` freezes the existing two specifications, operation tags, RPC
-inventory, and source revisions at the start of the TypeScript implementation.
-It is evidence of that baseline, not a second editable protocol specification.
-
 Sources and resolutions:
 
-- Generic object ID: pinned Swaplock `libraries/protocol/include/graphene/protocol/object_id.hpp`,
-  also BitShares `ObjectId.js`. The Swaplock file was byte-compared with the
-  checked-in source archive. The numeric packing and little-endian u64 give
-  `1.2.345 -> 5901000000000201`. Typed account IDs use `d902`. This exposed and
-  fixed the Rust generator's accidental instance-only encoding of generic IDs.
+- Generic object ID: Graphene `libraries/protocol/include/graphene/protocol/object_id.hpp`
+  (actanet-core, BitShares), also BitShares `ObjectId.js`. The numeric packing and
+  little-endian u64 give `1.2.345 -> 5901000000000201`. Typed account IDs use `d902`.
+  This exposed and fixed the Rust generator's accidental instance-only encoding of
+  generic IDs.
 - Integer bytes follow fixed-width little-endian C++/Rust encoding. The decimal
   input strings deliberately retain values beyond JavaScript's safe number range.
 - Transfer bytes: existing Rust `tests/fc.rs` and the historical offline
@@ -23,14 +19,20 @@ Sources and resolutions:
   and TypeScript. No new JS/C++ execution is claimed by extracting those vectors.
 - Signature: existing public `[1; 32]` Rust signing fixture, with its own historical
   digest (not the digest of the current-chain transfer above). Verified by signing
-  and recovering its public key without secrets. Current Swaplock FC revision
-  `21b82e33b95e1183fc8b3a355974e06dada84d63`,
-  `src/crypto/elliptic_common.cpp::public_key::is_canonical`, requires low-S.
-  The original bitsharesjs `signature.js` additionally requires 32-byte DER r/s
-  components. These are separate signature profiles, not an unresolved conflict.
-- Access extension and snapshot digest: existing C++ wire fixtures in Swaplock
-  binding `tests/fc.rs`. Sparse extension encoding is count, field index, payload;
-  the expected-access-state hash is a protocol string, not decoded digest bytes.
+  and recovering its public key without secrets. Actanet, BitShares and R-Squared
+  nodes accept only signatures that pass `fc::ecc::public_key::is_canonical`
+  (`libraries/fc/src/crypto/elliptic_common.cpp`): no high bit in the first byte of
+  r and s and minimal DER, the same rule as the original bitsharesjs `signature.js`.
+  The SDK signs with that rule (`graphene-legacy`) and keeps plain low-S
+  (`low-s`) only as a separate profile. This fixture signature passes both.
+
+- Actanet operation vectors: `node scripts/fc-parity-vectors.mjs --actanet [--rich] --live
+--node=ws://127.0.0.1:8090`, compared with the Rust FC oracle and with a local
+  actanet-core node (branch `data-rooms`, commit 0f064803), as there is no public Actanet
+  node yet. All 88 nonvirtual operations, data rooms and fee grants included, matched
+  natively. The operations Actanet keeps unchanged from BitShares 7.0.4 are
+  also checked against the natively confirmed BitShares vectors; `parity.test.mjs`
+  lists the ones it adds or changes.
 
 Unresolved IR types and unsupported FC values remain explicit capability gaps;
 they must never be converted into successful serializers merely to compile TS.

@@ -2,11 +2,11 @@
 // never included in requests, reports, exceptions or environment variables.
 import { readFile, writeFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
-import * as b from '../graphene-chain-swaplock/graphene-chain-swaplock-bindings/dist/index.js';
+import * as b from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
 import {
-  SwaplockClient,
+  ActanetClient,
   BroadcastOutcomeUnknown,
-} from '../graphene-chain-swaplock/graphene-chain-swaplock-api/dist/index.js';
+} from '../graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
 import { WifSigner, encodePublicKey } from '../graphene-fc/dist/signing.js';
 import { bytesToHex } from '../graphene-primitives/dist/index.js';
 import { stringifyJson, unknownValue } from '../graphene-codec/dist/index.js';
@@ -18,26 +18,26 @@ const { values } = parseArgs({
     report: { type: 'string' },
     endpoint: {
       type: 'string',
-      default: 'wss://node01.swaplock.chainpool.online:8090',
+      default: 'ws://127.0.0.1:8090',
     },
-    verifyEndpoint: {
-      type: 'string',
-      default: 'wss://node02.swaplock.chainpool.online:8090',
-    },
+    // A second node that must also see the transaction; skipped when not given.
+    verifyEndpoint: { type: 'string' },
+    // The network to expect, e.g. the actanet testnet; defaults to the chain ID of the bindings.
+    chainId: { type: 'string', default: b.CHAIN.chainId },
   },
 });
 if (!values.genesis)
   throw new Error('Provide --genesis /local/path/genesis.private.json');
 const genesis = JSON.parse(await readFile(values.genesis, 'utf8'));
-const client = await SwaplockClient.connect(values.endpoint, {
-  expectedChainId: b.CHAIN.chainId,
+const client = await ActanetClient.connect(values.endpoint, {
+  expectedChainId: values.chainId,
 });
 let signer;
 let verifier;
 const report = {
   startedAt: new Date().toISOString(),
   endpoint: values.endpoint,
-  chainId: b.CHAIN.chainId,
+  chainId: client.chainId,
   mode: values.broadcast ? 'broadcast' : 'dry-run',
 };
 const persist = async () => {
@@ -147,13 +147,16 @@ try {
     await persist();
     report.inclusion = await client.waitForInclusion(signed);
     await persist();
-    verifier = await SwaplockClient.connect(values.verifyEndpoint, {
-      expectedChainId: b.CHAIN.chainId,
-    });
-    report.secondNodeInclusion = {
-      endpoint: values.verifyEndpoint,
-      ...(await verifier.waitForInclusion(signed)),
-    };
+    verifier = values.verifyEndpoint
+      ? await ActanetClient.connect(values.verifyEndpoint, {
+          expectedChainId: client.chainId,
+        })
+      : client;
+    if (values.verifyEndpoint)
+      report.secondNodeInclusion = {
+        endpoint: values.verifyEndpoint,
+        ...(await verifier.waitForInclusion(signed)),
+      };
     const after = { from: await balance(from), to: await balance(to) };
     report.balanceChanges = {
       senderUnits: (after.from - before.from).toString(),
@@ -171,7 +174,6 @@ try {
       }
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
-    report.explorer = `https://portal.swaplock.chainpool.online/block/${report.inclusion.blockNumber}`;
   }
   report.finishedAt = new Date().toISOString();
   await persist();
@@ -179,6 +181,6 @@ try {
   console.log(JSON.stringify(summary, null, 2));
 } finally {
   signer?.dispose();
-  verifier?.close();
+  if (verifier !== client) verifier?.close();
   client.close();
 }

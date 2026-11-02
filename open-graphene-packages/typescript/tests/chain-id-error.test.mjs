@@ -7,9 +7,9 @@ import {
   hasChainIdMismatch,
 } from '../graphene-transport/dist/index.js';
 import {
-  SwaplockClient,
+  ActanetClient,
   hasChainIdMismatch as clientHasChainIdMismatch,
-} from '../graphene-chain-swaplock/graphene-chain-swaplock-api/dist/index.js';
+} from '../graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
 
 const expectedChainId = 'ab'.repeat(32);
 const otherChainId = 'cd'.repeat(32);
@@ -127,7 +127,7 @@ for (const strategy of ['first-available', 'lowest-latency']) {
         chainId: expectedChainId,
       },
     });
-    const client = await SwaplockClient.connect(
+    const client = await ActanetClient.connect(
       ['ws://wrong', 'ws://offline', 'ws://right'],
       {
         expectedChainId,
