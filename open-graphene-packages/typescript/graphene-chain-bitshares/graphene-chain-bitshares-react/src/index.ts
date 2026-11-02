@@ -17,6 +17,11 @@ import {
   type LiveReadOptions,
 } from '@open-graphene/react-core';
 export * from './generated/index.js';
+/**
+ * The adapter behind these hooks, for packages that add their own on the same provider, query
+ * keys, scope and live policy.
+ */
+export const bitsharesAdapter = adapter;
 export const BitSharesProvider = adapter.Provider;
 export const useBitSharesClient = adapter.useClient;
 type Account = Awaited<ReturnType<BitSharesClient['database']['account']>>;

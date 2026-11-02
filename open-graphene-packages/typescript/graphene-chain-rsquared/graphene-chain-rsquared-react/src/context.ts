@@ -3,6 +3,10 @@ import {
   type ChainAdapter,
 } from '@open-graphene/react-core';
 import { CHAIN } from '@open-graphene/chain-rsquared-bindings';
-import type { RSquaredClient } from '@open-graphene/chain-rsquared-api';
+import { RSquaredClient } from '@open-graphene/chain-rsquared-api';
 export const adapter: ChainAdapter<RSquaredClient> =
-  createChainAdapter<RSquaredClient>(CHAIN.chainId);
+  // Any network of the chain: a client of this chain's API, or one with the bundled chain ID
+  createChainAdapter<RSquaredClient>(
+    (client: { readonly chainId: string }) =>
+      client instanceof RSquaredClient || client.chainId === CHAIN.chainId,
+  );

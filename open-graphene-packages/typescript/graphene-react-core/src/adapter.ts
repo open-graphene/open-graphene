@@ -55,14 +55,25 @@ export interface ProviderProps<C> {
   readonly children?: ReactNode;
 }
 
-export function createChainAdapter<C extends SdkClient>(chainId: string) {
+/**
+ * `accepts` tells the clients of this chain: a chain ID, or a predicate for a chain with several
+ * networks (mainnet, testnet), whose clients each carry their own chain ID. Query keys include the
+ * client's chain ID, so the networks never share cache entries.
+ */
+export function createChainAdapter<C extends SdkClient>(
+  accepts: string | ((client: C) => boolean),
+) {
+  const belongs =
+    typeof accepts === 'string'
+      ? (client: C) => client.chainId === accepts
+      : accepts;
   const Context = createContext<{
     client: C;
     scope: string | undefined;
     policy: LivePolicy;
   } | null>(null);
   function Provider({ client, scope, livePolicy, children }: ProviderProps<C>) {
-    if (client.chainId !== chainId)
+    if (!belongs(client))
       throw new Error('React provider received a client for another chain');
     const maxRetries = livePolicy?.maxRetries ?? 3,
       delayMs = livePolicy?.delayMs ?? 250;
@@ -85,7 +96,7 @@ export function createChainAdapter<C extends SdkClient>(chainId: string) {
     fetch: (client: C, params: P) => Promise<T>,
     scope?: string,
   ) {
-    if (client.chainId !== chainId)
+    if (!belongs(client))
       throw new Error('Query client belongs to another chain');
     return queryOptions<T, Error, T, QueryKey>({
       queryKey: grapheneQueryKey(client, name, params, scope),

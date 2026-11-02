@@ -3,6 +3,10 @@ import {
   type ChainAdapter,
 } from '@open-graphene/react-core';
 import { CHAIN } from '@open-graphene/chain-bitshares-bindings';
-import type { BitSharesClient } from '@open-graphene/chain-bitshares-api';
+import { BitSharesClient } from '@open-graphene/chain-bitshares-api';
 export const adapter: ChainAdapter<BitSharesClient> =
-  createChainAdapter<BitSharesClient>(CHAIN.chainId);
+  // Any network of the chain: a client of this chain's API, or one with the bundled chain ID
+  createChainAdapter<BitSharesClient>(
+    (client: { readonly chainId: string }) =>
+      client instanceof BitSharesClient || client.chainId === CHAIN.chainId,
+  );
