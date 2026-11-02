@@ -1,19 +1,20 @@
 [package]
 name = "open-graphene-spec-gen"
 version = "0.1.0"
-edition.workspace = true
-license.workspace = true
-repository.workspace = true
+edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/open-graphene/open-graphene"
 description = "Generate Open Graphene protocol specifications from source inputs."
 
 [dependencies]
 open-graphene-json-schema = { path = "../open-graphene-json-schema" }
-clap.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-thiserror.workspace = true
-toml.workspace = true
-walkdir.workspace = true
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+thiserror = "2.0.18"
+toml = "0.8"
+walkdir = "2"
 
 [dev-dependencies]
-pretty_assertions.workspace = true
+pretty_assertions = "1"

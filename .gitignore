@@ -3,7 +3,6 @@
 
 # Allow these files
 !.gitignore
-!Cargo.lock
 !Cargo.toml
 !mirror.toml
 !README.md
@@ -72,3 +71,6 @@ open-graphene-packages/**/target/**
 
 !open-graphene-docs/
 !open-graphene-docs/**
+
+# Crates build standalone (no root workspace); their lockfiles are not tracked.
+Cargo.lock

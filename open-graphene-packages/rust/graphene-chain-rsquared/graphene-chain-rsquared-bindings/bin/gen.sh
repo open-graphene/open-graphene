@@ -16,5 +16,5 @@ if [[ ! -f "${SPEC_FILE}" ]]; then
 fi
 
 cd "${OPEN_GRAPHENE_DIR}"
-cargo run -p open-graphene-gen-bindings-rs -- --spec "${SPEC_FILE}" --out-dir "${OUT_DIR}"
+cargo run --manifest-path "${OPEN_GRAPHENE_DIR}/crates/open-graphene-gen-bindings-rs/Cargo.toml" -- --spec "${SPEC_FILE}" --out-dir "${OUT_DIR}"
 rustfmt --edition 2024 "${OUT_DIR}"/*.rs

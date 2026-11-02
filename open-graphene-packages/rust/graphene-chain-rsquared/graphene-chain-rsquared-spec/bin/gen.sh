@@ -13,4 +13,4 @@ if [[ ! -f "${CONFIG_FILE}" ]]; then
 fi
 
 cd "${OPEN_GRAPHENE_DIR}"
-exec cargo run -p open-graphene-spec-gen -- --config "${CONFIG_FILE}"
+exec cargo run --manifest-path "${OPEN_GRAPHENE_DIR}/crates/open-graphene-spec-gen/Cargo.toml" -- --config "${CONFIG_FILE}"
