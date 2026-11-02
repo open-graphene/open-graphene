@@ -202,9 +202,42 @@ fn minimal_signer_sets(threshold: u32, members: &[WeightedMember]) -> Vec<Vec<St
         .collect()
 }
 
+/// Whether one directly listed key alone reaches an authority's threshold: listed exactly once,
+/// with a weight at or above a threshold of at least 1. Keys compare as written, so pass the
+/// chain's own form of the key. Does not resolve account or address authorities, nor check that
+/// the caller holds the key.
+pub fn can_key_satisfy_authority(
+    weight_threshold: u32,
+    key_auths: &[(String, u16)],
+    public_key: &str,
+) -> bool {
+    if weight_threshold < 1 {
+        return false;
+    }
+    let mut matching = key_auths.iter().filter(|(key, _)| key == public_key);
+    match (matching.next(), matching.next()) {
+        (Some((_, weight)), None) => u32::from(*weight) >= weight_threshold,
+        _ => false,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn one_listed_key_satisfies_an_authority_it_reaches_alone() {
+        let keys = |list: &[(&str, u16)]| -> Vec<(String, u16)> {
+            list.iter().map(|(k, w)| (k.to_string(), *w)).collect()
+        };
+        assert!(can_key_satisfy_authority(1, &keys(&[("K1", 1)]), "K1"));
+        assert!(can_key_satisfy_authority(2, &keys(&[("K1", 3), ("K2", 1)]), "K1"));
+        assert!(!can_key_satisfy_authority(2, &keys(&[("K1", 1), ("K2", 1)]), "K1"));
+        assert!(!can_key_satisfy_authority(1, &keys(&[("K1", 1)]), "K2"));
+        // Listed twice, or a threshold nobody can miss: neither counts
+        assert!(!can_key_satisfy_authority(1, &keys(&[("K1", 1), ("K1", 1)]), "K1"));
+        assert!(!can_key_satisfy_authority(0, &keys(&[("K1", 1)]), "K1"));
+    }
 
     fn member(id: &str, weight: u16) -> WeightedMember {
         WeightedMember::new(id, weight)

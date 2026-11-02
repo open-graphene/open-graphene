@@ -12,7 +12,9 @@ pub mod serde_helpers;
 pub mod validation;
 
 pub use amount::{AmountError, decimal_to_raw_amount, format_raw_amount};
-pub use authority::{AuthorityAnalysis, AuthorityIssue, WeightedMember, analyze_authority};
+pub use authority::{
+    AuthorityAnalysis, AuthorityIssue, WeightedMember, analyze_authority, can_key_satisfy_authority,
+};
 pub use balance::{BalanceCheck, BalanceError, ensure_sufficient_balance};
 pub use header::{
     HeadBlock, HeaderError, TransactionHeader, expiration_from_head_time,
