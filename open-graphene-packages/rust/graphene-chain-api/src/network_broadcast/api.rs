@@ -15,6 +15,7 @@ pub struct BroadcastReceipt {
     transaction: Value,
 }
 
+#[derive(Clone, Copy, Debug)]
 pub struct PendingBroadcastConfirmation {
     pending: PendingCallback,
 }
@@ -112,6 +113,46 @@ impl<'session> NetworkBroadcastApi<'session> {
             )
             .await?;
         Ok(PendingBroadcastConfirmation { pending })
+    }
+
+    /// Broadcast with a confirmation callback, waiting only until the node accepts the
+    /// transaction or refuses it (a `TransportError::RpcError`). Then poll for the confirmation
+    /// with [`poll_broadcast_confirmation`](Self::poll_broadcast_confirmation): other calls can
+    /// use the session between polls.
+    pub async fn submit_transaction_with_callback(
+        self,
+        transaction: Value,
+    ) -> Result<PendingBroadcastConfirmation, ChainApiError> {
+        let pending = self
+            .session
+            .network_broadcast_send_callback_request(
+                "broadcast_transaction_with_callback",
+                json!([transaction]),
+            )
+            .await?;
+        self.session
+            .network_broadcast_wait_callback_response(pending)
+            .await?;
+        Ok(PendingBroadcastConfirmation { pending })
+    }
+
+    /// The confirmation of a submitted transaction, waiting up to `timeout` for it; `None` if
+    /// it has not come yet. It never comes for a transaction that expires unincluded, nor after
+    /// the session reconnected: bound the polling and look for the transaction in the blocks
+    /// (`DatabaseApi::wait_for_inclusion`).
+    pub async fn poll_broadcast_confirmation(
+        self,
+        pending: &PendingBroadcastConfirmation,
+        timeout: Duration,
+    ) -> Result<Option<BroadcastConfirmation>, ChainApiError> {
+        match self
+            .session
+            .network_broadcast_poll_callback_notice(pending.pending, timeout)
+            .await?
+        {
+            Some(value) => parse_broadcast_confirmation(value).map(Some),
+            None => Ok(None),
+        }
     }
 
     pub async fn wait_for_broadcast_confirmation_timeout(

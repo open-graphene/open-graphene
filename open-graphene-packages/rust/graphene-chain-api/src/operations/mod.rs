@@ -73,7 +73,9 @@ pub use samet_fund::{
     SametFundUpdateRequest,
 };
 pub use ticket::{TicketCreateRequest, TicketUpdateRequest};
-pub use transaction::{PreparedTransaction, SignedTransactionEnvelope, TransactionBuilder};
+pub use transaction::{
+    PreparedTransaction, SignedTransactionEnvelope, TransactionBuilder, transaction_id,
+};
 pub use transfer::{PreparedTransfer, SignedTransfer, TransferRequest};
 pub use vesting::{VestingBalanceCreateRequest, VestingBalanceWithdrawRequest};
 pub use withdraw_permission::{

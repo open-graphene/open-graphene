@@ -7,12 +7,13 @@
 
 use std::time::Duration;
 
-use bindings::generated::fc::{decode_public_key, verify_compact_signature_public_key};
+use bindings::generated::fc::{decode_public_key, sha256_bytes, verify_compact_signature_public_key};
 use bindings::generated::ids::PUBLIC_KEY_PREFIX;
 use bindings::generated::rpc::database::get_required_fees as rpc_get_required_fees;
 use bindings::generated::static_variants::Operation;
 use bindings::generated::types::{Asset, Signature, SignedTransaction, Transaction};
 use open_graphene_core::{HeadBlock, transaction_header_from_head};
+use open_graphene_fc::FcSerialize;
 use open_graphene_transport::GrapheneSession;
 use serde_json::{Value, json};
 
@@ -27,6 +28,7 @@ pub struct TransactionBuilder<'session> {
     operations: Vec<Operation>,
     fee_asset: Option<String>,
     expiration: Duration,
+    max_fee: Option<i64>,
 }
 
 impl<'session> TransactionBuilder<'session> {
@@ -36,6 +38,7 @@ impl<'session> TransactionBuilder<'session> {
             operations: Vec::new(),
             fee_asset: None,
             expiration: DEFAULT_EXPIRATION,
+            max_fee: None,
         }
     }
 
@@ -55,6 +58,13 @@ impl<'session> TransactionBuilder<'session> {
     /// How long the transaction stays valid after the head block (default 60s).
     pub fn expiration(mut self, expiration: Duration) -> Self {
         self.expiration = expiration;
+        self
+    }
+
+    /// The most all the operations together may cost, in raw units of the fee asset.
+    /// [`prepare`](Self::prepare) refuses a transaction the node prices higher.
+    pub fn max_fee(mut self, amount: i64) -> Self {
+        self.max_fee = Some(amount);
         self
     }
 
@@ -85,6 +95,21 @@ impl<'session> TransactionBuilder<'session> {
 
         let mut operations = self.operations;
         let fees = required_fees(database.session, &operations, &fee_asset_id).await?;
+        if fees.len() != operations.len() {
+            return Err(ChainApiError::UnexpectedResponse {
+                method: rpc_get_required_fees::METHOD,
+                message: format!("{} fees for {} operations", fees.len(), operations.len()),
+            });
+        }
+        if let Some(max) = self.max_fee {
+            let required = fees
+                .iter()
+                .try_fold(0i64, |sum, fee| sum.checked_add(fee.amount))
+                .unwrap_or(i64::MAX);
+            if required > max {
+                return Err(ChainApiError::FeeTooHigh { required, max });
+            }
+        }
         for (operation, fee) in operations.iter_mut().zip(fees) {
             set_operation_fee(operation, fee)?;
         }
@@ -98,7 +123,29 @@ impl<'session> TransactionBuilder<'session> {
                 extensions: vec![],
             },
             chain_id: database.session.chain_id().to_string(),
+            head_block_number: properties.head_block_number as u64,
         })
+    }
+}
+
+/// A transaction's id: the first 20 bytes of sha256 of its serialized form without
+/// signatures, as hex. The same transaction has the same id on every network.
+pub fn transaction_id(transaction: &Transaction) -> Result<String, ChainApiError> {
+    let bytes = transaction
+        .to_fc_bytes()
+        .map_err(|error| ChainApiError::InvalidTransfer {
+            message: format!("failed to serialize transaction: {error}"),
+        })?;
+    Ok(hex::encode(&sha256_bytes(&bytes)[..20]))
+}
+
+fn unsigned(signed: &SignedTransaction) -> Transaction {
+    Transaction {
+        ref_block_num: signed.ref_block_num,
+        ref_block_prefix: signed.ref_block_prefix,
+        expiration: signed.expiration.clone(),
+        operations: signed.operations.clone(),
+        extensions: signed.extensions.clone(),
     }
 }
 
@@ -107,15 +154,28 @@ impl<'session> TransactionBuilder<'session> {
 pub struct PreparedTransaction {
     transaction: Transaction,
     chain_id: String,
+    head_block_number: u64,
 }
 
 impl PreparedTransaction {
-    /// A transaction prepared earlier (e.g. kept in a journal), for the network `chain_id`.
-    pub fn new(transaction: Transaction, chain_id: impl Into<String>) -> Self {
+    /// A transaction prepared earlier (e.g. kept in a journal), for the network `chain_id`, at
+    /// head block `head_block_number`.
+    pub fn new(transaction: Transaction, chain_id: impl Into<String>, head_block_number: u64) -> Self {
         Self {
             transaction,
             chain_id: chain_id.into(),
+            head_block_number,
         }
+    }
+
+    /// The head block when the transaction was prepared: it cannot be in an earlier block, so
+    /// a search for it starts after this one.
+    pub fn head_block_number(&self) -> u64 {
+        self.head_block_number
+    }
+
+    pub fn id(&self) -> Result<String, ChainApiError> {
+        transaction_id(&self.transaction)
     }
 
     pub fn transaction(&self) -> &Transaction {
@@ -162,6 +222,7 @@ impl PreparedTransaction {
                     .map(|signature| Signature(signature.to_vec()))
                     .collect(),
             ),
+            head_block_number: self.head_block_number,
         })
     }
 
@@ -172,7 +233,10 @@ impl PreparedTransaction {
         expected_public_key: &str,
     ) -> Result<SignedTransactionEnvelope, ChainApiError> {
         let signed = sign_checked(&self.transaction, &self.chain_id, wif, expected_public_key)?;
-        Ok(SignedTransactionEnvelope { signed })
+        Ok(SignedTransactionEnvelope {
+            signed,
+            head_block_number: self.head_block_number,
+        })
     }
 
     /// Sign with several keys at once, as `(wif, expected_public_key)` pairs.
@@ -214,6 +278,7 @@ impl PreparedTransaction {
         }
         Ok(SignedTransactionEnvelope {
             signed: self.transaction.with_signatures(signatures),
+            head_block_number: self.head_block_number,
         })
     }
 }
@@ -222,11 +287,32 @@ impl PreparedTransaction {
 #[derive(Clone, Debug, PartialEq)]
 pub struct SignedTransactionEnvelope {
     signed: SignedTransaction,
+    head_block_number: u64,
 }
 
 impl SignedTransactionEnvelope {
+    /// A signed transaction kept earlier (e.g. in a journal as its
+    /// [`transaction_json`](Self::transaction_json)), prepared at head block
+    /// `head_block_number`.
+    pub fn from_signed_transaction(signed: SignedTransaction, head_block_number: u64) -> Self {
+        Self {
+            signed,
+            head_block_number,
+        }
+    }
+
     pub fn signed_transaction(&self) -> &SignedTransaction {
         &self.signed
+    }
+
+    /// The id the transaction will have in a block.
+    pub fn id(&self) -> Result<String, ChainApiError> {
+        transaction_id(&unsigned(&self.signed))
+    }
+
+    /// See [`PreparedTransaction::head_block_number`].
+    pub fn head_block_number(&self) -> u64 {
+        self.head_block_number
     }
 
     /// The JSON to pass to `network_broadcast().broadcast_transaction(..)`.
@@ -469,8 +555,9 @@ mod tests {
         let bundled = PreparedTransaction::new(
             fixture_transaction(),
             bindings::generated::ids::CHAIN_ID_HEX,
+            7,
         );
-        let other = PreparedTransaction::new(fixture_transaction(), OTHER_NETWORK);
+        let other = PreparedTransaction::new(fixture_transaction(), OTHER_NETWORK, 7);
         assert_eq!(
             bundled.digest().unwrap(),
             fixture_transaction().signature_digest_bytes().unwrap()
@@ -488,8 +575,32 @@ mod tests {
     }
 
     #[test]
+    fn transaction_ids_match_the_typescript_api() {
+        // transactionId() of @open-graphene/chain-actanet-api for the same transaction. The id
+        // covers the operation tag, which is the chain's own numbering: BitShares and its
+        // descendants share it, R-Squared does not.
+        let prepared = PreparedTransaction::new(fixture_transaction(), OTHER_NETWORK, 7);
+        #[cfg(feature = "bitshares7")]
+        assert_eq!(
+            prepared.id().unwrap(),
+            "45e785188b52656bf68d7b4eae2971103b73df39"
+        );
+        // Signatures are not part of the id, and a journaled transaction keeps it
+        let signed = prepared
+            .clone()
+            .sign_with_wif(FIXTURE_WIF, &fixture_public_key())
+            .unwrap();
+        assert_eq!(signed.id().unwrap(), prepared.id().unwrap());
+        assert_eq!(signed.head_block_number(), 7);
+        let restored: SignedTransaction =
+            serde_json::from_value(signed.transaction_json().unwrap()).unwrap();
+        let restored = SignedTransactionEnvelope::from_signed_transaction(restored, 7);
+        assert_eq!(restored, signed);
+    }
+
+    #[test]
     fn takes_signatures_made_elsewhere_over_its_digest() {
-        let prepared = PreparedTransaction::new(fixture_transaction(), OTHER_NETWORK);
+        let prepared = PreparedTransaction::new(fixture_transaction(), OTHER_NETWORK, 7);
         let private_key = open_graphene_fc::decode_wif_private_key(FIXTURE_WIF).unwrap();
         let signature =
             open_graphene_fc::sign_digest_compact(prepared.digest().unwrap(), private_key)

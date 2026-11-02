@@ -21,6 +21,7 @@ mod get_limit_orders;
 mod get_objects;
 mod get_ticker;
 mod global_properties;
+mod inclusion;
 mod list_assets;
 mod lookup_accounts;
 mod objects;
@@ -50,6 +51,7 @@ pub use get_limit_orders::{DEFAULT_GET_LIMIT_ORDERS_LIMIT, GetLimitOrdersRequest
 pub use get_objects::GetObjectsRequest;
 pub use get_ticker::{GetTickerRequest, Ticker};
 pub use global_properties::GlobalPropertiesRequest;
+pub use inclusion::IncludedTransaction;
 pub use list_assets::{DEFAULT_LIST_ASSETS_LIMIT, ListAssetsRequest};
 pub use lookup_accounts::{DEFAULT_LOOKUP_ACCOUNTS_LIMIT, LookupAccountsRequest};
 pub use proposed_transactions::ProposedTransactionsRequest;

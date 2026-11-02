@@ -51,3 +51,17 @@ Signers that hold their keys elsewhere (a vault, a hardware key) sign
 
 Methods of a chain's own `database` API that have no typed request here are reachable through
 `DatabaseApi::call`, with the generated `rpc::database::<method>` parameters and parser.
+
+## Sending without holding the session
+
+`NetworkBroadcastApi::submit_transaction_with_callback` waits only until the node accepts or
+refuses a transaction. `poll_broadcast_confirmation` then waits a bounded time for its
+confirmation, which carries the operation results (blocks do not). Between polls the session
+serves other calls; notices that arrive meanwhile are buffered.
+
+A transaction has an id before it is sent (`PreparedTransaction::id`, `transaction_id`), and
+`PreparedTransaction::head_block_number` is the block a search for it starts after.
+`DatabaseApi::wait_for_inclusion` and `find_transaction_in_block` look for it without sending it
+again, e.g. after a crash, from a signed transaction kept as JSON
+(`SignedTransactionEnvelope::from_signed_transaction`). `TransactionBuilder::max_fee` refuses a
+transaction the node prices above a limit.

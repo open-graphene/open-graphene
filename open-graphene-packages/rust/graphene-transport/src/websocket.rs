@@ -181,6 +181,37 @@ impl WebSocketTransport {
         self.wait_for_callback_notice(callback_id).await
     }
 
+    /// Wait for the node's answer to a callback request: its acceptance (the notice comes
+    /// later), or its refusal as [`TransportError::RpcError`].
+    pub async fn wait_for_callback_response(
+        &mut self,
+        pending: PendingCallback,
+    ) -> Result<Value, TransportError> {
+        let timeout = self.call_timeout;
+        match tokio::time::timeout(timeout, self.wait_for_response(pending.callback_id().as_u64()))
+            .await
+        {
+            Ok(result) => result,
+            Err(_) => Err(TransportError::ResponseTimeout { timeout }),
+        }
+    }
+
+    /// Wait up to `timeout` for the notice of an accepted callback request. `Ok(None)` when it
+    /// has not come yet: poll again later. A notice that arrives during other calls meanwhile is
+    /// buffered, so the connection can serve them between polls.
+    pub async fn poll_callback_notice(
+        &mut self,
+        pending: PendingCallback,
+        timeout: Duration,
+    ) -> Result<Option<Value>, TransportError> {
+        match tokio::time::timeout(timeout, self.wait_for_callback_notice(pending.callback_id()))
+            .await
+        {
+            Ok(result) => result.map(Some),
+            Err(_) => Ok(None),
+        }
+    }
+
     pub async fn wait_for_callback_response_and_notice_timeout(
         &mut self,
         pending: PendingCallback,

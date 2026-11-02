@@ -33,6 +33,7 @@ use super::get_key_references::{GetKeyReferencesRequest, get_key_references_requ
 use super::get_limit_orders::{DEFAULT_GET_LIMIT_ORDERS_LIMIT, GetLimitOrdersRequest};
 use super::get_objects::{GetObjectsRequest, get_objects_request};
 use super::get_ticker::GetTickerRequest;
+use super::inclusion::IncludedTransaction;
 use super::global_properties::{GlobalPropertiesRequest, get_global_properties};
 use super::list_assets::{DEFAULT_LIST_ASSETS_LIMIT, ListAssetsRequest};
 use super::lookup_accounts::{DEFAULT_LOOKUP_ACCOUNTS_LIMIT, LookupAccountsRequest};
@@ -55,6 +56,29 @@ impl<'session> DatabaseApi<'session> {
         params: serde_json::Value,
     ) -> Result<serde_json::Value, ChainApiError> {
         Ok(self.session.database_call(method, params).await?)
+    }
+
+    /// The transaction `id` in block `block_num`, if it is there. Transactions these bindings
+    /// cannot decode are skipped: they are not the one looked for.
+    pub async fn find_transaction_in_block(
+        &mut self,
+        block_num: u32,
+        id: &str,
+    ) -> Result<Option<IncludedTransaction>, ChainApiError> {
+        super::inclusion::find_transaction_in_block(self.session, block_num, id).await
+    }
+
+    /// Looks for the transaction `id` in the blocks after `after_block` (the head it was
+    /// prepared at) until `timeout`, without sending it again.
+    /// [`ChainApiError::InclusionNotObserved`] means it was not seen yet, not that it never
+    /// will be: it can still be included until it expires.
+    pub async fn wait_for_inclusion(
+        &mut self,
+        id: &str,
+        after_block: u32,
+        timeout: std::time::Duration,
+    ) -> Result<IncludedTransaction, ChainApiError> {
+        super::inclusion::wait_for_inclusion(self.session, id, after_block, timeout).await
     }
 
     pub fn account_balances<A, L>(

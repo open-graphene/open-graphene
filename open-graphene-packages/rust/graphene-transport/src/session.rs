@@ -229,6 +229,24 @@ impl GrapheneSession {
             .await
     }
 
+    /// See [`WebSocketTransport::wait_for_callback_response`]. A reconnect in between loses the
+    /// callback: the new connection never receives its notice.
+    pub async fn network_broadcast_wait_callback_response(
+        &mut self,
+        pending: PendingCallback,
+    ) -> Result<Value, TransportError> {
+        self.transport.wait_for_callback_response(pending).await
+    }
+
+    /// See [`WebSocketTransport::poll_callback_notice`].
+    pub async fn network_broadcast_poll_callback_notice(
+        &mut self,
+        pending: PendingCallback,
+        timeout: Duration,
+    ) -> Result<Option<Value>, TransportError> {
+        self.transport.poll_callback_notice(pending, timeout).await
+    }
+
     pub async fn network_broadcast_wait_callback_response_and_notice_timeout(
         &mut self,
         pending: PendingCallback,

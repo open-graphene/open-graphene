@@ -51,7 +51,7 @@ pub use operations::{
     CommitteeMemberUpdateRequest, CustomAuthorityCreateRequest, CustomAuthorityDeleteRequest, CustomAuthorityUpdateRequest,
     CustomRequest, HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest,
     LimitOrderCancelRequest, LimitOrderCreateRequest, OperationsApi, OverrideTransferRequest, PreparedTransaction, PreparedTransfer,
-    ProposalCreateRequest, ProposalDeleteRequest, ProposalUpdateRequest, SignedTransactionEnvelope, SignedTransfer, TicketCreateRequest,
+    ProposalCreateRequest, ProposalDeleteRequest, ProposalUpdateRequest, SignedTransactionEnvelope, SignedTransfer, TicketCreateRequest, transaction_id,
     TicketUpdateRequest, TransactionBuilder, TransferRequest,
     VestingBalanceCreateRequest, VestingBalanceWithdrawRequest,
     WithdrawPermissionClaimRequest, WithdrawPermissionCreateRequest,
@@ -108,7 +108,7 @@ pub use database::{
     DatabaseApi,
     DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription, GetBlockHeaderRequest,
     GetBlockRequest, GetConfigRequest, GetKeyReferencesRequest, GetLimitOrdersRequest,
-    GetObjectsRequest, GetTickerRequest, GlobalPropertiesRequest, IntoStringList,
+    GetObjectsRequest, GetTickerRequest, GlobalPropertiesRequest, IncludedTransaction, IntoStringList,
     ListAssetsRequest, LookupAccountsRequest, ProposedTransactionsRequest, Ticker,
 };
 
@@ -167,6 +167,12 @@ pub enum ChainApiError {
 
     #[error("required transfer fee {required} exceeds max fee {max}")]
     TransferFeeTooHigh { required: i64, max: i64 },
+
+    #[error("required fees {required} exceed max fee {max}")]
+    FeeTooHigh { required: i64, max: i64 },
+
+    #[error("transaction {id} was not seen in a block before the timeout")]
+    InclusionNotObserved { id: String },
 
     #[error(transparent)]
     Header(#[from] HeaderError),
