@@ -37,3 +37,17 @@ enables it when its bindings have these operations.
 Chain constants come from the bindings: `CHAIN_NAME`, `CHAIN_ID` (the genesis hash) and
 `PUBLIC_KEY_PREFIX`. Code and tests in this source must not assume one chain's prefix, operation
 numbering or chain id.
+
+## Networks
+
+One chain has several networks (mainnet, testnet, a local node), each with its own genesis and so
+its own chain id. `CHAIN_ID` is only the network the bindings were generated against. A prepared
+transaction or transfer signs for the chain id the node reported when it was prepared
+(`PreparedTransaction::chain_id`), so the same code signs correctly on every network; pass
+`expected_chain_id` to `connect` to refuse the wrong one.
+
+Signers that hold their keys elsewhere (a vault, a hardware key) sign
+`PreparedTransaction::digest` and hand the signatures back through `with_signatures`.
+
+Methods of a chain's own `database` API that have no typed request here are reachable through
+`DatabaseApi::call`, with the generated `rpc::database::<method>` parameters and parser.

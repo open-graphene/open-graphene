@@ -36,6 +36,7 @@ enum TransferAmount {
 #[derive(Clone, Debug, PartialEq)]
 pub struct PreparedTransfer {
     transaction: Transaction,
+    chain_id: String,
     from_id: String,
     to_id: String,
     asset_id: String,
@@ -197,6 +198,7 @@ impl<'session> TransferRequest<'session> {
 
         Ok(PreparedTransfer {
             transaction,
+            chain_id: database.session.chain_id().to_string(),
             from_id: from_account.id.0,
             to_id: to_account.id.0,
             asset_id: asset.id.0,
@@ -228,6 +230,11 @@ impl TransferAmount {
 impl PreparedTransfer {
     pub fn transaction(&self) -> &Transaction {
         &self.transaction
+    }
+
+    /// The network the signature is for: the chain id the node reported.
+    pub fn chain_id(&self) -> &str {
+        &self.chain_id
     }
 
     pub fn from_id(&self) -> &str {
@@ -271,8 +278,12 @@ impl PreparedTransfer {
         wif: &str,
         expected_public_key: &str,
     ) -> Result<SignedTransfer, ChainApiError> {
-        let signed_transaction =
-            sign_transfer_transaction_checked(&self.transaction, wif, expected_public_key)?;
+        let signed_transaction = sign_transfer_transaction_checked(
+            &self.transaction,
+            &self.chain_id,
+            wif,
+            expected_public_key,
+        )?;
 
         Ok(SignedTransfer {
             signed_transaction,
@@ -438,12 +449,13 @@ fn set_transfer_fee(transaction: &mut Transaction, fee: Asset) -> Result<(), Cha
 
 fn sign_transfer_transaction_checked(
     transaction: &Transaction,
+    chain_id: &str,
     wif: &str,
     expected_public_key: &str,
 ) -> Result<SignedTransaction, ChainApiError> {
     let signed_transaction =
         transaction
-            .signed_with_wif(wif)
+            .signed_with_wif_for_chain(wif, chain_id)
             .map_err(|_| ChainApiError::InvalidTransfer {
                 message: "failed to sign transfer transaction".to_string(),
             })?;
@@ -460,11 +472,11 @@ fn sign_transfer_transaction_checked(
         });
     }
 
-    let digest = transaction.signature_digest_bytes().map_err(|error| {
-        ChainApiError::InvalidTransfer {
+    let digest = transaction
+        .signature_digest_bytes_for_chain(chain_id)
+        .map_err(|error| ChainApiError::InvalidTransfer {
             message: format!("failed to compute signature digest: {error}"),
-        }
-    })?;
+        })?;
     let public_key =
         decode_public_key(expected_public_key, Some(PUBLIC_KEY_PREFIX)).map_err(|_| {
             ChainApiError::InvalidTransfer {
@@ -660,6 +672,7 @@ mod tests {
 
         PreparedTransfer {
             transaction,
+            chain_id: bindings::generated::ids::CHAIN_ID_HEX.to_string(),
             from_id: "1.2.100".to_string(),
             to_id: "1.2.101".to_string(),
             asset_id: "1.3.0".to_string(),

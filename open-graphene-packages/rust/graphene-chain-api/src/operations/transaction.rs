@@ -11,7 +11,7 @@ use bindings::generated::fc::{decode_public_key, verify_compact_signature_public
 use bindings::generated::ids::PUBLIC_KEY_PREFIX;
 use bindings::generated::rpc::database::get_required_fees as rpc_get_required_fees;
 use bindings::generated::static_variants::Operation;
-use bindings::generated::types::{Asset, SignedTransaction, Transaction};
+use bindings::generated::types::{Asset, Signature, SignedTransaction, Transaction};
 use open_graphene_core::{HeadBlock, transaction_header_from_head};
 use open_graphene_transport::GrapheneSession;
 use serde_json::{Value, json};
@@ -97,19 +97,72 @@ impl<'session> TransactionBuilder<'session> {
                 operations,
                 extensions: vec![],
             },
+            chain_id: database.session.chain_id().to_string(),
         })
     }
 }
 
-/// A priced transaction waiting for a signature.
+/// A priced transaction waiting for a signature, for the network it was prepared on.
 #[derive(Clone, Debug, PartialEq)]
 pub struct PreparedTransaction {
     transaction: Transaction,
+    chain_id: String,
 }
 
 impl PreparedTransaction {
+    /// A transaction prepared earlier (e.g. kept in a journal), for the network `chain_id`.
+    pub fn new(transaction: Transaction, chain_id: impl Into<String>) -> Self {
+        Self {
+            transaction,
+            chain_id: chain_id.into(),
+        }
+    }
+
     pub fn transaction(&self) -> &Transaction {
         &self.transaction
+    }
+
+    /// The network the signatures are for: the chain id the node reported.
+    pub fn chain_id(&self) -> &str {
+        &self.chain_id
+    }
+
+    /// What a signer signs: sha256 of the chain id and the serialized transaction.
+    pub fn digest(&self) -> Result<[u8; 32], ChainApiError> {
+        self.transaction
+            .signature_digest_bytes_for_chain(&self.chain_id)
+            .map_err(|error| ChainApiError::InvalidTransfer {
+                message: format!("failed to compute signature digest: {error}"),
+            })
+    }
+
+    /// The transaction with signatures made elsewhere (a vault, a hardware key), over
+    /// [`digest`](Self::digest). Each must be a signature this chain's nodes accept.
+    pub fn with_signatures(
+        self,
+        signatures: Vec<[u8; 65]>,
+    ) -> Result<SignedTransactionEnvelope, ChainApiError> {
+        if signatures.is_empty() {
+            return Err(ChainApiError::InvalidTransfer {
+                message: "no signatures given".to_string(),
+            });
+        }
+        if signatures
+            .iter()
+            .any(|signature| !crate::is_accepted_signature(signature))
+        {
+            return Err(ChainApiError::InvalidTransfer {
+                message: "signature is not canonical for this chain".to_string(),
+            });
+        }
+        Ok(SignedTransactionEnvelope {
+            signed: self.transaction.with_signatures(
+                signatures
+                    .into_iter()
+                    .map(|signature| Signature(signature.to_vec()))
+                    .collect(),
+            ),
+        })
     }
 
     /// Sign with a WIF private key, checking the signature really belongs to `expected_public_key`.
@@ -118,7 +171,7 @@ impl PreparedTransaction {
         wif: &str,
         expected_public_key: &str,
     ) -> Result<SignedTransactionEnvelope, ChainApiError> {
-        let signed = sign_checked(&self.transaction, wif, expected_public_key)?;
+        let signed = sign_checked(&self.transaction, &self.chain_id, wif, expected_public_key)?;
         Ok(SignedTransactionEnvelope { signed })
     }
 
@@ -149,7 +202,8 @@ impl PreparedTransaction {
             if seen.contains(&public_key) {
                 continue;
             }
-            let signed = sign_checked(&self.transaction, wif.as_ref(), &public_key)?;
+            let signed =
+                sign_checked(&self.transaction, &self.chain_id, wif.as_ref(), &public_key)?;
             signatures.extend(signed.signatures);
             seen.push(public_key);
         }
@@ -159,14 +213,7 @@ impl PreparedTransaction {
             });
         }
         Ok(SignedTransactionEnvelope {
-            signed: SignedTransaction {
-                ref_block_num: self.transaction.ref_block_num,
-                ref_block_prefix: self.transaction.ref_block_prefix,
-                expiration: self.transaction.expiration.clone(),
-                operations: self.transaction.operations.clone(),
-                extensions: self.transaction.extensions.clone(),
-                signatures,
-            },
+            signed: self.transaction.with_signatures(signatures),
         })
     }
 }
@@ -259,12 +306,13 @@ fn required_fee_asset(fee: rpc_get_required_fees::RequiredFee) -> Asset {
 
 fn sign_checked(
     transaction: &Transaction,
+    chain_id: &str,
     wif: &str,
     expected_public_key: &str,
 ) -> Result<SignedTransaction, ChainApiError> {
     let signed =
         transaction
-            .signed_with_wif(wif)
+            .signed_with_wif_for_chain(wif, chain_id)
             .map_err(|_| ChainApiError::InvalidTransfer {
                 message: "failed to sign transaction".to_string(),
             })?;
@@ -280,11 +328,11 @@ fn sign_checked(
         });
     }
 
-    let digest = transaction.signature_digest_bytes().map_err(|error| {
-        ChainApiError::InvalidTransfer {
+    let digest = transaction
+        .signature_digest_bytes_for_chain(chain_id)
+        .map_err(|error| ChainApiError::InvalidTransfer {
             message: format!("failed to compute signature digest: {error}"),
-        }
-    })?;
+        })?;
     let public_key =
         decode_public_key(expected_public_key, Some(PUBLIC_KEY_PREFIX)).map_err(|_| {
             ChainApiError::InvalidTransfer {
@@ -392,6 +440,87 @@ mod tests {
         );
 
         assert_eq!(required_fee_asset(fee), base_fee);
+    }
+
+    const FIXTURE_WIF: &str = "5J4eFhjREJA7hKG6KcvHofHMXyGQZCDpQE463PAaKo9xXY6UDPq";
+    const OTHER_NETWORK: &str = "4f56ace51c8447aad49af5b522944836fa476bc9edabd5636a3a9d2afe8849cf";
+
+    fn fixture_public_key() -> String {
+        format!("{}7jDPoMwyjVH5obFmqzFNp4Ffp7G2nvC7FKFkrMBpo7Sy4uq5Mj", crate::PUBLIC_KEY_PREFIX)
+    }
+
+    fn fixture_transaction() -> Transaction {
+        Transaction {
+            ref_block_num: 2,
+            ref_block_prefix: 3,
+            expiration: "2026-05-25T12:01:00".to_string(),
+            operations: vec![Operation::limit_order_cancel(LimitOrderCancelOperation {
+                fee: Asset::new(55, AssetId("1.3.0".to_string())),
+                fee_paying_account: AccountId("1.2.100".to_string()),
+                order: LimitOrderId("1.7.42".to_string()),
+                extensions: vec![],
+            })],
+            extensions: vec![],
+        }
+    }
+
+    #[test]
+    fn signs_for_the_network_it_was_prepared_on() {
+        let bundled = PreparedTransaction::new(
+            fixture_transaction(),
+            bindings::generated::ids::CHAIN_ID_HEX,
+        );
+        let other = PreparedTransaction::new(fixture_transaction(), OTHER_NETWORK);
+        assert_eq!(
+            bundled.digest().unwrap(),
+            fixture_transaction().signature_digest_bytes().unwrap()
+        );
+        assert_ne!(bundled.digest().unwrap(), other.digest().unwrap());
+
+        // The checked signature verifies against the other network's digest
+        let digest = other.digest().unwrap();
+        let signed = other
+            .sign_with_wif(FIXTURE_WIF, &fixture_public_key())
+            .expect("signs for the other network");
+        let signature = &signed.signed_transaction().signatures[0].0;
+        let key = decode_public_key(&fixture_public_key(), Some(PUBLIC_KEY_PREFIX)).unwrap();
+        assert!(verify_compact_signature_public_key(digest, signature, key).unwrap());
+    }
+
+    #[test]
+    fn takes_signatures_made_elsewhere_over_its_digest() {
+        let prepared = PreparedTransaction::new(fixture_transaction(), OTHER_NETWORK);
+        let private_key = open_graphene_fc::decode_wif_private_key(FIXTURE_WIF).unwrap();
+        let signature =
+            open_graphene_fc::sign_digest_compact(prepared.digest().unwrap(), private_key)
+                .unwrap();
+        let signed = prepared.clone().with_signatures(vec![signature]).unwrap();
+        assert_eq!(signed.signed_transaction().signatures[0].0, signature.to_vec());
+        assert_eq!(
+            signed.transaction_json().unwrap()["signatures"][0],
+            json!(hex::encode(signature))
+        );
+
+        assert!(prepared.clone().with_signatures(vec![]).is_err());
+        // The high-S twin of a valid signature: s' = n - s
+        let mut high = signature;
+        let order: [u8; 32] = hex::decode(
+            "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141",
+        )
+        .unwrap()
+        .try_into()
+        .unwrap();
+        let mut borrow = 0i16;
+        for i in (0..32).rev() {
+            let value = order[i] as i16 - signature[33 + i] as i16 - borrow;
+            borrow = i16::from(value < 0);
+            high[33 + i] = value.rem_euclid(256) as u8;
+        }
+        high[0] = if signature[0] % 2 == 0 { signature[0] - 1 } else { signature[0] + 1 };
+        #[cfg(feature = "low-s")]
+        assert!(prepared.with_signatures(vec![high]).is_err());
+        #[cfg(not(feature = "low-s"))]
+        let _ = (prepared, high);
     }
 
     #[test]

@@ -44,6 +44,19 @@ pub struct DatabaseApi<'session> {
 }
 
 impl<'session> DatabaseApi<'session> {
+    /// Any `database` API method by name, for the methods without a typed request here (a
+    /// chain's own objects, such as data rooms on Actanet). Build `params` with the generated
+    /// `rpc::database::<method>::Params::to_params_value` and read the answer with its
+    /// `parse_returns`. Reconnects and retries like every other read, so call only methods that
+    /// do not change the chain.
+    pub async fn call(
+        &mut self,
+        method: &str,
+        params: serde_json::Value,
+    ) -> Result<serde_json::Value, ChainApiError> {
+        Ok(self.session.database_call(method, params).await?)
+    }
+
     pub fn account_balances<A, L>(
         self,
         account_name: A,

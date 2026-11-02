@@ -187,14 +187,28 @@ pub(crate) fn render_fc_transaction_helpers(out: &mut String, protocol: &Protoco
         .any(|struct_def| struct_def.name == "signed_transaction");
 
     out.push_str("impl crate::generated::types::Transaction {\n");
-    out.push_str("    pub fn signature_preimage_bytes(&self) -> Result<Vec<u8>> {\n");
+    out.push_str("    /// The bytes a signature covers on the network `chain_id` (64 lowercase hex): the chain id,\n");
+    out.push_str("    /// then the transaction. One chain has several networks (mainnet, testnet), each with its own\n");
+    out.push_str("    /// genesis and so its own chain id; sign for the one the node reports.\n");
+    out.push_str("    pub fn signature_preimage_bytes_for_chain(&self, chain_id: &str) -> Result<Vec<u8>> {\n");
     out.push_str("        let mut out = Vec::new();\n");
-    out.push_str("        out.extend_from_slice(&decode_chain_id_hex(crate::generated::ids::CHAIN_ID_HEX)?);\n");
+    out.push_str("        out.extend_from_slice(&decode_chain_id_hex(chain_id)?);\n");
     out.push_str("        self.fc_serialize(&mut out)?;\n");
     out.push_str("        Ok(out)\n");
     out.push_str("    }\n\n");
+    out.push_str("    pub fn signature_digest_bytes_for_chain(&self, chain_id: &str) -> Result<[u8; 32]> {\n");
+    out.push_str("        Ok(sha256_bytes(&self.signature_preimage_bytes_for_chain(chain_id)?))\n");
+    out.push_str("    }\n\n");
+    out.push_str("    /// The preimage on the network these bindings were generated against (`CHAIN_ID_HEX`).\n");
+    out.push_str("    pub fn signature_preimage_bytes(&self) -> Result<Vec<u8>> {\n");
+    out.push_str("        self.signature_preimage_bytes_for_chain(crate::generated::ids::CHAIN_ID_HEX)\n");
+    out.push_str("    }\n\n");
     out.push_str("    pub fn signature_digest_bytes(&self) -> Result<[u8; 32]> {\n");
     out.push_str("        Ok(sha256_bytes(&self.signature_preimage_bytes()?))\n");
+    out.push_str("    }\n\n");
+    out.push_str("    #[cfg(feature = \"signing\")]\n");
+    out.push_str("    pub fn sign_with_wif_for_chain(&self, wif: &str, chain_id: &str) -> Result<crate::generated::types::Signature> {\n");
+    out.push_str("        Ok(crate::generated::types::Signature(sign_digest_compact_with_wif(self.signature_digest_bytes_for_chain(chain_id)?, wif)?.to_vec()))\n");
     out.push_str("    }\n\n");
     out.push_str("    #[cfg(feature = \"signing\")]\n");
     out.push_str("    pub fn sign_with_wif(&self, wif: &str) -> Result<crate::generated::types::Signature> {\n");
@@ -202,16 +216,24 @@ pub(crate) fn render_fc_transaction_helpers(out: &mut String, protocol: &Protoco
     out.push_str("    }\n");
     if has_signed_transaction {
         out.push('\n');
-        out.push_str("    #[cfg(feature = \"signing\")]\n");
-        out.push_str("    pub fn signed_with_wif(&self, wif: &str) -> Result<crate::generated::types::SignedTransaction> {\n");
-        out.push_str("        Ok(crate::generated::types::SignedTransaction {\n");
+        out.push_str("    /// The signed form of this transaction with the given signatures.\n");
+        out.push_str("    pub fn with_signatures(&self, signatures: Vec<crate::generated::types::Signature>) -> crate::generated::types::SignedTransaction {\n");
+        out.push_str("        crate::generated::types::SignedTransaction {\n");
         out.push_str("            ref_block_num: self.ref_block_num,\n");
         out.push_str("            ref_block_prefix: self.ref_block_prefix,\n");
         out.push_str("            expiration: self.expiration.clone(),\n");
         out.push_str("            operations: self.operations.clone(),\n");
         out.push_str("            extensions: self.extensions.clone(),\n");
-        out.push_str("            signatures: vec![self.sign_with_wif(wif)?],\n");
-        out.push_str("        })\n");
+        out.push_str("            signatures,\n");
+        out.push_str("        }\n");
+        out.push_str("    }\n\n");
+        out.push_str("    #[cfg(feature = \"signing\")]\n");
+        out.push_str("    pub fn signed_with_wif_for_chain(&self, wif: &str, chain_id: &str) -> Result<crate::generated::types::SignedTransaction> {\n");
+        out.push_str("        Ok(self.with_signatures(vec![self.sign_with_wif_for_chain(wif, chain_id)?]))\n");
+        out.push_str("    }\n\n");
+        out.push_str("    #[cfg(feature = \"signing\")]\n");
+        out.push_str("    pub fn signed_with_wif(&self, wif: &str) -> Result<crate::generated::types::SignedTransaction> {\n");
+        out.push_str("        Ok(self.with_signatures(vec![self.sign_with_wif(wif)?]))\n");
         out.push_str("    }\n");
     }
     out.push_str("}\n\n");
@@ -2250,7 +2272,9 @@ mod tests {
         assert!(fc.contains("Self::TransferOperation(value) => { write_varint(0u64, out); value.as_ref().fc_serialize(out) }"));
         assert!(fc.contains("impl crate::generated::types::Transaction"));
         assert!(fc.contains("pub fn signature_preimage_bytes(&self) -> Result<Vec<u8>>"));
-        assert!(fc.contains("decode_chain_id_hex(crate::generated::ids::CHAIN_ID_HEX)?"));
+        assert!(fc.contains("pub fn signature_preimage_bytes_for_chain(&self, chain_id: &str) -> Result<Vec<u8>>"));
+        assert!(fc.contains("decode_chain_id_hex(chain_id)?"));
+        assert!(fc.contains("self.signature_preimage_bytes_for_chain(crate::generated::ids::CHAIN_ID_HEX)"));
         assert!(fc.contains("self.fc_serialize(&mut out)?;"));
         assert!(fc.contains("pub fn signature_digest_bytes(&self) -> Result<[u8; 32]>"));
         assert!(fc.contains("Ok(sha256_bytes(&self.signature_preimage_bytes()?))"));
@@ -2263,7 +2287,8 @@ mod tests {
         assert!(fc.contains(
             "pub fn signed_with_wif(&self, wif: &str) -> Result<crate::generated::types::SignedTransaction>"
         ));
-        assert!(fc.contains("signatures: vec![self.sign_with_wif(wif)?]"));
+        assert!(fc.contains("Ok(self.with_signatures(vec![self.sign_with_wif(wif)?]))"));
+        assert!(fc.contains("Ok(self.with_signatures(vec![self.sign_with_wif_for_chain(wif, chain_id)?]))"));
         assert!(fc.contains("impl FcSerialize for crate::generated::types::SignedTransaction"));
         assert!(fc.contains("self.signatures.fc_serialize(out)?;"));
     }

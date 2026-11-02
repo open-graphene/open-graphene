@@ -4305,15 +4305,41 @@ impl FcSerialize for crate::generated::static_variants::Operation {
 }
 
 impl crate::generated::types::Transaction {
-    pub fn signature_preimage_bytes(&self) -> Result<Vec<u8>> {
+    /// The bytes a signature covers on the network `chain_id` (64 lowercase hex): the chain id,
+    /// then the transaction. One chain has several networks (mainnet, testnet), each with its own
+    /// genesis and so its own chain id; sign for the one the node reports.
+    pub fn signature_preimage_bytes_for_chain(&self, chain_id: &str) -> Result<Vec<u8>> {
         let mut out = Vec::new();
-        out.extend_from_slice(&decode_chain_id_hex(crate::generated::ids::CHAIN_ID_HEX)?);
+        out.extend_from_slice(&decode_chain_id_hex(chain_id)?);
         self.fc_serialize(&mut out)?;
         Ok(out)
     }
 
+    pub fn signature_digest_bytes_for_chain(&self, chain_id: &str) -> Result<[u8; 32]> {
+        Ok(sha256_bytes(
+            &self.signature_preimage_bytes_for_chain(chain_id)?,
+        ))
+    }
+
+    /// The preimage on the network these bindings were generated against (`CHAIN_ID_HEX`).
+    pub fn signature_preimage_bytes(&self) -> Result<Vec<u8>> {
+        self.signature_preimage_bytes_for_chain(crate::generated::ids::CHAIN_ID_HEX)
+    }
+
     pub fn signature_digest_bytes(&self) -> Result<[u8; 32]> {
         Ok(sha256_bytes(&self.signature_preimage_bytes()?))
+    }
+
+    #[cfg(feature = "signing")]
+    pub fn sign_with_wif_for_chain(
+        &self,
+        wif: &str,
+        chain_id: &str,
+    ) -> Result<crate::generated::types::Signature> {
+        Ok(crate::generated::types::Signature(
+            sign_digest_compact_with_wif(self.signature_digest_bytes_for_chain(chain_id)?, wif)?
+                .to_vec(),
+        ))
     }
 
     #[cfg(feature = "signing")]
@@ -4323,15 +4349,32 @@ impl crate::generated::types::Transaction {
         ))
     }
 
-    #[cfg(feature = "signing")]
-    pub fn signed_with_wif(&self, wif: &str) -> Result<crate::generated::types::SignedTransaction> {
-        Ok(crate::generated::types::SignedTransaction {
+    /// The signed form of this transaction with the given signatures.
+    pub fn with_signatures(
+        &self,
+        signatures: Vec<crate::generated::types::Signature>,
+    ) -> crate::generated::types::SignedTransaction {
+        crate::generated::types::SignedTransaction {
             ref_block_num: self.ref_block_num,
             ref_block_prefix: self.ref_block_prefix,
             expiration: self.expiration.clone(),
             operations: self.operations.clone(),
             extensions: self.extensions.clone(),
-            signatures: vec![self.sign_with_wif(wif)?],
-        })
+            signatures,
+        }
+    }
+
+    #[cfg(feature = "signing")]
+    pub fn signed_with_wif_for_chain(
+        &self,
+        wif: &str,
+        chain_id: &str,
+    ) -> Result<crate::generated::types::SignedTransaction> {
+        Ok(self.with_signatures(vec![self.sign_with_wif_for_chain(wif, chain_id)?]))
+    }
+
+    #[cfg(feature = "signing")]
+    pub fn signed_with_wif(&self, wif: &str) -> Result<crate::generated::types::SignedTransaction> {
+        Ok(self.with_signatures(vec![self.sign_with_wif(wif)?]))
     }
 }
