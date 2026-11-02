@@ -16,6 +16,8 @@ default = ["bitshares7"]
 # Operations BitShares 7 added to Graphene: blind transfers, collateral bids, credit offers,
 # limit order updates, liquidity pools and samet funds. Off for chains that lack them.
 bitshares7 = []
+# Nodes accept low-S signatures (actanet-fc) instead of the legacy Graphene rule.
+low-s = []
 
 [dependencies]
 bindings = { package = "graphene-chain-bitshares-bindings", path = "../graphene-chain-bitshares-bindings" }

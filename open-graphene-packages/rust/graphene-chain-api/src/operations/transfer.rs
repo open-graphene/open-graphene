@@ -1,8 +1,6 @@
 use std::time::Duration;
 
-use bindings::generated::fc::{
-    decode_public_key, is_graphene_canonical_compact_signature, verify_compact_signature_public_key,
-};
+use bindings::generated::fc::{decode_public_key, verify_compact_signature_public_key};
 use bindings::generated::ids::{AccountId, AssetId, PUBLIC_KEY_PREFIX};
 use bindings::generated::operations::TransferOperation;
 use bindings::generated::static_variants::Operation;
@@ -456,9 +454,9 @@ fn sign_transfer_transaction_checked(
             .ok_or_else(|| ChainApiError::InvalidTransfer {
                 message: "signed transfer transaction has no signature".to_string(),
             })?;
-    if !is_graphene_canonical_compact_signature(&signature.0) {
+    if !crate::is_accepted_signature(&signature.0) {
         return Err(ChainApiError::InvalidTransfer {
-            message: "signature is not Graphene canonical".to_string(),
+            message: "signature is not canonical for this chain".to_string(),
         });
     }
 

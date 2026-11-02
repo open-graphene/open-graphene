@@ -1887,7 +1887,7 @@
           "member_key": "",
           "epoch_keys": [],
           "permissions": 0,
-          "extensions": []
+          "extensions": {}
         }
       ],
       "hex": "530000000000000000000000000000000000000000000000",
@@ -1954,7 +1954,7 @@
           "caller": [0, "1.2.0"],
           "room": "1.24.0",
           "member_keys": [],
-          "extensions": []
+          "extensions": {}
         }
       ],
       "hex": "5600000000000000000000000000000000",
@@ -1981,7 +1981,7 @@
           "description": "",
           "content_key": "",
           "storage_data": "",
-          "extensions": []
+          "extensions": {}
         }
       ],
       "hex": "57000000000000000000000000000000000000000000",
@@ -2046,7 +2046,7 @@
           "content_id": "1.27.0",
           "grantee": [0, "1.2.0"],
           "key": "",
-          "extensions": []
+          "extensions": {}
         }
       ],
       "hex": "5a000000000000000000000000000000000000",

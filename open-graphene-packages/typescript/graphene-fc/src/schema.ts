@@ -141,12 +141,17 @@ function assertOrdered(
     previous = key;
   }
 }
-const sparseSupported = new Set([
-  'content_card_update_operation_ext',
-  'content_card_remove_operation_ext',
-  'data_room_access_extensions',
-  'data_room_create_operation_ext',
-]);
+/**
+ * Extensions whose set members the Rust FC profile encodes: the optional guards
+ * (expected_revision, expected_epoch) of Actanet's data room family. Other extension families
+ * stay fail-closed until their non-empty wire formats have coverage.
+ */
+function sparseSupported(name: string): boolean {
+  return (
+    (name.startsWith('data_room_') || name.startsWith('content_card_')) &&
+    name.endsWith('_ext')
+  );
+}
 export function encodeFc(
   schema: FcSchema,
   name: string,
@@ -168,8 +173,10 @@ export function encodeFc(
     const obj = record(value),
       fields = def.fields ?? [];
     if (def.extension) {
-      const present = fields.filter((f) => obj[f.name] != null);
-      if (present.length && !sparseSupported.has(name))
+      const present = fields
+        .filter((f) => obj[f.name] != null)
+        .sort((a, b) => a.index - b.index);
+      if (present.length && !sparseSupported(name))
         throw new Error(
           'Nonempty extension not supported by Rust FC profile: ' + name,
         );

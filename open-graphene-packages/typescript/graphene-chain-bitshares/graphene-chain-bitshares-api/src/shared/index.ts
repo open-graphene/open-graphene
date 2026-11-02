@@ -44,6 +44,7 @@ import { sha256, transactionDigest } from '@open-graphene/fc';
 import {
   encodePublicKey,
   isCanonicalCompactSignature,
+  isLowSCompactSignature,
   verifyDigestCompact,
   WifSigner,
   type Signer,
@@ -146,10 +147,9 @@ export class ChainWifSigner extends WifSigner {
 
 /** Whether this chain's nodes accept a compact signature. */
 export function isAcceptedSignature(signature: Uint8Array): boolean {
-  return (
-    b.SIGNING_PROFILE !== 'graphene-legacy' ||
-    isCanonicalCompactSignature(signature)
-  );
+  return b.SIGNING_PROFILE === 'graphene-legacy'
+    ? isCanonicalCompactSignature(signature)
+    : isLowSCompactSignature(signature);
 }
 
 export class BroadcastOutcomeUnknown extends Error {

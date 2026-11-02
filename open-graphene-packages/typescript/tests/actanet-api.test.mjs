@@ -11,6 +11,7 @@ import {
 import {
   signDigestCompact,
   isCanonicalCompactSignature,
+  isLowSCompactSignature,
   recoverPublicKey,
   encodePublicKey,
 } from '../graphene-fc/dist/signing.js';
@@ -178,7 +179,7 @@ test('Actanet prepare/sign/broadcast/inclusion uses chain digest, fees and immut
     assert.equal(prepared.transaction.operations[0][1].fee.amount, 100n);
     const signed = await prepared.sign(signer);
     const signature = signed.transaction.signatures[0];
-    assert.ok(isCanonicalCompactSignature(signature));
+    assert.ok(isLowSCompactSignature(signature));
     assert.equal(
       bytesToHex(
         recoverPublicKey(
@@ -254,39 +255,68 @@ test('Actanet lost broadcast response is unknown and is never retried', async ()
     signer.dispose();
   }
 });
-test('legacy profile grinds canonical r/s, preserves recovery, and rejects noncanonical external signers', async () => {
-  let ground = 0;
+const CURVE_ORDER =
+  0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n;
+/** The other valid form of a signature: s replaced by n - s, the recovery id's parity flipped. */
+function highSTwin(signature) {
+  const s = BigInt('0x' + bytesToHex(signature.slice(33)));
+  const twin = signature.slice();
+  twin.set(hexToBytes((CURVE_ORDER - s).toString(16).padStart(64, '0')), 33);
+  twin[0] = 31 + ((signature[0] - 31) ^ 1);
+  return twin;
+}
+test('Actanet accepts low-S signatures without retrying and rejects their high-S twins', async () => {
+  let legacyRejected = 0;
   for (let n = 0; n < 32; n++) {
     const digest = new Uint8Array(32);
     digest[31] = n;
-    const plain = signDigestCompact(digest, key, 'low-s');
-    const legacy = signDigestCompact(digest, key, 'graphene-legacy');
-    if (!isCanonicalCompactSignature(plain)) ground++;
-    assert.ok(isCanonicalCompactSignature(legacy));
+    const signature = signDigestCompact(digest, key, 'low-s');
+    assert.ok(isLowSCompactSignature(signature));
+    assert.ok(!isLowSCompactSignature(highSTwin(signature)));
+    if (!isCanonicalCompactSignature(signature)) legacyRejected++;
     assert.equal(
-      bytesToHex(recoverPublicKey(digest, legacy)),
+      bytesToHex(recoverPublicKey(digest, signature)),
       bytesToHex(publicKey),
     );
-    assert.deepEqual(legacy, signDigestCompact(digest, key, 'graphene-legacy'));
   }
-  assert.ok(ground > 0, 'Must exercise a noncanonical first nonce');
-  const tx = b.TransactionCodec.decode({
-    ...vectors.transfer.transaction,
-    expiration: new Date(Date.now() + 60000).toISOString().slice(0, 19),
-  });
-  const prepared = new PreparedTransfer({
-    transaction: tx,
-    authority: b.AuthorityCodec.decode(authority),
-    startBlock: 1,
-    chainId: b.CHAIN.chainId,
-  });
-  const bad = new Uint8Array(65);
-  bad[0] = 31;
-  bad[1] = 128;
-  await assert.rejects(
-    prepared.sign({ publicKey, signDigest: async () => bad }),
-    /canonical/,
+  assert.ok(
+    legacyRejected > 0,
+    'Must exercise a signature the legacy rule rejects',
   );
+
+  // A transaction whose plain RFC 6979 signature fails the legacy rule, as a deterministic
+  // signer such as XKeys would produce it
+  let prepared, signature;
+  for (let i = 0; i < 64 && !prepared; i++) {
+    const tx = b.TransactionCodec.decode({
+      ...vectors.transfer.transaction,
+      expiration: new Date(Date.now() + 60000 + i * 1000)
+        .toISOString()
+        .slice(0, 19),
+    });
+    const candidate = new PreparedTransfer({
+      transaction: tx,
+      authority: b.AuthorityCodec.decode(authority),
+      startBlock: 1,
+      chainId: b.CHAIN.chainId,
+    });
+    const digest = transactionDigest(b.CHAIN.chainId, candidate.bytes);
+    const plain = signDigestCompact(digest, key, 'low-s');
+    if (!isCanonicalCompactSignature(plain)) {
+      prepared = candidate;
+      signature = plain;
+    }
+  }
+  assert.ok(prepared, 'Must find a signature the legacy rule rejects');
+  await assert.rejects(
+    prepared.sign({ publicKey, signDigest: async () => highSTwin(signature) }),
+    /non-canonical/,
+  );
+  const signed = await prepared.sign({
+    publicKey,
+    signDigest: async () => signature,
+  });
+  assert.deepEqual(signed.transaction.signatures[0], signature);
   const malformed = new Uint8Array(65);
   malformed[0] = 31;
   malformed[1] = 1;

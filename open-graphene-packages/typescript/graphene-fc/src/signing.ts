@@ -40,12 +40,35 @@ export function decodeWif(wif: string): Uint8Array {
   }
 }
 /**
- * Which compact signatures the target chain's nodes accept. `graphene-legacy` is the rule of
- * BitShares, R-Squared and Actanet nodes (`fc::ecc::public_key::is_canonical`): `r` and `s` are
- * minimal 32-byte DER integers. `low-s` only requires a low `s`, for nodes whose fc was relaxed
- * for deterministic HSM signatures that cannot retry.
+ * Which compact signatures the target chain's nodes accept (`fc::ecc::public_key::is_canonical`).
+ * `graphene-legacy` is the rule of BitShares and R-Squared nodes: `r` and `s` are minimal 32-byte
+ * DER integers, so the signer retries with other nonces until both are. `low-s` only requires a
+ * low `s`: the rule of Actanet nodes, whose fc was relaxed so that deterministic signers (RFC 6979
+ * libraries, hardware keys, custody services) that cannot retry are accepted. Every
+ * `graphene-legacy` signature is also `low-s`.
  */
 export type SigningProfile = 'graphene-legacy' | 'low-s';
+const HALF_ORDER = Uint8Array.from([
+  0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+  0xff, 0xff, 0xff, 0x5d, 0x57, 0x6e, 0x73, 0x57, 0xa4, 0x50, 0x1d, 0xdf, 0xe9,
+  0x2f, 0x46, 0x68, 0x1b, 0x20, 0xa0,
+]);
+/** BIP-62/BIP-146 low-S compact signature: `s` at most half the curve order. */
+export function isLowSCompactSignature(signature: Uint8Array): boolean {
+  if (
+    !(signature instanceof Uint8Array) ||
+    signature.length !== 65 ||
+    signature[0]! < 31 ||
+    signature[0]! > 34
+  )
+    return false;
+  for (let i = 0; i < 32; i++) {
+    const s = signature[33 + i]!,
+      h = HALF_ORDER[i]!;
+    if (s !== h) return s < h;
+  }
+  return true;
+}
 /** FC/bitsharesjs canonical compact integers: exactly 32 DER bytes for r and s. */
 export function isCanonicalCompactSignature(signature: Uint8Array): boolean {
   return (

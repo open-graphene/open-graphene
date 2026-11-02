@@ -1161,6 +1161,15 @@ pub struct ConditionInfoTimeLockInfo {
     pub expiration: String,
 }
 
+/// Raw protocol struct `content_card_create_operation_ext`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneActanetContentCardCreateOperationExt)]
+pub struct ContentCardCreateOperationExt {
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_epoch: Option<u32>,
+}
+
 /// Raw protocol struct `content_card_create_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneActanetContentCardCreateOperationFeeParamsT)]
@@ -1172,6 +1181,15 @@ pub struct ContentCardCreateOperationFeeParamsT {
     pub fee: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
+}
+
+/// Raw protocol struct `content_card_grant_create_operation_ext`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneActanetContentCardGrantCreateOperationExt)]
+pub struct ContentCardGrantCreateOperationExt {
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_revision: Option<u32>,
 }
 
 /// Raw protocol struct `content_card_grant_create_operation_fee_params_t`.
@@ -1258,6 +1276,9 @@ pub struct ContentCardUpdateOperationExt {
     #[schema(schema_with = crate::generated::types::u32_schema)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub expected_revision: Option<u32>,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_epoch: Option<u32>,
 }
 
 /// Raw protocol struct `content_card_update_operation_fee_params_t`.
@@ -1469,6 +1490,15 @@ pub struct DataRoomKeyEpochObject {
     pub key: String,
 }
 
+/// Raw protocol struct `data_room_member_add_operation_ext`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneActanetDataRoomMemberAddOperationExt)]
+pub struct DataRoomMemberAddOperationExt {
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_epoch: Option<u32>,
+}
+
 /// Raw protocol struct `data_room_member_add_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneActanetDataRoomMemberAddOperationFeeParamsT)]
@@ -1529,6 +1559,15 @@ pub struct DataRoomObject {
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub current_epoch: u32,
     pub created: String,
+}
+
+/// Raw protocol struct `data_room_rotate_key_operation_ext`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneActanetDataRoomRotateKeyOperationExt)]
+pub struct DataRoomRotateKeyOperationExt {
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_epoch: Option<u32>,
 }
 
 /// Raw protocol struct `data_room_rotate_key_operation_fee_params_t`.

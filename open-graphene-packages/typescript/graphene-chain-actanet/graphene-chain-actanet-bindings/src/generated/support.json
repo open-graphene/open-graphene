@@ -26,23 +26,23 @@
       "reason": "unsupported C++ type mapping: bucket_key"
     },
     {
-      "path": "/structs/163/fields/5/type/inner",
+      "path": "/structs/167/fields/5/type/inner",
       "reason": "unsupported C++ type mapping: variant"
     },
     {
-      "path": "/structs/163/fields/18/type",
+      "path": "/structs/167/fields/18/type",
       "reason": "unsupported C++ type mapping: more_data"
     },
     {
-      "path": "/structs/213/fields/1/type",
+      "path": "/structs/217/fields/1/type",
       "reason": "unsupported C++ type mapping: history_key"
     },
     {
-      "path": "/structs/260/fields/3/type",
+      "path": "/structs/264/fields/3/type",
       "reason": "unsupported C++ type mapping: vesting_policy"
     },
     {
-      "path": "/structs/260/fields/4/type",
+      "path": "/structs/264/fields/4/type",
       "reason": "unsupported C++ type mapping: vesting_balance_type"
     }
   ],
@@ -52,7 +52,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "transfer_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 0,
       "type": true,
       "virtual": false
@@ -62,7 +62,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "limit_order_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 1,
       "type": true,
       "virtual": false
@@ -72,7 +72,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "limit_order_cancel_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 2,
       "type": true,
       "virtual": false
@@ -82,7 +82,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "call_order_update_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 3,
       "type": true,
       "virtual": false
@@ -102,7 +102,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "account_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 5,
       "type": true,
       "virtual": false
@@ -112,7 +112,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "account_update_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 6,
       "type": true,
       "virtual": false
@@ -122,7 +122,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "account_whitelist_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 7,
       "type": true,
       "virtual": false
@@ -132,7 +132,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "account_upgrade_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 8,
       "type": true,
       "virtual": false
@@ -142,7 +142,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "account_transfer_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 9,
       "type": true,
       "virtual": false
@@ -152,7 +152,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "asset_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 10,
       "type": true,
       "virtual": false
@@ -162,7 +162,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "asset_update_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 11,
       "type": true,
       "virtual": false
@@ -172,7 +172,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "asset_update_bitasset_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 12,
       "type": true,
       "virtual": false
@@ -182,7 +182,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "asset_update_feed_producers_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 13,
       "type": true,
       "virtual": false
@@ -192,7 +192,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "asset_issue_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 14,
       "type": true,
       "virtual": false
@@ -202,7 +202,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "asset_reserve_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 15,
       "type": true,
       "virtual": false
@@ -212,7 +212,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "asset_fund_fee_pool_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 16,
       "type": true,
       "virtual": false
@@ -222,7 +222,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "asset_settle_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 17,
       "type": true,
       "virtual": false
@@ -232,7 +232,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "asset_global_settle_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 18,
       "type": true,
       "virtual": false
@@ -242,7 +242,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "asset_publish_feed_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 19,
       "type": true,
       "virtual": false
@@ -252,7 +252,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "witness_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 20,
       "type": true,
       "virtual": false
@@ -262,7 +262,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "witness_update_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 21,
       "type": true,
       "virtual": false
@@ -272,7 +272,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "proposal_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 22,
       "type": true,
       "virtual": false
@@ -282,7 +282,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "proposal_update_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 23,
       "type": true,
       "virtual": false
@@ -292,7 +292,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "proposal_delete_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 24,
       "type": true,
       "virtual": false
@@ -302,7 +302,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "withdraw_permission_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 25,
       "type": true,
       "virtual": false
@@ -312,7 +312,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "withdraw_permission_update_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 26,
       "type": true,
       "virtual": false
@@ -322,7 +322,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "withdraw_permission_claim_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 27,
       "type": true,
       "virtual": false
@@ -332,7 +332,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "withdraw_permission_delete_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 28,
       "type": true,
       "virtual": false
@@ -342,7 +342,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "committee_member_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 29,
       "type": true,
       "virtual": false
@@ -352,7 +352,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "committee_member_update_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 30,
       "type": true,
       "virtual": false
@@ -362,7 +362,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "committee_member_update_global_parameters_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 31,
       "type": true,
       "virtual": false
@@ -372,7 +372,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "vesting_balance_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 32,
       "type": true,
       "virtual": false
@@ -382,7 +382,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "vesting_balance_withdraw_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 33,
       "type": true,
       "virtual": false
@@ -392,7 +392,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "worker_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 34,
       "type": true,
       "virtual": false
@@ -402,7 +402,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "custom_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 35,
       "type": true,
       "virtual": false
@@ -412,7 +412,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "assert_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 36,
       "type": true,
       "virtual": false
@@ -422,7 +422,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "balance_claim_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 37,
       "type": true,
       "virtual": false
@@ -432,7 +432,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "override_transfer_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 38,
       "type": true,
       "virtual": false
@@ -442,7 +442,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "transfer_to_blind_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 39,
       "type": true,
       "virtual": false
@@ -452,7 +452,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "blind_transfer_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 40,
       "type": true,
       "virtual": false
@@ -462,7 +462,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "transfer_from_blind_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 41,
       "type": true,
       "virtual": false
@@ -482,7 +482,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "asset_claim_fees_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 43,
       "type": true,
       "virtual": false
@@ -502,7 +502,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "bid_collateral_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 45,
       "type": true,
       "virtual": false
@@ -522,7 +522,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "asset_claim_pool_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 47,
       "type": true,
       "virtual": false
@@ -532,7 +532,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "asset_update_issuer_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 48,
       "type": true,
       "virtual": false
@@ -542,7 +542,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "htlc_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 49,
       "type": true,
       "virtual": false
@@ -552,7 +552,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "htlc_redeem_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 50,
       "type": true,
       "virtual": false
@@ -572,7 +572,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "htlc_extend_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 52,
       "type": true,
       "virtual": false
@@ -592,7 +592,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "custom_authority_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 54,
       "type": true,
       "virtual": false
@@ -602,7 +602,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "custom_authority_update_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 55,
       "type": true,
       "virtual": false
@@ -612,7 +612,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "custom_authority_delete_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 56,
       "type": true,
       "virtual": false
@@ -622,7 +622,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "ticket_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 57,
       "type": true,
       "virtual": false
@@ -632,7 +632,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "ticket_update_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 58,
       "type": true,
       "virtual": false
@@ -642,7 +642,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "liquidity_pool_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 59,
       "type": true,
       "virtual": false
@@ -652,7 +652,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "liquidity_pool_delete_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 60,
       "type": true,
       "virtual": false
@@ -662,7 +662,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "liquidity_pool_deposit_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 61,
       "type": true,
       "virtual": false
@@ -672,7 +672,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "liquidity_pool_withdraw_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 62,
       "type": true,
       "virtual": false
@@ -682,7 +682,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "liquidity_pool_exchange_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 63,
       "type": true,
       "virtual": false
@@ -692,7 +692,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "samet_fund_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 64,
       "type": true,
       "virtual": false
@@ -702,7 +702,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "samet_fund_delete_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 65,
       "type": true,
       "virtual": false
@@ -712,7 +712,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "samet_fund_update_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 66,
       "type": true,
       "virtual": false
@@ -722,7 +722,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "samet_fund_borrow_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 67,
       "type": true,
       "virtual": false
@@ -732,7 +732,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "samet_fund_repay_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 68,
       "type": true,
       "virtual": false
@@ -742,7 +742,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "credit_offer_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 69,
       "type": true,
       "virtual": false
@@ -752,7 +752,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "credit_offer_delete_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 70,
       "type": true,
       "virtual": false
@@ -762,7 +762,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "credit_offer_update_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 71,
       "type": true,
       "virtual": false
@@ -772,7 +772,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "credit_offer_accept_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 72,
       "type": true,
       "virtual": false
@@ -782,7 +782,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "credit_deal_repay_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 73,
       "type": true,
       "virtual": false
@@ -802,7 +802,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "liquidity_pool_update_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 75,
       "type": true,
       "virtual": false
@@ -812,7 +812,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "credit_deal_update_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 76,
       "type": true,
       "virtual": false
@@ -822,7 +822,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "limit_order_update_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 77,
       "type": true,
       "virtual": false
@@ -832,7 +832,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "commit_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 78,
       "type": true,
       "virtual": false
@@ -842,7 +842,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "reveal_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 79,
       "type": true,
       "virtual": false
@@ -852,7 +852,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "data_room_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 80,
       "type": true,
       "virtual": false
@@ -862,7 +862,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "data_room_update_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 81,
       "type": true,
       "virtual": false
@@ -872,7 +872,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "data_room_delete_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 82,
       "type": true,
       "virtual": false
@@ -882,7 +882,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "data_room_member_add_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 83,
       "type": true,
       "virtual": false
@@ -892,7 +892,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "data_room_member_update_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 84,
       "type": true,
       "virtual": false
@@ -902,7 +902,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "data_room_member_remove_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 85,
       "type": true,
       "virtual": false
@@ -912,7 +912,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "data_room_rotate_key_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 86,
       "type": true,
       "virtual": false
@@ -922,7 +922,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "content_card_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 87,
       "type": true,
       "virtual": false
@@ -932,7 +932,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "content_card_update_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 88,
       "type": true,
       "virtual": false
@@ -942,7 +942,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "content_card_remove_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 89,
       "type": true,
       "virtual": false
@@ -952,7 +952,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "content_card_grant_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 90,
       "type": true,
       "virtual": false
@@ -962,7 +962,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "content_card_grant_revoke_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 91,
       "type": true,
       "virtual": false
@@ -972,7 +972,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "fee_grant_create_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 92,
       "type": true,
       "virtual": false
@@ -982,7 +982,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "fee_grant_update_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 93,
       "type": true,
       "virtual": false
@@ -992,7 +992,7 @@
       "fc": "generated_rust_extension_profile",
       "json": "generated",
       "name": "fee_grant_revoke_operation",
-      "signing": "graphene-legacy",
+      "signing": "low-s",
       "tag": 94,
       "type": true,
       "virtual": false
@@ -1345,6 +1345,6 @@
     }
   ],
   "schemaVersion": 1,
-  "specSha256": "5b5634175108b478626df2c3e228c798f47fd218411fcb95de2a8b69de78534b",
+  "specSha256": "000f4b7b04dfc4f731914aff056fc21af3f1779fb99c9591ccd6d71fbe9abfc0",
   "stage": "rust-fc-parity"
 }

@@ -12,10 +12,12 @@ repository = "https://github.com/open-graphene/open-graphene"
 path = "../../graphene-chain-api/src/lib.rs"
 
 [features]
-default = ["bitshares7"]
+default = ["bitshares7", "low-s"]
 # Operations BitShares 7 added to Graphene: blind transfers, collateral bids, credit offers,
 # limit order updates, liquidity pools and samet funds. Off for chains that lack them.
 bitshares7 = []
+# Nodes accept low-S signatures (actanet-fc) instead of the legacy Graphene rule.
+low-s = []
 
 [dependencies]
 bindings = { package = "graphene-chain-actanet-bindings", path = "../graphene-chain-actanet-bindings" }

@@ -538,10 +538,11 @@ const SECP256K1_HALF_ORDER: [u8; 32] = [
     0x5d, 0x57, 0x6e, 0x73, 0x57, 0xa4, 0x50, 0x1d, 0xdf, 0xe9, 0x2f, 0x46, 0x68, 0x1b, 0x20, 0xa0,
 ];
 
-/// Kanoniczny podpis węzłów Graphene: lustrzane odbicie `fc::ecc::public_key::is_canonical`
-/// w BitShares, R-Squared i actanet-fc. `r` i `s` to 32-bajtowe liczby w minimalnym DER, czyli
-/// żadna nie ma ustawionego wysokiego bitu pierwszego bajtu ani zbędnego zera na początku.
-/// Podpis spoza tej reguły węzeł odrzuca, dlatego [`sign_digest_compact`] losuje do skutku.
+/// Kanoniczny podpis węzłów BitShares i R-Squared: lustrzane odbicie
+/// `fc::ecc::public_key::is_canonical` w ich fc. `r` i `s` to 32-bajtowe liczby w minimalnym
+/// DER, czyli żadna nie ma ustawionego wysokiego bitu pierwszego bajtu ani zbędnego zera na
+/// początku. Podpis spoza tej reguły węzeł odrzuca, dlatego [`sign_digest_compact`] losuje do
+/// skutku. Każdy taki podpis spełnia też [`is_low_s_compact_signature`].
 #[cfg(feature = "signing")]
 pub fn is_graphene_canonical_compact_signature(signature: &[u8]) -> bool {
     signature.len() == 65
@@ -553,9 +554,9 @@ pub fn is_graphene_canonical_compact_signature(signature: &[u8]) -> bool {
 }
 
 /// Kanoniczność jak w Bitcoinie (BIP-62/BIP-146): wyłącznie low-S (`s <= n/2`), `r` bez
-/// ograniczeń. Tę regułę przyjmuje fc, które poluzowano dla deterministycznych podpisów HSM
-/// (WebAuthn/DFNS), niezdolnych do ponawiania losowania. Żaden obsługiwany dziś łańcuch jej nie
-/// stosuje; węzły BitShares, R-Squared i actanet wymagają
+/// ograniczeń. To reguła węzłów actanet (`is_canonical` w actanet-fc), poluzowana dla
+/// deterministycznych podpisów (RFC 6979, klucze sprzętowe, XKeys, DFNS), niezdolnych do
+/// ponawiania losowania. Węzły BitShares i R-Squared wymagają
 /// [`is_graphene_canonical_compact_signature`].
 #[cfg(feature = "signing")]
 pub fn is_low_s_compact_signature(signature: &[u8]) -> bool {

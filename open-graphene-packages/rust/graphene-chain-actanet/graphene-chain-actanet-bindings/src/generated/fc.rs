@@ -1115,10 +1115,40 @@ impl FcSerialize for crate::generated::types::ConditionInfoTimeLockInfo {
     }
 }
 
+impl FcSerialize for crate::generated::types::ContentCardCreateOperationExt {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let count = [self.expected_epoch.is_some()]
+            .iter()
+            .filter(|set| **set)
+            .count() as u64;
+        write_varint(count, out);
+        if let Some(value) = &self.expected_epoch {
+            write_varint(0u64, out);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::ContentCardCreateOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
         self.price_per_kbyte.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::ContentCardGrantCreateOperationExt {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let count = [self.expected_revision.is_some()]
+            .iter()
+            .filter(|set| **set)
+            .count() as u64;
+        write_varint(count, out);
+        if let Some(value) = &self.expected_revision {
+            write_varint(0u64, out);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -1171,13 +1201,14 @@ impl FcSerialize for crate::generated::types::ContentCardObject {
 
 impl FcSerialize for crate::generated::types::ContentCardRemoveOperationExt {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        match &self.expected_revision {
-            None => write_varint(0u64, out),
-            Some(value) => {
-                write_varint(1u64, out);
-                write_varint(0u64, out);
-                value.fc_serialize(out)?;
-            }
+        let count = [self.expected_revision.is_some()]
+            .iter()
+            .filter(|set| **set)
+            .count() as u64;
+        write_varint(count, out);
+        if let Some(value) = &self.expected_revision {
+            write_varint(0u64, out);
+            value.fc_serialize(out)?;
         }
         Ok(())
     }
@@ -1192,13 +1223,21 @@ impl FcSerialize for crate::generated::types::ContentCardRemoveOperationFeeParam
 
 impl FcSerialize for crate::generated::types::ContentCardUpdateOperationExt {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
-        match &self.expected_revision {
-            None => write_varint(0u64, out),
-            Some(value) => {
-                write_varint(1u64, out);
-                write_varint(0u64, out);
-                value.fc_serialize(out)?;
-            }
+        let count = [
+            self.expected_revision.is_some(),
+            self.expected_epoch.is_some(),
+        ]
+        .iter()
+        .filter(|set| **set)
+        .count() as u64;
+        write_varint(count, out);
+        if let Some(value) = &self.expected_revision {
+            write_varint(0u64, out);
+            value.fc_serialize(out)?;
+        }
+        if let Some(value) = &self.expected_epoch {
+            write_varint(1u64, out);
+            value.fc_serialize(out)?;
         }
         Ok(())
     }
@@ -1369,6 +1408,21 @@ impl FcSerialize for crate::generated::types::DataRoomKeyEpochObject {
     }
 }
 
+impl FcSerialize for crate::generated::types::DataRoomMemberAddOperationExt {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let count = [self.expected_epoch.is_some()]
+            .iter()
+            .filter(|set| **set)
+            .count() as u64;
+        write_varint(count, out);
+        if let Some(value) = &self.expected_epoch {
+            write_varint(0u64, out);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::DataRoomMemberAddOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -1412,6 +1466,21 @@ impl FcSerialize for crate::generated::types::DataRoomObject {
         self.encrypted.fc_serialize(out)?;
         self.current_epoch.fc_serialize(out)?;
         write_time_point_sec(&self.created, out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::DataRoomRotateKeyOperationExt {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let count = [self.expected_epoch.is_some()]
+            .iter()
+            .filter(|set| **set)
+            .count() as u64;
+        write_varint(count, out);
+        if let Some(value) = &self.expected_epoch {
+            write_varint(0u64, out);
+            value.fc_serialize(out)?;
+        }
         Ok(())
     }
 }
@@ -5379,19 +5448,7 @@ impl FcSerialize for crate::generated::operations::DataRoomMemberAddOperation {
             value.fc_serialize(out)?;
         }
         self.permissions.fc_serialize(out)?;
-        write_varint(self.extensions.len() as u64, out);
-        let mut previous_key: Option<u64> = None;
-        for value in &self.extensions {
-            let key = future_extensions_tag(value);
-            if previous_key.is_some_and(|previous| previous >= key) {
-                return Err(FcSerializeError::UnsupportedValue {
-                    type_name: "Set",
-                    reason: "set values must be sorted and unique",
-                });
-            }
-            previous_key = Some(key);
-            value.fc_serialize(out)?;
-        }
+        self.extensions.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -5468,19 +5525,7 @@ impl FcSerialize for crate::generated::operations::DataRoomRotateKeyOperation {
             key.fc_serialize(out)?;
             value.fc_serialize(out)?;
         }
-        write_varint(self.extensions.len() as u64, out);
-        let mut previous_key: Option<u64> = None;
-        for value in &self.extensions {
-            let key = future_extensions_tag(value);
-            if previous_key.is_some_and(|previous| previous >= key) {
-                return Err(FcSerializeError::UnsupportedValue {
-                    type_name: "Set",
-                    reason: "set values must be sorted and unique",
-                });
-            }
-            previous_key = Some(key);
-            value.fc_serialize(out)?;
-        }
+        self.extensions.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -5497,19 +5542,7 @@ impl FcSerialize for crate::generated::operations::ContentCardCreateOperation {
         self.description.fc_serialize(out)?;
         self.content_key.fc_serialize(out)?;
         self.storage_data.fc_serialize(out)?;
-        write_varint(self.extensions.len() as u64, out);
-        let mut previous_key: Option<u64> = None;
-        for value in &self.extensions {
-            let key = future_extensions_tag(value);
-            if previous_key.is_some_and(|previous| previous >= key) {
-                return Err(FcSerializeError::UnsupportedValue {
-                    type_name: "Set",
-                    reason: "set values must be sorted and unique",
-                });
-            }
-            previous_key = Some(key);
-            value.fc_serialize(out)?;
-        }
+        self.extensions.fc_serialize(out)?;
         Ok(())
     }
 }
@@ -5550,19 +5583,7 @@ impl FcSerialize for crate::generated::operations::ContentCardGrantCreateOperati
         self.content_id.fc_serialize(out)?;
         self.grantee.fc_serialize(out)?;
         self.key.fc_serialize(out)?;
-        write_varint(self.extensions.len() as u64, out);
-        let mut previous_key: Option<u64> = None;
-        for value in &self.extensions {
-            let key = future_extensions_tag(value);
-            if previous_key.is_some_and(|previous| previous >= key) {
-                return Err(FcSerializeError::UnsupportedValue {
-                    type_name: "Set",
-                    reason: "set values must be sorted and unique",
-                });
-            }
-            previous_key = Some(key);
-            value.fc_serialize(out)?;
-        }
+        self.extensions.fc_serialize(out)?;
         Ok(())
     }
 }

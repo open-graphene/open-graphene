@@ -277,25 +277,35 @@ pub(crate) fn render_fc_extension_struct_impl(out: &mut String, struct_def: &Str
     let mut fields = struct_def.fields.clone();
     fields.sort_by_key(|field| field.index);
 
-    // Actanet's content card extensions have one optional field, expected_revision, at
-    // FC index 0. Keep other extension families fail-closed until their non-empty wire
-    // formats have coverage.
-    if matches!(
-        struct_def.name.as_str(),
-        "content_card_update_operation_ext" | "content_card_remove_operation_ext"
-    ) && fields.len() == 1
-        && matches!(fields[0].ty, TypeRef::Optional { .. })
+    // The extensions of Actanet's data room family (`data_room_*_ext`, `content_card_*_ext`)
+    // hold only optional guards: expected_revision and expected_epoch. Keep other extension
+    // families fail-closed until their non-empty wire formats have coverage.
+    let data_room_family = (struct_def.name.starts_with("data_room_")
+        || struct_def.name.starts_with("content_card_"))
+        && struct_def.name.ends_with("_ext");
+    if data_room_family
+        && !fields.is_empty()
+        && fields
+            .iter()
+            .all(|field| matches!(field.ty, TypeRef::Optional { .. }))
     {
+        let present = fields
+            .iter()
+            .map(|field| format!("self.{}.is_some()", rust_field_name(&field.name)))
+            .collect::<Vec<_>>()
+            .join(", ");
         out.push_str(&format!(
-            "        match &self.{} {{\n",
-            rust_field_name(&fields[0].name)
+            "        let count = [{present}].iter().filter(|set| **set).count() as u64;\n"
         ));
-        out.push_str("            None => write_varint(0u64, out),\n");
-        out.push_str(&format!(
-            "            Some(value) => {{ write_varint(1u64, out); write_varint({}u64, out); value.fc_serialize(out)?; }}\n",
-            fields[0].index
-        ));
-        out.push_str("        }\n        Ok(())\n");
+        out.push_str("        write_varint(count, out);\n");
+        for field in &fields {
+            out.push_str(&format!(
+                "        if let Some(value) = &self.{} {{ write_varint({}u64, out); value.fc_serialize(out)?; }}\n",
+                rust_field_name(&field.name),
+                field.index
+            ));
+        }
+        out.push_str("        Ok(())\n");
     } else if fields.is_empty() {
         out.push_str("        write_varint(0u64, out);\n");
         out.push_str("        Ok(())\n");

@@ -119,6 +119,20 @@ pub const CHAIN_ID: &str = bindings::generated::ids::CHAIN_ID_HEX;
 /// The prefix of public keys on this chain.
 pub const PUBLIC_KEY_PREFIX: &str = bindings::generated::ids::PUBLIC_KEY_PREFIX;
 
+/// Whether this chain's nodes accept a compact signature (`fc::ecc::public_key::is_canonical`):
+/// low-S on chains built with the `low-s` feature (Actanet), the legacy Graphene rule elsewhere.
+/// Signatures this crate makes pass both.
+pub fn is_accepted_signature(signature: &[u8]) -> bool {
+    #[cfg(feature = "low-s")]
+    {
+        open_graphene_fc::is_low_s_compact_signature(signature)
+    }
+    #[cfg(not(feature = "low-s"))]
+    {
+        bindings::generated::fc::is_graphene_canonical_compact_signature(signature)
+    }
+}
+
 #[derive(Debug, Error)]
 pub enum ChainApiError {
     #[error("account `{account}` was not found")]

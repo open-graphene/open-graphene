@@ -435,13 +435,18 @@ async function prepareBitSharesTransfer(wif: string, from: string, to: string) {
 
 This function prepares and signs without broadcasting.
 
-Actanet, BitShares and R-Squared nodes accept only signatures that pass
-`fc::ecc::public_key::is_canonical`: no high bit in the first byte of r or s.
-Signers and `PrivateKey` use that rule (`'graphene-legacy'`) by default and retry
-with another nonce until a signature passes it. The chain APIs reject a signature
-from an external signer that does not pass it before anything is sent. The
-`'low-s'` profile signs with plain low-S only, which these nodes reject about half
-of the time.
+Nodes accept only signatures that pass `fc::ecc::public_key::is_canonical`, and
+the rule differs by chain:
+
+- **BitShares and R-Squared** (`'graphene-legacy'`): no high bit in the first byte
+  of r or s. Signers retry with another nonce until a signature passes.
+- **Actanet** (`'low-s'`): s at most half the curve order. A deterministic signer
+  that cannot retry, such as XKeys or a hardware key, is accepted.
+
+Each chain API signs with its own rule (`ActanetWifSigner`, `BitSharesWifSigner`)
+and rejects a signature from an external signer that its nodes would reject,
+before anything is sent. Every `'graphene-legacy'` signature is also low-S, so it
+is valid on Actanet too.
 
 ## Combine operations in one transaction
 

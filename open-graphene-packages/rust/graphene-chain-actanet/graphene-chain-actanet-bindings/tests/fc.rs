@@ -7,10 +7,9 @@ use graphene_chain_actanet_bindings::generated::{
     CommitteeMemberUpdateGlobalParametersOperationFeeParamsT, CreateTakeProfitOrderAction,
     CreditOfferCreateOperation, CreditOfferId, CreditOfferUpdateOperation,
     CustomAuthorityCreateOperation, CustomAuthorityId, CustomAuthorityUpdateOperation,
-    CustomOperation, FcSerialize,
-    FcSerializeError, FeeParameters, FeeSchedule, HtlcHash, HtlcId, HtlcRefundOperation,
-    InstantVestingPolicyInitializer, LimitOrderAutoAction, LimitOrderCancelOperation,
-    LimitOrderCreateOperation, LimitOrderId, LimitOrderUpdateOperation,
+    CustomOperation, FcSerialize, FcSerializeError, FeeParameters, FeeSchedule, HtlcHash, HtlcId,
+    HtlcRefundOperation, InstantVestingPolicyInitializer, LimitOrderAutoAction,
+    LimitOrderCancelOperation, LimitOrderCreateOperation, LimitOrderId, LimitOrderUpdateOperation,
     LinearVestingPolicyInitializer, MemoData, NoSpecialAuthority, OpWrapper, Operation, Predicate,
     Price, ProposalCreateOperation, RefundWorkerInitializer, Restriction, Signature,
     SignedTransaction, SpecialAuthority, TicketCreateOperation, TopHoldersSpecialAuthority,
@@ -2308,4 +2307,51 @@ fn restriction_fc_writes_member_index_and_type_as_varints() {
 
     assert_eq!(bytes[0], 0x01, "member_index is one varint byte");
     assert_eq!(bytes[1], 0x00, "restriction_type is one varint byte");
+}
+
+/// The guards of the data room family (`expected_epoch`, `expected_revision`) encode as a
+/// Graphene `extension<T>`: the count of set members, then each one's FC index and value.
+#[test]
+fn data_room_guard_extensions_encode_their_set_members() {
+    use graphene_chain_actanet_bindings::generated::{
+        ContentCardGrantCreateOperationExt, ContentCardUpdateOperationExt,
+        DataRoomMemberAddOperationExt,
+    };
+
+    let none = DataRoomMemberAddOperationExt {
+        expected_epoch: None,
+    };
+    assert_eq!(none.to_fc_bytes().expect("empty guard"), vec![0]);
+    let epoch = DataRoomMemberAddOperationExt {
+        expected_epoch: Some(3),
+    };
+    assert_eq!(
+        epoch.to_fc_bytes().expect("epoch guard"),
+        vec![1, 0, 3, 0, 0, 0]
+    );
+
+    let both = ContentCardUpdateOperationExt {
+        expected_revision: Some(2),
+        expected_epoch: Some(5),
+    };
+    assert_eq!(
+        both.to_fc_bytes().expect("both guards"),
+        vec![2, 0, 2, 0, 0, 0, 1, 5, 0, 0, 0]
+    );
+    let epoch_only = ContentCardUpdateOperationExt {
+        expected_revision: None,
+        expected_epoch: Some(5),
+    };
+    assert_eq!(
+        epoch_only.to_fc_bytes().expect("epoch only"),
+        vec![1, 1, 5, 0, 0, 0]
+    );
+
+    let revision = ContentCardGrantCreateOperationExt {
+        expected_revision: Some(1),
+    };
+    assert_eq!(
+        revision.to_fc_bytes().expect("revision guard"),
+        vec![1, 0, 1, 0, 0, 0]
+    );
 }

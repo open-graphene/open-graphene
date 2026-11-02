@@ -1279,7 +1279,7 @@ pub struct DataRoomMemberAddOperation {
     pub epoch_keys: Vec<(u32, String)>,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub permissions: u32,
-    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+    pub extensions: crate::generated::types::DataRoomMemberAddOperationExt,
 }
 
 pub const DATA_ROOM_MEMBER_UPDATE_OPERATION_ID: u32 = 84;
@@ -1323,7 +1323,7 @@ pub struct DataRoomRotateKeyOperation {
     pub caller: crate::generated::static_variants::DataRoomMemberRef,
     pub room: crate::generated::ids::DataRoomId,
     pub member_keys: Vec<(crate::generated::static_variants::DataRoomMemberRef, String)>,
-    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+    pub extensions: crate::generated::types::DataRoomRotateKeyOperationExt,
 }
 
 pub const CONTENT_CARD_CREATE_OPERATION_ID: u32 = 87;
@@ -1342,7 +1342,7 @@ pub struct ContentCardCreateOperation {
     pub description: String,
     pub content_key: String,
     pub storage_data: String,
-    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+    pub extensions: crate::generated::types::ContentCardCreateOperationExt,
 }
 
 pub const CONTENT_CARD_UPDATE_OPERATION_ID: u32 = 88;
@@ -1395,7 +1395,7 @@ pub struct ContentCardGrantCreateOperation {
     pub content_id: crate::generated::ids::ContentCardId,
     pub grantee: crate::generated::static_variants::DataRoomMemberRef,
     pub key: String,
-    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+    pub extensions: crate::generated::types::ContentCardGrantCreateOperationExt,
 }
 
 pub const CONTENT_CARD_GRANT_REVOKE_OPERATION_ID: u32 = 91;

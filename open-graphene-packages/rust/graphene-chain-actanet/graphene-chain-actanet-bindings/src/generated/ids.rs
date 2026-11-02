@@ -9,7 +9,7 @@ pub const CHAIN_ID: &str = "actanet";
 pub const CHAIN_ID_HEX: &str = "97d9626be713cb0d7032f232bbf80df7a3619d71a592da94767d699344bc2809";
 pub const PUBLIC_KEY_PREFIX: &str = "ACTA";
 
-pub const STRUCT_COUNT: usize = 280;
+pub const STRUCT_COUNT: usize = 284;
 pub const ENUM_COUNT: usize = 11;
 pub const STATIC_VARIANT_COUNT: usize = 13;
 pub const OPERATION_COUNT: usize = 95;

@@ -105,14 +105,13 @@ const extensions = new Set(
     .filter((f) => f.name === 'extensions' && f.type.kind === 'ref')
     .map((f) => f.type.name),
 );
-const sparse = new Set([
-  'data_room_access_extensions',
-  'data_room_create_operation_ext',
-  'content_card_update_operation_ext',
-  'content_card_remove_operation_ext',
-]);
+// Extensions the FC profile encodes when set: the optional guards of Actanet's data room
+// family. Others stay empty, as their non-empty encodings are not supported.
+const sparse = (name) =>
+  (name.startsWith('data_room_') || name.startsWith('content_card_')) &&
+  name.endsWith('_ext');
 function struct(name, depth = 0) {
-  if (extensions.has(name) && !sparse.has(name)) return {};
+  if (extensions.has(name) && !sparse(name)) return {};
   return Object.fromEntries(
     defs
       .get(name)
