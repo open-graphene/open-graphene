@@ -5,9 +5,7 @@
 //! selects the tier (0 liquid, 1 lock 180 days, 2 lock 360 days, 3 lock 720 days).
 
 use bindings::generated::ids::{AccountId, AssetId, TicketId};
-use bindings::generated::operations::{
-    TicketCreateOperation, TicketUpdateOperation,
-};
+use bindings::generated::operations::{TicketCreateOperation, TicketUpdateOperation};
 use bindings::generated::static_variants::Operation;
 use bindings::generated::types::Asset;
 use open_graphene_transport::GrapheneSession;

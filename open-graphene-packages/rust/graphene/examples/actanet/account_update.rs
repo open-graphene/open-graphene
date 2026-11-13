@@ -1,7 +1,7 @@
 #[path = "common.rs"]
 mod common;
 
-use graphene::{Graphene, PrivateKey, ChainApi};
+use graphene::{ChainApi, Graphene, PrivateKey};
 
 // Change an account option and put it back, end to end on the node. We flip the memo key (used
 // only to encrypt memos, never for spending or authority, so this cannot lock anyone out) to a
@@ -54,10 +54,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-async fn memo_key(
-    actanet: &mut ChainApi,
-    id: &str,
-) -> Result<String, Box<dyn std::error::Error>> {
+async fn memo_key(actanet: &mut ChainApi, id: &str) -> Result<String, Box<dyn std::error::Error>> {
     Ok(actanet
         .database()
         .get_account_by_id(id)

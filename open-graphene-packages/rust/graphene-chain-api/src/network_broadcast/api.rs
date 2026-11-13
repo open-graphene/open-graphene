@@ -4,7 +4,7 @@ use open_graphene_transport::{GrapheneSession, PendingCallback};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
-use crate::{SignedTransfer, ChainApiError};
+use crate::{ChainApiError, SignedTransfer};
 
 pub struct NetworkBroadcastApi<'session> {
     pub(crate) session: &'session mut GrapheneSession,

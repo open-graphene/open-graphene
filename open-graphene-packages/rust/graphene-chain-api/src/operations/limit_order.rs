@@ -6,9 +6,9 @@
 use std::time::Duration;
 
 use bindings::generated::ids::{AccountId, AssetId, LimitOrderId};
-use bindings::generated::operations::{LimitOrderCancelOperation, LimitOrderCreateOperation};
 #[cfg(feature = "bitshares7")]
 use bindings::generated::operations::LimitOrderUpdateOperation;
+use bindings::generated::operations::{LimitOrderCancelOperation, LimitOrderCreateOperation};
 use bindings::generated::static_variants::Operation;
 use bindings::generated::types::Asset;
 #[cfg(feature = "bitshares7")]
@@ -16,7 +16,7 @@ use bindings::generated::types::Price;
 use open_graphene_core::{HeadBlock, transaction_header_from_head};
 use open_graphene_transport::GrapheneSession;
 
-use crate::{DatabaseApi, ChainApiError};
+use crate::{ChainApiError, DatabaseApi};
 
 use super::transaction::{PreparedTransaction, TransactionBuilder};
 

@@ -1,7 +1,6 @@
 use std::error::Error;
 use std::fmt;
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum GrapheneConfigError {
     MissingServers,

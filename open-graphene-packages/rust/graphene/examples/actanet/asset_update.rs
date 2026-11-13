@@ -1,7 +1,7 @@
 #[path = "common.rs"]
 mod common;
 
-use graphene::{Graphene, PrivateKey, ChainApi};
+use graphene::{ChainApi, Graphene, PrivateKey};
 
 // Change a user asset's description and put it back, end to end on the node. We must be the asset's
 // issuer. Description is free text in the options, so this is harmless and fully reversible.
@@ -42,10 +42,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         &public_key,
     )
     .await?;
-    println!(
-        "description now:    {:?}",
-        description(&mut actanet).await?
-    );
+    println!("description now:    {:?}", description(&mut actanet).await?);
 
     broadcast_description(&mut actanet, &issuer, &original, &wif, &public_key).await?;
     let restored = description(&mut actanet).await?;

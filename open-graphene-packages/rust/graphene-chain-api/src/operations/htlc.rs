@@ -12,9 +12,7 @@ use bindings::generated::operations::{
     HtlcCreateOperation, HtlcExtendOperation, HtlcRedeemOperation,
 };
 use bindings::generated::static_variants::{HtlcHash, Operation};
-use bindings::generated::types::{
-    Asset, HtlcCreateOperationAdditionalOptionsType,
-};
+use bindings::generated::types::{Asset, HtlcCreateOperationAdditionalOptionsType};
 use open_graphene_transport::GrapheneSession;
 use sha2::{Digest, Sha256};
 
@@ -73,11 +71,9 @@ impl<'session> HtlcCreateRequest<'session> {
         let (amount, asset_id) = self
             .amount
             .ok_or(ChainApiError::MissingTransferField { field: "amount" })?;
-        let preimage = self
-            .preimage
-            .ok_or(ChainApiError::MissingTransferField {
-                field: "lock_sha256",
-            })?;
+        let preimage = self.preimage.ok_or(ChainApiError::MissingTransferField {
+            field: "lock_sha256",
+        })?;
 
         let digest = Sha256::digest(&preimage).to_vec();
         let operation = Operation::htlc_create(HtlcCreateOperation {

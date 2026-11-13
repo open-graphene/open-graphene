@@ -13,9 +13,7 @@ impl ChainIdRequest<'_> {
     }
 }
 
-pub(super) async fn get_chain_id(
-    session: &mut GrapheneSession,
-) -> Result<String, ChainApiError> {
+pub(super) async fn get_chain_id(session: &mut GrapheneSession) -> Result<String, ChainApiError> {
     let params = rpc_get_chain_id::Params {}
         .to_params_value()
         .map_err(ChainApiError::unexpected(rpc_get_chain_id::METHOD))?;

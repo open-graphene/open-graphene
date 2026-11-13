@@ -7,7 +7,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let public = private.to_public_key();
 
     println!("wif:        {}", private.to_wif());
-    println!("public key: {}", public.to_prefixed_string(graphene::PUBLIC_KEY_PREFIX));
+    println!(
+        "public key: {}",
+        public.to_prefixed_string(graphene::PUBLIC_KEY_PREFIX)
+    );
 
     // A digest is whatever 32 bytes you want signed (here, a hash stand-in).
     let digest = [7u8; 32];

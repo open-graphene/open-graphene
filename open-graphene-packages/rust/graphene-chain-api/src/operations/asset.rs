@@ -12,7 +12,7 @@ use bindings::generated::static_variants::Operation;
 use bindings::generated::types::{Asset, AssetUpdateOperationExt};
 use open_graphene_transport::GrapheneSession;
 
-use crate::{DatabaseApi, ChainApiError};
+use crate::{ChainApiError, DatabaseApi};
 
 use super::transaction::{PreparedTransaction, TransactionBuilder};
 

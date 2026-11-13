@@ -19,13 +19,10 @@ pub(super) async fn get_chain_properties(
 ) -> Result<ChainPropertyObject, ChainApiError> {
     let params = rpc_get_chain_properties::Params {}
         .to_params_value()
-        .map_err(ChainApiError::unexpected(
-            rpc_get_chain_properties::METHOD,
-        ))?;
+        .map_err(ChainApiError::unexpected(rpc_get_chain_properties::METHOD))?;
     let value = session
         .database_call(rpc_get_chain_properties::METHOD, params)
         .await?;
-    rpc_get_chain_properties::parse_returns(value).map_err(ChainApiError::unexpected(
-        rpc_get_chain_properties::METHOD,
-    ))
+    rpc_get_chain_properties::parse_returns(value)
+        .map_err(ChainApiError::unexpected(rpc_get_chain_properties::METHOD))
 }

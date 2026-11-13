@@ -1,5 +1,5 @@
-use bindings::generated::rpc::database::get_block_header as rpc_get_block_header;
 use crate::MaybeSignedBlockHeader;
+use bindings::generated::rpc::database::get_block_header as rpc_get_block_header;
 use open_graphene_transport::GrapheneSession;
 
 use crate::ChainApiError;

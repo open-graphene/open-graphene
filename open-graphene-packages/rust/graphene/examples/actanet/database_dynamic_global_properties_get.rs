@@ -13,11 +13,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .connect()
         .await?;
 
-    let properties = actanet
-        .database()
-        .dynamic_global_properties()
-        .get()
-        .await?;
+    let properties = actanet.database().dynamic_global_properties().get().await?;
 
     println!("id: {}", properties.id.0);
     println!("head block: {}", properties.head_block_number);

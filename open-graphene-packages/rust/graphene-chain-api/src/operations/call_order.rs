@@ -25,7 +25,9 @@ fn core_fee() -> Asset {
 // BitShares has call order options (target collateral ratio); older chains have plain extensions.
 #[cfg(feature = "bitshares7")]
 fn no_call_order_options() -> bindings::generated::types::CallOrderUpdateOperationOptionsType {
-    bindings::generated::types::CallOrderUpdateOperationOptionsType { target_collateral_ratio: None }
+    bindings::generated::types::CallOrderUpdateOperationOptionsType {
+        target_collateral_ratio: None,
+    }
 }
 #[cfg(not(feature = "bitshares7"))]
 fn no_call_order_options() -> Vec<bindings::generated::static_variants::FutureExtensions> {
@@ -72,10 +74,9 @@ impl<'session> CallOrderUpdateRequest<'session> {
                     field: "delta_collateral",
                 })?;
         let (debt_amount, debt_asset) =
-            self.delta_debt
-                .ok_or(ChainApiError::MissingTransferField {
-                    field: "delta_debt",
-                })?;
+            self.delta_debt.ok_or(ChainApiError::MissingTransferField {
+                field: "delta_debt",
+            })?;
 
         let operation = Operation::call_order_update(CallOrderUpdateOperation {
             fee: core_fee(),
@@ -128,10 +129,9 @@ impl<'session> BidCollateralRequest<'session> {
 
     pub async fn prepare(self) -> Result<PreparedTransaction, ChainApiError> {
         let (collateral_amount, collateral_asset) =
-            self.collateral
-                .ok_or(ChainApiError::MissingTransferField {
-                    field: "collateral",
-                })?;
+            self.collateral.ok_or(ChainApiError::MissingTransferField {
+                field: "collateral",
+            })?;
         let (debt_amount, debt_asset) =
             self.debt_covered
                 .ok_or(ChainApiError::MissingTransferField {

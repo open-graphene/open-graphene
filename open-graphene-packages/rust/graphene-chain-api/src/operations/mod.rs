@@ -58,9 +58,9 @@ pub use governance::{
     WorkerCreateRequest,
 };
 pub use htlc::{HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest};
-pub use limit_order::{LimitOrderCancelRequest, LimitOrderCreateRequest};
 #[cfg(feature = "bitshares7")]
 pub use limit_order::LimitOrderUpdateRequest;
+pub use limit_order::{LimitOrderCancelRequest, LimitOrderCreateRequest};
 #[cfg(feature = "bitshares7")]
 pub use liquidity_pool::{
     LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest,

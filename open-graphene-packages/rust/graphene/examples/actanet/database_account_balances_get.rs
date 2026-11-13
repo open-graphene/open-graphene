@@ -22,11 +22,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("balance by name: {} {}", balance.amount, balance.asset_id.0);
     }
 
-    let account = actanet
-        .database()
-        .account_by_name("actanet")
-        .get()
-        .await?;
+    let account = actanet.database().account_by_name("actanet").get().await?;
     let asset = actanet.database().asset_by_symbol("ACTA").get().await?;
     let balances = actanet
         .database()

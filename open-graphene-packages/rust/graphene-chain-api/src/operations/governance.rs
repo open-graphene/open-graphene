@@ -5,9 +5,7 @@
 //! privileged or stake-heavy ops; on a test chain they price and validate at `prepare()` even where
 //! a full broadcast needs the right account or a large fee.
 
-use bindings::generated::ids::{
-    AccountId, AssetId, CommitteeMemberId, WitnessId,
-};
+use bindings::generated::ids::{AccountId, AssetId, CommitteeMemberId, WitnessId};
 use bindings::generated::operations::{
     CommitteeMemberCreateOperation, CommitteeMemberUpdateGlobalParametersOperation,
     CommitteeMemberUpdateOperation, CustomOperation, WitnessCreateOperation,

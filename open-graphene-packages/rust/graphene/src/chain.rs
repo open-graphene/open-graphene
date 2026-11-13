@@ -85,14 +85,12 @@ macro_rules! chain_connect {
                 let servers = self.config.servers;
                 let expected_chain_id = self.config.chain_id;
                 let strategy = self.config.strategy;
-                Ok(
-                    $api::ChainApi::connect_with_strategy(
-                        servers,
-                        expected_chain_id.as_deref(),
-                        strategy,
-                    )
-                    .await?,
+                Ok($api::ChainApi::connect_with_strategy(
+                    servers,
+                    expected_chain_id.as_deref(),
+                    strategy,
                 )
+                .await?)
             }
 
             pub async fn connect_live(self) -> Result<$api::ChainLiveApi, GrapheneConnectError> {
@@ -103,7 +101,9 @@ macro_rules! chain_connect {
             ///
             /// Borrows the builder so you can inspect the report and then `connect()` separately.
             /// Unreachable servers are omitted from the report.
-            pub async fn probe_latencies(&self) -> Result<Vec<ServerLatency>, GrapheneConnectError> {
+            pub async fn probe_latencies(
+                &self,
+            ) -> Result<Vec<ServerLatency>, GrapheneConnectError> {
                 validate_config(&self.config)?;
                 Ok($api::ChainApi::probe_latencies(
                     self.config.servers.clone(),

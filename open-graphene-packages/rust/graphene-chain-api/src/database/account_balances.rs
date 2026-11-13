@@ -26,9 +26,7 @@ impl<'session> AccountBalancesRequest<'session> {
         get_account_balances_by_id(self.session, &account.id.0, asset_ids).await
     }
 
-    pub async fn subscribe(
-        self,
-    ) -> Result<AccountBalancesSubscription<'session>, ChainApiError> {
+    pub async fn subscribe(self) -> Result<AccountBalancesSubscription<'session>, ChainApiError> {
         let account = get_account_by_name(self.session, &self.account_name).await?;
         let mut asset_ids = Vec::new();
         for symbol in self.asset_symbols {

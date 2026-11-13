@@ -4,7 +4,7 @@ use open_graphene_transport::{LiveTransportHandle, PendingCallbackNotice};
 use serde_json::json;
 
 use crate::network_broadcast::parse_broadcast_confirmation;
-use crate::{BroadcastConfirmation, SignedTransfer, ChainApiError};
+use crate::{BroadcastConfirmation, ChainApiError, SignedTransfer};
 
 pub struct ChainLiveNetworkBroadcastApi {
     pub(crate) live: LiveTransportHandle,

@@ -12,7 +12,7 @@ use open_graphene_core::{
 use open_graphene_transport::GrapheneSession;
 use serde_json::{Value, json};
 
-use crate::{DatabaseApi, ChainApiError};
+use crate::{ChainApiError, DatabaseApi};
 
 const DEFAULT_EXPIRATION: Duration = Duration::from_secs(60);
 const DEFAULT_FEE_ASSET_ID: &str = "1.3.0";
@@ -431,13 +431,12 @@ async fn required_transfer_fee(
 }
 
 fn set_transfer_fee(transaction: &mut Transaction, fee: Asset) -> Result<(), ChainApiError> {
-    let operation =
-        transaction
-            .operations
-            .first_mut()
-            .ok_or(ChainApiError::InvalidTransfer {
-                message: "transaction contains no operations".to_string(),
-            })?;
+    let operation = transaction
+        .operations
+        .first_mut()
+        .ok_or(ChainApiError::InvalidTransfer {
+            message: "transaction contains no operations".to_string(),
+        })?;
     let Operation::TransferOperation(operation) = operation else {
         return Err(ChainApiError::InvalidTransfer {
             message: "first operation is not a transfer".to_string(),
@@ -453,12 +452,11 @@ fn sign_transfer_transaction_checked(
     wif: &str,
     expected_public_key: &str,
 ) -> Result<SignedTransaction, ChainApiError> {
-    let signed_transaction =
-        transaction
-            .signed_with_wif_for_chain(wif, chain_id)
-            .map_err(|_| ChainApiError::InvalidTransfer {
-                message: "failed to sign transfer transaction".to_string(),
-            })?;
+    let signed_transaction = transaction
+        .signed_with_wif_for_chain(wif, chain_id)
+        .map_err(|_| ChainApiError::InvalidTransfer {
+            message: "failed to sign transfer transaction".to_string(),
+        })?;
     let signature =
         signed_transaction
             .signatures
@@ -552,10 +550,16 @@ mod tests {
     const FIXTURE_WIF: &str = "5J4eFhjREJA7hKG6KcvHofHMXyGQZCDpQE463PAaKo9xXY6UDPq";
     // The text after the prefix does not depend on it: the checksum covers the key bytes only.
     fn fixture_public_key() -> String {
-        format!("{}7jDPoMwyjVH5obFmqzFNp4Ffp7G2nvC7FKFkrMBpo7Sy4uq5Mj", crate::PUBLIC_KEY_PREFIX)
+        format!(
+            "{}7jDPoMwyjVH5obFmqzFNp4Ffp7G2nvC7FKFkrMBpo7Sy4uq5Mj",
+            crate::PUBLIC_KEY_PREFIX
+        )
     }
     fn wrong_public_key() -> String {
-        format!("{}6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV", crate::PUBLIC_KEY_PREFIX)
+        format!(
+            "{}6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
+            crate::PUBLIC_KEY_PREFIX
+        )
     }
 
     #[test]

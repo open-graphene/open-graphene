@@ -15,7 +15,7 @@ use bindings::generated::types::{Asset, OpWrapper};
 use open_graphene_core::{HeadBlock, transaction_header_from_head};
 use open_graphene_transport::GrapheneSession;
 
-use crate::{DatabaseApi, ChainApiError};
+use crate::{ChainApiError, DatabaseApi};
 
 use super::transaction::{
     PreparedTransaction, TransactionBuilder, required_fees, set_operation_fee,

@@ -490,16 +490,15 @@ impl<'session> AssetPublishFeedRequest<'session> {
     }
 
     pub async fn prepare(self) -> Result<PreparedTransaction, ChainApiError> {
-        let to_price = |pair: Option<((i64, String), (i64, String))>,
-                        field|
-         -> Result<Price, ChainApiError> {
-            let ((base_amount, base_asset), (quote_amount, quote_asset)) =
-                pair.ok_or(ChainApiError::MissingTransferField { field })?;
-            Ok(Price::new(
-                Asset::new(base_amount, AssetId(base_asset)),
-                Asset::new(quote_amount, AssetId(quote_asset)),
-            ))
-        };
+        let to_price =
+            |pair: Option<((i64, String), (i64, String))>, field| -> Result<Price, ChainApiError> {
+                let ((base_amount, base_asset), (quote_amount, quote_asset)) =
+                    pair.ok_or(ChainApiError::MissingTransferField { field })?;
+                Ok(Price::new(
+                    Asset::new(base_amount, AssetId(base_asset)),
+                    Asset::new(quote_amount, AssetId(quote_asset)),
+                ))
+            };
         let settlement_price = to_price(self.settlement_price, "settlement_price")?;
         let core_exchange_rate = to_price(self.core_exchange_rate, "core_exchange_rate")?;
 

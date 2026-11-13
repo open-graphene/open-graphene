@@ -1,8 +1,8 @@
+use crate::MaybeSignedBlockHeader;
 use bindings::generated::ids::AccountId;
 use bindings::generated::rpc::ProtocolObject;
 use bindings::generated::rpc::database::get_config::Config;
 use bindings::generated::types::SignedBlock;
-use crate::MaybeSignedBlockHeader;
 use bindings::generated::{
     AccountObject, Asset, AssetObject, ChainPropertyObject, DynamicGlobalPropertyObject,
     GlobalPropertyObject, LimitOrderObject,
@@ -33,8 +33,8 @@ use super::get_key_references::{GetKeyReferencesRequest, get_key_references_requ
 use super::get_limit_orders::{DEFAULT_GET_LIMIT_ORDERS_LIMIT, GetLimitOrdersRequest};
 use super::get_objects::{GetObjectsRequest, get_objects_request};
 use super::get_ticker::GetTickerRequest;
-use super::inclusion::IncludedTransaction;
 use super::global_properties::{GlobalPropertiesRequest, get_global_properties};
+use super::inclusion::IncludedTransaction;
 use super::list_assets::{DEFAULT_LIST_ASSETS_LIMIT, ListAssetsRequest};
 use super::lookup_accounts::{DEFAULT_LOOKUP_ACCOUNTS_LIMIT, LookupAccountsRequest};
 use super::proposed_transactions::ProposedTransactionsRequest;
@@ -444,10 +444,7 @@ impl<'session> DatabaseApi<'session> {
         get_asset_by_symbol(self.session, asset_symbol).await
     }
 
-    pub async fn get_asset_by_id(
-        &mut self,
-        asset_id: &str,
-    ) -> Result<AssetObject, ChainApiError> {
+    pub async fn get_asset_by_id(&mut self, asset_id: &str) -> Result<AssetObject, ChainApiError> {
         get_asset_by_id(self.session, asset_id).await
     }
 
@@ -465,9 +462,7 @@ impl<'session> DatabaseApi<'session> {
         get_dynamic_global_properties(self.session).await
     }
 
-    pub async fn get_global_properties(
-        &mut self,
-    ) -> Result<GlobalPropertyObject, ChainApiError> {
+    pub async fn get_global_properties(&mut self) -> Result<GlobalPropertyObject, ChainApiError> {
         get_global_properties(self.session).await
     }
 

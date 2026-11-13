@@ -7,15 +7,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!(
         "owner:  {}",
-        keys.owner.to_public_key().to_prefixed_string(graphene::PUBLIC_KEY_PREFIX)
+        keys.owner
+            .to_public_key()
+            .to_prefixed_string(graphene::PUBLIC_KEY_PREFIX)
     );
     println!(
         "active: {}",
-        keys.active.to_public_key().to_prefixed_string(graphene::PUBLIC_KEY_PREFIX)
+        keys.active
+            .to_public_key()
+            .to_prefixed_string(graphene::PUBLIC_KEY_PREFIX)
     );
     println!(
         "memo:   {}",
-        keys.memo.to_public_key().to_prefixed_string(graphene::PUBLIC_KEY_PREFIX)
+        keys.memo
+            .to_public_key()
+            .to_prefixed_string(graphene::PUBLIC_KEY_PREFIX)
     );
     Ok(())
 }

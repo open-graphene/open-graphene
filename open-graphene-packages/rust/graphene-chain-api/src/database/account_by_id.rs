@@ -107,12 +107,11 @@ pub(crate) fn account_from_value(
     value: serde_json::Value,
     account_id: &str,
 ) -> Result<AccountObject, ChainApiError> {
-    let value = find_object_by_id(&value, account_id).ok_or_else(|| {
-        ChainApiError::UnexpectedResponse {
+    let value =
+        find_object_by_id(&value, account_id).ok_or_else(|| ChainApiError::UnexpectedResponse {
             method,
             message: format!("missing `{account_id}` account object"),
-        }
-    })?;
+        })?;
 
     serde_json::from_value(value).map_err(|error| ChainApiError::UnexpectedResponse {
         method,

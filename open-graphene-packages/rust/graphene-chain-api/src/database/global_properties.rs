@@ -19,13 +19,10 @@ pub(super) async fn get_global_properties(
 ) -> Result<GlobalPropertyObject, ChainApiError> {
     let params = rpc_get_global_properties::Params {}
         .to_params_value()
-        .map_err(ChainApiError::unexpected(
-            rpc_get_global_properties::METHOD,
-        ))?;
+        .map_err(ChainApiError::unexpected(rpc_get_global_properties::METHOD))?;
     let value = session
         .database_call(rpc_get_global_properties::METHOD, params)
         .await?;
-    rpc_get_global_properties::parse_returns(value).map_err(ChainApiError::unexpected(
-        rpc_get_global_properties::METHOD,
-    ))
+    rpc_get_global_properties::parse_returns(value)
+        .map_err(ChainApiError::unexpected(rpc_get_global_properties::METHOD))
 }

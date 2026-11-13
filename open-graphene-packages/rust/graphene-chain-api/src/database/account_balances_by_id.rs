@@ -26,9 +26,7 @@ impl<'session> AccountBalancesByIdRequest<'session> {
         get_account_balances_by_id(self.session, &self.account_id, self.asset_ids).await
     }
 
-    pub async fn subscribe(
-        self,
-    ) -> Result<AccountBalancesSubscription<'session>, ChainApiError> {
+    pub async fn subscribe(self) -> Result<AccountBalancesSubscription<'session>, ChainApiError> {
         subscribe_account_balances_by_id(self.session, self.account_id, self.asset_ids).await
     }
 }

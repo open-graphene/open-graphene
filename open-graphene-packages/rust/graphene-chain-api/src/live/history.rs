@@ -88,9 +88,7 @@ impl ChainLiveAccountHistoryRequest {
         self
     }
 
-    pub async fn subscribe(
-        self,
-    ) -> Result<ChainLiveAccountHistorySubscription, ChainApiError> {
+    pub async fn subscribe(self) -> Result<ChainLiveAccountHistorySubscription, ChainApiError> {
         self.subscribe_timeout(Duration::from_secs(10)).await
     }
 
@@ -122,9 +120,7 @@ impl ChainLiveAccountHistoryByIdRequest {
         self
     }
 
-    pub async fn subscribe(
-        self,
-    ) -> Result<ChainLiveAccountHistorySubscription, ChainApiError> {
+    pub async fn subscribe(self) -> Result<ChainLiveAccountHistorySubscription, ChainApiError> {
         self.subscribe_timeout(Duration::from_secs(10)).await
     }
 

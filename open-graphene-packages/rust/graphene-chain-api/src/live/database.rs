@@ -298,9 +298,7 @@ impl ChainLiveAssetByIdRequest {
 }
 
 impl ChainLiveAccountBalancesByIdRequest {
-    pub async fn subscribe(
-        self,
-    ) -> Result<ChainLiveAccountBalancesSubscription, ChainApiError> {
+    pub async fn subscribe(self) -> Result<ChainLiveAccountBalancesSubscription, ChainApiError> {
         self.subscribe_timeout(Duration::from_secs(10)).await
     }
 
@@ -345,9 +343,7 @@ impl ChainLiveAccountBalancesByIdRequest {
 }
 
 impl ChainLiveAccountOrdersByIdRequest {
-    pub async fn subscribe(
-        self,
-    ) -> Result<ChainLiveAccountOrdersSubscription, ChainApiError> {
+    pub async fn subscribe(self) -> Result<ChainLiveAccountOrdersSubscription, ChainApiError> {
         self.subscribe_timeout(Duration::from_secs(10)).await
     }
 

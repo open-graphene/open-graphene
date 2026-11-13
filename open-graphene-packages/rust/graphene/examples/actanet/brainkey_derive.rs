@@ -12,11 +12,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!(
         "owner public key:  {}",
-        owner.to_public_key().to_prefixed_string(graphene::PUBLIC_KEY_PREFIX)
+        owner
+            .to_public_key()
+            .to_prefixed_string(graphene::PUBLIC_KEY_PREFIX)
     );
     println!(
         "active public key: {}",
-        active.to_public_key().to_prefixed_string(graphene::PUBLIC_KEY_PREFIX)
+        active
+            .to_public_key()
+            .to_prefixed_string(graphene::PUBLIC_KEY_PREFIX)
     );
     Ok(())
 }

@@ -29,15 +29,14 @@ pub use crypto::{
 };
 
 pub use live::{
-    ChainStore, ChainLiveAccountBalancesByIdRequest, ChainLiveAccountBalancesSubscription,
+    ChainLiveAccountBalancesByIdRequest, ChainLiveAccountBalancesSubscription,
     ChainLiveAccountByIdRequest, ChainLiveAccountHistoryByIdRequest,
     ChainLiveAccountHistoryRequest, ChainLiveAccountHistorySubscription,
     ChainLiveAccountOrdersByIdRequest, ChainLiveAccountOrdersSubscription,
     ChainLiveAccountSubscription, ChainLiveApi, ChainLiveAssetByIdRequest,
-    ChainLiveAssetSubscription, ChainLiveDatabaseApi,
-    ChainLiveDynamicGlobalPropertiesSubscription, ChainLiveHistoryApi,
-    ChainLiveMarketSubscription, ChainLiveNetworkBroadcastApi,
-    ChainLivePendingBroadcastConfirmation,
+    ChainLiveAssetSubscription, ChainLiveDatabaseApi, ChainLiveDynamicGlobalPropertiesSubscription,
+    ChainLiveHistoryApi, ChainLiveMarketSubscription, ChainLiveNetworkBroadcastApi,
+    ChainLivePendingBroadcastConfirmation, ChainStore,
 };
 pub use network_broadcast::{
     BroadcastConfirmation, BroadcastReceipt, NetworkBroadcastApi, PendingBroadcastConfirmation,
@@ -48,20 +47,27 @@ pub use operations::{
     AssetCreateRequest, AssetFundFeePoolRequest, AssetGlobalSettleRequest, AssetIssueRequest,
     AssetPublishFeedRequest, AssetReserveRequest, AssetSettleRequest, AssetUpdateBitassetRequest,
     AssetUpdateFeedProducersRequest, AssetUpdateIssuerRequest, AssetUpdateRequest,
-    BalanceClaimRequest, CallOrderUpdateRequest,
-    CommitteeMemberCreateRequest, CommitteeMemberUpdateGlobalParametersRequest,
-    CommitteeMemberUpdateRequest, CustomAuthorityCreateRequest, CustomAuthorityDeleteRequest, CustomAuthorityUpdateRequest,
+    BalanceClaimRequest, CallOrderUpdateRequest, CommitteeMemberCreateRequest,
+    CommitteeMemberUpdateGlobalParametersRequest, CommitteeMemberUpdateRequest,
+    CustomAuthorityCreateRequest, CustomAuthorityDeleteRequest, CustomAuthorityUpdateRequest,
     CustomRequest, HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest,
-    LimitOrderCancelRequest, LimitOrderCreateRequest, OperationsApi, OverrideTransferRequest, PreparedTransaction, PreparedTransfer,
-    ProposalCreateRequest, ProposalDeleteRequest, ProposalUpdateRequest, SignedTransactionEnvelope, SignedTransfer, TicketCreateRequest, transaction_id,
-    TicketUpdateRequest, TransactionBuilder, TransferRequest,
-    VestingBalanceCreateRequest, VestingBalanceWithdrawRequest,
-    WithdrawPermissionClaimRequest, WithdrawPermissionCreateRequest,
+    LimitOrderCancelRequest, LimitOrderCreateRequest, OperationsApi, OverrideTransferRequest,
+    PreparedTransaction, PreparedTransfer, ProposalCreateRequest, ProposalDeleteRequest,
+    ProposalUpdateRequest, SignedTransactionEnvelope, SignedTransfer, TicketCreateRequest,
+    TicketUpdateRequest, TransactionBuilder, TransferRequest, VestingBalanceCreateRequest,
+    VestingBalanceWithdrawRequest, WithdrawPermissionClaimRequest, WithdrawPermissionCreateRequest,
     WithdrawPermissionDeleteRequest, WithdrawPermissionUpdateRequest, WitnessCreateRequest,
-    WitnessUpdateRequest, WorkerCreateRequest, };
+    WitnessUpdateRequest, WorkerCreateRequest, transaction_id,
+};
 #[cfg(feature = "bitshares7")]
 pub use operations::{
-    BidCollateralRequest, BlindTransferRequest, CreditDealRepayRequest, CreditDealUpdateRequest, CreditOfferAcceptRequest, CreditOfferCreateRequest, CreditOfferDeleteRequest, CreditOfferUpdateRequest, LimitOrderUpdateRequest, LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest, LiquidityPoolExchangeRequest, LiquidityPoolUpdateRequest, LiquidityPoolWithdrawRequest, SametFundBorrowRequest, SametFundCreateRequest, SametFundDeleteRequest, SametFundRepayRequest, SametFundUpdateRequest, TransferFromBlindRequest, TransferToBlindRequest,
+    BidCollateralRequest, BlindTransferRequest, CreditDealRepayRequest, CreditDealUpdateRequest,
+    CreditOfferAcceptRequest, CreditOfferCreateRequest, CreditOfferDeleteRequest,
+    CreditOfferUpdateRequest, LimitOrderUpdateRequest, LiquidityPoolCreateRequest,
+    LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest, LiquidityPoolExchangeRequest,
+    LiquidityPoolUpdateRequest, LiquidityPoolWithdrawRequest, SametFundBorrowRequest,
+    SametFundCreateRequest, SametFundDeleteRequest, SametFundRepayRequest, SametFundUpdateRequest,
+    TransferFromBlindRequest, TransferToBlindRequest,
 };
 
 // Binding types callers need to construct operations for `OperationsApi::transaction()`.
@@ -70,23 +76,21 @@ pub use bindings::generated::operations::{
     AssetIssueOperation, AssetReserveOperation, LimitOrderCancelOperation,
     LimitOrderCreateOperation, TransferOperation,
 };
-pub use bindings::generated::static_variants::{
-    ArgumentType, Operation,
-};
+pub use bindings::generated::static_variants::{ArgumentType, Operation};
 pub use bindings::generated::types::{
-    Asset, AssetObject, Authority, ChainParameters, ChainPropertyObject, DynamicGlobalPropertyObject,
-    GlobalPropertyObject, LimitOrderObject, Price, ProcessedTransaction,
-    Restriction, SignedBlock,
+    Asset, AssetObject, Authority, ChainParameters, ChainPropertyObject,
+    DynamicGlobalPropertyObject, GlobalPropertyObject, LimitOrderObject, Price,
+    ProcessedTransaction, Restriction, SignedBlock,
 };
 
 #[cfg(feature = "bitshares7")]
 pub use bindings::generated::operations::LimitOrderUpdateOperation;
+#[cfg(not(feature = "bitshares7"))]
+pub use bindings::generated::types::BlockHeader as MaybeSignedBlockHeader;
 /// A block header as `get_block_header` returns it. BitShares 7 chains may include the witness
 /// signature; older chains return the plain header under the same name.
 #[cfg(feature = "bitshares7")]
 pub use bindings::generated::types::MaybeSignedBlockHeader;
-#[cfg(not(feature = "bitshares7"))]
-pub use bindings::generated::types::BlockHeader as MaybeSignedBlockHeader;
 
 pub use orders::{
     DEFAULT_GROUPED_LIMIT_ORDERS_LIMIT, GroupedLimitOrdersRequest, LimitOrderGroup, OrdersApi,
@@ -107,11 +111,11 @@ pub use database::{
     AccountOrdersSubscription, AccountSubscription, AccountsRequest, AssetByIdRequest,
     AssetBySymbolRequest, AssetSubscription, ChainIdRequest, ChainPropertiesRequest,
     DEFAULT_GET_LIMIT_ORDERS_LIMIT, DEFAULT_LIST_ASSETS_LIMIT, DEFAULT_LOOKUP_ACCOUNTS_LIMIT,
-    DatabaseApi,
-    DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription, GetBlockHeaderRequest,
-    GetBlockRequest, GetConfigRequest, GetKeyReferencesRequest, GetLimitOrdersRequest,
-    GetObjectsRequest, GetTickerRequest, GlobalPropertiesRequest, IncludedTransaction, IntoStringList,
-    ListAssetsRequest, LookupAccountsRequest, ProposedTransactionsRequest, Ticker,
+    DatabaseApi, DynamicGlobalPropertiesRequest, DynamicGlobalPropertiesSubscription,
+    GetBlockHeaderRequest, GetBlockRequest, GetConfigRequest, GetKeyReferencesRequest,
+    GetLimitOrdersRequest, GetObjectsRequest, GetTickerRequest, GlobalPropertiesRequest,
+    IncludedTransaction, IntoStringList, ListAssetsRequest, LookupAccountsRequest,
+    ProposedTransactionsRequest, Ticker,
 };
 
 /// The chain this crate is built for, from its generated bindings.
@@ -161,8 +165,6 @@ pub enum ChainApiError {
 
     #[error("missing transfer field `{field}`")]
     MissingTransferField { field: &'static str },
-
-
 
     #[error("invalid transfer: {message}")]
     InvalidTransfer { message: String },

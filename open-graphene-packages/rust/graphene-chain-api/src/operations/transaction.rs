@@ -7,7 +7,9 @@
 
 use std::time::Duration;
 
-use bindings::generated::fc::{decode_public_key, sha256_bytes, verify_compact_signature_public_key};
+use bindings::generated::fc::{
+    decode_public_key, sha256_bytes, verify_compact_signature_public_key,
+};
 use bindings::generated::ids::PUBLIC_KEY_PREFIX;
 use bindings::generated::rpc::database::get_required_fees as rpc_get_required_fees;
 use bindings::generated::static_variants::Operation;
@@ -17,7 +19,7 @@ use open_graphene_fc::FcSerialize;
 use open_graphene_transport::GrapheneSession;
 use serde_json::{Value, json};
 
-use crate::{DatabaseApi, ChainApiError};
+use crate::{ChainApiError, DatabaseApi};
 
 const DEFAULT_EXPIRATION: Duration = Duration::from_secs(60);
 const DEFAULT_FEE_ASSET_ID: &str = "1.3.0";
@@ -160,7 +162,11 @@ pub struct PreparedTransaction {
 impl PreparedTransaction {
     /// A transaction prepared earlier (e.g. kept in a journal), for the network `chain_id`, at
     /// head block `head_block_number`.
-    pub fn new(transaction: Transaction, chain_id: impl Into<String>, head_block_number: u64) -> Self {
+    pub fn new(
+        transaction: Transaction,
+        chain_id: impl Into<String>,
+        head_block_number: u64,
+    ) -> Self {
         Self {
             transaction,
             chain_id: chain_id.into(),
@@ -248,10 +254,7 @@ impl PreparedTransaction {
     ///
     /// Order does not matter to the chain, but note it rejects a signature it did not need
     /// (`tx_irrelevant_sig`), so pass only the keys the operation actually requires.
-    pub fn sign_with_wifs<I, S>(
-        self,
-        keys: I,
-    ) -> Result<SignedTransactionEnvelope, ChainApiError>
+    pub fn sign_with_wifs<I, S>(self, keys: I) -> Result<SignedTransactionEnvelope, ChainApiError>
     where
         I: IntoIterator<Item = (S, S)>,
         S: AsRef<str>,
@@ -396,12 +399,11 @@ fn sign_checked(
     wif: &str,
     expected_public_key: &str,
 ) -> Result<SignedTransaction, ChainApiError> {
-    let signed =
-        transaction
-            .signed_with_wif_for_chain(wif, chain_id)
-            .map_err(|_| ChainApiError::InvalidTransfer {
-                message: "failed to sign transaction".to_string(),
-            })?;
+    let signed = transaction
+        .signed_with_wif_for_chain(wif, chain_id)
+        .map_err(|_| ChainApiError::InvalidTransfer {
+            message: "failed to sign transaction".to_string(),
+        })?;
     let signature = signed
         .signatures
         .first()
@@ -440,9 +442,7 @@ fn sign_checked(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bindings::generated::ids::{
-        AccountId, AssetId, LimitOrderId, ObjectId,
-    };
+    use bindings::generated::ids::{AccountId, AssetId, LimitOrderId, ObjectId};
     use bindings::generated::operations::{
         FillOrderOperation, LimitOrderCancelOperation, TransferOperation,
     };
@@ -496,7 +496,6 @@ mod tests {
         assert_eq!(value[0], json!(2));
     }
 
-
     #[test]
     fn set_operation_fee_writes_into_a_cancel() {
         let mut operation = Operation::limit_order_cancel(LimitOrderCancelOperation {
@@ -532,7 +531,10 @@ mod tests {
     const OTHER_NETWORK: &str = "4f56ace51c8447aad49af5b522944836fa476bc9edabd5636a3a9d2afe8849cf";
 
     fn fixture_public_key() -> String {
-        format!("{}7jDPoMwyjVH5obFmqzFNp4Ffp7G2nvC7FKFkrMBpo7Sy4uq5Mj", crate::PUBLIC_KEY_PREFIX)
+        format!(
+            "{}7jDPoMwyjVH5obFmqzFNp4Ffp7G2nvC7FKFkrMBpo7Sy4uq5Mj",
+            crate::PUBLIC_KEY_PREFIX
+        )
     }
 
     fn fixture_transaction() -> Transaction {
@@ -603,10 +605,12 @@ mod tests {
         let prepared = PreparedTransaction::new(fixture_transaction(), OTHER_NETWORK, 7);
         let private_key = open_graphene_fc::decode_wif_private_key(FIXTURE_WIF).unwrap();
         let signature =
-            open_graphene_fc::sign_digest_compact(prepared.digest().unwrap(), private_key)
-                .unwrap();
+            open_graphene_fc::sign_digest_compact(prepared.digest().unwrap(), private_key).unwrap();
         let signed = prepared.clone().with_signatures(vec![signature]).unwrap();
-        assert_eq!(signed.signed_transaction().signatures[0].0, signature.to_vec());
+        assert_eq!(
+            signed.signed_transaction().signatures[0].0,
+            signature.to_vec()
+        );
         assert_eq!(
             signed.transaction_json().unwrap()["signatures"][0],
             json!(hex::encode(signature))
@@ -615,19 +619,22 @@ mod tests {
         assert!(prepared.clone().with_signatures(vec![]).is_err());
         // The high-S twin of a valid signature: s' = n - s
         let mut high = signature;
-        let order: [u8; 32] = hex::decode(
-            "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141",
-        )
-        .unwrap()
-        .try_into()
-        .unwrap();
+        let order: [u8; 32] =
+            hex::decode("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141")
+                .unwrap()
+                .try_into()
+                .unwrap();
         let mut borrow = 0i16;
         for i in (0..32).rev() {
             let value = order[i] as i16 - signature[33 + i] as i16 - borrow;
             borrow = i16::from(value < 0);
             high[33 + i] = value.rem_euclid(256) as u8;
         }
-        high[0] = if signature[0] % 2 == 0 { signature[0] - 1 } else { signature[0] + 1 };
+        high[0] = if signature[0] % 2 == 0 {
+            signature[0] - 1
+        } else {
+            signature[0] + 1
+        };
         #[cfg(feature = "low-s")]
         assert!(prepared.with_signatures(vec![high]).is_err());
         #[cfg(not(feature = "low-s"))]

@@ -13,11 +13,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .connect()
         .await?;
 
-    let account = actanet
-        .database()
-        .account_by_name("actanet")
-        .get()
-        .await?;
+    let account = actanet.database().account_by_name("actanet").get().await?;
     println!("account by name: {} {}", account.id.0, account.name);
 
     let same_account = actanet

@@ -104,12 +104,11 @@ pub(crate) fn asset_from_value(
     value: serde_json::Value,
     asset_id: &str,
 ) -> Result<AssetObject, ChainApiError> {
-    let value = find_object_by_id(&value, asset_id).ok_or_else(|| {
-        ChainApiError::UnexpectedResponse {
+    let value =
+        find_object_by_id(&value, asset_id).ok_or_else(|| ChainApiError::UnexpectedResponse {
             method,
             message: format!("missing `{asset_id}` asset object"),
-        }
-    })?;
+        })?;
 
     serde_json::from_value(value).map_err(|error| ChainApiError::UnexpectedResponse {
         method,

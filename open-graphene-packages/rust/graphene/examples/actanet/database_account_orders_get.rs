@@ -24,11 +24,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
     }
 
-    let account = actanet
-        .database()
-        .account_by_name("actanet")
-        .get()
-        .await?;
+    let account = actanet.database().account_by_name("actanet").get().await?;
     let orders = actanet
         .database()
         .account_orders_by_id(&account.id.0)

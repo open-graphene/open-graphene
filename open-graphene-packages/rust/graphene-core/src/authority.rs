@@ -231,11 +231,23 @@ mod tests {
             list.iter().map(|(k, w)| (k.to_string(), *w)).collect()
         };
         assert!(can_key_satisfy_authority(1, &keys(&[("K1", 1)]), "K1"));
-        assert!(can_key_satisfy_authority(2, &keys(&[("K1", 3), ("K2", 1)]), "K1"));
-        assert!(!can_key_satisfy_authority(2, &keys(&[("K1", 1), ("K2", 1)]), "K1"));
+        assert!(can_key_satisfy_authority(
+            2,
+            &keys(&[("K1", 3), ("K2", 1)]),
+            "K1"
+        ));
+        assert!(!can_key_satisfy_authority(
+            2,
+            &keys(&[("K1", 1), ("K2", 1)]),
+            "K1"
+        ));
         assert!(!can_key_satisfy_authority(1, &keys(&[("K1", 1)]), "K2"));
         // Listed twice, or a threshold nobody can miss: neither counts
-        assert!(!can_key_satisfy_authority(1, &keys(&[("K1", 1), ("K1", 1)]), "K1"));
+        assert!(!can_key_satisfy_authority(
+            1,
+            &keys(&[("K1", 1), ("K1", 1)]),
+            "K1"
+        ));
         assert!(!can_key_satisfy_authority(0, &keys(&[("K1", 1)]), "K1"));
     }
 

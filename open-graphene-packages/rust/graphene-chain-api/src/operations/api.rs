@@ -35,9 +35,9 @@ use super::governance::{
     WorkerCreateRequest,
 };
 use super::htlc::{HtlcCreateRequest, HtlcExtendRequest, HtlcRedeemRequest};
-use super::limit_order::{LimitOrderCancelRequest, LimitOrderCreateRequest};
 #[cfg(feature = "bitshares7")]
 use super::limit_order::LimitOrderUpdateRequest;
+use super::limit_order::{LimitOrderCancelRequest, LimitOrderCreateRequest};
 #[cfg(feature = "bitshares7")]
 use super::liquidity_pool::{
     LiquidityPoolCreateRequest, LiquidityPoolDeleteRequest, LiquidityPoolDepositRequest,

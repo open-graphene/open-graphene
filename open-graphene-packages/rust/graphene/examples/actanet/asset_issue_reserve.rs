@@ -1,7 +1,7 @@
 #[path = "common.rs"]
 mod common;
 
-use graphene::{Graphene, PrivateKey, ChainApi};
+use graphene::{ChainApi, Graphene, PrivateKey};
 
 // Mint a user asset we issue to ourselves, then burn it back, end to end on the node. Fully
 // reversible: we issue a chunk of OGB79740068 (1.3.102) to our own account, check the balance went

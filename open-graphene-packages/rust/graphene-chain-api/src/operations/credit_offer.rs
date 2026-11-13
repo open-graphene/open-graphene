@@ -5,9 +5,7 @@
 //! Thin sugar over [`TransactionBuilder`](super::transaction::TransactionBuilder). `credit_deal_expired`
 //! is a virtual op (the chain emits it when a deal lapses), so it has no builder by design.
 
-use bindings::generated::ids::{
-    AccountId, AssetId, CreditDealId, CreditOfferId,
-};
+use bindings::generated::ids::{AccountId, AssetId, CreditDealId, CreditOfferId};
 use bindings::generated::operations::{
     CreditDealRepayOperation, CreditDealUpdateOperation, CreditOfferAcceptOperation,
     CreditOfferCreateOperation, CreditOfferDeleteOperation, CreditOfferUpdateOperation,
@@ -15,13 +13,11 @@ use bindings::generated::operations::{
 use bindings::generated::static_variants::Operation;
 use std::time::Duration;
 
-use bindings::generated::types::{
-    Asset, CreditOfferAcceptOperationExt, Price,
-};
+use bindings::generated::types::{Asset, CreditOfferAcceptOperationExt, Price};
 use open_graphene_core::expiration_from_head_time;
 use open_graphene_transport::GrapheneSession;
 
-use crate::{DatabaseApi, ChainApiError};
+use crate::{ChainApiError, DatabaseApi};
 
 use super::transaction::{PreparedTransaction, TransactionBuilder};
 
@@ -431,10 +427,9 @@ impl<'session> CreditOfferAcceptRequest<'session> {
                     field: "borrow_amount",
                 })?;
         let (collateral_amount, collateral_asset) =
-            self.collateral
-                .ok_or(ChainApiError::MissingTransferField {
-                    field: "collateral",
-                })?;
+            self.collateral.ok_or(ChainApiError::MissingTransferField {
+                field: "collateral",
+            })?;
         let operation = Operation::credit_offer_accept(CreditOfferAcceptOperation {
             fee: core_fee(),
             borrower: AccountId(self.borrower),
@@ -499,10 +494,9 @@ impl<'session> CreditDealRepayRequest<'session> {
                     field: "repay_amount",
                 })?;
         let (fee_amount, fee_asset) =
-            self.credit_fee
-                .ok_or(ChainApiError::MissingTransferField {
-                    field: "credit_fee",
-                })?;
+            self.credit_fee.ok_or(ChainApiError::MissingTransferField {
+                field: "credit_fee",
+            })?;
         let operation = Operation::credit_deal_repay(CreditDealRepayOperation {
             fee: core_fee(),
             account: AccountId(self.account),

@@ -16,7 +16,7 @@ use open_graphene_transport::GrapheneSession;
 
 use std::time::Duration;
 
-use crate::{DatabaseApi, ChainApiError};
+use crate::{ChainApiError, DatabaseApi};
 
 use super::account::single_key_authority;
 use super::transaction::{PreparedTransaction, TransactionBuilder};

@@ -16,7 +16,7 @@ use bindings::generated::types::{
 };
 use open_graphene_transport::GrapheneSession;
 
-use crate::{DatabaseApi, ChainApiError};
+use crate::{ChainApiError, DatabaseApi};
 
 use super::transaction::{PreparedTransaction, TransactionBuilder};
 

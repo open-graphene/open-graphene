@@ -16,7 +16,7 @@ use bindings::generated::types::Asset;
 use open_graphene_core::expiration_from_head_time;
 use open_graphene_transport::GrapheneSession;
 
-use crate::{DatabaseApi, ChainApiError};
+use crate::{ChainApiError, DatabaseApi};
 
 use super::transaction::{PreparedTransaction, TransactionBuilder};
 

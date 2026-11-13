@@ -933,7 +933,10 @@ mod tests {
         for i in 0u8..64 {
             let digest = sha256_bytes(&[i]);
             let signature = sign_digest_compact(digest, [7u8; 32]).expect("sign digest");
-            assert!(is_graphene_canonical_compact_signature(&signature), "digest {i}");
+            assert!(
+                is_graphene_canonical_compact_signature(&signature),
+                "digest {i}"
+            );
         }
     }
 

@@ -9,16 +9,14 @@ use bindings::generated::ids::{AccountId, AssetId, VestingBalanceId};
 use bindings::generated::operations::{
     VestingBalanceCreateOperation, VestingBalanceWithdrawOperation,
 };
-use bindings::generated::static_variants::{
-    Operation, VestingPolicyInitializer,
-};
+use bindings::generated::static_variants::{Operation, VestingPolicyInitializer};
 use bindings::generated::types::{
     Asset, CddVestingPolicyInitializer, InstantVestingPolicyInitializer,
     LinearVestingPolicyInitializer,
 };
 use open_graphene_transport::GrapheneSession;
 
-use crate::{DatabaseApi, ChainApiError};
+use crate::{ChainApiError, DatabaseApi};
 
 use super::transaction::{PreparedTransaction, TransactionBuilder};
 

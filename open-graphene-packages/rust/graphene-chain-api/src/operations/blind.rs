@@ -98,11 +98,11 @@ impl<'session> TransferToBlindRequest<'session> {
     }
 
     pub async fn prepare(self) -> Result<PreparedTransaction, ChainApiError> {
-        let blinding_factor =
-            self.blinding_factor
-                .ok_or(ChainApiError::MissingTransferField {
-                    field: "blinding_factor",
-                })?;
+        let blinding_factor = self
+            .blinding_factor
+            .ok_or(ChainApiError::MissingTransferField {
+                field: "blinding_factor",
+            })?;
         if self.outputs.is_empty() {
             return Err(ChainApiError::MissingTransferField { field: "output" });
         }
@@ -219,11 +219,11 @@ impl<'session> TransferFromBlindRequest<'session> {
     }
 
     pub async fn prepare(self) -> Result<PreparedTransaction, ChainApiError> {
-        let blinding_factor =
-            self.blinding_factor
-                .ok_or(ChainApiError::MissingTransferField {
-                    field: "blinding_factor",
-                })?;
+        let blinding_factor = self
+            .blinding_factor
+            .ok_or(ChainApiError::MissingTransferField {
+                field: "blinding_factor",
+            })?;
         if self.inputs.is_empty() {
             return Err(ChainApiError::MissingTransferField { field: "input" });
         }
