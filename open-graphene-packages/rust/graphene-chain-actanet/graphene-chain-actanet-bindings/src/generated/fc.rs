@@ -1382,6 +1382,21 @@ impl FcSerialize for crate::generated::types::CustomOperationFeeParamsT {
     }
 }
 
+impl FcSerialize for crate::generated::types::DataRoomCreateOperationExt {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        let count = [self.owner_key.is_some()]
+            .iter()
+            .filter(|set| **set)
+            .count() as u64;
+        write_varint(count, out);
+        if let Some(value) = &self.owner_key {
+            write_varint(0u64, out);
+            write_public_key(value, Some(crate::generated::ids::PUBLIC_KEY_PREFIX), out)?;
+        }
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::DataRoomCreateOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -5360,19 +5375,7 @@ impl FcSerialize for crate::generated::operations::DataRoomCreateOperation {
         self.room_key.fc_serialize(out)?;
         self.caller_key.fc_serialize(out)?;
         self.caller_permissions.fc_serialize(out)?;
-        write_varint(self.extensions.len() as u64, out);
-        let mut previous_key: Option<u64> = None;
-        for value in &self.extensions {
-            let key = future_extensions_tag(value);
-            if previous_key.is_some_and(|previous| previous >= key) {
-                return Err(FcSerializeError::UnsupportedValue {
-                    type_name: "Set",
-                    reason: "set values must be sorted and unique",
-                });
-            }
-            previous_key = Some(key);
-            value.fc_serialize(out)?;
-        }
+        self.extensions.fc_serialize(out)?;
         Ok(())
     }
 }

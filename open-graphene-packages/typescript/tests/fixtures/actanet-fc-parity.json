@@ -1820,7 +1820,7 @@
           "name": "",
           "description": "",
           "caller_permissions": 0,
-          "extensions": []
+          "extensions": {}
         }
       ],
       "hex": "500000000000000000000000000000000000000000000000",

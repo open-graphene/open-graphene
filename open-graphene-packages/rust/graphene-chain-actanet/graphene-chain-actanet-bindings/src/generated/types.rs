@@ -1454,6 +1454,14 @@ pub struct CustomOperationFeeParamsT {
     pub price_per_kbyte: u32,
 }
 
+/// Raw protocol struct `data_room_create_operation_ext`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneActanetDataRoomCreateOperationExt)]
+pub struct DataRoomCreateOperationExt {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub owner_key: Option<String>,
+}
+
 /// Raw protocol struct `data_room_create_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneActanetDataRoomCreateOperationFeeParamsT)]
@@ -1552,7 +1560,7 @@ pub struct DataRoomMemberUpdateOperationFeeParamsT {
 #[schema(as = GrapheneActanetDataRoomObject)]
 pub struct DataRoomObject {
     pub id: crate::generated::ids::DataRoomId,
-    pub owner: crate::generated::ids::AccountId,
+    pub owner: crate::generated::static_variants::DataRoomMemberRef,
     pub name: String,
     pub description: String,
     pub encrypted: bool,

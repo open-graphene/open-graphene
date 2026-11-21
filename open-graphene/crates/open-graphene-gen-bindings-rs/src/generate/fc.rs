@@ -201,7 +201,9 @@ pub(crate) fn render_fc_transaction_helpers(out: &mut String, protocol: &Protoco
     out.push_str("    }\n\n");
     out.push_str("    /// The preimage on the network these bindings were generated against (`CHAIN_ID_HEX`).\n");
     out.push_str("    pub fn signature_preimage_bytes(&self) -> Result<Vec<u8>> {\n");
-    out.push_str("        self.signature_preimage_bytes_for_chain(crate::generated::ids::CHAIN_ID_HEX)\n");
+    out.push_str(
+        "        self.signature_preimage_bytes_for_chain(crate::generated::ids::CHAIN_ID_HEX)\n",
+    );
     out.push_str("    }\n\n");
     out.push_str("    pub fn signature_digest_bytes(&self) -> Result<[u8; 32]> {\n");
     out.push_str("        Ok(sha256_bytes(&self.signature_preimage_bytes()?))\n");
@@ -254,7 +256,7 @@ pub(crate) fn render_fc_struct_impls(
         // A struct standing in for a graphene `extension<T>` serializes count-prefixed (a varint
         // of how many members are set), not as a plain run of optionals. Empty is a single `0`.
         if extension_structs.contains(&struct_def.name) {
-            render_fc_extension_struct_impl(out, &struct_def);
+            render_fc_extension_struct_impl(out, &struct_def)?;
             continue;
         }
 
@@ -289,7 +291,10 @@ pub(crate) fn extension_struct_names(protocol: &Protocol) -> BTreeSet<String> {
 /// FC encoding for a `extension<T>` struct: a varint count of set members followed by each set
 /// member. An empty set (the common case) is a single `0`. Setting members is rejected for now,
 /// the same stance the hand-written impls took, until per-member encoding is wired up.
-pub(crate) fn render_fc_extension_struct_impl(out: &mut String, struct_def: &StructDef) {
+pub(crate) fn render_fc_extension_struct_impl(
+    out: &mut String,
+    struct_def: &StructDef,
+) -> Result<()> {
     let struct_name = rust_type_name(&struct_def.name);
     out.push_str(&format!(
         "impl FcSerialize for crate::generated::types::{struct_name} {{\n"
@@ -321,8 +326,15 @@ pub(crate) fn render_fc_extension_struct_impl(out: &mut String, struct_def: &Str
         ));
         out.push_str("        write_varint(count, out);\n");
         for field in &fields {
+            // Each member is written as its own type would be, so a public key goes out as its
+            // 33 bytes rather than as its text
+            let TypeRef::Optional { inner } = &field.ty else {
+                unreachable!("every member of a guard extension is optional");
+            };
+            let member_lines =
+                render_fc_value_serialize_lines("value", "value", inner, "            ")?;
             out.push_str(&format!(
-                "        if let Some(value) = &self.{} {{ write_varint({}u64, out); value.fc_serialize(out)?; }}\n",
+                "        if let Some(value) = &self.{} {{\n            write_varint({}u64, out);\n{member_lines}        }}\n",
                 rust_field_name(&field.name),
                 field.index
             ));
@@ -352,6 +364,7 @@ pub(crate) fn render_fc_extension_struct_impl(out: &mut String, struct_def: &Str
 
     out.push_str("    }\n");
     out.push_str("}\n\n");
+    Ok(())
 }
 
 /// Renders the `FcSerialize` impl for a simple tagged static variant: each arm
@@ -2272,9 +2285,13 @@ mod tests {
         assert!(fc.contains("Self::TransferOperation(value) => { write_varint(0u64, out); value.as_ref().fc_serialize(out) }"));
         assert!(fc.contains("impl crate::generated::types::Transaction"));
         assert!(fc.contains("pub fn signature_preimage_bytes(&self) -> Result<Vec<u8>>"));
-        assert!(fc.contains("pub fn signature_preimage_bytes_for_chain(&self, chain_id: &str) -> Result<Vec<u8>>"));
+        assert!(fc.contains(
+            "pub fn signature_preimage_bytes_for_chain(&self, chain_id: &str) -> Result<Vec<u8>>"
+        ));
         assert!(fc.contains("decode_chain_id_hex(chain_id)?"));
-        assert!(fc.contains("self.signature_preimage_bytes_for_chain(crate::generated::ids::CHAIN_ID_HEX)"));
+        assert!(fc.contains(
+            "self.signature_preimage_bytes_for_chain(crate::generated::ids::CHAIN_ID_HEX)"
+        ));
         assert!(fc.contains("self.fc_serialize(&mut out)?;"));
         assert!(fc.contains("pub fn signature_digest_bytes(&self) -> Result<[u8; 32]>"));
         assert!(fc.contains("Ok(sha256_bytes(&self.signature_preimage_bytes()?))"));
@@ -2288,7 +2305,9 @@ mod tests {
             "pub fn signed_with_wif(&self, wif: &str) -> Result<crate::generated::types::SignedTransaction>"
         ));
         assert!(fc.contains("Ok(self.with_signatures(vec![self.sign_with_wif(wif)?]))"));
-        assert!(fc.contains("Ok(self.with_signatures(vec![self.sign_with_wif_for_chain(wif, chain_id)?]))"));
+        assert!(fc.contains(
+            "Ok(self.with_signatures(vec![self.sign_with_wif_for_chain(wif, chain_id)?]))"
+        ));
         assert!(fc.contains("impl FcSerialize for crate::generated::types::SignedTransaction"));
         assert!(fc.contains("self.signatures.fc_serialize(out)?;"));
     }

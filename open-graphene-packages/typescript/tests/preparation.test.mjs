@@ -23,7 +23,7 @@ function fixture(options = {}) {
     name: 'room',
     description: '',
     caller_permissions: 15,
-    extensions: [],
+    extensions: {},
   });
   const head = {
     head_block_number: 0x10064,

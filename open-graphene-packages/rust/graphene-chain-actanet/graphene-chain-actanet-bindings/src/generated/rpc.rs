@@ -1102,7 +1102,7 @@ pub mod database {
         /// Positional parameters for `database.get_data_rooms_by_owner`.
         #[derive(Debug, Clone, PartialEq)]
         pub struct Params {
-            pub account_name_or_id: String,
+            pub owner_name_key_or_id: String,
             /// Omitted from the call when `None`; the node applies its default.
             pub limit: Option<u32>,
             /// Omitted from the call when `None`; the node applies its default.
@@ -1112,7 +1112,7 @@ pub mod database {
         impl Params {
             /// The positional JSON parameter list for this call.
             pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-                let mut params = vec![serde_json::to_value(&self.account_name_or_id)?];
+                let mut params = vec![serde_json::to_value(&self.owner_name_key_or_id)?];
                 let tail: [Option<serde_json::Value>; 2] = [
                     match &self.limit {
                         Some(value) => Some(serde_json::to_value(value)?),

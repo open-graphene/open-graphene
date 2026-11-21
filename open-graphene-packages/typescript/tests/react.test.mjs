@@ -432,7 +432,7 @@ test('room preparation supplies fee/extensions defaults without generating keys 
       description: '',
       caller_permissions: 15,
       fee: { amount: 0n, asset_id: '1.3.0' },
-      extensions: [],
+      extensions: {},
     },
   ]);
   assert.equal(submitted, 0);

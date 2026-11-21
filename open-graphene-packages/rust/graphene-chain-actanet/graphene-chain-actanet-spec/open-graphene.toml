@@ -21,7 +21,7 @@ genesis = "libraries/egenesis/genesis-dev.json"
 
 [source]
 # Default: the actanet-core clone next to this workspace (mirrorboards-core/mirrorboards-actanet).
-chain_repo = "../../../../../mirrorboards-actanet/actanet-core"
+chain_repo = "../../../../../../mirrorboards-actanet/actanet-core"
 # Point this at another checkout to generate from it instead.
 chain_repo_env = "ACTANET_CORE_REPO"
 

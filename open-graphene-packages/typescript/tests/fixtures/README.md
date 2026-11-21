@@ -28,10 +28,10 @@ Sources and resolutions:
 
 - Actanet operation vectors: `node scripts/fc-parity-vectors.mjs --actanet [--rich] --live
 --node=ws://127.0.0.1:8090`, compared with the Rust FC oracle and with a local
-  actanet-core node (branch `launch-fixes`, with the low-S rule and the epoch and revision
-  guards), as there is no public Actanet node yet. All 88 nonvirtual operations, data rooms
-  and fee grants included, matched natively; the rich vectors set every guard
-  (`expected_epoch`, `expected_revision`). The operations Actanet keeps unchanged from
+  actanet-core node (`main` at `ac068ee9`, with the low-S rule, the epoch and revision guards
+  and the key room owner), as no public Actanet node answers these calls. All 88 nonvirtual
+  operations, data rooms and fee grants included, matched natively; the rich vectors set every
+  extension member (`expected_epoch`, `expected_revision`, `owner_key`). The operations Actanet keeps unchanged from
   BitShares 7.0.4 are also checked against the natively confirmed BitShares vectors;
   `parity.test.mjs` lists the ones it adds or changes.
 

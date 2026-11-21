@@ -1229,7 +1229,7 @@ pub struct DataRoomCreateOperation {
     pub caller_key: Option<String>,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub caller_permissions: u32,
-    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+    pub extensions: crate::generated::types::DataRoomCreateOperationExt,
 }
 
 pub const DATA_ROOM_UPDATE_OPERATION_ID: u32 = 81;

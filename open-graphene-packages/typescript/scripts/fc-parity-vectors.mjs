@@ -132,29 +132,34 @@ for (const op of spec.operations.filter((o) => !o.isVirtual)) {
     vectors.push({ name: op.name, operation, error: e.message });
   }
 }
-// Each bindings crate builds on its own: `cargo build --example fc_oracle[_<chain>]` in it.
-const oracle = spawnSync(
+// Each bindings crate builds on its own: `cargo build --example fc_oracle[_<chain>]` in it. The
+// binary lands in the crate's Cargo target directory, which a parent `.cargo/config.toml` may
+// move, so the directory is asked of Cargo.
+const bindingsDir =
   root +
-    'open-graphene-packages/rust/graphene-chain-' +
-    chain +
-    '/graphene-chain-' +
-    chain +
-    '-bindings/target/debug/examples/fc_oracle' +
-    '_' +
-    chain,
-  [],
-  {
-    input:
-      vectors
-        .map((v) =>
-          stringifyJson(
-            b.OperationCodec.encode(b.OperationCodec.decode(v.operation)),
-          ),
-        )
-        .join('\n') + '\n',
-    encoding: 'utf8',
-  },
+  'open-graphene-packages/rust/graphene-chain-' +
+  chain +
+  '/graphene-chain-' +
+  chain +
+  '-bindings';
+const metadata = spawnSync(
+  'cargo',
+  ['metadata', '--format-version', '1', '--no-deps'],
+  { cwd: bindingsDir, encoding: 'utf8' },
 );
+if (metadata.status !== 0) throw Error(metadata.stderr || metadata.error);
+const targetDir = JSON.parse(metadata.stdout).target_directory;
+const oracle = spawnSync(targetDir + '/debug/examples/fc_oracle_' + chain, [], {
+  input:
+    vectors
+      .map((v) =>
+        stringifyJson(
+          b.OperationCodec.encode(b.OperationCodec.decode(v.operation)),
+        ),
+      )
+      .join('\n') + '\n',
+  encoding: 'utf8',
+});
 if (oracle.status !== 0) throw Error(oracle.stderr || oracle.error);
 const answers = oracle.stdout.trim().split('\n').map(JSON.parse);
 const nativeNodes = {

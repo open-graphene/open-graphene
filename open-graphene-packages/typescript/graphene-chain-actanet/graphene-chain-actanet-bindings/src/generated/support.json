@@ -26,23 +26,23 @@
       "reason": "unsupported C++ type mapping: bucket_key"
     },
     {
-      "path": "/structs/167/fields/5/type/inner",
+      "path": "/structs/168/fields/5/type/inner",
       "reason": "unsupported C++ type mapping: variant"
     },
     {
-      "path": "/structs/167/fields/18/type",
+      "path": "/structs/168/fields/18/type",
       "reason": "unsupported C++ type mapping: more_data"
     },
     {
-      "path": "/structs/217/fields/1/type",
+      "path": "/structs/218/fields/1/type",
       "reason": "unsupported C++ type mapping: history_key"
     },
     {
-      "path": "/structs/264/fields/3/type",
+      "path": "/structs/265/fields/3/type",
       "reason": "unsupported C++ type mapping: vesting_policy"
     },
     {
-      "path": "/structs/264/fields/4/type",
+      "path": "/structs/265/fields/4/type",
       "reason": "unsupported C++ type mapping: vesting_balance_type"
     }
   ],
@@ -1345,6 +1345,6 @@
     }
   ],
   "schemaVersion": 1,
-  "specSha256": "000f4b7b04dfc4f731914aff056fc21af3f1779fb99c9591ccd6d71fbe9abfc0",
+  "specSha256": "883bae1cafdaed1e0248bd95c9ba4200fd58f09a2a9bbd096b07887857c3af40",
   "stage": "rust-fc-parity"
 }
