@@ -5,7 +5,7 @@ import {
   operation,
   DatabaseGetObjects,
   type TransferOperation,
-} from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
+} from '../graphene-chain-mirrornet/graphene-chain-mirrornet-bindings/dist/index.js';
 import { AccountId as BitSharesAccountId } from '../graphene-chain-bitshares/graphene-chain-bitshares-bindings/dist/index.js';
 const account = AccountId('1.2.1');
 const asset = AssetId('1.3.0');
@@ -36,10 +36,10 @@ import {
   type SignedTransfer as BitSharesSignedTransfer,
 } from '../graphene-chain-bitshares/graphene-chain-bitshares-api/dist/index.js';
 import {
-  ActanetClient,
+  MirrornetClient,
   type PreparedTransfer,
   type PreparedTransaction,
-} from '../graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
+} from '../graphene-chain-mirrornet/graphene-chain-mirrornet-api/dist/index.js';
 import { Graphene } from '../graphene/dist/index.js';
 
 function networkOptions(
@@ -49,28 +49,28 @@ function networkOptions(
   const options = {
     expectedChainId,
   };
-  void ActanetClient.connect('ws://fixture', options);
-  void ActanetClient.probeLatencies(['ws://fixture'], options);
-  void Graphene.actanet('ws://fixture', options);
-  void Graphene.connect('actanet', 'ws://fixture', options);
+  void MirrornetClient.connect('ws://fixture', options);
+  void MirrornetClient.probeLatencies(['ws://fixture'], options);
+  void Graphene.mirrornet('ws://fixture', options);
+  void Graphene.connect('mirrornet', 'ws://fixture', options);
   // Without an expected network, a client pins the chain ID of its bindings.
-  void ActanetClient.connect('ws://fixture');
+  void MirrornetClient.connect('ws://fixture');
   void Graphene.connect('bitshares', 'ws://fixture');
 
   // @ts-expect-error The expected network is a chain ID string.
-  void ActanetClient.connect('ws://fixture', { expectedChainId: 1 });
+  void MirrornetClient.connect('ws://fixture', { expectedChainId: 1 });
   // @ts-expect-error A prepared transaction cannot change its signing network.
   prepared.chainId = expectedChainId;
 }
 void networkOptions;
 function chainIsolation(
   bitshares: BitSharesClient,
-  actanet: ActanetClient,
+  mirrornet: MirrornetClient,
   signed: BitSharesSignedTransfer,
 ) {
   void bitshares.broadcast(signed);
   // @ts-expect-error Signed transactions belong to their chain-specific API.
-  void actanet.broadcast(signed);
+  void mirrornet.broadcast(signed);
 }
 void chainIsolation;
 
@@ -80,14 +80,14 @@ import {
   usePrepareTransfer,
   useSignTransaction,
   accountOptions,
-  ActanetProvider,
-  ActanetConnectionProvider,
-  useActanetConnection,
-} from '@open-graphene/chain-actanet-react';
+  MirrornetProvider,
+  MirrornetConnectionProvider,
+  useMirrornetConnection,
+} from '@open-graphene/chain-mirrornet-react';
 import { useBitSharesConnection } from '@open-graphene/chain-bitshares-react';
 import { QueryClient } from '@tanstack/react-query';
 import type { SharedConnection } from '../graphene-transport/dist/index.js';
-function reactTypes(client: ActanetClient, other: BitSharesClient) {
+function reactTypes(client: MirrornetClient, other: BitSharesClient) {
   const selected: string | undefined = useAccount('alice', {
     live: true,
     select: (account) => account.name,
@@ -98,11 +98,11 @@ function reactTypes(client: ActanetClient, other: BitSharesClient) {
     accountOptions(client, 'alice').queryKey,
   );
   const cachedName: string | undefined = cached?.name;
-  const connection: SharedConnection = useActanetConnection();
+  const connection: SharedConnection = useMirrornetConnection();
   const sameType: SharedConnection = useBitSharesConnection();
-  void ActanetConnectionProvider({ connection, children: null });
+  void MirrornetConnectionProvider({ connection, children: null });
   // @ts-expect-error The connection provider requires a connection.
-  void ActanetConnectionProvider({ children: null });
+  void MirrornetConnectionProvider({ children: null });
   // @ts-expect-error Generated RPC reads without a mapped subscription must reject live.
   useDatabaseGetAccounts({ account_names_or_ids: ['alice'] }, { live: true });
   // @ts-expect-error Required RPC parameters remain required.
@@ -110,7 +110,7 @@ function reactTypes(client: ActanetClient, other: BitSharesClient) {
   // @ts-expect-error Chain-specific query helpers cannot accept the other SDK client.
   accountOptions(other, 'alice');
   // @ts-expect-error Provider client types preserve chain isolation.
-  ActanetProvider({ client: other });
+  MirrornetProvider({ client: other });
   const transfer = usePrepareTransfer();
   // @ts-expect-error Monetary values are exact decimal strings or bigint, not number.
   transfer.mutate({ from: 'a', to: 'b', amount: 1, maxFee: 1n });
@@ -126,9 +126,9 @@ import {
   prepareDataRoomCreate,
   useCryptoBlind,
   useNetworkBroadcastBroadcastTransaction,
-} from '@open-graphene/chain-actanet-react';
+} from '@open-graphene/chain-mirrornet-react';
 import { usePrepareTransferOperation as useBitSharesPrepareTransferOperation } from '@open-graphene/chain-bitshares-react';
-function generatedMutationTypes(client: ActanetClient) {
+function generatedMutationTypes(client: MirrornetClient) {
   const room = usePrepareDataRoomCreate({ maxFee: 300000n });
   room.mutate({
     payer: [1, { grant: FeeGrantId('1.29.1'), sponsor: AccountId('1.2.100') }],

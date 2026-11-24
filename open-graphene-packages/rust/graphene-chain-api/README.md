@@ -9,7 +9,7 @@ against its generated bindings:
 
 | Crate | Bindings | Features |
 |---|---|---|
-| `graphene-chain-actanet-api` | `graphene-chain-actanet-bindings` | `bitshares7` |
+| `graphene-chain-mirrornet-api` | `graphene-chain-mirrornet-bindings` | `bitshares7` |
 | `graphene-chain-bitshares-api` | `graphene-chain-bitshares-bindings` | `bitshares7` |
 | `graphene-chain-rsquared-api` | `graphene-chain-rsquared-bindings` | none |
 
@@ -21,7 +21,7 @@ name `bindings`:
 path = "../../graphene-chain-api/src/lib.rs"
 
 [dependencies]
-bindings = { package = "graphene-chain-actanet-bindings", path = "../graphene-chain-actanet-bindings" }
+bindings = { package = "graphene-chain-mirrornet-bindings", path = "../graphene-chain-mirrornet-bindings" }
 ```
 
 The generated types have the same names on every Graphene chain, but they are distinct types in

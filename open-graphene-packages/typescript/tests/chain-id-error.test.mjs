@@ -7,9 +7,9 @@ import {
   hasChainIdMismatch,
 } from '../graphene-transport/dist/index.js';
 import {
-  ActanetClient,
+  MirrornetClient,
   hasChainIdMismatch as clientHasChainIdMismatch,
-} from '../graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
+} from '../graphene-chain-mirrornet/graphene-chain-mirrornet-api/dist/index.js';
 
 const expectedChainId = 'ab'.repeat(32);
 const otherChainId = 'cd'.repeat(32);
@@ -127,7 +127,7 @@ for (const strategy of ['first-available', 'lowest-latency']) {
         chainId: expectedChainId,
       },
     });
-    const client = await ActanetClient.connect(
+    const client = await MirrornetClient.connect(
       ['ws://wrong', 'ws://offline', 'ws://right'],
       {
         expectedChainId,

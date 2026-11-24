@@ -75,8 +75,8 @@ When changing FC support, run at minimum:
 cargo test -p open-graphene-fc
 cargo test -p open-graphene-gen-bindings-rs
 cargo test -p open-graphene-spec-gen
-cargo test -p graphene-chain-actanet-bindings -p graphene-chain-bitshares-bindings
-cargo test -p graphene-chain-actanet-api -p graphene-chain-bitshares-api -p graphene-chain-rsquared-api -p graphene
+cargo test -p graphene-chain-mirrornet-bindings -p graphene-chain-bitshares-bindings
+cargo test -p graphene-chain-mirrornet-api -p graphene-chain-bitshares-api -p graphene-chain-rsquared-api -p graphene
 cargo check -p graphene --examples
 ```
 

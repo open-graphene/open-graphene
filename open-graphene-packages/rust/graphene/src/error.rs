@@ -21,7 +21,7 @@ impl Error for GrapheneConfigError {}
 #[derive(Debug)]
 pub enum GrapheneConnectError {
     Config(GrapheneConfigError),
-    Actanet(graphene_chain_actanet_api::ChainApiError),
+    Mirrornet(graphene_chain_mirrornet_api::ChainApiError),
     BitShares(graphene_chain_bitshares_api::ChainApiError),
     RSquared(graphene_chain_rsquared_api::ChainApiError),
 }
@@ -30,7 +30,7 @@ impl fmt::Display for GrapheneConnectError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Config(error) => error.fmt(formatter),
-            Self::Actanet(error) => error.fmt(formatter),
+            Self::Mirrornet(error) => error.fmt(formatter),
             Self::BitShares(error) => error.fmt(formatter),
             Self::RSquared(error) => error.fmt(formatter),
         }
@@ -41,7 +41,7 @@ impl Error for GrapheneConnectError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             Self::Config(error) => Some(error),
-            Self::Actanet(error) => Some(error),
+            Self::Mirrornet(error) => Some(error),
             Self::BitShares(error) => Some(error),
             Self::RSquared(error) => Some(error),
         }
@@ -54,9 +54,9 @@ impl From<GrapheneConfigError> for GrapheneConnectError {
     }
 }
 
-impl From<graphene_chain_actanet_api::ChainApiError> for GrapheneConnectError {
-    fn from(error: graphene_chain_actanet_api::ChainApiError) -> Self {
-        Self::Actanet(error)
+impl From<graphene_chain_mirrornet_api::ChainApiError> for GrapheneConnectError {
+    fn from(error: graphene_chain_mirrornet_api::ChainApiError) -> Self {
+        Self::Mirrornet(error)
     }
 }
 

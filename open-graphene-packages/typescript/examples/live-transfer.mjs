@@ -2,11 +2,11 @@
 // never included in requests, reports, exceptions or environment variables.
 import { readFile, writeFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
-import * as b from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
+import * as b from '../graphene-chain-mirrornet/graphene-chain-mirrornet-bindings/dist/index.js';
 import {
-  ActanetClient,
+  MirrornetClient,
   BroadcastOutcomeUnknown,
-} from '../graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
+} from '../graphene-chain-mirrornet/graphene-chain-mirrornet-api/dist/index.js';
 import { WifSigner, encodePublicKey } from '../graphene-fc/dist/signing.js';
 import { bytesToHex } from '../graphene-primitives/dist/index.js';
 import { stringifyJson, unknownValue } from '../graphene-codec/dist/index.js';
@@ -22,14 +22,14 @@ const { values } = parseArgs({
     },
     // A second node that must also see the transaction; skipped when not given.
     verifyEndpoint: { type: 'string' },
-    // The network to expect, e.g. the actanet testnet; defaults to the chain ID of the bindings.
+    // The network to expect, e.g. the mirrornet testnet; defaults to the chain ID of the bindings.
     chainId: { type: 'string', default: b.CHAIN.chainId },
   },
 });
 if (!values.genesis)
   throw new Error('Provide --genesis /local/path/genesis.private.json');
 const genesis = JSON.parse(await readFile(values.genesis, 'utf8'));
-const client = await ActanetClient.connect(values.endpoint, {
+const client = await MirrornetClient.connect(values.endpoint, {
   expectedChainId: values.chainId,
 });
 let signer;
@@ -148,7 +148,7 @@ try {
     report.inclusion = await client.waitForInclusion(signed);
     await persist();
     verifier = values.verifyEndpoint
-      ? await ActanetClient.connect(values.verifyEndpoint, {
+      ? await MirrornetClient.connect(values.verifyEndpoint, {
           expectedChainId: client.chainId,
         })
       : client;

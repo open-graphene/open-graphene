@@ -7,11 +7,11 @@ const pascal = (value) =>
     .split('_')
     .map((p) => p[0].toUpperCase() + p.slice(1))
     .join('');
-for (const chain of ['bitshares', 'rsquared', 'actanet']) {
+for (const chain of ['bitshares', 'rsquared', 'mirrornet']) {
   const clientName = {
     bitshares: 'BitShares',
     rsquared: 'RSquared',
-    actanet: 'Actanet',
+    mirrornet: 'Mirrornet',
   }[chain];
   const target = new URL(
     `../graphene-chain-${chain}/graphene-chain-${chain}-react/src/generated/`,

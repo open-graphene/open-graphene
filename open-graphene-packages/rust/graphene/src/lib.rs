@@ -2,13 +2,13 @@ mod chain;
 mod client;
 mod error;
 
-pub use chain::{Actanet, BitShares, ChainClientBuilder, RSquared};
+pub use chain::{BitShares, ChainClientBuilder, Mirrornet, RSquared};
 pub use client::{GrapheneClient, GrapheneClientBuilder, GrapheneClientConfig};
 pub use error::{GrapheneConfigError, GrapheneConnectError};
 
-/// The Actanet API, which is also re-exported at the crate root.
-pub mod actanet {
-    pub use graphene_chain_actanet_api::*;
+/// The Mirrornet API, which is also re-exported at the crate root.
+pub mod mirrornet {
+    pub use graphene_chain_mirrornet_api::*;
 }
 
 /// The BitShares API.
@@ -22,8 +22,8 @@ pub mod rsquared {
     pub use graphene_chain_rsquared_api::*;
 }
 
-// Actanet is the default chain: its whole API sits at the crate root.
-pub use graphene_chain_actanet_api::*;
+// Mirrornet is the default chain: its whole API sits at the crate root.
+pub use graphene_chain_mirrornet_api::*;
 pub use open_graphene_fc::hash;
 pub use open_graphene_fc::{
     AccountKeys, Address, BrainKey, PrivateKey, PublicKey, SUGGESTED_BRAIN_KEY_WORDS, Signature,
@@ -37,7 +37,7 @@ impl Graphene {
         GrapheneClientBuilder::new()
     }
 
-    pub fn actanet() -> ChainClientBuilder<Actanet> {
+    pub fn mirrornet() -> ChainClientBuilder<Mirrornet> {
         ChainClientBuilder::from_config(GrapheneClientConfig::default())
     }
 
@@ -55,43 +55,43 @@ mod tests {
     use super::*;
 
     #[test]
-    fn generic_builder_selects_actanet_api() {
+    fn generic_builder_selects_mirrornet_api() {
         let builder = Graphene::builder()
             .servers(["wss://node01.example.org:8090"])
             .chain_id("chain-id")
-            .prefix("ACTA")
+            .prefix("MBT")
             .build()
             .expect("valid generic Graphene config")
-            .actanet();
+            .mirrornet();
 
         assert_eq!(
             builder.config().servers(),
             &["wss://node01.example.org:8090".to_string()]
         );
         assert_eq!(builder.config().chain_id(), Some("chain-id"));
-        assert_eq!(builder.config().prefix(), Some("ACTA"));
+        assert_eq!(builder.config().prefix(), Some("MBT"));
     }
 
     #[test]
     fn chain_first_builder_collects_servers() {
-        let builder = Graphene::actanet()
+        let builder = Graphene::mirrornet()
             .server("wss://node01.example.org:8090")
             .server("wss://node02.example.org:8090")
             .chain_id("chain-id")
-            .prefix("ACTA")
+            .prefix("MBT")
             .build()
-            .expect("valid Actanet config");
+            .expect("valid Mirrornet config");
 
         assert_eq!(builder.config().servers().len(), 2);
         assert_eq!(builder.config().chain_id(), Some("chain-id"));
-        assert_eq!(builder.config().prefix(), Some("ACTA"));
+        assert_eq!(builder.config().prefix(), Some("MBT"));
     }
 
     #[test]
     fn builder_rejects_missing_servers() {
         let error = Graphene::builder()
             .chain_id("chain-id")
-            .prefix("ACTA")
+            .prefix("MBT")
             .build()
             .expect_err("servers are required");
 

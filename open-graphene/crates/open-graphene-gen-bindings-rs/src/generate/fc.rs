@@ -304,7 +304,7 @@ pub(crate) fn render_fc_extension_struct_impl(
     let mut fields = struct_def.fields.clone();
     fields.sort_by_key(|field| field.index);
 
-    // The extensions of Actanet's data room family (`data_room_*_ext`, `content_card_*_ext`)
+    // The extensions of Mirrornet's data room family (`data_room_*_ext`, `content_card_*_ext`)
     // hold only optional guards: expected_revision and expected_epoch. Keep other extension
     // families fail-closed until their non-empty wire formats have coverage.
     let data_room_family = (struct_def.name.starts_with("data_room_")

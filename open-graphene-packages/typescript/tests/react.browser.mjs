@@ -2,14 +2,14 @@ import { createElement as h, StrictMode, act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
-  ActanetProvider,
+  MirrornetProvider,
   useAccount,
   useDynamicGlobalProperties,
   useBroadcastTransaction,
   useWaitForInclusion,
   useDatabaseGetChainId,
   accountOptions,
-} from '@open-graphene/chain-actanet-react';
+} from '@open-graphene/chain-mirrornet-react';
 import {
   BitSharesProvider,
   useAccount as useBitSharesAccount,
@@ -20,13 +20,13 @@ import {
   useAccount as useRSquaredAccount,
 } from '@open-graphene/chain-rsquared-react';
 import { CHAIN as RQRX } from '../graphene-chain-rsquared/graphene-chain-rsquared-bindings/dist/index.js';
-import { CHAIN } from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
+import { CHAIN } from '../graphene-chain-mirrornet/graphene-chain-mirrornet-bindings/dist/index.js';
 import { CHAIN as BTS } from '../graphene-chain-bitshares/graphene-chain-bitshares-bindings/dist/index.js';
-import * as actanetHooks from '@open-graphene/chain-actanet-react';
+import * as mirrornetHooks from '@open-graphene/chain-mirrornet-react';
 import * as bitsharesHooks from '@open-graphene/chain-bitshares-react';
-import * as actanetBindings from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
+import * as mirrornetBindings from '../graphene-chain-mirrornet/graphene-chain-mirrornet-bindings/dist/index.js';
 import * as bitsharesBindings from '../graphene-chain-bitshares/graphene-chain-bitshares-bindings/dist/index.js';
-import actanetVectors from './fixtures/actanet-fc-parity-rich.json';
+import mirrornetVectors from './fixtures/mirrornet-fc-parity-rich.json';
 import bitsharesVectors from './fixtures/bitshares-fc-parity-rich.json';
 import publicProtocol from './fixtures/protocol-vectors.json';
 import { signDigestCompact } from '../graphene-fc/dist/signing.js';
@@ -134,7 +134,7 @@ export async function runReactChecks() {
   const tree = (client, children) =>
     wrap(
       h(
-        ActanetProvider,
+        MirrornetProvider,
         { client, livePolicy: { delayMs: 0, maxRetries: 2 } },
         children,
       ),
@@ -258,7 +258,7 @@ export async function runReactChecks() {
           h(
             'div',
             null,
-            h(ActanetProvider, { client: b.client }, h(Generated)),
+            h(MirrornetProvider, { client: b.client }, h(Generated)),
             h(BitSharesProvider, { client: bt.client }, h(BitAccount)),
             h(RSquaredProvider, { client: rq.client }, h(RSquaredAccount)),
           ),
@@ -295,11 +295,11 @@ export async function runReactChecks() {
     let preparedCount = 0;
     for (const [api, bindings, fixture, chainId, Provider] of [
       [
-        actanetHooks,
-        actanetBindings,
-        actanetVectors,
+        mirrornetHooks,
+        mirrornetBindings,
+        mirrornetVectors,
         CHAIN.chainId,
-        ActanetProvider,
+        MirrornetProvider,
       ],
       [
         bitsharesHooks,
@@ -393,7 +393,7 @@ export async function runReactChecks() {
 }
 
 // Optional read-only live test; no wallet or broadcast code runs here.
-export async function runLiveReact(client, chain = 'actanet') {
+export async function runLiveReact(client, chain = 'mirrornet') {
   const q = new QueryClient({
       defaultOptions: {
         queries: { gcTime: Infinity },
@@ -405,9 +405,10 @@ export async function runLiveReact(client, chain = 'actanet') {
   const root = createRoot(element);
   const heads = new Set();
   let status;
-  const Provider = chain === 'actanet' ? ActanetProvider : BitSharesProvider;
+  const Provider =
+    chain === 'mirrornet' ? MirrornetProvider : BitSharesProvider;
   const useHead =
-    chain === 'actanet' ? useDynamicGlobalProperties : useBitSharesHead;
+    chain === 'mirrornet' ? useDynamicGlobalProperties : useBitSharesHead;
   function Head() {
     const result = useHead({ live: true });
     if (result.data) heads.add(result.data.head_block_number);

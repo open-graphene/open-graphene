@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import * as b from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
+import * as b from '../graphene-chain-mirrornet/graphene-chain-mirrornet-bindings/dist/index.js';
 import { bytesToHex, hexToBytes } from '../graphene-primitives/dist/index.js';
 import { transactionDigest } from '../graphene-fc/dist/index.js';
 import {
@@ -11,7 +11,7 @@ import {
   WifSigner,
   encodePublicKey,
 } from '../graphene-fc/dist/signing.js';
-import { PreparedTransfer } from '../graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
+import { PreparedTransfer } from '../graphene-chain-mirrornet/graphene-chain-mirrornet-api/dist/index.js';
 const fixture = JSON.parse(
   readFileSync(new URL('fixtures/protocol-vectors.json', import.meta.url)),
 );

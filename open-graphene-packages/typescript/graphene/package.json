@@ -30,7 +30,7 @@
     "@open-graphene/transport": "workspace:*",
     "@open-graphene/fc": "workspace:*",
     "@open-graphene/chain-rsquared-api": "workspace:*",
-    "@open-graphene/chain-actanet-api": "workspace:*"
+    "@open-graphene/chain-mirrornet-api": "workspace:*"
   },
   "publishConfig": {
     "access": "public"

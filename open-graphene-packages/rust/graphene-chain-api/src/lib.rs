@@ -126,7 +126,7 @@ pub const CHAIN_ID: &str = bindings::generated::ids::CHAIN_ID_HEX;
 pub const PUBLIC_KEY_PREFIX: &str = bindings::generated::ids::PUBLIC_KEY_PREFIX;
 
 /// Whether this chain's nodes accept a compact signature (`fc::ecc::public_key::is_canonical`):
-/// low-S on chains built with the `low-s` feature (Actanet), the legacy Graphene rule elsewhere.
+/// low-S on chains built with the `low-s` feature (Mirrornet), the legacy Graphene rule elsewhere.
 /// Signatures this crate makes pass both.
 pub fn is_accepted_signature(signature: &[u8]) -> bool {
     #[cfg(feature = "low-s")]

@@ -578,7 +578,7 @@ mod tests {
 
     #[test]
     fn transaction_ids_match_the_typescript_api() {
-        // transactionId() of @open-graphene/chain-actanet-api for the same transaction. The id
+        // transactionId() of @open-graphene/chain-mirrornet-api for the same transaction. The id
         // covers the operation tag, which is the chain's own numbering: BitShares and its
         // descendants share it, R-Squared does not.
         let prepared = PreparedTransaction::new(fixture_transaction(), OTHER_NETWORK, 7);

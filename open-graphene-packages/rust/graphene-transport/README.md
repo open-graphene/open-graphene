@@ -2,7 +2,7 @@
 
 `open-graphene-transport` is the chain-agnostic JSON-RPC transport crate for Graphene-family chains.
 
-It owns the reusable wire/session layer that sits below the public chain API crates (`graphene-chain-actanet-api`, `graphene-chain-bitshares-api`, `graphene-chain-rsquared-api`). It does not import generated chain bindings and does not interpret chain-specific protocol objects.
+It owns the reusable wire/session layer that sits below the public chain API crates (`graphene-chain-mirrornet-api`, `graphene-chain-bitshares-api`, `graphene-chain-rsquared-api`). It does not import generated chain bindings and does not interpret chain-specific protocol objects.
 
 ## What this crate provides
 

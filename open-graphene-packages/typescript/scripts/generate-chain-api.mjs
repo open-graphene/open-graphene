@@ -11,7 +11,7 @@ const header =
   '// Generated from graphene-chain-api/src by scripts/generate-chain-api.mjs. Do not edit.\n';
 const files = (await readdir(source)).filter((f) => f.endsWith('.ts')).sort();
 let stale = false;
-for (const chain of ['actanet', 'bitshares', 'rsquared']) {
+for (const chain of ['mirrornet', 'bitshares', 'rsquared']) {
   const target = `${root}graphene-chain-${chain}/graphene-chain-${chain}-api/src/shared/`;
   if (!check) {
     await rm(target, { recursive: true, force: true });

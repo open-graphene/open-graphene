@@ -12,11 +12,11 @@ import {
   RpcTransportError,
   RpcRemoteError,
 } from '../graphene-transport/dist/index.js';
-import * as actanet from '@open-graphene/chain-actanet-react';
+import * as mirrornet from '@open-graphene/chain-mirrornet-react';
 import * as bitshares from '@open-graphene/chain-bitshares-react';
-import { CHAIN } from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
+import { CHAIN } from '../graphene-chain-mirrornet/graphene-chain-mirrornet-bindings/dist/index.js';
 import { readFileSync } from 'node:fs';
-import * as actanetBindings from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
+import * as mirrornetBindings from '../graphene-chain-mirrornet/graphene-chain-mirrornet-bindings/dist/index.js';
 import * as bitsharesBindings from '../graphene-chain-bitshares/graphene-chain-bitshares-bindings/dist/index.js';
 import { bytesToHex } from '../graphene-primitives/dist/index.js';
 const pause = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -71,7 +71,7 @@ test('React query keys isolate clients, chains and tagged values; hydrate bigint
 });
 test('generated RPC inventory covers reads and imperative methods with distinct lifecycles', async () => {
   for (const [chain, exports] of [
-    ['actanet', actanet],
+    ['mirrornet', mirrornet],
     ['bitshares', bitshares],
   ]) {
     const spec = JSON.parse(
@@ -91,7 +91,7 @@ test('generated RPC inventory covers reads and imperative methods with distinct 
       )
       .map((m) => m.apiName + '.' + m.name);
     assert.deepEqual(exports.generatedQueryMethods, expected);
-    assert.equal(expected.length, chain === 'actanet' ? 41 : 24);
+    assert.equal(expected.length, chain === 'mirrornet' ? 41 : 24);
     assert.equal(
       typeof exports.useNetworkBroadcastBroadcastTransaction,
       'function',
@@ -110,7 +110,7 @@ test('generated RPC inventory covers reads and imperative methods with distinct 
     rpc: { invoke: async () => [{ amount: 5n, asset_id: '1.3.0' }] },
   };
   const q = cache();
-  const options = actanet.databaseGetAccountBalancesOptions(client, {
+  const options = mirrornet.databaseGetAccountBalancesOptions(client, {
     account_name_or_id: 'alice',
     assets: [],
   });
@@ -119,7 +119,7 @@ test('generated RPC inventory covers reads and imperative methods with distinct 
   ]);
   assert.throws(
     () =>
-      actanet.databaseGetObjectsOptions(client, { ids: [], subscribe: true }),
+      mirrornet.databaseGetObjectsOptions(client, { ids: [], subscribe: true }),
     /live hook/,
   );
   q.clear();
@@ -310,15 +310,15 @@ test('public options for explicit hydration scopes share data without mixing cha
       database: { account: async () => ({ name: 'alice' }) },
     },
     b = { ...a };
-  const server = actanet.accountOptions(a, 'alice', 'public-ssr');
+  const server = mirrornet.accountOptions(a, 'alice', 'public-ssr');
   await q.fetchQuery(server);
   assert.equal(
-    q.getQueryData(actanet.accountOptions(b, 'alice', 'public-ssr').queryKey)
+    q.getQueryData(mirrornet.accountOptions(b, 'alice', 'public-ssr').queryKey)
       .name,
     'alice',
   );
   assert.equal(
-    q.getQueryData(actanet.accountOptions(b, 'alice').queryKey),
+    q.getQueryData(mirrornet.accountOptions(b, 'alice').queryKey),
     undefined,
   );
   q.clear();
@@ -358,7 +358,7 @@ const operationSymbol = (name) =>
         .join('');
 test('every generated operation preparation preserves the independently verified payload and transaction options', async () => {
   for (const [chain, api, b] of [
-    ['actanet', actanet, actanetBindings],
+    ['mirrornet', mirrornet, mirrornetBindings],
     ['bitshares', bitshares, bitsharesBindings],
   ]) {
     const spec = JSON.parse(
@@ -373,7 +373,7 @@ test('every generated operation preparation preserves the independently verified
       .filter((op) => !op.isVirtual)
       .map((op) => op.name.replace(/_operation$/, ''));
     assert.deepEqual(api.generatedPrepareOperations, names);
-    assert.equal(names.length, chain === 'actanet' ? 88 : 71);
+    assert.equal(names.length, chain === 'mirrornet' ? 88 : 71);
     const client = {
       prepareOperations: async (operations, options) => ({
         operations,
@@ -414,10 +414,10 @@ test('room preparation supplies fee/extensions defaults without generating keys 
       submitted++;
     },
   };
-  const result = await actanet.prepareDataRoomCreate(client, {
-    payer: [0, actanetBindings.AccountId('1.2.100')],
-    caller: [0, actanetBindings.AccountId('1.2.100')],
-    owner: actanetBindings.AccountId('1.2.100'),
+  const result = await mirrornet.prepareDataRoomCreate(client, {
+    payer: [0, mirrornetBindings.AccountId('1.2.100')],
+    caller: [0, mirrornetBindings.AccountId('1.2.100')],
+    owner: mirrornetBindings.AccountId('1.2.100'),
     name: 'room',
     description: '',
     caller_permissions: 15,
@@ -451,7 +451,7 @@ test('chain React packages have isolated dependency graphs and browser bundles',
     'graphene-primitives',
     'graphene-core',
   ];
-  for (const chain of ['actanet', 'bitshares'])
+  for (const chain of ['mirrornet', 'bitshares'])
     for (const suffix of ['api', 'bindings', 'react'])
       folders.push(`graphene-chain-${chain}/graphene-chain-${chain}-${suffix}`);
   for (const folder of folders) {
@@ -460,8 +460,8 @@ test('chain React packages have isolated dependency graphs and browser bundles',
     );
     manifests.set(manifest.name, manifest);
   }
-  for (const chain of ['actanet', 'bitshares']) {
-    const other = chain === 'actanet' ? 'bitshares' : 'actanet',
+  for (const chain of ['mirrornet', 'bitshares']) {
+    const other = chain === 'mirrornet' ? 'bitshares' : 'mirrornet',
       name = `@open-graphene/chain-${chain}-react`,
       visited = new Set();
     function visit(name) {

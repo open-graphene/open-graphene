@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { getEventListeners } from 'node:events';
 import {
-  ActanetClient,
+  MirrornetClient,
   SignedTransfer,
   TransactionBroadcastError,
   BroadcastOutcomeUnknown,
-} from '../graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
-import * as b from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
+} from '../graphene-chain-mirrornet/graphene-chain-mirrornet-api/dist/index.js';
+import * as b from '../graphene-chain-mirrornet/graphene-chain-mirrornet-bindings/dist/index.js';
 import {
   RpcSubscription,
   RpcSubscriptionTimeoutError,
@@ -152,7 +152,7 @@ async function connect(t, options = {}) {
   socket.expectedId = signed.id;
   const controller = new AbortController();
   let connections = 0;
-  const client = await ActanetClient.connect('ws://fixture', {
+  const client = await MirrornetClient.connect('ws://fixture', {
     expectedChainId: b.CHAIN.chainId,
     signal: controller.signal,
     timeoutMs: 25,

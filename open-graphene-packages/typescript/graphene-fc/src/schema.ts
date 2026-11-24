@@ -143,7 +143,7 @@ function assertOrdered(
 }
 /**
  * Extensions whose set members the Rust FC profile encodes: the optional guards
- * (expected_revision, expected_epoch) of Actanet's data room family. Other extension families
+ * (expected_revision, expected_epoch) of Mirrornet's data room family. Other extension families
  * stay fail-closed until their non-empty wire formats have coverage.
  */
 function sparseSupported(name: string): boolean {

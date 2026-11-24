@@ -1,9 +1,9 @@
 # Open Graphene React core
 
-Shared TanStack Query adapter for the independent Actanet, BitShares and R-Squared
+Shared TanStack Query adapter for the independent Mirrornet, BitShares and R-Squared
 React packages. This package has no chain-specific SDK dependency.
 
-Applications normally import hooks from `@open-graphene/chain-actanet-react`,
+Applications normally import hooks from `@open-graphene/chain-mirrornet-react`,
 `@open-graphene/chain-bitshares-react` or `@open-graphene/chain-rsquared-react`. Import `serializeCache`, `deserializeCache`,
 `grapheneQueryKey` and their shared types from this package when needed.
 
@@ -17,8 +17,8 @@ shared subscriptions, transaction mutations and exact bigint/byte hydration.
 
 Create one lazy `createSharedConnection({ endpoints, expectedChainId })` from
 `@open-graphene/transport` for the host lifetime and provide it through the
-chain's provider, for example `<ActanetConnectionProvider connection={connection}>`.
-Consumers call `useActanetConnection()` and pass the result as `connection` in
+chain's provider, for example `<MirrornetConnectionProvider connection={connection}>`.
+Consumers call `useMirrornetConnection()` and pass the result as `connection` in
 their SDK's network options. Each chain package makes its own provider with
 `createConnectionContext`, so two chains never share one by mistake.
 

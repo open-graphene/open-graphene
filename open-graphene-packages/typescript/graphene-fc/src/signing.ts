@@ -43,7 +43,7 @@ export function decodeWif(wif: string): Uint8Array {
  * Which compact signatures the target chain's nodes accept (`fc::ecc::public_key::is_canonical`).
  * `graphene-legacy` is the rule of BitShares and R-Squared nodes: `r` and `s` are minimal 32-byte
  * DER integers, so the signer retries with other nonces until both are. `low-s` only requires a
- * low `s`: the rule of Actanet nodes, whose fc was relaxed so that deterministic signers (RFC 6979
+ * low `s`: the rule of Mirrornet nodes, whose fc was relaxed so that deterministic signers (RFC 6979
  * libraries, hardware keys, custody services) that cannot retry are accepted. Every
  * `graphene-legacy` signature is also `low-s`.
  */

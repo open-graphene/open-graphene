@@ -7,7 +7,7 @@ description = "High-level Open Graphene Rust API facade."
 repository = "https://github.com/open-graphene/open-graphene"
 
 [dependencies]
-graphene-chain-actanet-api = { path = "../graphene-chain-actanet/graphene-chain-actanet-api" }
+graphene-chain-mirrornet-api = { path = "../graphene-chain-mirrornet/graphene-chain-mirrornet-api" }
 graphene-chain-bitshares-api = { path = "../graphene-chain-bitshares/graphene-chain-bitshares-api" }
 graphene-chain-rsquared-api = { path = "../graphene-chain-rsquared/graphene-chain-rsquared-api" }
 open-graphene-fc = { path = "../graphene-fc" }
@@ -17,265 +17,265 @@ dotenvy = "0.15"
 tokio = { version = "1", features = ["full"] }
 
 [[example]]
-name = "actanet_connection_lowest_latency"
-path = "examples/actanet/connection_lowest_latency.rs"
+name = "mirrornet_connection_lowest_latency"
+path = "examples/mirrornet/connection_lowest_latency.rs"
 
 [[example]]
-name = "actanet_keys_sign_verify"
-path = "examples/actanet/keys_sign_verify.rs"
+name = "mirrornet_keys_sign_verify"
+path = "examples/mirrornet/keys_sign_verify.rs"
 
 [[example]]
-name = "actanet_transaction_builder_transfer"
-path = "examples/actanet/transaction_builder_transfer.rs"
+name = "mirrornet_transaction_builder_transfer"
+path = "examples/mirrornet/transaction_builder_transfer.rs"
 
 [[example]]
-name = "actanet_limit_order_create_cancel"
-path = "examples/actanet/limit_order_create_cancel.rs"
+name = "mirrornet_limit_order_create_cancel"
+path = "examples/mirrornet/limit_order_create_cancel.rs"
 
 [[example]]
-name = "actanet_limit_order_update"
-path = "examples/actanet/limit_order_update.rs"
+name = "mirrornet_limit_order_update"
+path = "examples/mirrornet/limit_order_update.rs"
 
 [[example]]
-name = "actanet_call_order_update"
-path = "examples/actanet/call_order_update.rs"
+name = "mirrornet_call_order_update"
+path = "examples/mirrornet/call_order_update.rs"
 
 [[example]]
-name = "actanet_asset_issue_reserve"
-path = "examples/actanet/asset_issue_reserve.rs"
+name = "mirrornet_asset_issue_reserve"
+path = "examples/mirrornet/asset_issue_reserve.rs"
 
 [[example]]
-name = "actanet_asset_update"
-path = "examples/actanet/asset_update.rs"
+name = "mirrornet_asset_update"
+path = "examples/mirrornet/asset_update.rs"
 
 [[example]]
-name = "actanet_asset_admin_ops"
-path = "examples/actanet/asset_admin_ops.rs"
+name = "mirrornet_asset_admin_ops"
+path = "examples/mirrornet/asset_admin_ops.rs"
 
 [[example]]
-name = "actanet_override_transfer_op"
-path = "examples/actanet/override_transfer_op.rs"
+name = "mirrornet_override_transfer_op"
+path = "examples/mirrornet/override_transfer_op.rs"
 
 [[example]]
-name = "actanet_credit_offer_ops"
-path = "examples/actanet/credit_offer_ops.rs"
+name = "mirrornet_credit_offer_ops"
+path = "examples/mirrornet/credit_offer_ops.rs"
 
 [[example]]
-name = "actanet_samet_fund_ops"
-path = "examples/actanet/samet_fund_ops.rs"
+name = "mirrornet_samet_fund_ops"
+path = "examples/mirrornet/samet_fund_ops.rs"
 
 [[example]]
-name = "actanet_vesting_tickets_ops"
-path = "examples/actanet/vesting_tickets_ops.rs"
+name = "mirrornet_vesting_tickets_ops"
+path = "examples/mirrornet/vesting_tickets_ops.rs"
 
 [[example]]
-name = "actanet_account_update"
-path = "examples/actanet/account_update.rs"
+name = "mirrornet_account_update"
+path = "examples/mirrornet/account_update.rs"
 
 [[example]]
-name = "actanet_account_ops"
-path = "examples/actanet/account_ops.rs"
+name = "mirrornet_account_ops"
+path = "examples/mirrornet/account_ops.rs"
 
 [[example]]
-name = "actanet_htlc_create_redeem"
-path = "examples/actanet/htlc_create_redeem.rs"
+name = "mirrornet_htlc_create_redeem"
+path = "examples/mirrornet/htlc_create_redeem.rs"
 
 [[example]]
-name = "actanet_proposal_create"
-path = "examples/actanet/proposal_create.rs"
+name = "mirrornet_proposal_create"
+path = "examples/mirrornet/proposal_create.rs"
 
 [[example]]
-name = "actanet_governance_ops"
-path = "examples/actanet/governance_ops.rs"
+name = "mirrornet_governance_ops"
+path = "examples/mirrornet/governance_ops.rs"
 
 [[example]]
-name = "actanet_custom_authority_ops"
-path = "examples/actanet/custom_authority_ops.rs"
+name = "mirrornet_custom_authority_ops"
+path = "examples/mirrornet/custom_authority_ops.rs"
 
 [[example]]
-name = "actanet_assert_balance_claim_ops"
-path = "examples/actanet/assert_balance_claim_ops.rs"
+name = "mirrornet_assert_balance_claim_ops"
+path = "examples/mirrornet/assert_balance_claim_ops.rs"
 
 [[example]]
-name = "actanet_bid_collateral_global_params_ops"
-path = "examples/actanet/bid_collateral_global_params_ops.rs"
+name = "mirrornet_bid_collateral_global_params_ops"
+path = "examples/mirrornet/bid_collateral_global_params_ops.rs"
 
 [[example]]
-name = "actanet_liquidity_pool_create_delete"
-path = "examples/actanet/liquidity_pool_create_delete.rs"
+name = "mirrornet_liquidity_pool_create_delete"
+path = "examples/mirrornet/liquidity_pool_create_delete.rs"
 
 [[example]]
-name = "actanet_liquidity_pool_flow"
-path = "examples/actanet/liquidity_pool_flow.rs"
+name = "mirrornet_liquidity_pool_flow"
+path = "examples/mirrornet/liquidity_pool_flow.rs"
 
 [[example]]
-name = "actanet_get_limit_orders"
-path = "examples/actanet/get_limit_orders.rs"
+name = "mirrornet_get_limit_orders"
+path = "examples/mirrornet/get_limit_orders.rs"
 
 [[example]]
-name = "actanet_get_objects"
-path = "examples/actanet/get_objects.rs"
+name = "mirrornet_get_objects"
+path = "examples/mirrornet/get_objects.rs"
 
 [[example]]
-name = "actanet_get_block"
-path = "examples/actanet/get_block.rs"
+name = "mirrornet_get_block"
+path = "examples/mirrornet/get_block.rs"
 
 [[example]]
-name = "actanet_get_block_header"
-path = "examples/actanet/get_block_header.rs"
+name = "mirrornet_get_block_header"
+path = "examples/mirrornet/get_block_header.rs"
 
 [[example]]
-name = "actanet_get_config"
-path = "examples/actanet/get_config.rs"
+name = "mirrornet_get_config"
+path = "examples/mirrornet/get_config.rs"
 
 [[example]]
-name = "actanet_get_key_references"
-path = "examples/actanet/get_key_references.rs"
+name = "mirrornet_get_key_references"
+path = "examples/mirrornet/get_key_references.rs"
 
 [[example]]
-name = "actanet_chain_validation"
-path = "examples/actanet/chain_validation.rs"
+name = "mirrornet_chain_validation"
+path = "examples/mirrornet/chain_validation.rs"
 
 [[example]]
-name = "actanet_reconnect"
-path = "examples/actanet/reconnect.rs"
+name = "mirrornet_reconnect"
+path = "examples/mirrornet/reconnect.rs"
 
 [[example]]
-name = "actanet_chain_store"
-path = "examples/actanet/chain_store.rs"
+name = "mirrornet_chain_store"
+path = "examples/mirrornet/chain_store.rs"
 
 [[example]]
-name = "actanet_brainkey_derive"
-path = "examples/actanet/brainkey_derive.rs"
+name = "mirrornet_brainkey_derive"
+path = "examples/mirrornet/brainkey_derive.rs"
 
 [[example]]
-name = "actanet_account_login"
-path = "examples/actanet/account_login.rs"
+name = "mirrornet_account_login"
+path = "examples/mirrornet/account_login.rs"
 
 [[example]]
-name = "actanet_memo_encrypt_decrypt"
-path = "examples/actanet/memo_encrypt_decrypt.rs"
+name = "mirrornet_memo_encrypt_decrypt"
+path = "examples/mirrornet/memo_encrypt_decrypt.rs"
 
 [[example]]
-name = "actanet_database_account_get"
-path = "examples/actanet/database_account_get.rs"
+name = "mirrornet_database_account_get"
+path = "examples/mirrornet/database_account_get.rs"
 
 [[example]]
-name = "actanet_database_account_subscribe"
-path = "examples/actanet/database_account_subscribe.rs"
+name = "mirrornet_database_account_subscribe"
+path = "examples/mirrornet/database_account_subscribe.rs"
 
 [[example]]
-name = "actanet_database_account_balances_get"
-path = "examples/actanet/database_account_balances_get.rs"
+name = "mirrornet_database_account_balances_get"
+path = "examples/mirrornet/database_account_balances_get.rs"
 
 [[example]]
-name = "actanet_database_account_balances_subscribe"
-path = "examples/actanet/database_account_balances_subscribe.rs"
+name = "mirrornet_database_account_balances_subscribe"
+path = "examples/mirrornet/database_account_balances_subscribe.rs"
 
 [[example]]
-name = "actanet_database_account_orders_get"
-path = "examples/actanet/database_account_orders_get.rs"
+name = "mirrornet_database_account_orders_get"
+path = "examples/mirrornet/database_account_orders_get.rs"
 
 [[example]]
-name = "actanet_database_account_orders_subscribe"
-path = "examples/actanet/database_account_orders_subscribe.rs"
+name = "mirrornet_database_account_orders_subscribe"
+path = "examples/mirrornet/database_account_orders_subscribe.rs"
 
 [[example]]
-name = "actanet_database_asset_get"
-path = "examples/actanet/database_asset_get.rs"
+name = "mirrornet_database_asset_get"
+path = "examples/mirrornet/database_asset_get.rs"
 
 [[example]]
-name = "actanet_database_asset_subscribe"
-path = "examples/actanet/database_asset_subscribe.rs"
+name = "mirrornet_database_asset_subscribe"
+path = "examples/mirrornet/database_asset_subscribe.rs"
 
 [[example]]
-name = "actanet_database_accounts_get"
-path = "examples/actanet/database_accounts_get.rs"
+name = "mirrornet_database_accounts_get"
+path = "examples/mirrornet/database_accounts_get.rs"
 
 [[example]]
-name = "actanet_database_chain_id_get"
-path = "examples/actanet/database_chain_id_get.rs"
+name = "mirrornet_database_chain_id_get"
+path = "examples/mirrornet/database_chain_id_get.rs"
 
 [[example]]
-name = "actanet_database_list_assets_accounts"
-path = "examples/actanet/database_list_assets_accounts.rs"
+name = "mirrornet_database_list_assets_accounts"
+path = "examples/mirrornet/database_list_assets_accounts.rs"
 
 [[example]]
-name = "actanet_database_chain_properties_get"
-path = "examples/actanet/database_chain_properties_get.rs"
+name = "mirrornet_database_chain_properties_get"
+path = "examples/mirrornet/database_chain_properties_get.rs"
 
 [[example]]
-name = "actanet_database_dynamic_global_properties_get"
-path = "examples/actanet/database_dynamic_global_properties_get.rs"
+name = "mirrornet_database_dynamic_global_properties_get"
+path = "examples/mirrornet/database_dynamic_global_properties_get.rs"
 
 [[example]]
-name = "actanet_database_dynamic_global_properties_subscribe"
-path = "examples/actanet/database_dynamic_global_properties_subscribe.rs"
+name = "mirrornet_database_dynamic_global_properties_subscribe"
+path = "examples/mirrornet/database_dynamic_global_properties_subscribe.rs"
 
 [[example]]
-name = "actanet_database_global_properties_get"
-path = "examples/actanet/database_global_properties_get.rs"
+name = "mirrornet_database_global_properties_get"
+path = "examples/mirrornet/database_global_properties_get.rs"
 
 [[example]]
-name = "actanet_operations_transfer_prepare"
-path = "examples/actanet/operations_transfer_prepare.rs"
+name = "mirrornet_operations_transfer_prepare"
+path = "examples/mirrornet/operations_transfer_prepare.rs"
 
 [[example]]
-name = "actanet_operations_transfer_sign"
-path = "examples/actanet/operations_transfer_sign.rs"
+name = "mirrornet_operations_transfer_sign"
+path = "examples/mirrornet/operations_transfer_sign.rs"
 
 [[example]]
-name = "actanet_operations_transfer_broadcast"
-path = "examples/actanet/operations_transfer_broadcast.rs"
+name = "mirrornet_operations_transfer_broadcast"
+path = "examples/mirrornet/operations_transfer_broadcast.rs"
 
 [[example]]
-name = "actanet_operations_transfer_broadcast_with_callback"
-path = "examples/actanet/operations_transfer_broadcast_with_callback.rs"
+name = "mirrornet_operations_transfer_broadcast_with_callback"
+path = "examples/mirrornet/operations_transfer_broadcast_with_callback.rs"
 
 [[example]]
-name = "actanet_operations_transfer_callback_stress"
-path = "examples/actanet/operations_transfer_callback_stress.rs"
+name = "mirrornet_operations_transfer_callback_stress"
+path = "examples/mirrornet/operations_transfer_callback_stress.rs"
 
 [[example]]
-name = "actanet_live_transfer_callback_stress"
-path = "examples/actanet/live_transfer_callback_stress.rs"
+name = "mirrornet_live_transfer_callback_stress"
+path = "examples/mirrornet/live_transfer_callback_stress.rs"
 
 [[example]]
-name = "actanet_live_database_object_subscribe"
-path = "examples/actanet/live_database_object_subscribe.rs"
+name = "mirrornet_live_database_object_subscribe"
+path = "examples/mirrornet/live_database_object_subscribe.rs"
 
 [[example]]
-name = "actanet_live_account_activity_subscribe"
-path = "examples/actanet/live_account_activity_subscribe.rs"
+name = "mirrornet_live_account_activity_subscribe"
+path = "examples/mirrornet/live_account_activity_subscribe.rs"
 
 [[example]]
-name = "actanet_live_history_account_subscribe"
-path = "examples/actanet/live_history_account_subscribe.rs"
+name = "mirrornet_live_history_account_subscribe"
+path = "examples/mirrornet/live_history_account_subscribe.rs"
 
 [[example]]
-name = "actanet_live_transfer_updates_e2e"
-path = "examples/actanet/live_transfer_updates_e2e.rs"
+name = "mirrornet_live_transfer_updates_e2e"
+path = "examples/mirrornet/live_transfer_updates_e2e.rs"
 
 [[example]]
-name = "actanet_history_account_get"
-path = "examples/actanet/history_account_get.rs"
+name = "mirrornet_history_account_get"
+path = "examples/mirrornet/history_account_get.rs"
 
 [[example]]
-name = "actanet_history_account_subscribe"
-path = "examples/actanet/history_account_subscribe.rs"
+name = "mirrornet_history_account_subscribe"
+path = "examples/mirrornet/history_account_subscribe.rs"
 
 [[example]]
-name = "actanet_crypto_pedersen_commitment"
-path = "examples/actanet/crypto_pedersen_commitment.rs"
+name = "mirrornet_crypto_pedersen_commitment"
+path = "examples/mirrornet/crypto_pedersen_commitment.rs"
 
 [[example]]
-name = "actanet_blind_transfer_ops"
-path = "examples/actanet/blind_transfer_ops.rs"
+name = "mirrornet_blind_transfer_ops"
+path = "examples/mirrornet/blind_transfer_ops.rs"
 
 [[example]]
-name = "actanet_orders_grouped_limit_orders"
-path = "examples/actanet/orders_grouped_limit_orders.rs"
+name = "mirrornet_orders_grouped_limit_orders"
+path = "examples/mirrornet/orders_grouped_limit_orders.rs"
 
 [[example]]
-name = "actanet_market_methods"
-path = "examples/actanet/market_methods.rs"
+name = "mirrornet_market_methods"
+path = "examples/mirrornet/market_methods.rs"

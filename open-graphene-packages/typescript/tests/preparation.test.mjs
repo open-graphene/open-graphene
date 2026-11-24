@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import * as b from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
+import * as b from '../graphene-chain-mirrornet/graphene-chain-mirrornet-bindings/dist/index.js';
 import {
   prepareOperations,
   TransactionPreparationError,
-} from '../graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
+} from '../graphene-chain-mirrornet/graphene-chain-mirrornet-api/dist/index.js';
 import { CodecError } from '../graphene-codec/dist/index.js';
 
 const now = Date.UTC(2026, 9, 8, 12);

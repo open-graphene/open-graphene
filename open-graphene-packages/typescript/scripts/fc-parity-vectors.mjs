@@ -4,8 +4,8 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 const rich = process.argv.includes('--rich');
 const chain =
-  ['bitshares', 'actanet'].find((c) => process.argv.includes('--' + c)) ??
-  'actanet';
+  ['bitshares', 'mirrornet'].find((c) => process.argv.includes('--' + c)) ??
+  'mirrornet';
 const b = await import(
   '../graphene-chain-' +
     chain +
@@ -105,7 +105,7 @@ const extensions = new Set(
     .filter((f) => f.name === 'extensions' && f.type.kind === 'ref')
     .map((f) => f.type.name),
 );
-// Extensions the FC profile encodes when set: the optional guards of Actanet's data room
+// Extensions the FC profile encodes when set: the optional guards of Mirrornet's data room
 // family. Others stay empty, as their non-empty encodings are not supported.
 const sparse = (name) =>
   (name.startsWith('data_room_') || name.startsWith('content_card_')) &&

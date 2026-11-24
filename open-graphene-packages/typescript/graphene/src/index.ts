@@ -1,7 +1,7 @@
 import {
-  ActanetClient,
-  type ActanetConnectionOptions,
-} from '@open-graphene/chain-actanet-api';
+  MirrornetClient,
+  type MirrornetConnectionOptions,
+} from '@open-graphene/chain-mirrornet-api';
 import {
   BitSharesClient,
   type BitSharesConnectionOptions,
@@ -10,22 +10,22 @@ import {
   RSquaredClient,
   type RSquaredConnectionOptions,
 } from '@open-graphene/chain-rsquared-api';
-export { ActanetClient, BitSharesClient, RSquaredClient };
+export { MirrornetClient, BitSharesClient, RSquaredClient };
 export type {
-  ActanetConnectionOptions,
+  MirrornetConnectionOptions,
   BitSharesConnectionOptions,
   RSquaredConnectionOptions,
 };
-export * as actanet from '@open-graphene/chain-actanet-api';
+export * as mirrornet from '@open-graphene/chain-mirrornet-api';
 export * as bitshares from '@open-graphene/chain-bitshares-api';
 export * as rsquared from '@open-graphene/chain-rsquared-api';
 export * from '@open-graphene/core';
 export class Graphene {
-  static actanet(
+  static mirrornet(
     endpoints: string | readonly string[],
-    options?: ActanetConnectionOptions,
+    options?: MirrornetConnectionOptions,
   ) {
-    return ActanetClient.connect(endpoints, options);
+    return MirrornetClient.connect(endpoints, options);
   }
   static bitshares(
     endpoints: string | readonly string[],
@@ -40,10 +40,10 @@ export class Graphene {
     return RSquaredClient.connect(endpoints, options);
   }
   static connect(
-    chain: 'actanet',
+    chain: 'mirrornet',
     endpoints: string | readonly string[],
-    options?: ActanetConnectionOptions,
-  ): Promise<ActanetClient>;
+    options?: MirrornetConnectionOptions,
+  ): Promise<MirrornetClient>;
   static connect(
     chain: 'bitshares',
     endpoints: string | readonly string[],
@@ -55,12 +55,12 @@ export class Graphene {
     options?: RSquaredConnectionOptions,
   ): Promise<RSquaredClient>;
   static connect(
-    chain: 'actanet' | 'bitshares' | 'rsquared',
+    chain: 'mirrornet' | 'bitshares' | 'rsquared',
     endpoints: string | readonly string[],
-    options?: ActanetConnectionOptions,
+    options?: MirrornetConnectionOptions,
   ) {
-    if (chain === 'actanet') {
-      return this.actanet(endpoints, options);
+    if (chain === 'mirrornet') {
+      return this.mirrornet(endpoints, options);
     }
 
     if (chain === 'bitshares') {

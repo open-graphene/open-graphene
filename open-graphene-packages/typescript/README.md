@@ -1,6 +1,6 @@
 # Open Graphene SDK for TypeScript
 
-Build applications for **Actanet, BitShares and R-Squared** in Node.js and the browser.
+Build applications for **Mirrornet, BitShares and R-Squared** in Node.js and the browser.
 Read accounts and balances, send transactions, encrypt memos and subscribe to
 changes through a typed API.
 
@@ -26,16 +26,16 @@ packages are available when you only need one chain.
 
 | Package                                   | Use it for                                                               |
 | ----------------------------------------- | ------------------------------------------------------------------------ |
-| `@open-graphene/chain-actanet-react`      | Actanet React hooks, live updates and operation preparation              |
+| `@open-graphene/chain-mirrornet-react`    | Mirrornet React hooks, live updates and operation preparation            |
 | `@open-graphene/chain-bitshares-react`    | BitShares React hooks, live updates and operation preparation            |
 | `@open-graphene/chain-rsquared-react`     | R-Squared React hooks and operation preparation                          |
 | `@open-graphene/chain-rsquared-api`       | R-Squared transactions, queries and subscriptions                        |
 | `@open-graphene/chain-rsquared-bindings`  | R-Squared protocol types, operation factories and codecs                 |
 | `@open-graphene/react-core`               | Shared React adapter and cache utilities                                 |
 | `@open-graphene/graphene`                 | Connect to any supported chain; access wallet, memo and amount helpers   |
-| `@open-graphene/chain-actanet-api`        | Actanet transactions, queries and subscriptions                          |
+| `@open-graphene/chain-mirrornet-api`      | Mirrornet transactions, queries and subscriptions                        |
 | `@open-graphene/chain-bitshares-api`      | BitShares transactions and queries                                       |
-| `@open-graphene/chain-actanet-bindings`   | Actanet protocol types, operation factories and codecs                   |
+| `@open-graphene/chain-mirrornet-bindings` | Mirrornet protocol types, operation factories and codecs                 |
 | `@open-graphene/chain-bitshares-bindings` | BitShares protocol types, operation factories and codecs                 |
 | `@open-graphene/core`                     | Amount formatting, account-name validation and authority analysis        |
 | `@open-graphene/fc`                       | Binary serialization; `/signing`, `/memo`, `/wallet` and `/hash` exports |
@@ -61,7 +61,7 @@ generated sources.
 
 ## React applications
 
-Use `@open-graphene/chain-actanet-react`
+Use `@open-graphene/chain-mirrornet-react`
 or [`@open-graphene/chain-bitshares-react`](graphene-chain-bitshares/graphene-chain-bitshares-react/README.md)
 for TanStack Query hooks, live subscriptions and dedicated preparation hooks for
 every user operation. The adapters share `@open-graphene/react-core` and keep
@@ -74,18 +74,18 @@ current `0.1.0` manifests are release candidates; npm publication is pending.
 
 ## Connect and read an account
 
-This example connects to an Actanet node, reads an account and its balances,
+This example connects to an Mirrornet node, reads an account and its balances,
 and closes the connection. Read-only calls do not need a private key.
 
 ```ts
 import { Graphene, formatRawAmount } from '@open-graphene/graphene';
 
-const client = await Graphene.actanet(['ws://127.0.0.1:8090'], {
-  expectedChainId: ACTANET_CHAIN_ID, // The network you trust, e.g. the testnet.
+const client = await Graphene.mirrornet(['ws://127.0.0.1:8090'], {
+  expectedChainId: MIRRORNET_CHAIN_ID, // The network you trust, e.g. the testnet.
 });
 
 try {
-  const account = await client.database.account('actanet');
+  const account = await client.database.account('mirrornet');
   const balances = await client.database.accountBalances(account.id);
   const core = await client.database.asset('1.3.0');
   const balance = balances.find((item) => item.asset_id === core.id);
@@ -100,7 +100,7 @@ try {
 }
 ```
 
-`connect`, `probeLatencies`, `Graphene.actanet` and `Graphene.connect(chain, ...)`
+`connect`, `probeLatencies`, `Graphene.mirrornet` and `Graphene.connect(chain, ...)`
 take `expectedChainId`: the trusted lowercase 64-character hex ID of the network.
 Without it a client expects `CHAIN.chainId` from its bindings; pass the ID of
 another network of the chain, such as a testnet, to use that one. The client
@@ -150,17 +150,17 @@ Automatic reconnect uses the selected endpoint and checks the chain ID again.
 Pass an `AbortSignal` to cancel connection setup and the entire session lifetime:
 
 ```ts
-import { ActanetClient } from '@open-graphene/chain-actanet-api';
+import { MirrornetClient } from '@open-graphene/chain-mirrornet-api';
 
 const controller = new AbortController();
-const client = await ActanetClient.connect('ws://127.0.0.1:8090', {
-  expectedChainId: ACTANET_CHAIN_ID,
+const client = await MirrornetClient.connect('ws://127.0.0.1:8090', {
+  expectedChainId: MIRRORNET_CHAIN_ID,
   signal: controller.signal,
 });
 
 try {
   // The owner of this operation can call controller.abort() at any time.
-  const account = await client.database.account('actanet');
+  const account = await client.database.account('mirrornet');
   console.log(account.id);
 } finally {
   client.close();
@@ -202,7 +202,7 @@ compressed public key. It is synchronous and does not access the network or
 request a new signature.
 
 ```ts
-import { restoreSignedTransaction } from '@open-graphene/chain-actanet-api';
+import { restoreSignedTransaction } from '@open-graphene/chain-mirrornet-api';
 
 const signed = restoreSignedTransaction({
   serializedTransaction: saved.signedTransaction,
@@ -329,9 +329,9 @@ and `client.crypto` directly. Generated RPC method names use camelCase; their
 parameter objects retain the protocol's snake_case field names.
 
 ```ts
-import type { ActanetClient } from '@open-graphene/chain-actanet-api';
+import type { MirrornetClient } from '@open-graphene/chain-mirrornet-api';
 
-async function inspectAccount(client: ActanetClient, accountName: string) {
+async function inspectAccount(client: MirrornetClient, accountName: string) {
   const page = await client.history.accountHistory(accountName, 20, 0);
   console.log(page.items);
 
@@ -354,7 +354,7 @@ History takes `(accountNameOrId, limit, offset)`; `limit + offset` must be at mo
 `client.database.getTicker({ base: 'BTS', quote: 'USD' })` on a chain where both
 assets exist.
 
-## Send a transfer on Actanet
+## Send a transfer on Mirrornet
 
 A transfer has four steps: **prepare → sign → broadcast → wait for inclusion**.
 Preparation resolves accounts/assets, obtains fees and checks the liquid balance.
@@ -366,10 +366,10 @@ Use accounts you control and obtain keys from your application's key storage.
 
 ```ts
 import { PrivateKey } from '@open-graphene/graphene';
-import type { ActanetClient } from '@open-graphene/chain-actanet-api';
+import type { MirrornetClient } from '@open-graphene/chain-mirrornet-api';
 
 async function sendTransfer(
-  client: ActanetClient,
+  client: MirrornetClient,
   activeWif: string,
   from: string,
   to: string,
@@ -380,8 +380,8 @@ async function sendTransfer(
       from,
       to,
       amount: '0.01', // Decimal asset units, expressed as a string.
-      asset: 'ACTA',
-      maxFee: 300000n, // Raw fee units: 3 ACTA when precision is 5.
+      asset: 'MBT',
+      maxFee: 300000n, // Raw fee units: 3 MBT when precision is 5.
     });
 
     const signed = await prepared.sign(signer);
@@ -440,13 +440,13 @@ the rule differs by chain:
 
 - **BitShares and R-Squared** (`'graphene-legacy'`): no high bit in the first byte
   of r or s. Signers retry with another nonce until a signature passes.
-- **Actanet** (`'low-s'`): s at most half the curve order. A deterministic signer
+- **Mirrornet** (`'low-s'`): s at most half the curve order. A deterministic signer
   that cannot retry, such as XKeys or a hardware key, is accepted.
 
-Each chain API signs with its own rule (`ActanetWifSigner`, `BitSharesWifSigner`)
+Each chain API signs with its own rule (`MirrornetWifSigner`, `BitSharesWifSigner`)
 and rejects a signature from an external signer that its nodes would reject,
 before anything is sent. Every `'graphene-legacy'` signature is also low-S, so it
-is valid on Actanet too.
+is valid on Mirrornet too.
 
 ## Combine operations in one transaction
 
@@ -456,14 +456,14 @@ fees with the values returned by the node. Operation names and fields use the
 protocol's snake_case spelling.
 
 ```ts
-import type { ActanetClient } from '@open-graphene/chain-actanet-api';
+import type { MirrornetClient } from '@open-graphene/chain-mirrornet-api';
 import {
   AccountId,
   AssetId,
   bindOperationBuilders,
-} from '@open-graphene/chain-actanet-bindings';
+} from '@open-graphene/chain-mirrornet-bindings';
 
-async function prepareTwoTransfers(client: ActanetClient) {
+async function prepareTwoTransfers(client: MirrornetClient) {
   const op = bindOperationBuilders((operation) => operation);
   const from = AccountId('1.2.100');
   const to = AccountId('1.2.101');
@@ -478,7 +478,7 @@ async function prepareTwoTransfers(client: ActanetClient) {
   );
 }
 
-async function prepareOneTransfer(client: ActanetClient) {
+async function prepareOneTransfer(client: MirrornetClient) {
   return client.operations
     .transfer({
       from: AccountId('1.2.100'),
@@ -492,7 +492,7 @@ async function prepareOneTransfer(client: ActanetClient) {
 ```
 
 Replace the example IDs with accounts on your chain. Other factories include
-`limit_order_create`, `account_update`, `proposal_create` and Actanet's
+`limit_order_create`, `account_update`, `proposal_create` and Mirrornet's
 `data_room_create` and `fee_grant_create`. Their TypeScript inputs describe the required fields.
 The generic path validates encoding and fees; chain-state rules are enforced by
 the node. It does not perform every operation-specific balance/authority check.
@@ -504,7 +504,7 @@ checks each returned signature. Supply all keys needed by the on-chain authority
 
 ```ts
 import { PrivateKey } from '@open-graphene/graphene';
-import type { PreparedTransaction } from '@open-graphene/chain-actanet-api';
+import type { PreparedTransaction } from '@open-graphene/chain-mirrornet-api';
 
 async function signWithTwoKeys(
   prepared: PreparedTransaction,
@@ -538,15 +538,15 @@ import {
   decryptMemoWithWif,
   uniqueNonce,
 } from '@open-graphene/graphene';
-import type { ActanetClient } from '@open-graphene/chain-actanet-api';
+import type { MirrornetClient } from '@open-graphene/chain-mirrornet-api';
 import {
   CHAIN,
   MemoDataCodec,
   type MemoData,
-} from '@open-graphene/chain-actanet-bindings';
+} from '@open-graphene/chain-mirrornet-bindings';
 
 async function prepareWithMemo(
-  client: ActanetClient,
+  client: MirrornetClient,
   memoWif: string,
   from: string,
   to: string,
@@ -580,7 +580,7 @@ async function prepareWithMemo(
       from,
       to,
       amount: '0.01',
-      asset: 'ACTA',
+      asset: 'MBT',
       maxFee: 300000n,
       memo,
     });
@@ -600,7 +600,7 @@ async function readMemo(recipientMemoWif: string, memo: MemoData) {
 }
 ```
 
-Public keys carry the chain's prefix: `ACTA` on Actanet, `BTS` on BitShares and
+Public keys carry the chain's prefix: `MBT` on Mirrornet, `BTS` on BitShares and
 `RQRX` on R-Squared (`CHAIN.publicKeyPrefix`). `dispose()` clears
 owned key bytes; JavaScript cannot erase immutable WIF strings or copies retained
 by your application.
@@ -611,9 +611,9 @@ Watches return async iterators. They emit an initial snapshot, then refreshed
 values when notices arrive. Close the stream when the screen or task is finished.
 
 ```ts
-import type { ActanetClient } from '@open-graphene/chain-actanet-api';
+import type { MirrornetClient } from '@open-graphene/chain-mirrornet-api';
 
-async function watchFiveBlocks(client: ActanetClient) {
+async function watchFiveBlocks(client: MirrornetClient) {
   const stream = await client.database.watchDynamicGlobalProperties();
   try {
     let snapshots = 0;
@@ -644,9 +644,9 @@ Its snapshots contain raw lossless JSON values; use generated codecs when you
 need a specific typed object.
 
 ```ts
-import type { ActanetClient } from '@open-graphene/chain-actanet-api';
+import type { MirrornetClient } from '@open-graphene/chain-mirrornet-api';
 
-async function watchObjects(client: ActanetClient) {
+async function watchObjects(client: MirrornetClient) {
   const store = await client.chainStore(['1.2.100', '2.1.0']);
   try {
     console.log('Initial account:', store.get('1.2.100'));
@@ -662,7 +662,7 @@ async function watchObjects(client: ActanetClient) {
 
 ## Data rooms, content cards and fee grants
 
-The Actanet bindings have typed factories, codecs and RPC methods for every data
+The Mirrornet bindings have typed factories, codecs and RPC methods for every data
 room, content card and fee grant operation (operations 80 to 94) and query
 (`client.database.getDataRoomById`, `getContentCardsByRoom`, `getFeeGrantsByGrantee`
 and others). A higher level data room API is not part of this SDK yet.
@@ -678,7 +678,7 @@ import {
   TransactionCodec,
   parseJson,
   stringifyJson,
-} from '@open-graphene/chain-actanet-bindings';
+} from '@open-graphene/chain-mirrornet-bindings';
 
 function roundTripTransaction(rawRpcJson: string) {
   const transaction = TransactionCodec.decode(parseJson(rawRpcJson));
@@ -692,18 +692,18 @@ cannot serialize `bigint` directly. For a signed transaction, use
 
 ## What is supported and tested?
 
-| Capability                                           | Actanet | BitShares | R-Squared |
-| ---------------------------------------------------- | ------: | --------: | --------: |
-| Operation variants with generated JSON bindings      |      95 |        78 |        64 |
-| User operations with FC encoding and typed factories |      88 |        71 |        59 |
-| Generated RPC methods                                |      49 |        32 |        31 |
+| Capability                                           | Mirrornet | BitShares | R-Squared |
+| ---------------------------------------------------- | --------: | --------: | --------: |
+| Operation variants with generated JSON bindings      |        95 |        78 |        64 |
+| User operations with FC encoding and typed factories |        88 |        71 |        59 |
+| Generated RPC methods                                |        49 |        32 |        31 |
 
 The remaining operations are **virtual operations**: records produced by the
 blockchain, not operations a user can sign. FC is Graphene's binary transaction
-format. Every Actanet and BitShares user-operation encoder was compared with Rust
+format. Every Mirrornet and BitShares user-operation encoder was compared with Rust
 and with a native C++ node, using the baseline and rich vectors in
-`tests/fixtures`. Actanet has no public node yet, so its vectors were checked on a
-local actanet-core node.
+`tests/fixtures`. Mirrornet has no public node yet, so its vectors were checked on a
+local mirrornet-core node.
 
 All clients support compound transactions, memo, multiple signers, wallets,
 reconnect, subscriptions and ChainStore. On the tested BitShares public nodes,
@@ -745,7 +745,7 @@ pnpm test:bitshares:live /tmp/bitshares-node.json
 pnpm test:bitshares:live /tmp/bitshares-browser.json --browser
 # Read-only R-Squared checks:
 pnpm test:rsquared:live
-# A transfer between genesis accounts on an Actanet node you run:
+# A transfer between genesis accounts on an Mirrornet node you run:
 node examples/live-transfer.mjs --genesis genesis.private.json --chainId <id> [--broadcast]
 ```
 

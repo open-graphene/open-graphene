@@ -1,6 +1,6 @@
-use graphene_chain_actanet_api::ConnectionStrategy;
+use graphene_chain_mirrornet_api::ConnectionStrategy;
 
-use crate::chain::{Actanet, BitShares, ChainClientBuilder, RSquared};
+use crate::chain::{BitShares, ChainClientBuilder, Mirrornet, RSquared};
 use crate::error::GrapheneConfigError;
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -97,7 +97,7 @@ impl GrapheneClient {
         &self.config
     }
 
-    pub fn actanet(self) -> ChainClientBuilder<Actanet> {
+    pub fn mirrornet(self) -> ChainClientBuilder<Mirrornet> {
         ChainClientBuilder::from_config(self.config)
     }
 

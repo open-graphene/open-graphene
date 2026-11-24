@@ -5,7 +5,7 @@ import * as p from '../graphene-primitives/dist/index.js';
 import * as fc from '../graphene-fc/dist/index.js';
 import * as c from '../graphene-codec/dist/index.js';
 import * as bitshares from '../graphene-chain-bitshares/graphene-chain-bitshares-bindings/dist/index.js';
-import * as actanet from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
+import * as mirrornet from '../graphene-chain-mirrornet/graphene-chain-mirrornet-bindings/dist/index.js';
 
 const vectors = JSON.parse(
   readFileSync(new URL('fixtures/protocol-vectors.json', import.meta.url)),
@@ -22,7 +22,7 @@ test('generic packed IDs and typed varints match shared Rust/native-source vecto
   }
   for (const id of vectors.invalidObjectIds)
     assert.throws(() => p.parseObjectId(id));
-  assert.throws(() => actanet.AccountId('1.3.1'));
+  assert.throws(() => mirrornet.AccountId('1.3.1'));
 });
 test('integer boundaries survive wire JSON and FC without rounding', () => {
   for (const v of vectors.integers) {
@@ -41,7 +41,7 @@ test('integer boundaries survive wire JSON and FC without rounding', () => {
 });
 for (const [name, chain] of [
   ['bitshares', bitshares],
-  ['actanet', actanet],
+  ['mirrornet', mirrornet],
 ]) {
   test(`${name}: generated transaction codecs round trip a public transfer`, () => {
     const tx = chain.TransactionCodec.decode(vectors.transfer.transaction);
@@ -94,15 +94,15 @@ test('recursive proposal fee responses retain bigint amounts', () => {
     { amount: '9007199254740993', asset_id: '1.3.0' },
     [{ amount: 2, asset_id: '1.3.0' }],
   ];
-  const result = actanet.RequiredFeeCodec.decode(value);
+  const result = mirrornet.RequiredFeeCodec.decode(value);
   assert.equal(result[0].amount, 9007199254740993n);
   assert.equal(result[1][0].amount, 2n);
   assert.match(
-    c.stringifyJson(actanet.RequiredFeeCodec.encode(result)),
+    c.stringifyJson(mirrornet.RequiredFeeCodec.encode(result)),
     /9007199254740993/,
   );
 });
-test('actanet: a content card guard extension round trips and rejects unknown guards', () => {
+test('mirrornet: a content card guard extension round trips and rejects unknown guards', () => {
   const operation = {
     fee: { amount: 0, asset_id: '1.3.0' },
     payer: [1, { grant: '1.29.4', sponsor: '1.2.100' }],
@@ -111,7 +111,7 @@ test('actanet: a content card guard extension round trips and rejects unknown gu
     new_hash: 'hash',
     extensions: {},
   };
-  const codec = actanet.ContentCardUpdateOperationCodec;
+  const codec = mirrornet.ContentCardUpdateOperationCodec;
   assert.deepEqual(codec.decode(operation).extensions, {});
   const guarded = codec.decode({
     ...operation,
@@ -157,7 +157,7 @@ test('errors locate nested invalid fields', () => {
   const tx = structuredClone(vectors.transfer.transaction);
   tx.operations[0][1].amount.amount = '9223372036854775808';
   assert.throws(
-    () => actanet.TransactionCodec.decode(tx),
+    () => mirrornet.TransactionCodec.decode(tx),
     (error) => {
       assert.deepEqual(error.path, ['operations', 0, 0, 'amount', 'amount']);
       return true;
@@ -167,7 +167,7 @@ test('errors locate nested invalid fields', () => {
 
 for (const [name, chain] of [
   ['bitshares', bitshares],
-  ['actanet', actanet],
+  ['mirrornet', mirrornet],
 ]) {
   test(`${name}: market operation extensions use class-local C++ options objects`, () => {
     const order = {

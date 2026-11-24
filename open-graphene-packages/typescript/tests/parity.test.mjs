@@ -2,11 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as bitshares from '../graphene-chain-bitshares/graphene-chain-bitshares-bindings/dist/index.js';
-import * as actanet from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
+import * as mirrornet from '../graphene-chain-mirrornet/graphene-chain-mirrornet-bindings/dist/index.js';
 import {
   PreparedTransaction,
   prepareOperations,
-} from '../graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
+} from '../graphene-chain-mirrornet/graphene-chain-mirrornet-api/dist/index.js';
 import { encryptMemo, decryptMemo } from '../graphene-fc/dist/memo.js';
 import { decodePublicKey } from '../graphene-fc/dist/index.js';
 import { bytesToHex, hexToBytes } from '../graphene-primitives/dist/index.js';
@@ -24,13 +24,13 @@ import {
 } from '../graphene-core/dist/index.js';
 const fixture = (name) =>
   JSON.parse(readFileSync(new URL('fixtures/' + name, import.meta.url)));
-// Actanet has no public node yet: its vectors were confirmed on a local actanet-core node
+// Mirrornet has no public node yet: its vectors were confirmed on a local mirrornet-core node
 // (fc-parity-vectors.mjs --live --node=...). What it keeps from BitShares is also checked against
 // the BitShares vectors below, which native C++ confirmed.
-const nativeChecked = new Set(['bitshares', 'actanet']);
+const nativeChecked = new Set(['bitshares', 'mirrornet']);
 for (const [chain, b] of [
   ['bitshares', bitshares],
-  ['actanet', actanet],
+  ['mirrornet', mirrornet],
 ]) {
   test(
     chain +
@@ -60,8 +60,8 @@ for (const [chain, b] of [
     },
   );
 }
-// What Actanet changes in the BitShares 7.0.4 operations; everything else stays byte for byte.
-const actanetChanges = {
+// What Mirrornet changes in the BitShares 7.0.4 operations; everything else stays byte for byte.
+const mirrornetChanges = {
   // rdPoS adds witness pool sizes to chain_parameters.
   changed: ['committee_member_update_global_parameters_operation'],
   added: [
@@ -101,14 +101,14 @@ const reprefixKeys = (value, from, to) => {
     );
   return value;
 };
-test('actanet: every operation kept from BitShares matches the native-checked BitShares vectors', () => {
+test('mirrornet: every operation kept from BitShares matches the native-checked BitShares vectors', () => {
   const names = (chain) =>
     fixture(chain + '-fc-parity.json').vectors.map((v) => v.name);
-  const own = names('actanet'),
+  const own = names('mirrornet'),
     upstream = names('bitshares');
   assert.deepEqual(
     own.filter((n) => !upstream.includes(n)),
-    actanetChanges.added,
+    mirrornetChanges.added,
   );
   assert.deepEqual(
     upstream.filter((n) => !own.includes(n)),
@@ -118,15 +118,15 @@ test('actanet: every operation kept from BitShares matches the native-checked Bi
     ...fixture('bitshares-fc-parity.json').vectors,
     ...fixture('bitshares-fc-parity-rich.json').vectors,
   ]) {
-    if (actanetChanges.changed.includes(v.name)) continue;
+    if (mirrornetChanges.changed.includes(v.name)) continue;
     const operation = reprefixKeys(
       v.operation,
       bitshares.CHAIN.publicKeyPrefix,
-      actanet.CHAIN.publicKeyPrefix,
+      mirrornet.CHAIN.publicKeyPrefix,
     );
     assert.equal(
       bytesToHex(
-        actanet.encodeOperation(actanet.OperationCodec.decode(operation)),
+        mirrornet.encodeOperation(mirrornet.OperationCodec.decode(operation)),
       ),
       v.rust.hex,
       v.name,
@@ -168,7 +168,7 @@ test('memo ciphertext matches Rust; peer decrypts, wrong nonce/key and tampering
   );
 });
 test('generic transactions collect distinct signatures without changing transaction ID', async () => {
-  const b = actanet,
+  const b = mirrornet,
     v = fixture('protocol-vectors.json').transfer.transaction;
   const tx = b.TransactionCodec.decode({
     ...v,
@@ -208,7 +208,7 @@ test('generic transactions collect distinct signatures without changing transact
   }
 });
 test('FC containers enforce protocol ordering and reject unsupported populated extensions', () => {
-  const b = actanet,
+  const b = mirrornet,
     asset = { amount: 0n, asset_id: b.AssetId('1.3.0') };
   const authority = {
     weight_threshold: 1,
@@ -272,7 +272,7 @@ test('amounts, account validation and authority analysis preserve Rust semantics
   );
 });
 test('recursive proposal fees are written to nested operations and included in fee cap', async () => {
-  const b = actanet,
+  const b = mirrornet,
     transfer = b.OperationCodec.decode(
       fixture('protocol-vectors.json').transfer.transaction.operations[0],
     );

@@ -102,17 +102,17 @@ const overrides = Object.fromEntries(
   artifacts.map((item) => [item.name, 'file:' + join(destination, item.file)]),
 );
 const consumerResults = [];
-const chains = ['bitshares', 'rsquared', 'actanet'];
+const chains = ['bitshares', 'rsquared', 'mirrornet'];
 for (const chain of chains) {
   const clientName = {
     bitshares: 'BitShares',
     rsquared: 'RSquared',
-    actanet: 'Actanet',
+    mirrornet: 'Mirrornet',
   }[chain];
   const operationCount = {
     bitshares: 71,
     rsquared: 59,
-    actanet: 88,
+    mirrornet: 88,
   }[chain];
   const consumer = join(destination, 'consumer-' + chain);
   await mkdir(consumer);

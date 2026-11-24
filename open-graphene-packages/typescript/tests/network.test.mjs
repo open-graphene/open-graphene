@@ -2,12 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import * as b from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
+import * as b from '../graphene-chain-mirrornet/graphene-chain-mirrornet-bindings/dist/index.js';
 import {
-  ActanetClient,
+  MirrornetClient,
   PreparedTransfer,
   PreparedTransaction,
-} from '../graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
+} from '../graphene-chain-mirrornet/graphene-chain-mirrornet-api/dist/index.js';
 import { BitSharesClient } from '../graphene-chain-bitshares/graphene-chain-bitshares-api/dist/index.js';
 import { RSquaredClient } from '../graphene-chain-rsquared/graphene-chain-rsquared-api/dist/index.js';
 import * as bitshares from '../graphene-chain-bitshares/graphene-chain-bitshares-bindings/dist/index.js';
@@ -203,16 +203,19 @@ test('an invalid expected network is rejected before opening sockets', async () 
       createSocket,
     };
     await assert.rejects(
-      ActanetClient.connect('ws://fixture', options),
+      MirrornetClient.connect('ws://fixture', options),
       /chain ID/,
     );
-    await assert.rejects(Graphene.actanet('ws://fixture', options), /chain ID/);
     await assert.rejects(
-      async () => Graphene.connect('actanet', 'ws://fixture', options),
+      Graphene.mirrornet('ws://fixture', options),
+      /chain ID/,
+    );
+    await assert.rejects(
+      async () => Graphene.connect('mirrornet', 'ws://fixture', options),
       /chain ID/,
     );
     assert.throws(
-      () => ActanetClient.probeLatencies(['ws://fixture'], options),
+      () => MirrornetClient.probeLatencies(['ws://fixture'], options),
       /chain ID/,
     );
   }
@@ -223,7 +226,7 @@ test('an invalid expected network is rejected before opening sockets', async () 
 // Every chain signs for the network of its session, not the chain ID constant in its bindings:
 // one chain has several networks (mainnet, testnet), each with its own chain ID.
 for (const [name, Client, chain] of [
-  ['actanet', ActanetClient, b],
+  ['mirrornet', MirrornetClient, b],
   ['bitshares', BitSharesClient, bitshares],
   ['rsquared', RSquaredClient, rsquared],
 ]) {
@@ -273,7 +276,7 @@ for (const strategy of ['first-available', 'lowest-latency']) {
   test(`${strategy} selects only nodes of the configured network and closes rejected sockets`, async (t) => {
     const sockets = [];
     const client = await Graphene.connect(
-      'actanet',
+      'mirrornet',
       ['ws://wrong', 'ws://right'],
       {
         expectedChainId: alternateChainId,
@@ -302,7 +305,7 @@ for (const strategy of ['first-available', 'lowest-latency']) {
 test('a mismatched network rejects connection before any transaction RPC and closes the socket', async () => {
   const socket = new Socket(b.CHAIN.chainId);
   await assert.rejects(
-    ActanetClient.connect('ws://wrong', {
+    MirrornetClient.connect('ws://wrong', {
       expectedChainId: alternateChainId,
       createSocket: () => socket,
     }),
@@ -315,7 +318,7 @@ test('a mismatched network rejects connection before any transaction RPC and clo
 
 test('latency probes filter mismatched networks and close every probe socket', async () => {
   const sockets = [];
-  const results = await ActanetClient.probeLatencies(
+  const results = await MirrornetClient.probeLatencies(
     ['ws://wrong', 'ws://right'],
     {
       expectedChainId: alternateChainId,
@@ -347,7 +350,7 @@ test('reconnect preserves the original network after caller options change', asy
       return socket;
     },
   };
-  const client = await ActanetClient.connect('ws://fixture', options);
+  const client = await MirrornetClient.connect('ws://fixture', options);
   t.after(() => client.close());
   const prepared = await client.prepareTransfer(request);
   options.expectedChainId = b.CHAIN.chainId;
@@ -372,7 +375,7 @@ test('reconnect preserves the original network after caller options change', asy
 for (const chainId of [b.CHAIN.chainId, alternateChainId]) {
   test(`transfer and generic builders sign the configured network ${chainId.slice(0, 8)}`, async (t) => {
     const socket = new Socket(chainId);
-    const client = await Graphene.actanet('ws://fixture', {
+    const client = await Graphene.mirrornet('ws://fixture', {
       expectedChainId: chainId,
       createSocket: () => socket,
     });

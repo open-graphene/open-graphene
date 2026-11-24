@@ -4,9 +4,9 @@ This directory contains the active Rust runtime crates, pure SDK helper crates, 
 
 ## Crates
 
-- `graphene` (`graphene`): top-level user-facing facade for chain clients and examples. Actanet is its default chain (its API sits at the crate root); BitShares and R-Squared are in `graphene::bitshares` and `graphene::rsquared`.
-- `graphene-chain-api`: the high-level API source shared by every chain (sessions, queries, live subscriptions, operation builders, signing, broadcast). Not a crate itself: `graphene-chain-{actanet,bitshares,rsquared}-api` build it against their bindings. See [`graphene-chain-api`](graphene-chain-api/README.md).
-- `graphene-chain-actanet-bindings`: generated Actanet protocol and wire bindings; `graphene-chain-actanet-wasm` builds the shared `graphene-chain-wasm` source (browser-side transaction digest) against them.
+- `graphene` (`graphene`): top-level user-facing facade for chain clients and examples. Mirrornet is its default chain (its API sits at the crate root); BitShares and R-Squared are in `graphene::bitshares` and `graphene::rsquared`.
+- `graphene-chain-api`: the high-level API source shared by every chain (sessions, queries, live subscriptions, operation builders, signing, broadcast). Not a crate itself: `graphene-chain-{mirrornet,bitshares,rsquared}-api` build it against their bindings. See [`graphene-chain-api`](graphene-chain-api/README.md).
+- `graphene-chain-mirrornet-bindings`: generated Mirrornet protocol and wire bindings; `graphene-chain-mirrornet-wasm` builds the shared `graphene-chain-wasm` source (browser-side transaction digest) against them.
 - `graphene-chain-rsquared-bindings`: generated R-Squared protocol, JSON/RPC and FC wire bindings. See [R-Squared](../../docs/RSQUARED.md) for generation and coverage.
 - `graphene-chain-bitshares-bindings`: generated BitShares protocol and wire bindings used to keep cross-chain generation honest.
 - `graphene-fc` (`open-graphene-fc`): FC serialization, signing, digest, and WIF helpers.
@@ -35,7 +35,7 @@ let live = Graphene::builder()
     .servers(["ws://127.0.0.1:8090"])
     .prefix(graphene::PUBLIC_KEY_PREFIX)
     .build()?
-    .actanet()
+    .mirrornet()
     .connect_live()
     .await?;
 
@@ -86,12 +86,12 @@ This live wrapper currently covers dynamic-global-properties, account, asset, ac
 
 | Surface | Blocking API shape | Live API shape | Proof example |
 |---|---|---|---|
-| Dynamic global properties | `actanet.database().dynamic_global_properties().get().await?` | `live.database().subscribe_dynamic_global_properties_timeout(...)` | `actanet_database_dynamic_global_properties_subscribe`, `actanet_live_database_object_subscribe` |
-| Account object | `actanet.database().account_by_id("1.2.100").get().await?` | `live.database().account_by_id("1.2.100").subscribe_timeout(...)` | `actanet_database_account_subscribe`, `actanet_live_database_object_subscribe` |
-| Asset object | `actanet.database().asset_by_id("1.3.0").get().await?` | `live.database().asset_by_id("1.3.0").subscribe_timeout(...)` | `actanet_database_asset_subscribe`, `actanet_live_database_object_subscribe` |
-| Account balances | `actanet.database().account_balances("actanet", []).subscribe().await?` | `live.database().account_balances_by_id("1.2.100", ["1.3.0"]).subscribe_timeout(...)` | `actanet_database_account_balances_subscribe`, `actanet_live_account_activity_subscribe` |
-| Account orders | `actanet.database().account_orders("actanet").subscribe().await?` | `live.database().account_orders_by_id("1.2.100").subscribe_timeout(...)` | `actanet_database_account_orders_subscribe`, `actanet_live_account_activity_subscribe` |
-| Account history | `actanet.history().account_history("actanet").limit(20).offset(0).subscribe().await?` | `live.history()?.account_history_by_id("1.2.100").limit(20).offset(0).subscribe_timeout(...)` | `actanet_history_account_subscribe`, `actanet_live_history_account_subscribe` |
-| Broadcast callback confirmation | `actanet.network_broadcast().broadcast_signed_transfer_with_callback_timeout(...)` | `live.network_broadcast()?.send_signed_transfer_with_callback(signed)?.wait_timeout(...)` | `actanet_operations_transfer_broadcast_with_callback`, `actanet_live_transfer_callback_stress`, `actanet_live_transfer_updates_e2e` (mutates the configured network and requires `ACTANET_ACTIVE_WIF`; nodes from `ACTANET_RPC_SERVERS`) |
+| Dynamic global properties | `mirrornet.database().dynamic_global_properties().get().await?` | `live.database().subscribe_dynamic_global_properties_timeout(...)` | `mirrornet_database_dynamic_global_properties_subscribe`, `mirrornet_live_database_object_subscribe` |
+| Account object | `mirrornet.database().account_by_id("1.2.100").get().await?` | `live.database().account_by_id("1.2.100").subscribe_timeout(...)` | `mirrornet_database_account_subscribe`, `mirrornet_live_database_object_subscribe` |
+| Asset object | `mirrornet.database().asset_by_id("1.3.0").get().await?` | `live.database().asset_by_id("1.3.0").subscribe_timeout(...)` | `mirrornet_database_asset_subscribe`, `mirrornet_live_database_object_subscribe` |
+| Account balances | `mirrornet.database().account_balances("actanet", []).subscribe().await?` | `live.database().account_balances_by_id("1.2.100", ["1.3.0"]).subscribe_timeout(...)` | `mirrornet_database_account_balances_subscribe`, `mirrornet_live_account_activity_subscribe` |
+| Account orders | `mirrornet.database().account_orders("actanet").subscribe().await?` | `live.database().account_orders_by_id("1.2.100").subscribe_timeout(...)` | `mirrornet_database_account_orders_subscribe`, `mirrornet_live_account_activity_subscribe` |
+| Account history | `mirrornet.history().account_history("actanet").limit(20).offset(0).subscribe().await?` | `live.history()?.account_history_by_id("1.2.100").limit(20).offset(0).subscribe_timeout(...)` | `mirrornet_history_account_subscribe`, `mirrornet_live_history_account_subscribe` |
+| Broadcast callback confirmation | `mirrornet.network_broadcast().broadcast_signed_transfer_with_callback_timeout(...)` | `live.network_broadcast()?.send_signed_transfer_with_callback(signed)?.wait_timeout(...)` | `mirrornet_operations_transfer_broadcast_with_callback`, `mirrornet_live_transfer_callback_stress`, `mirrornet_live_transfer_updates_e2e` (mutates the configured network and requires `MIRRORNET_ACTIVE_WIF`; nodes from `MIRRORNET_RPC_SERVERS`) |
 
 Historical spike/design markdowns, the older live SDK stack, and unused shared operation-adapter helpers were removed once their useful constraints had been folded into code, crate READMEs, and GSD decisions.

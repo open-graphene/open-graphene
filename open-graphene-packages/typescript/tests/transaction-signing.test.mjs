@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { getEventListeners } from 'node:events';
 import { readFileSync } from 'node:fs';
 import { setImmediate as nextTurn } from 'node:timers/promises';
-import * as b from '../graphene-chain-actanet/graphene-chain-actanet-bindings/dist/index.js';
+import * as b from '../graphene-chain-mirrornet/graphene-chain-mirrornet-bindings/dist/index.js';
 import {
   PreparedTransaction,
   TransactionSigningError,
-} from '../graphene-chain-actanet/graphene-chain-actanet-api/dist/index.js';
+} from '../graphene-chain-mirrornet/graphene-chain-mirrornet-api/dist/index.js';
 import {
   signDigestCompact,
   publicKeyFromPrivateKey,

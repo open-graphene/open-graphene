@@ -171,7 +171,7 @@ Default CLI remains protocol-only:
 
 ```bash
 open-graphene-gen-bindings-rs \
-  --spec ./dist/actanet.open-graphene.json \
+  --spec ./dist/mirrornet.open-graphene.json \
   --out-dir ./src/generated
 ```
 
@@ -179,7 +179,7 @@ Common adapter generation is opt-in:
 
 ```bash
 open-graphene-gen-bindings-rs \
-  --spec ./dist/actanet.open-graphene.json \
+  --spec ./dist/mirrornet.open-graphene.json \
   --out-dir ./src/generated \
   --sdk-out-dir ./src/sdk/generated \
   --sdk-profile common-chain
@@ -335,7 +335,7 @@ This gives a low-friction path to replace duplicated manual adapters while keepi
 - Fail generation with clear diagnostics when requested common operations are absent.
 - Keep all RPC, signing, fee lookup, balance checks, and broadcast orchestration outside generated adapters.
 - Preserve fail-closed JSON rendering for unproven fields.
-- Golden-test generated output against the manual Actanet and BitShares adapter behavior before replacing manual modules.
+- Golden-test generated output against the manual Mirrornet and BitShares adapter behavior before replacing manual modules.
 
 ## Proven unsupported branches to preserve
 

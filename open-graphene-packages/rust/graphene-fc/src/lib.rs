@@ -554,7 +554,7 @@ pub fn is_graphene_canonical_compact_signature(signature: &[u8]) -> bool {
 }
 
 /// Kanoniczność jak w Bitcoinie (BIP-62/BIP-146): wyłącznie low-S (`s <= n/2`), `r` bez
-/// ograniczeń. To reguła węzłów actanet (`is_canonical` w actanet-fc), poluzowana dla
+/// ograniczeń. To reguła węzłów mirrornet (`is_canonical` w mirrornet-fc), poluzowana dla
 /// deterministycznych podpisów (RFC 6979, klucze sprzętowe, XKeys, DFNS), niezdolnych do
 /// ponawiania losowania. Węzły BitShares i R-Squared wymagają
 /// [`is_graphene_canonical_compact_signature`].

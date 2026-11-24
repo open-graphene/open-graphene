@@ -672,7 +672,7 @@ pub fn render(protocol: &Protocol, spec_hash: &str) -> Result<BTreeMap<String, S
     files.insert("support.json".into(), serde_json::to_string_pretty(&json!({
         "chain": protocol.chain.id, "schemaVersion": protocol.schema_version, "profileVersion": PROFILE_VERSION, "specSha256": spec_hash,
         "stage": "rust-fc-parity", "dynamicFields": dynamic,
-        "operations": protocol.operations.iter().map(|op| json!({"name":op.name, "tag":op.wire_tag, "virtual":op.is_virtual, "type":true, "json":"generated", "fc": if op.is_virtual { "rejected_virtual" } else { "generated_rust_extension_profile" }, "signing": if op.is_virtual { "not_broadcastable" } else if protocol.chain.id == "actanet" { "low-s" } else { "graphene-legacy" }, "builder":!op.is_virtual})).collect::<Vec<_>>(),
+        "operations": protocol.operations.iter().map(|op| json!({"name":op.name, "tag":op.wire_tag, "virtual":op.is_virtual, "type":true, "json":"generated", "fc": if op.is_virtual { "rejected_virtual" } else { "generated_rust_extension_profile" }, "signing": if op.is_virtual { "not_broadcastable" } else if protocol.chain.id == "mirrornet" { "low-s" } else { "graphene-legacy" }, "builder":!op.is_virtual})).collect::<Vec<_>>(),
         "rpc": protocol.rpc_methods.iter().map(|m| json!({"api":m.api_name,"method":m.name,"descriptor":true,"highLevel":true,"subscription":false})).collect::<Vec<_>>()
     }))? + "\n");
     Ok(files)
@@ -773,7 +773,7 @@ mod tests {
     static NEXT: AtomicUsize = AtomicUsize::new(0);
 
     fn fixture() -> Protocol {
-        serde_json::from_str(include_str!("../../../../open-graphene-packages/rust/graphene-chain-actanet/graphene-chain-actanet-spec/dist/actanet.open-graphene.json")).unwrap()
+        serde_json::from_str(include_str!("../../../../open-graphene-packages/rust/graphene-chain-mirrornet/graphene-chain-mirrornet-spec/dist/mirrornet.open-graphene.json")).unwrap()
     }
     #[test]
     fn rejects_ambiguous_or_missing_protocol_definitions() {

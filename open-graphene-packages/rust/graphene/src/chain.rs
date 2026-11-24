@@ -1,13 +1,13 @@
 use std::marker::PhantomData;
 
-use graphene_chain_actanet_api::{ConnectionStrategy, ServerLatency};
+use graphene_chain_mirrornet_api::{ConnectionStrategy, ServerLatency};
 
 use crate::client::{GrapheneClientConfig, validate_config};
 use crate::error::{GrapheneConfigError, GrapheneConnectError};
 
-/// Actanet: the default chain of this facade, whose API is also re-exported at the crate root.
+/// Mirrornet: the default chain of this facade, whose API is also re-exported at the crate root.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Actanet;
+pub struct Mirrornet;
 
 /// BitShares.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -115,6 +115,6 @@ macro_rules! chain_connect {
     };
 }
 
-chain_connect!(Actanet, graphene_chain_actanet_api);
+chain_connect!(Mirrornet, graphene_chain_mirrornet_api);
 chain_connect!(BitShares, graphene_chain_bitshares_api);
 chain_connect!(RSquared, graphene_chain_rsquared_api);

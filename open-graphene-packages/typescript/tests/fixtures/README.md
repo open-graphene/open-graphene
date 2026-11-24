@@ -7,7 +7,7 @@ times), unrelated to an account or environment secret. Tests never load `.env`.
 Sources and resolutions:
 
 - Generic object ID: Graphene `libraries/protocol/include/graphene/protocol/object_id.hpp`
-  (actanet-core, BitShares), also BitShares `ObjectId.js`. The numeric packing and
+  (mirrornet-core, BitShares), also BitShares `ObjectId.js`. The numeric packing and
   little-endian u64 give `1.2.345 -> 5901000000000201`. Typed account IDs use `d902`.
   This exposed and fixed the Rust generator's accidental instance-only encoding of
   generic IDs.
@@ -23,15 +23,15 @@ Sources and resolutions:
   that pass `fc::ecc::public_key::is_canonical`
   (`libraries/fc/src/crypto/elliptic_common.cpp`). BitShares and R-Squared want no
   high bit in the first byte of r and s and minimal DER, the same rule as the
-  original bitsharesjs `signature.js` (`graphene-legacy`). Actanet wants low-S only
+  original bitsharesjs `signature.js` (`graphene-legacy`). Mirrornet wants low-S only
   (`low-s`). This fixture signature passes both.
 
-- Actanet operation vectors: `node scripts/fc-parity-vectors.mjs --actanet [--rich] --live
+- Mirrornet operation vectors: `node scripts/fc-parity-vectors.mjs --mirrornet [--rich] --live
 --node=ws://127.0.0.1:8090`, compared with the Rust FC oracle and with a local
-  actanet-core node (`main` at `ac068ee9`, with the low-S rule, the epoch and revision guards
-  and the key room owner), as no public Actanet node answers these calls. All 88 nonvirtual
+  mirrornet-core node (`main` at `ac068ee9`, with the low-S rule, the epoch and revision guards
+  and the key room owner), as no public Mirrornet node answers these calls. All 88 nonvirtual
   operations, data rooms and fee grants included, matched natively; the rich vectors set every
-  extension member (`expected_epoch`, `expected_revision`, `owner_key`). The operations Actanet keeps unchanged from
+  extension member (`expected_epoch`, `expected_revision`, `owner_key`). The operations Mirrornet keeps unchanged from
   BitShares 7.0.4 are also checked against the natively confirmed BitShares vectors;
   `parity.test.mjs` lists the ones it adds or changes.
 
