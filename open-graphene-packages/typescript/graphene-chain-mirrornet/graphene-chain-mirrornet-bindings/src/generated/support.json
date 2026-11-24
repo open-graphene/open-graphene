@@ -1345,6 +1345,6 @@
     }
   ],
   "schemaVersion": 1,
-  "specSha256": "85bf6f15450470736605954b3148814dc2d30db779f93e176326eac0aaef87fc",
+  "specSha256": "5811a3ba376480eb9472678c64cc742c5aac6d2f05d12e83d0170568e99d7fb8",
   "stage": "rust-fc-parity"
 }

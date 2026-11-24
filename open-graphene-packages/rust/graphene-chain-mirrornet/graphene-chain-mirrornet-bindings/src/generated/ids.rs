@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 pub const SCHEMA_VERSION: u32 = 1;
 pub const CHAIN_ID: &str = "mirrornet";
-pub const CHAIN_ID_HEX: &str = "97d9626be713cb0d7032f232bbf80df7a3619d71a592da94767d699344bc2809";
+pub const CHAIN_ID_HEX: &str = "a1a2acefdfd4a5e47ee409a74d5746c89db114c7c43cdda708b5d253c65d1bab";
 pub const PUBLIC_KEY_PREFIX: &str = "MBT";
 
 pub const STRUCT_COUNT: usize = 285;
