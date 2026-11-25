@@ -102,30 +102,80 @@ test('recursive proposal fee responses retain bigint amounts', () => {
     /9007199254740993/,
   );
 });
-test('mirrornet: a content card guard extension round trips and rejects unknown guards', () => {
+test('mirrornet: a content card guard is a plain field before empty extensions', () => {
   const operation = {
     fee: { amount: 0, asset_id: '1.3.0' },
     payer: [1, { grant: '1.29.4', sponsor: '1.2.100' }],
     caller: [0, '1.2.101'],
     content_id: '1.27.7',
     new_hash: 'hash',
-    extensions: {},
+    extensions: [],
   };
   const codec = mirrornet.ContentCardUpdateOperationCodec;
-  assert.deepEqual(codec.decode(operation).extensions, {});
-  const guarded = codec.decode({
-    ...operation,
-    extensions: { expected_revision: 3 },
-  });
-  assert.equal(guarded.extensions.expected_revision, 3);
+  assert.equal(codec.decode(operation).expected_revision, undefined);
+
+  const guarded = codec.decode({ ...operation, expected_revision: 3 });
+  assert.equal(guarded.expected_revision, 3);
   assert.deepEqual(JSON.parse(c.stringifyJson(codec.encode(guarded))), {
     ...operation,
-    extensions: { expected_revision: 3 },
+    expected_revision: 3,
   });
+
+  // The guard no longer travels in an extension object.
   assert.throws(() =>
-    codec.decode({ ...operation, extensions: { misspelled_guard: 3 } }),
+    codec.decode({ ...operation, extensions: { expected_revision: 3 } }),
   );
-  assert.throws(() => codec.decode({ ...operation, extensions: [1] }));
+});
+test('mirrornet: a fee grant reads one budget per asset and a tab its deposit', () => {
+  const grant = mirrornet.ProtocolObjectCodec.decode({
+    id: '1.29.4',
+    grantor: '1.2.100',
+    grantee: [0, '1.2.101'],
+    label: 'agents',
+    operations: [95, 96, 97],
+    budgets: [
+      [
+        '1.3.0',
+        {
+          remaining: '9007199254740993',
+          spent: 100,
+          per_period: 50,
+          period_spent: 20,
+        },
+      ],
+      ['1.3.5', { remaining: 300, spent: 0, period_spent: 0 }],
+    ],
+    period_seconds: 3600,
+    period_start: '2026-11-25T00:00:00',
+    expiration: '2026-12-25T00:00:00',
+    can_delegate: false,
+    room_permissions: 0,
+    created: '2026-11-25T00:00:00',
+  });
+  assert.equal(grant.kind, 'fee_grant');
+  const [core, other] = grant.value.budgets;
+  assert.equal(core[0], '1.3.0');
+  assert.equal(core[1].remaining, 9007199254740993n);
+  assert.equal(core[1].per_period, 50n);
+  assert.equal(other[0], '1.3.5');
+  assert.equal(other[1].per_period, undefined);
+
+  const tab = mirrornet.ProtocolObjectCodec.decode({
+    id: '1.30.7',
+    payer: '1.2.100',
+    grant: '1.29.4',
+    payee: '1.2.102',
+    cheque_key:
+      mirrornet.CHAIN.publicKeyPrefix +
+      '6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV',
+    deposit: { amount: 500, asset_id: '1.3.5' },
+    redeemed: 120,
+    created: '2026-11-25T00:00:00',
+    expiration: '2026-11-26T00:00:00',
+  });
+  assert.equal(tab.kind, 'tab');
+  assert.equal(tab.value.deposit.amount, 500n);
+  assert.equal(tab.value.redeemed, 120n);
 });
 test('RPC optional positional holes and nonnullable nulls fail locally', () => {
   const method = c.rpc(

@@ -660,12 +660,14 @@ async function watchObjects(client: MirrornetClient) {
 }
 ```
 
-## Data rooms, content cards and fee grants
+## Data rooms, content cards, fee grants and tabs
 
 The Mirrornet bindings have typed factories, codecs and RPC methods for every data
-room, content card and fee grant operation (operations 80 to 94) and query
-(`client.database.getDataRoomById`, `getContentCardsByRoom`, `getFeeGrantsByGrantee`
-and others). A higher level data room API is not part of this SDK yet.
+room, content card, fee grant and tab operation (operations 80 to 97; 98 and 99 are
+the virtual `tab_redeemed` and `tab_refund`) and query
+(`client.database.getDataRoomById`, `getContentCardsByRoom`, `getFeeGrantsByGrantee`,
+`getTabsByPayee` and others). A fee grant has one budget per asset. A higher level
+data room or tab API is not part of this SDK yet.
 
 ## Preserve large numbers when working with JSON
 
@@ -694,9 +696,9 @@ cannot serialize `bigint` directly. For a signed transaction, use
 
 | Capability                                           | Mirrornet | BitShares | R-Squared |
 | ---------------------------------------------------- | --------: | --------: | --------: |
-| Operation variants with generated JSON bindings      |        95 |        78 |        64 |
-| User operations with FC encoding and typed factories |        88 |        71 |        59 |
-| Generated RPC methods                                |        49 |        32 |        31 |
+| Operation variants with generated JSON bindings      |       100 |        78 |        64 |
+| User operations with FC encoding and typed factories |        91 |        71 |        59 |
+| Generated RPC methods                                |        52 |        32 |        31 |
 
 The remaining operations are **virtual operations**: records produced by the
 blockchain, not operations a user can sign. FC is Graphene's binary transaction

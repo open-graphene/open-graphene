@@ -2,23 +2,23 @@
   "chain": "mirrornet",
   "dynamicFields": [
     {
-      "path": "/rpcMethods/43/params/0/type/inner",
+      "path": "/rpcMethods/46/params/0/type/inner",
       "reason": "unsupported C++ type mapping: commitment_type"
     },
     {
-      "path": "/rpcMethods/43/params/1/type/inner",
+      "path": "/rpcMethods/46/params/1/type/inner",
       "reason": "unsupported C++ type mapping: commitment_type"
     },
     {
-      "path": "/rpcMethods/45/params/1/type",
+      "path": "/rpcMethods/48/params/1/type",
       "reason": "unsupported C++ type mapping: commitment_type"
     },
     {
-      "path": "/rpcMethods/45/params/4/type",
+      "path": "/rpcMethods/48/params/4/type",
       "reason": "unsupported C++ type mapping: int8_t"
     },
     {
-      "path": "/rpcMethods/48/params/0/type",
+      "path": "/rpcMethods/51/params/0/type",
       "reason": "unsupported C++ type mapping: precomputable_transaction"
     },
     {
@@ -26,23 +26,23 @@
       "reason": "unsupported C++ type mapping: bucket_key"
     },
     {
-      "path": "/structs/168/fields/5/type/inner",
+      "path": "/structs/163/fields/5/type/inner",
       "reason": "unsupported C++ type mapping: variant"
     },
     {
-      "path": "/structs/168/fields/18/type",
+      "path": "/structs/163/fields/18/type",
       "reason": "unsupported C++ type mapping: more_data"
     },
     {
-      "path": "/structs/218/fields/1/type",
+      "path": "/structs/213/fields/1/type",
       "reason": "unsupported C++ type mapping: history_key"
     },
     {
-      "path": "/structs/265/fields/3/type",
+      "path": "/structs/272/fields/3/type",
       "reason": "unsupported C++ type mapping: vesting_policy"
     },
     {
-      "path": "/structs/265/fields/4/type",
+      "path": "/structs/272/fields/4/type",
       "reason": "unsupported C++ type mapping: vesting_balance_type"
     }
   ],
@@ -996,6 +996,56 @@
       "tag": 94,
       "type": true,
       "virtual": false
+    },
+    {
+      "builder": true,
+      "fc": "generated_rust_extension_profile",
+      "json": "generated",
+      "name": "tab_create_operation",
+      "signing": "low-s",
+      "tag": 95,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": true,
+      "fc": "generated_rust_extension_profile",
+      "json": "generated",
+      "name": "tab_redeem_operation",
+      "signing": "low-s",
+      "tag": 96,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": true,
+      "fc": "generated_rust_extension_profile",
+      "json": "generated",
+      "name": "tab_close_operation",
+      "signing": "low-s",
+      "tag": 97,
+      "type": true,
+      "virtual": false
+    },
+    {
+      "builder": false,
+      "fc": "rejected_virtual",
+      "json": "generated",
+      "name": "tab_redeemed_operation",
+      "signing": "not_broadcastable",
+      "tag": 98,
+      "type": true,
+      "virtual": true
+    },
+    {
+      "builder": false,
+      "fc": "rejected_virtual",
+      "json": "generated",
+      "name": "tab_refund_operation",
+      "signing": "not_broadcastable",
+      "tag": 99,
+      "type": true,
+      "virtual": true
     }
   ],
   "profileVersion": 1,
@@ -1253,6 +1303,27 @@
       "subscription": false
     },
     {
+      "api": "database",
+      "descriptor": true,
+      "highLevel": true,
+      "method": "get_tab_by_id",
+      "subscription": false
+    },
+    {
+      "api": "database",
+      "descriptor": true,
+      "highLevel": true,
+      "method": "get_tabs_by_payer",
+      "subscription": false
+    },
+    {
+      "api": "database",
+      "descriptor": true,
+      "highLevel": true,
+      "method": "get_tabs_by_payee",
+      "subscription": false
+    },
+    {
       "api": "history",
       "descriptor": true,
       "highLevel": true,
@@ -1345,6 +1416,6 @@
     }
   ],
   "schemaVersion": 1,
-  "specSha256": "5811a3ba376480eb9472678c64cc742c5aac6d2f05d12e83d0170568e99d7fb8",
+  "specSha256": "ff8875c91e3315c45f915ec480763c9961e4fbd0f17db30ee1a353fd8d9e4811",
   "stage": "rust-fc-parity"
 }

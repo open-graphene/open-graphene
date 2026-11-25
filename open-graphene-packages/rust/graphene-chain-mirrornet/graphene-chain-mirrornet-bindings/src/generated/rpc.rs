@@ -34,6 +34,7 @@ pub enum ProtocolObject {
     ContentCard(Box<crate::generated::types::ContentCardObject>),
     ContentCardGrant(Box<crate::generated::types::ContentCardGrantObject>),
     FeeGrant(Box<crate::generated::types::FeeGrantObject>),
+    Tab(Box<crate::generated::types::TabObject>),
     GlobalProperty(Box<crate::generated::types::GlobalPropertyObject>),
     DynamicGlobalProperty(Box<crate::generated::types::DynamicGlobalPropertyObject>),
     AccountBalance(Box<crate::generated::types::AccountBalanceObject>),
@@ -64,6 +65,7 @@ impl serde::Serialize for ProtocolObject {
             Self::ContentCard(value) => serde::Serialize::serialize(value, serializer),
             Self::ContentCardGrant(value) => serde::Serialize::serialize(value, serializer),
             Self::FeeGrant(value) => serde::Serialize::serialize(value, serializer),
+            Self::Tab(value) => serde::Serialize::serialize(value, serializer),
             Self::GlobalProperty(value) => serde::Serialize::serialize(value, serializer),
             Self::DynamicGlobalProperty(value) => serde::Serialize::serialize(value, serializer),
             Self::AccountBalance(value) => serde::Serialize::serialize(value, serializer),
@@ -132,6 +134,9 @@ impl<'de> serde::Deserialize<'de> for ProtocolObject {
                 .map_err(serde::de::Error::custom),
             Some((1, 29)) => serde_json::from_value(value)
                 .map(Self::FeeGrant)
+                .map_err(serde::de::Error::custom),
+            Some((1, 30)) => serde_json::from_value(value)
+                .map(Self::Tab)
                 .map_err(serde::de::Error::custom),
             Some((2, 0)) => serde_json::from_value(value)
                 .map(Self::GlobalProperty)
@@ -1517,6 +1522,122 @@ pub mod database {
         pub struct ProposalRequiredFee(pub crate::generated::types::Asset, pub Vec<RequiredFee>);
 
         pub type Returns = Vec<crate::generated::rpc::database::get_required_fees::RequiredFee>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_tab_by_id`.
+    pub mod get_tab_by_id {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_tab_by_id";
+
+        /// Positional parameters for `database.get_tab_by_id`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub tab_id: crate::generated::ids::TabId,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let params = vec![serde_json::to_value(&self.tab_id)?];
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Option<crate::generated::types::TabObject>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_tabs_by_payee`.
+    pub mod get_tabs_by_payee {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_tabs_by_payee";
+
+        /// Positional parameters for `database.get_tabs_by_payee`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub account_name_or_id: String,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub limit: Option<u32>,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub start_id: Option<crate::generated::ids::TabId>,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let mut params = vec![serde_json::to_value(&self.account_name_or_id)?];
+                let tail: [Option<serde_json::Value>; 2] = [
+                    match &self.limit {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                    match &self.start_id {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                ];
+                if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
+                    for value in tail.into_iter().take(last_provided + 1) {
+                        params.push(value.unwrap_or(serde_json::Value::Null));
+                    }
+                }
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<crate::generated::types::TabObject>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
+    /// RPC `database.get_tabs_by_payer`.
+    pub mod get_tabs_by_payer {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_tabs_by_payer";
+
+        /// Positional parameters for `database.get_tabs_by_payer`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub account_name_or_id: String,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub limit: Option<u32>,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub start_id: Option<crate::generated::ids::TabId>,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let mut params = vec![serde_json::to_value(&self.account_name_or_id)?];
+                let tail: [Option<serde_json::Value>; 2] = [
+                    match &self.limit {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                    match &self.start_id {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                ];
+                if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
+                    for value in tail.into_iter().take(last_provided + 1) {
+                        params.push(value.unwrap_or(serde_json::Value::Null));
+                    }
+                }
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<crate::generated::types::TabObject>;
 
         pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
             serde_json::from_value(value)

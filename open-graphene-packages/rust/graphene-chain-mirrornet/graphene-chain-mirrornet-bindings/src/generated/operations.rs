@@ -1221,6 +1221,8 @@ pub struct DataRoomCreateOperation {
     pub payer: crate::generated::static_variants::FeePayerRef,
     pub caller: crate::generated::static_variants::DataRoomMemberRef,
     pub owner: crate::generated::ids::AccountId,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub owner_key: Option<String>,
     pub name: String,
     pub description: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1229,7 +1231,7 @@ pub struct DataRoomCreateOperation {
     pub caller_key: Option<String>,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub caller_permissions: u32,
-    pub extensions: crate::generated::types::DataRoomCreateOperationExt,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const DATA_ROOM_UPDATE_OPERATION_ID: u32 = 81;
@@ -1279,7 +1281,10 @@ pub struct DataRoomMemberAddOperation {
     pub epoch_keys: Vec<(u32, String)>,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub permissions: u32,
-    pub extensions: crate::generated::types::DataRoomMemberAddOperationExt,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_epoch: Option<u32>,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const DATA_ROOM_MEMBER_UPDATE_OPERATION_ID: u32 = 84;
@@ -1323,7 +1328,10 @@ pub struct DataRoomRotateKeyOperation {
     pub caller: crate::generated::static_variants::DataRoomMemberRef,
     pub room: crate::generated::ids::DataRoomId,
     pub member_keys: Vec<(crate::generated::static_variants::DataRoomMemberRef, String)>,
-    pub extensions: crate::generated::types::DataRoomRotateKeyOperationExt,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_epoch: Option<u32>,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CONTENT_CARD_CREATE_OPERATION_ID: u32 = 87;
@@ -1342,7 +1350,10 @@ pub struct ContentCardCreateOperation {
     pub description: String,
     pub content_key: String,
     pub storage_data: String,
-    pub extensions: crate::generated::types::ContentCardCreateOperationExt,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_epoch: Option<u32>,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CONTENT_CARD_UPDATE_OPERATION_ID: u32 = 88;
@@ -1367,7 +1378,13 @@ pub struct ContentCardUpdateOperation {
     pub new_content_key: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub new_storage_data: Option<String>,
-    pub extensions: crate::generated::types::ContentCardUpdateOperationExt,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_revision: Option<u32>,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_epoch: Option<u32>,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CONTENT_CARD_REMOVE_OPERATION_ID: u32 = 89;
@@ -1380,7 +1397,10 @@ pub struct ContentCardRemoveOperation {
     pub payer: crate::generated::static_variants::FeePayerRef,
     pub caller: crate::generated::static_variants::DataRoomMemberRef,
     pub content_id: crate::generated::ids::ContentCardId,
-    pub extensions: crate::generated::types::ContentCardRemoveOperationExt,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_revision: Option<u32>,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CONTENT_CARD_GRANT_CREATE_OPERATION_ID: u32 = 90;
@@ -1395,7 +1415,10 @@ pub struct ContentCardGrantCreateOperation {
     pub content_id: crate::generated::ids::ContentCardId,
     pub grantee: crate::generated::static_variants::DataRoomMemberRef,
     pub key: String,
-    pub extensions: crate::generated::types::ContentCardGrantCreateOperationExt,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_revision: Option<u32>,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
 pub const CONTENT_CARD_GRANT_REVOKE_OPERATION_ID: u32 = 91;
@@ -1425,12 +1448,10 @@ pub struct FeeGrantCreateOperation {
     pub grantee: crate::generated::static_variants::DataRoomMemberRef,
     pub label: String,
     pub operations: Vec<u16>,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
-    pub budget: i64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub period_budget: Option<i64>,
+    pub budgets: Vec<(
+        crate::generated::ids::AssetId,
+        crate::generated::types::FeeGrantBudgetLimits,
+    )>,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub period_seconds: u32,
     pub expiration: String,
@@ -1451,9 +1472,12 @@ pub struct FeeGrantUpdateOperation {
     pub caller: crate::generated::ids::AccountId,
     pub grant: crate::generated::ids::FeeGrantId,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub new_budget: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub new_period_budget: Option<i64>,
+    pub new_budgets: Option<
+        Vec<(
+            crate::generated::ids::AssetId,
+            crate::generated::types::FeeGrantBudgetLimits,
+        )>,
+    >,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub new_period_seconds: Option<u32>,
@@ -1482,4 +1506,81 @@ pub struct FeeGrantRevokeOperation {
     pub caller: crate::generated::ids::AccountId,
     pub grant: crate::generated::ids::FeeGrantId,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const TAB_CREATE_OPERATION_ID: u32 = 95;
+
+/// Protocol operation `tab_create_operation` with wire tag 95.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetTabCreateOperation)]
+pub struct TabCreateOperation {
+    pub fee: crate::generated::types::Asset,
+    pub payer: crate::generated::static_variants::FeePayerRef,
+    pub caller: crate::generated::static_variants::DataRoomMemberRef,
+    pub payee: crate::generated::ids::AccountId,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub payee_key: Option<String>,
+    pub cheque_key: String,
+    pub deposit: crate::generated::types::Asset,
+    #[schema(schema_with = crate::generated::types::u32_schema)]
+    pub seconds: u32,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const TAB_REDEEM_OPERATION_ID: u32 = 96;
+
+/// Protocol operation `tab_redeem_operation` with wire tag 96.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetTabRedeemOperation)]
+pub struct TabRedeemOperation {
+    pub fee: crate::generated::types::Asset,
+    pub payer: crate::generated::static_variants::FeePayerRef,
+    pub caller: crate::generated::static_variants::DataRoomMemberRef,
+    pub tab: crate::generated::ids::TabId,
+    pub cheque: crate::generated::types::TabCheque,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const TAB_CLOSE_OPERATION_ID: u32 = 97;
+
+/// Protocol operation `tab_close_operation` with wire tag 97.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetTabCloseOperation)]
+pub struct TabCloseOperation {
+    pub fee: crate::generated::types::Asset,
+    pub payer: crate::generated::static_variants::FeePayerRef,
+    pub caller: crate::generated::static_variants::DataRoomMemberRef,
+    pub tab: crate::generated::ids::TabId,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cheque: Option<crate::generated::types::TabCheque>,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const TAB_REDEEMED_OPERATION_ID: u32 = 98;
+
+/// Protocol operation `tab_redeemed_operation` with wire tag 98.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetTabRedeemedOperation)]
+pub struct TabRedeemedOperation {
+    pub fee: crate::generated::types::Asset,
+    pub tab: crate::generated::ids::TabId,
+    pub payer: crate::generated::ids::AccountId,
+    pub payee: crate::generated::ids::AccountId,
+    pub amount: crate::generated::types::Asset,
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
+    pub total: i64,
+}
+
+pub const TAB_REFUND_OPERATION_ID: u32 = 99;
+
+/// Protocol operation `tab_refund_operation` with wire tag 99.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetTabRefundOperation)]
+pub struct TabRefundOperation {
+    pub fee: crate::generated::types::Asset,
+    pub tab: crate::generated::ids::TabId,
+    pub payer: crate::generated::ids::AccountId,
+    pub amount: crate::generated::types::Asset,
 }

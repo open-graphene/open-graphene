@@ -9,13 +9,13 @@ pub const CHAIN_ID: &str = "mirrornet";
 pub const CHAIN_ID_HEX: &str = "a1a2acefdfd4a5e47ee409a74d5746c89db114c7c43cdda708b5d253c65d1bab";
 pub const PUBLIC_KEY_PREFIX: &str = "MBT";
 
-pub const STRUCT_COUNT: usize = 285;
+pub const STRUCT_COUNT: usize = 292;
 pub const ENUM_COUNT: usize = 11;
 pub const STATIC_VARIANT_COUNT: usize = 13;
-pub const OPERATION_COUNT: usize = 95;
-pub const OBJECT_TYPE_COUNT: usize = 49;
+pub const OPERATION_COUNT: usize = 100;
+pub const OBJECT_TYPE_COUNT: usize = 50;
 pub const RPC_API_COUNT: usize = 5;
-pub const RPC_METHOD_COUNT: usize = 49;
+pub const RPC_METHOD_COUNT: usize = 52;
 
 #[derive(
     Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
@@ -1342,6 +1342,37 @@ impl From<&str> for SpecialAuthorityId {
 impl SpecialAuthorityId {
     pub const SPACE_ID: u32 = 2;
     pub const TYPE_ID: u32 = 14;
+}
+
+/// Object ID for `tab` protocol objects.
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, utoipa::ToSchema,
+)]
+#[schema(as = GrapheneMirrornetTabId)]
+#[serde(transparent)]
+pub struct TabId(pub String);
+
+impl TabId {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<String> for TabId {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for TabId {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
+impl TabId {
+    pub const SPACE_ID: u32 = 1;
+    pub const TYPE_ID: u32 = 30;
 }
 
 /// Object ID for `ticket` protocol objects.

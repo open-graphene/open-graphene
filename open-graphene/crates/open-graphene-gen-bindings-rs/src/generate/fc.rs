@@ -1097,7 +1097,19 @@ pub(crate) fn is_fc_supported_flat_map(key: &TypeRef, value: &TypeRef) -> bool {
     ) && (matches!(
         value,
         TypeRef::Uint16 | TypeRef::Int64 { json: None, .. } | TypeRef::String
-    ) || matches!(value, TypeRef::Ref { name } if name == "price"))
+    ) || is_fc_audited_flat_map_value_struct(value))
+}
+
+/// Structs a flat_map may hold as values, each written with its own generated FcSerialize after
+/// its key: `price` (credit offers' acceptable collateral) and Mirrornet's fee grant budgets
+/// (`fee_grant_budget_limits` in operations, `fee_grant_budget` in `fee_grant_object`), one per
+/// asset.
+fn is_fc_audited_flat_map_value_struct(value: &TypeRef) -> bool {
+    matches!(
+        value,
+        TypeRef::Ref { name }
+            if matches!(name.as_str(), "price" | "fee_grant_budget_limits" | "fee_grant_budget")
+    )
 }
 
 pub(crate) fn render_vote_id_arg(
@@ -2074,6 +2086,33 @@ mod tests {
         assert!(output.contains("write_varint(41u64, out);"));
         assert!(output.contains("(**value).0.fc_serialize(out)?;"));
         assert!(output.contains("(**value).1.fc_serialize(out)?;"));
+    }
+
+    #[test]
+    fn fc_flat_map_renderer_writes_fee_grant_budgets_in_asset_order() {
+        let asset_id = TypeRef::ProtocolObjectId {
+            object_type: "asset".to_string(),
+        };
+        let budget_limits = TypeRef::Ref {
+            name: "fee_grant_budget_limits".to_string(),
+        };
+        assert!(is_fc_supported_flat_map(&asset_id, &budget_limits));
+
+        let budgets = render_fc_value_serialize_lines(
+            "self.budgets",
+            "&self.budgets",
+            &TypeRef::FlatMap {
+                key: Box::new(asset_id),
+                value: Box::new(budget_limits),
+                ordering: open_graphene_json_schema::OrderingRule::Unresolved,
+            },
+            "        ",
+        )
+        .expect("render fee grant budgets");
+        assert!(budgets.contains("previous >= key_parts.instance"));
+        assert!(budgets.contains("flat_map keys must be sorted and unique"));
+        assert!(budgets.contains("value.fc_serialize(out)?;"));
+        assert!(!budgets.contains(".sort"));
     }
 
     #[test]

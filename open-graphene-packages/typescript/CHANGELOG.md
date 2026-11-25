@@ -4,10 +4,10 @@
 
 - Native TypeScript SDKs for Mirrornet, BitShares and R-Squared, generated from the
   shared protocol specification, for Node.js and browser applications.
-- Generated JSON/RPC bindings for 95/78/64 operation variants and 49/32/31 RPC
-  methods, plus FC encoding and typed factories for all 88/71/59 nonvirtual
+- Generated JSON/RPC bindings for 100/78/64 operation variants and 52/32/31 RPC
+  methods, plus FC encoding and typed factories for all 91/71/59 nonvirtual
   operations (Mirrornet/BitShares/R-Squared respectively). Mirrornet includes data
-  rooms, content cards and fee grants (operations 80 to 94).
+  rooms, content cards, fee grants (operations 80 to 94) and tabs (95 to 99).
 - One chain API source shared by the three chains: transaction preparation, fees,
   signing, broadcast with callbacks, inclusion tracking and inspection, and
   restoration of saved signed transactions; wallet, memo, multisignature and

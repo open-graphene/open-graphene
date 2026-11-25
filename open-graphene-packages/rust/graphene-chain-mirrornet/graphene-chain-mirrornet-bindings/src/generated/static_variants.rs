@@ -1117,6 +1117,11 @@ pub enum FeeParameters {
     FeeGrantRevokeOperationFeeParamsT(
         Box<crate::generated::types::FeeGrantRevokeOperationFeeParamsT>,
     ),
+    TabCreateOperationFeeParamsT(Box<crate::generated::types::TabCreateOperationFeeParamsT>),
+    TabRedeemOperationFeeParamsT(Box<crate::generated::types::TabRedeemOperationFeeParamsT>),
+    TabCloseOperationFeeParamsT(Box<crate::generated::types::TabCloseOperationFeeParamsT>),
+    TabRedeemedOperationFeeParamsT(Box<crate::generated::types::TabRedeemedOperationFeeParamsT>),
+    TabRefundOperationFeeParamsT(Box<crate::generated::types::TabRefundOperationFeeParamsT>),
 }
 
 impl utoipa::PartialSchema for FeeParameters {
@@ -1600,6 +1605,31 @@ impl utoipa::PartialSchema for FeeParameters {
                     94,
                     "fee_grant_revoke_operation_fee_params_t",
                     static_variant_ref_payload::<crate::generated::types::FeeGrantRevokeOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    95,
+                    "tab_create_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::TabCreateOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    96,
+                    "tab_redeem_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::TabRedeemOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    97,
+                    "tab_close_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::TabCloseOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    98,
+                    "tab_redeemed_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::TabRedeemedOperationFeeParamsT>(),
+                ))
+                .item(static_variant_arm_schema(
+                    99,
+                    "tab_refund_operation_fee_params_t",
+                    static_variant_ref_payload::<crate::generated::types::TabRefundOperationFeeParamsT>(),
                 ))
                 .build(),
         )
@@ -2131,6 +2161,43 @@ impl utoipa::ToSchema for FeeParameters {
             schemas,
         );
         schemas.push((
+            <crate::generated::types::TabCloseOperationFeeParamsT as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::types::TabCloseOperationFeeParamsT as utoipa::PartialSchema>::schema(
+            ),
+        ));
+        <crate::generated::types::TabCloseOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::TabCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::TabCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::TabCreateOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::TabRedeemOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::TabRedeemOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::TabRedeemOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::TabRedeemedOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::TabRedeemedOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::TabRedeemedOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
+            <crate::generated::types::TabRefundOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
+            <crate::generated::types::TabRefundOperationFeeParamsT as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::types::TabRefundOperationFeeParamsT as utoipa::ToSchema>::schemas(
+            schemas,
+        );
+        schemas.push((
             <crate::generated::types::TicketCreateOperationFeeParamsT as utoipa::ToSchema>::name().to_string(),
             <crate::generated::types::TicketCreateOperationFeeParamsT as utoipa::PartialSchema>::schema(),
         ));
@@ -2608,6 +2675,26 @@ impl serde::Serialize for FeeParameters {
                 seq.serialize_element(&94u32)?;
                 seq.serialize_element(value.as_ref())?;
             }
+            Self::TabCreateOperationFeeParamsT(value) => {
+                seq.serialize_element(&95u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::TabRedeemOperationFeeParamsT(value) => {
+                seq.serialize_element(&96u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::TabCloseOperationFeeParamsT(value) => {
+                seq.serialize_element(&97u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::TabRedeemedOperationFeeParamsT(value) => {
+                seq.serialize_element(&98u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::TabRefundOperationFeeParamsT(value) => {
+                seq.serialize_element(&99u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
         }
         seq.end()
     }
@@ -2915,6 +3002,21 @@ impl<'de> serde::Deserialize<'de> for FeeParameters {
                 .map_err(serde::de::Error::custom),
             94 => serde_json::from_value::<crate::generated::types::FeeGrantRevokeOperationFeeParamsT>(payload)
                 .map(|value| Self::FeeGrantRevokeOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            95 => serde_json::from_value::<crate::generated::types::TabCreateOperationFeeParamsT>(payload)
+                .map(|value| Self::TabCreateOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            96 => serde_json::from_value::<crate::generated::types::TabRedeemOperationFeeParamsT>(payload)
+                .map(|value| Self::TabRedeemOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            97 => serde_json::from_value::<crate::generated::types::TabCloseOperationFeeParamsT>(payload)
+                .map(|value| Self::TabCloseOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            98 => serde_json::from_value::<crate::generated::types::TabRedeemedOperationFeeParamsT>(payload)
+                .map(|value| Self::TabRedeemedOperationFeeParamsT(Box::new(value)))
+                .map_err(serde::de::Error::custom),
+            99 => serde_json::from_value::<crate::generated::types::TabRefundOperationFeeParamsT>(payload)
+                .map(|value| Self::TabRefundOperationFeeParamsT(Box::new(value)))
                 .map_err(serde::de::Error::custom),
             other => Err(serde::de::Error::custom(format!("unknown static variant FeeParameters tag {other}"))),
         }
@@ -3460,6 +3562,11 @@ pub enum Operation {
     FeeGrantCreateOperation(Box<crate::generated::operations::FeeGrantCreateOperation>),
     FeeGrantUpdateOperation(Box<crate::generated::operations::FeeGrantUpdateOperation>),
     FeeGrantRevokeOperation(Box<crate::generated::operations::FeeGrantRevokeOperation>),
+    TabCreateOperation(Box<crate::generated::operations::TabCreateOperation>),
+    TabRedeemOperation(Box<crate::generated::operations::TabRedeemOperation>),
+    TabCloseOperation(Box<crate::generated::operations::TabCloseOperation>),
+    TabRedeemedOperation(Box<crate::generated::operations::TabRedeemedOperation>),
+    TabRefundOperation(Box<crate::generated::operations::TabRefundOperation>),
 }
 
 impl utoipa::PartialSchema for Operation {
@@ -3943,6 +4050,31 @@ impl utoipa::PartialSchema for Operation {
                     94,
                     "fee_grant_revoke_operation",
                     static_variant_ref_payload::<crate::generated::operations::FeeGrantRevokeOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    95,
+                    "tab_create_operation",
+                    static_variant_ref_payload::<crate::generated::operations::TabCreateOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    96,
+                    "tab_redeem_operation",
+                    static_variant_ref_payload::<crate::generated::operations::TabRedeemOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    97,
+                    "tab_close_operation",
+                    static_variant_ref_payload::<crate::generated::operations::TabCloseOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    98,
+                    "tab_redeemed_operation",
+                    static_variant_ref_payload::<crate::generated::operations::TabRedeemedOperation>(),
+                ))
+                .item(static_variant_arm_schema(
+                    99,
+                    "tab_refund_operation",
+                    static_variant_ref_payload::<crate::generated::operations::TabRefundOperation>(),
                 ))
                 .build(),
         )
@@ -4526,6 +4658,36 @@ impl utoipa::ToSchema for Operation {
             schemas,
         );
         schemas.push((
+            <crate::generated::operations::TabCloseOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::TabCloseOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::TabCloseOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::TabCreateOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::TabCreateOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::TabCreateOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::TabRedeemOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::TabRedeemOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::TabRedeemOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::TabRedeemedOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::TabRedeemedOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::TabRedeemedOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
+            <crate::generated::operations::TabRefundOperation as utoipa::ToSchema>::name()
+                .to_string(),
+            <crate::generated::operations::TabRefundOperation as utoipa::PartialSchema>::schema(),
+        ));
+        <crate::generated::operations::TabRefundOperation as utoipa::ToSchema>::schemas(schemas);
+        schemas.push((
             <crate::generated::operations::TicketCreateOperation as utoipa::ToSchema>::name()
                 .to_string(),
             <crate::generated::operations::TicketCreateOperation as utoipa::PartialSchema>::schema(
@@ -5105,6 +5267,26 @@ impl Operation {
 
     pub fn fee_grant_revoke(value: crate::generated::operations::FeeGrantRevokeOperation) -> Self {
         Self::FeeGrantRevokeOperation(Box::new(value))
+    }
+
+    pub fn tab_create(value: crate::generated::operations::TabCreateOperation) -> Self {
+        Self::TabCreateOperation(Box::new(value))
+    }
+
+    pub fn tab_redeem(value: crate::generated::operations::TabRedeemOperation) -> Self {
+        Self::TabRedeemOperation(Box::new(value))
+    }
+
+    pub fn tab_close(value: crate::generated::operations::TabCloseOperation) -> Self {
+        Self::TabCloseOperation(Box::new(value))
+    }
+
+    pub fn tab_redeemed(value: crate::generated::operations::TabRedeemedOperation) -> Self {
+        Self::TabRedeemedOperation(Box::new(value))
+    }
+
+    pub fn tab_refund(value: crate::generated::operations::TabRefundOperation) -> Self {
+        Self::TabRefundOperation(Box::new(value))
     }
 }
 
@@ -5921,6 +6103,41 @@ impl Operation {
             _ => None,
         }
     }
+
+    pub fn as_tab_create(&self) -> Option<&crate::generated::operations::TabCreateOperation> {
+        match self {
+            Self::TabCreateOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_tab_redeem(&self) -> Option<&crate::generated::operations::TabRedeemOperation> {
+        match self {
+            Self::TabRedeemOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_tab_close(&self) -> Option<&crate::generated::operations::TabCloseOperation> {
+        match self {
+            Self::TabCloseOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_tab_redeemed(&self) -> Option<&crate::generated::operations::TabRedeemedOperation> {
+        match self {
+            Self::TabRedeemedOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn as_tab_refund(&self) -> Option<&crate::generated::operations::TabRefundOperation> {
+        match self {
+            Self::TabRefundOperation(value) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
 }
 
 impl Operation {
@@ -6024,6 +6241,11 @@ impl Operation {
             Self::FeeGrantCreateOperation(_) => "fee_grant_create",
             Self::FeeGrantUpdateOperation(_) => "fee_grant_update",
             Self::FeeGrantRevokeOperation(_) => "fee_grant_revoke",
+            Self::TabCreateOperation(_) => "tab_create",
+            Self::TabRedeemOperation(_) => "tab_redeem",
+            Self::TabCloseOperation(_) => "tab_close",
+            Self::TabRedeemedOperation(_) => "tab_redeemed",
+            Self::TabRefundOperation(_) => "tab_refund",
         }
     }
 
@@ -6125,6 +6347,11 @@ impl Operation {
             Self::FeeGrantCreateOperation(_) => false,
             Self::FeeGrantUpdateOperation(_) => false,
             Self::FeeGrantRevokeOperation(_) => false,
+            Self::TabCreateOperation(_) => false,
+            Self::TabRedeemOperation(_) => false,
+            Self::TabCloseOperation(_) => false,
+            Self::TabRedeemedOperation(_) => true,
+            Self::TabRefundOperation(_) => true,
         }
     }
 
@@ -6226,6 +6453,11 @@ impl Operation {
             Self::FeeGrantCreateOperation(value) => &value.fee,
             Self::FeeGrantUpdateOperation(value) => &value.fee,
             Self::FeeGrantRevokeOperation(value) => &value.fee,
+            Self::TabCreateOperation(value) => &value.fee,
+            Self::TabRedeemOperation(value) => &value.fee,
+            Self::TabCloseOperation(value) => &value.fee,
+            Self::TabRedeemedOperation(value) => &value.fee,
+            Self::TabRefundOperation(value) => &value.fee,
         }
     }
 
@@ -6327,6 +6559,11 @@ impl Operation {
             Self::FeeGrantCreateOperation(value) => value.fee = fee,
             Self::FeeGrantUpdateOperation(value) => value.fee = fee,
             Self::FeeGrantRevokeOperation(value) => value.fee = fee,
+            Self::TabCreateOperation(value) => value.fee = fee,
+            Self::TabRedeemOperation(value) => value.fee = fee,
+            Self::TabCloseOperation(value) => value.fee = fee,
+            Self::TabRedeemedOperation(value) => value.fee = fee,
+            Self::TabRefundOperation(value) => value.fee = fee,
         }
     }
 }
@@ -6717,6 +6954,26 @@ impl serde::Serialize for Operation {
             }
             Self::FeeGrantRevokeOperation(value) => {
                 seq.serialize_element(&94u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::TabCreateOperation(value) => {
+                seq.serialize_element(&95u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::TabRedeemOperation(value) => {
+                seq.serialize_element(&96u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::TabCloseOperation(value) => {
+                seq.serialize_element(&97u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::TabRedeemedOperation(value) => {
+                seq.serialize_element(&98u32)?;
+                seq.serialize_element(value.as_ref())?;
+            }
+            Self::TabRefundOperation(value) => {
+                seq.serialize_element(&99u32)?;
                 seq.serialize_element(value.as_ref())?;
             }
         }
@@ -7249,6 +7506,31 @@ impl<'de> serde::Deserialize<'de> for Operation {
             )
             .map(|value| Self::FeeGrantRevokeOperation(Box::new(value)))
             .map_err(serde::de::Error::custom),
+            95 => {
+                serde_json::from_value::<crate::generated::operations::TabCreateOperation>(payload)
+                    .map(|value| Self::TabCreateOperation(Box::new(value)))
+                    .map_err(serde::de::Error::custom)
+            }
+            96 => {
+                serde_json::from_value::<crate::generated::operations::TabRedeemOperation>(payload)
+                    .map(|value| Self::TabRedeemOperation(Box::new(value)))
+                    .map_err(serde::de::Error::custom)
+            }
+            97 => {
+                serde_json::from_value::<crate::generated::operations::TabCloseOperation>(payload)
+                    .map(|value| Self::TabCloseOperation(Box::new(value)))
+                    .map_err(serde::de::Error::custom)
+            }
+            98 => serde_json::from_value::<crate::generated::operations::TabRedeemedOperation>(
+                payload,
+            )
+            .map(|value| Self::TabRedeemedOperation(Box::new(value)))
+            .map_err(serde::de::Error::custom),
+            99 => {
+                serde_json::from_value::<crate::generated::operations::TabRefundOperation>(payload)
+                    .map(|value| Self::TabRefundOperation(Box::new(value)))
+                    .map_err(serde::de::Error::custom)
+            }
             other => Err(serde::de::Error::custom(format!(
                 "unknown static variant Operation tag {other}"
             ))),

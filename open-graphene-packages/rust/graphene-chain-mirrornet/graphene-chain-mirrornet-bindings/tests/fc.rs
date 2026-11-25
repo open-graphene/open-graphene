@@ -2309,49 +2309,110 @@ fn restriction_fc_writes_member_index_and_type_as_varints() {
     assert_eq!(bytes[1], 0x00, "restriction_type is one varint byte");
 }
 
-/// The guards of the data room family (`expected_epoch`, `expected_revision`) encode as a
-/// Graphene `extension<T>`: the count of set members, then each one's FC index and value.
+/// The guards of the data room family (`expected_epoch`, `expected_revision`) are plain optional
+/// fields right before an empty `extensions`: a presence byte, then a little-endian u32.
 #[test]
-fn data_room_guard_extensions_encode_their_set_members() {
+fn data_room_guards_encode_as_optional_fields_before_empty_extensions() {
     use graphene_chain_mirrornet_bindings::generated::{
-        ContentCardGrantCreateOperationExt, ContentCardUpdateOperationExt,
-        DataRoomMemberAddOperationExt,
+        ContentCardId, ContentCardUpdateOperation, DataRoomMemberRef, FeePayerRef,
     };
 
-    let none = DataRoomMemberAddOperationExt {
-        expected_epoch: None,
-    };
-    assert_eq!(none.to_fc_bytes().expect("empty guard"), vec![0]);
-    let epoch = DataRoomMemberAddOperationExt {
-        expected_epoch: Some(3),
-    };
-    assert_eq!(
-        epoch.to_fc_bytes().expect("epoch guard"),
-        vec![1, 0, 3, 0, 0, 0]
-    );
-
-    let both = ContentCardUpdateOperationExt {
-        expected_revision: Some(2),
-        expected_epoch: Some(5),
-    };
-    assert_eq!(
-        both.to_fc_bytes().expect("both guards"),
-        vec![2, 0, 2, 0, 0, 0, 1, 5, 0, 0, 0]
-    );
-    let epoch_only = ContentCardUpdateOperationExt {
+    let mut operation = ContentCardUpdateOperation {
+        fee: Asset {
+            amount: 0,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        payer: FeePayerRef::AccountIdType(Box::new(AccountId("1.2.7".to_string()))),
+        caller: DataRoomMemberRef::AccountIdType(Box::new(AccountId("1.2.7".to_string()))),
+        content_id: ContentCardId("1.27.1".to_string()),
+        new_hash: None,
+        new_url: None,
+        new_type: None,
+        new_description: None,
+        new_content_key: None,
+        new_storage_data: None,
         expected_revision: None,
-        expected_epoch: Some(5),
+        expected_epoch: None,
+        extensions: vec![],
     };
-    assert_eq!(
-        epoch_only.to_fc_bytes().expect("epoch only"),
-        vec![1, 1, 5, 0, 0, 0]
+
+    let without_guards = operation.to_fc_bytes().expect("no guards");
+    assert!(without_guards.ends_with(&[0, 0, 0]));
+
+    operation.expected_revision = Some(2);
+    operation.expected_epoch = Some(5);
+    let with_guards = operation.to_fc_bytes().expect("both guards");
+    assert_eq!(with_guards.len(), without_guards.len() + 8);
+    assert!(with_guards.ends_with(&[1, 2, 0, 0, 0, 1, 5, 0, 0, 0, 0]));
+}
+
+/// A fee grant holds one budget per asset, in a flat_map that FC writes in asset order.
+#[test]
+fn fee_grant_budgets_encode_in_asset_order_and_reject_any_other() {
+    use graphene_chain_mirrornet_bindings::generated::{
+        DataRoomMemberRef, FeeGrantBudgetLimits, FeeGrantCreateOperation, FeePayerRef,
+    };
+
+    let mut operation = FeeGrantCreateOperation {
+        fee: Asset {
+            amount: 0,
+            asset_id: AssetId("1.3.0".to_string()),
+        },
+        payer: FeePayerRef::AccountIdType(Box::new(AccountId("1.2.7".to_string()))),
+        grantor: AccountId("1.2.7".to_string()),
+        parent: None,
+        grantee: DataRoomMemberRef::AccountIdType(Box::new(AccountId("1.2.8".to_string()))),
+        label: String::new(),
+        operations: vec![95],
+        budgets: vec![
+            (
+                AssetId("1.3.0".to_string()),
+                FeeGrantBudgetLimits {
+                    total: 1_000,
+                    per_period: None,
+                },
+            ),
+            (
+                AssetId("1.3.5".to_string()),
+                FeeGrantBudgetLimits {
+                    total: 300,
+                    per_period: Some(100),
+                },
+            ),
+        ],
+        period_seconds: 3_600,
+        expiration: "2026-12-01T00:00:00".to_string(),
+        can_delegate: false,
+        room_permissions: 0,
+        extensions: vec![],
+    };
+
+    let bytes = operation.to_fc_bytes().expect("budgets in asset order");
+    let budgets_then_period: [u8; 33] = [
+        2, // two budgets
+        0, // 1.3.0
+        0xe8, 0x03, 0, 0, 0, 0, 0, 0, // total 1000
+        0, // no per_period
+        5, // 1.3.5
+        0x2c, 0x01, 0, 0, 0, 0, 0, 0, // total 300
+        1, 100, 0, 0, 0, 0, 0, 0, 0, // per_period 100
+        0x10, 0x0e, 0, 0, // period_seconds 3600
+    ];
+    assert!(
+        bytes
+            .windows(budgets_then_period.len())
+            .any(|window| window == budgets_then_period)
     );
 
-    let revision = ContentCardGrantCreateOperationExt {
-        expected_revision: Some(1),
-    };
-    assert_eq!(
-        revision.to_fc_bytes().expect("revision guard"),
-        vec![1, 0, 1, 0, 0, 0]
-    );
+    operation.budgets.reverse();
+    let err = operation
+        .to_fc_bytes()
+        .expect_err("budgets out of asset order fail explicitly");
+    assert!(matches!(
+        err,
+        FcSerializeError::UnsupportedValue {
+            type_name: "FlatMap",
+            reason: "flat_map keys must be sorted and unique"
+        }
+    ));
 }

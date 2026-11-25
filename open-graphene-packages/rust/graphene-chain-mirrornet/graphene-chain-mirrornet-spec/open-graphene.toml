@@ -6,6 +6,7 @@ object_structs = [
   "content_card_object",
   "content_card_grant_object",
   "fee_grant_object",
+  "tab_object",
 ]
 
 [chain]
@@ -69,6 +70,9 @@ methods = [
   "get_fee_grants_by_grantor",
   "get_fee_grants_by_grantee",
   "get_fee_grants_by_parent",
+  "get_tab_by_id",
+  "get_tabs_by_payer",
+  "get_tabs_by_payee",
 ]
 
 [[rpc_apis]]

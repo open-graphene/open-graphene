@@ -1161,15 +1161,6 @@ pub struct ConditionInfoTimeLockInfo {
     pub expiration: String,
 }
 
-/// Raw protocol struct `content_card_create_operation_ext`.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
-#[schema(as = GrapheneMirrornetContentCardCreateOperationExt)]
-pub struct ContentCardCreateOperationExt {
-    #[schema(schema_with = crate::generated::types::u32_schema)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub expected_epoch: Option<u32>,
-}
-
 /// Raw protocol struct `content_card_create_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneMirrornetContentCardCreateOperationFeeParamsT)]
@@ -1181,15 +1172,6 @@ pub struct ContentCardCreateOperationFeeParamsT {
     pub fee: u64,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub price_per_kbyte: u32,
-}
-
-/// Raw protocol struct `content_card_grant_create_operation_ext`.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
-#[schema(as = GrapheneMirrornetContentCardGrantCreateOperationExt)]
-pub struct ContentCardGrantCreateOperationExt {
-    #[schema(schema_with = crate::generated::types::u32_schema)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub expected_revision: Option<u32>,
 }
 
 /// Raw protocol struct `content_card_grant_create_operation_fee_params_t`.
@@ -1249,15 +1231,6 @@ pub struct ContentCardObject {
     pub updated: String,
 }
 
-/// Raw protocol struct `content_card_remove_operation_ext`.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
-#[schema(as = GrapheneMirrornetContentCardRemoveOperationExt)]
-pub struct ContentCardRemoveOperationExt {
-    #[schema(schema_with = crate::generated::types::u32_schema)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub expected_revision: Option<u32>,
-}
-
 /// Raw protocol struct `content_card_remove_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneMirrornetContentCardRemoveOperationFeeParamsT)]
@@ -1267,18 +1240,6 @@ pub struct ContentCardRemoveOperationFeeParamsT {
     )]
     #[schema(schema_with = crate::generated::types::u64_schema)]
     pub fee: u64,
-}
-
-/// Raw protocol struct `content_card_update_operation_ext`.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
-#[schema(as = GrapheneMirrornetContentCardUpdateOperationExt)]
-pub struct ContentCardUpdateOperationExt {
-    #[schema(schema_with = crate::generated::types::u32_schema)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub expected_revision: Option<u32>,
-    #[schema(schema_with = crate::generated::types::u32_schema)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub expected_epoch: Option<u32>,
 }
 
 /// Raw protocol struct `content_card_update_operation_fee_params_t`.
@@ -1454,14 +1415,6 @@ pub struct CustomOperationFeeParamsT {
     pub price_per_kbyte: u32,
 }
 
-/// Raw protocol struct `data_room_create_operation_ext`.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
-#[schema(as = GrapheneMirrornetDataRoomCreateOperationExt)]
-pub struct DataRoomCreateOperationExt {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub owner_key: Option<String>,
-}
-
 /// Raw protocol struct `data_room_create_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneMirrornetDataRoomCreateOperationFeeParamsT)]
@@ -1496,15 +1449,6 @@ pub struct DataRoomKeyEpochObject {
     pub epoch: u32,
     pub member: crate::generated::static_variants::DataRoomMemberRef,
     pub key: String,
-}
-
-/// Raw protocol struct `data_room_member_add_operation_ext`.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
-#[schema(as = GrapheneMirrornetDataRoomMemberAddOperationExt)]
-pub struct DataRoomMemberAddOperationExt {
-    #[schema(schema_with = crate::generated::types::u32_schema)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub expected_epoch: Option<u32>,
 }
 
 /// Raw protocol struct `data_room_member_add_operation_fee_params_t`.
@@ -1567,15 +1511,6 @@ pub struct DataRoomObject {
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub current_epoch: u32,
     pub created: String,
-}
-
-/// Raw protocol struct `data_room_rotate_key_operation_ext`.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
-#[schema(as = GrapheneMirrornetDataRoomRotateKeyOperationExt)]
-pub struct DataRoomRotateKeyOperationExt {
-    #[schema(schema_with = crate::generated::types::u32_schema)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub expected_epoch: Option<u32>,
 }
 
 /// Raw protocol struct `data_room_rotate_key_operation_fee_params_t`.
@@ -1710,6 +1645,38 @@ pub struct ExtendedAssetObject {
 #[schema(as = GrapheneMirrornetFbaDistributeOperationFeeParamsT)]
 pub struct FbaDistributeOperationFeeParamsT {}
 
+/// Raw protocol struct `fee_grant_budget`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetFeeGrantBudget)]
+pub struct FeeGrantBudget {
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
+    pub remaining: i64,
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
+    pub spent: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub per_period: Option<i64>,
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
+    pub period_spent: i64,
+}
+
+/// Raw protocol struct `fee_grant_budget_limits`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetFeeGrantBudgetLimits)]
+pub struct FeeGrantBudgetLimits {
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
+    pub total: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub per_period: Option<i64>,
+}
+
 /// Raw protocol struct `fee_grant_create_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneMirrornetFeeGrantCreateOperationFeeParamsT)]
@@ -1734,23 +1701,13 @@ pub struct FeeGrantObject {
     pub grantee: crate::generated::static_variants::DataRoomMemberRef,
     pub label: String,
     pub operations: Vec<u16>,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
-    pub budget: i64,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
-    pub spent: i64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub period_budget: Option<i64>,
+    pub budgets: Vec<(
+        crate::generated::ids::AssetId,
+        crate::generated::types::FeeGrantBudget,
+    )>,
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub period_seconds: u32,
     pub period_start: String,
-    #[serde(
-        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
-    )]
-    pub period_spent: i64,
     pub expiration: String,
     pub can_delegate: bool,
     #[schema(schema_with = crate::generated::types::u32_schema)]
@@ -2516,6 +2473,83 @@ pub struct StealthConfirmation {
     #[schema(value_type = String)]
     pub encrypted_memo: Vec<u8>,
 }
+
+/// Raw protocol struct `tab_cheque`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetTabCheque)]
+pub struct TabCheque {
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
+    pub total: i64,
+    pub signature: crate::generated::types::Signature,
+}
+
+/// Raw protocol struct `tab_close_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetTabCloseOperationFeeParamsT)]
+pub struct TabCloseOperationFeeParamsT {
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
+    )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
+    pub fee: u64,
+}
+
+/// Raw protocol struct `tab_create_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetTabCreateOperationFeeParamsT)]
+pub struct TabCreateOperationFeeParamsT {
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
+    )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
+    pub fee: u64,
+}
+
+/// Raw protocol struct `tab_object`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetTabObject)]
+pub struct TabObject {
+    pub id: crate::generated::ids::TabId,
+    pub payer: crate::generated::ids::AccountId,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub grant: Option<crate::generated::ids::FeeGrantId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parent_grant: Option<crate::generated::ids::FeeGrantId>,
+    pub payee: crate::generated::ids::AccountId,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub payee_key: Option<String>,
+    pub cheque_key: String,
+    pub deposit: crate::generated::types::Asset,
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
+    pub redeemed: i64,
+    pub created: String,
+    pub expiration: String,
+}
+
+/// Raw protocol struct `tab_redeem_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetTabRedeemOperationFeeParamsT)]
+pub struct TabRedeemOperationFeeParamsT {
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
+    )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
+    pub fee: u64,
+}
+
+/// Raw protocol struct `tab_redeemed_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetTabRedeemedOperationFeeParamsT)]
+pub struct TabRedeemedOperationFeeParamsT {}
+
+/// Raw protocol struct `tab_refund_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetTabRefundOperationFeeParamsT)]
+pub struct TabRefundOperationFeeParamsT {}
 
 /// Raw protocol struct `ticket_create_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]

@@ -28,10 +28,12 @@ Sources and resolutions:
 
 - Mirrornet operation vectors: `node scripts/fc-parity-vectors.mjs --mirrornet [--rich] --live
 --node=ws://127.0.0.1:8090`, compared with the Rust FC oracle and with a local
-  mirrornet-core node (`main` at `ac068ee9`, with the low-S rule, the epoch and revision guards
-  and the key room owner), as no public Mirrornet node answers these calls. All 88 nonvirtual
-  operations, data rooms and fee grants included, matched natively; the rich vectors set every
-  extension member (`expected_epoch`, `expected_revision`, `owner_key`). The operations Mirrornet keeps unchanged from
+  mirrornet-core node (`main` at `03b949b7`, with the low-S rule, tabs, fee grant budgets in
+  several assets, and the room guards and key room owner as plain fields), as no public
+  Mirrornet node answers these calls. All 91 nonvirtual operations, data rooms, fee grants and
+  tabs included, matched natively; the rich vectors set every optional field (`expected_epoch`,
+  `expected_revision`, `owner_key`, a budget per period, the cheque of `tab_close`). The
+  operations Mirrornet keeps unchanged from
   BitShares 7.0.4 are also checked against the natively confirmed BitShares vectors;
   `parity.test.mjs` lists the ones it adds or changes.
 

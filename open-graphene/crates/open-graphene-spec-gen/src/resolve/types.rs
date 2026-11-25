@@ -56,6 +56,12 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         };
     }
 
+    // Mirrornet's `using fee_grant_budget_limits_map = flat_map< asset_id_type,
+    // fee_grant_budget_limits >;` (fee_grant.hpp): the budgets of a fee grant, one per asset.
+    if normalized == "fee_grant_budget_limits_map" {
+        return resolve_cpp_type("flat_map<asset_id_type, fee_grant_budget_limits>");
+    }
+
     if let Some((key, value)) = unwrap_two_arg_template(&normalized, "flat_map") {
         return TypeRef::FlatMap {
             key: Box::new(resolve_cpp_type(&key)),
@@ -178,6 +184,8 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         | "block_header"
         | "chain_parameters"
         | "custom_authority_options_type"
+        | "fee_grant_budget"
+        | "fee_grant_budget_limits"
         | "fee_grant_options_type"
         | "grant_payer"
         | "generic_operation_result"
@@ -196,6 +204,7 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         | "signed_block"
         | "signed_block_header"
         | "stealth_confirmation"
+        | "tab_cheque"
         | "top_holders_special_authority"
         | "transaction"
         | "void_result" => TypeRef::Ref {
@@ -393,6 +402,24 @@ mod tests {
                     json: None,
                     fc: None
                 }),
+            }
+        );
+    }
+
+    #[test]
+    fn maps_fee_grant_budget_limits_map_alias_to_its_flat_map() {
+        assert_eq!(
+            resolve_cpp_type("optional<fee_grant_budget_limits_map>"),
+            TypeRef::Optional {
+                inner: Box::new(TypeRef::FlatMap {
+                    key: Box::new(TypeRef::ProtocolObjectId {
+                        object_type: "asset".to_string()
+                    }),
+                    value: Box::new(TypeRef::Ref {
+                        name: "fee_grant_budget_limits".to_string()
+                    }),
+                    ordering: OrderingRule::Unresolved,
+                })
             }
         );
     }
@@ -736,6 +763,26 @@ mod tests {
             resolve_cpp_type("transaction"),
             TypeRef::Ref {
                 name: "transaction".to_string()
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("optional<tab_cheque>"),
+            TypeRef::Optional {
+                inner: Box::new(TypeRef::Ref {
+                    name: "tab_cheque".to_string()
+                })
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("flat_map<asset_id_type, fee_grant_budget>"),
+            TypeRef::FlatMap {
+                key: Box::new(TypeRef::ProtocolObjectId {
+                    object_type: "asset".to_string()
+                }),
+                value: Box::new(TypeRef::Ref {
+                    name: "fee_grant_budget".to_string()
+                }),
+                ordering: OrderingRule::Unresolved,
             }
         );
     }
