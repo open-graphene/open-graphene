@@ -1541,7 +1541,7 @@ pub struct TabRedeemOperation {
     pub payer: crate::generated::static_variants::FeePayerRef,
     pub caller: crate::generated::static_variants::DataRoomMemberRef,
     pub tab: crate::generated::ids::TabId,
-    pub cheque: crate::generated::types::TabCheque,
+    pub payout: crate::generated::types::TabPayout,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
@@ -1556,7 +1556,7 @@ pub struct TabCloseOperation {
     pub caller: crate::generated::static_variants::DataRoomMemberRef,
     pub tab: crate::generated::ids::TabId,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub cheque: Option<crate::generated::types::TabCheque>,
+    pub payout: Option<crate::generated::types::TabPayout>,
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
@@ -1574,7 +1574,7 @@ pub struct TabRedeemedOperation {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
     )]
-    pub total: i64,
+    pub redeemed: i64,
 }
 
 pub const TAB_REFUND_OPERATION_ID: u32 = 99;

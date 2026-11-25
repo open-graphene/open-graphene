@@ -205,6 +205,7 @@ pub fn resolve_cpp_type(type_expr: &str) -> TypeRef {
         | "signed_block_header"
         | "stealth_confirmation"
         | "tab_cheque"
+        | "tab_payout"
         | "top_holders_special_authority"
         | "transaction"
         | "void_result" => TypeRef::Ref {
@@ -766,10 +767,16 @@ mod tests {
             }
         );
         assert_eq!(
-            resolve_cpp_type("optional<tab_cheque>"),
+            resolve_cpp_type("tab_cheque"),
+            TypeRef::Ref {
+                name: "tab_cheque".to_string()
+            }
+        );
+        assert_eq!(
+            resolve_cpp_type("optional<tab_payout>"),
             TypeRef::Optional {
                 inner: Box::new(TypeRef::Ref {
-                    name: "tab_cheque".to_string()
+                    name: "tab_payout".to_string()
                 })
             }
         );

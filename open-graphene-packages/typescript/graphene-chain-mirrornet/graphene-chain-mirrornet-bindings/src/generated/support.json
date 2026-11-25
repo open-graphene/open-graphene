@@ -38,11 +38,11 @@
       "reason": "unsupported C++ type mapping: history_key"
     },
     {
-      "path": "/structs/272/fields/3/type",
+      "path": "/structs/273/fields/3/type",
       "reason": "unsupported C++ type mapping: vesting_policy"
     },
     {
-      "path": "/structs/272/fields/4/type",
+      "path": "/structs/273/fields/4/type",
       "reason": "unsupported C++ type mapping: vesting_balance_type"
     }
   ],
@@ -1416,6 +1416,6 @@
     }
   ],
   "schemaVersion": 1,
-  "specSha256": "ff8875c91e3315c45f915ec480763c9961e4fbd0f17db30ee1a353fd8d9e4811",
+  "specSha256": "cf7e60207f9748281aad12329d7e44037e1812db1f14d0432a4707cb8fa2e12a",
   "stage": "rust-fc-parity"
 }

@@ -2550,6 +2550,17 @@ pub struct TabObject {
     pub expiration: String,
 }
 
+/// Raw protocol struct `tab_payout`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetTabPayout)]
+pub struct TabPayout {
+    pub cheque: crate::generated::types::TabCheque,
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
+    )]
+    pub redeemed: i64,
+}
+
 /// Raw protocol struct `tab_redeem_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneMirrornetTabRedeemOperationFeeParamsT)]

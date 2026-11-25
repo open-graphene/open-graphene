@@ -9,7 +9,7 @@ pub const CHAIN_ID: &str = "mirrornet";
 pub const CHAIN_ID_HEX: &str = "a1a2acefdfd4a5e47ee409a74d5746c89db114c7c43cdda708b5d253c65d1bab";
 pub const PUBLIC_KEY_PREFIX: &str = "MBT";
 
-pub const STRUCT_COUNT: usize = 292;
+pub const STRUCT_COUNT: usize = 293;
 pub const ENUM_COUNT: usize = 11;
 pub const STATIC_VARIANT_COUNT: usize = 13;
 pub const OPERATION_COUNT: usize = 100;

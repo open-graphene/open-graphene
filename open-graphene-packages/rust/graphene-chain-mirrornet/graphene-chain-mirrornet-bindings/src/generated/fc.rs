@@ -2200,6 +2200,14 @@ impl FcSerialize for crate::generated::types::TabObject {
     }
 }
 
+impl FcSerialize for crate::generated::types::TabPayout {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.cheque.fc_serialize(out)?;
+        self.redeemed.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::TabRedeemOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -5905,7 +5913,7 @@ impl FcSerialize for crate::generated::operations::TabRedeemOperation {
         self.payer.fc_serialize(out)?;
         self.caller.fc_serialize(out)?;
         self.tab.fc_serialize(out)?;
-        self.cheque.fc_serialize(out)?;
+        self.payout.fc_serialize(out)?;
         write_varint(self.extensions.len() as u64, out);
         let mut previous_key: Option<u64> = None;
         for value in &self.extensions {
@@ -5929,7 +5937,7 @@ impl FcSerialize for crate::generated::operations::TabCloseOperation {
         self.payer.fc_serialize(out)?;
         self.caller.fc_serialize(out)?;
         self.tab.fc_serialize(out)?;
-        self.cheque.fc_serialize(out)?;
+        self.payout.fc_serialize(out)?;
         write_varint(self.extensions.len() as u64, out);
         let mut previous_key: Option<u64> = None;
         for value in &self.extensions {
@@ -5954,7 +5962,7 @@ impl FcSerialize for crate::generated::operations::TabRedeemedOperation {
         self.payer.fc_serialize(out)?;
         self.payee.fc_serialize(out)?;
         self.amount.fc_serialize(out)?;
-        self.total.fc_serialize(out)?;
+        self.redeemed.fc_serialize(out)?;
         Ok(())
     }
 }
