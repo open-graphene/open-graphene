@@ -73,6 +73,7 @@ methods = [
   "get_tab_by_id",
   "get_tabs_by_payer",
   "get_tabs_by_payee",
+  "get_tabs_by_cheque_key",
 ]
 
 [[rpc_apis]]

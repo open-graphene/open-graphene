@@ -91,7 +91,7 @@ test('generated RPC inventory covers reads and imperative methods with distinct 
       )
       .map((m) => m.apiName + '.' + m.name);
     assert.deepEqual(exports.generatedQueryMethods, expected);
-    assert.equal(expected.length, chain === 'mirrornet' ? 44 : 24);
+    assert.equal(expected.length, chain === 'mirrornet' ? 45 : 24);
     assert.equal(
       typeof exports.useNetworkBroadcastBroadcastTransaction,
       'function',
@@ -373,7 +373,7 @@ test('every generated operation preparation preserves the independently verified
       .filter((op) => !op.isVirtual)
       .map((op) => op.name.replace(/_operation$/, ''));
     assert.deepEqual(api.generatedPrepareOperations, names);
-    assert.equal(names.length, chain === 'mirrornet' ? 91 : 71);
+    assert.equal(names.length, chain === 'mirrornet' ? 93 : 71);
     const client = {
       prepareOperations: async (operations, options) => ({
         operations,

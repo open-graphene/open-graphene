@@ -28,9 +28,10 @@ Sources and resolutions:
 
 - Mirrornet operation vectors: `node scripts/fc-parity-vectors.mjs --mirrornet [--rich] --live
 --node=ws://127.0.0.1:8090`, compared with the Rust FC oracle and with a local
-  mirrornet-core node (`main` at `8227afbb`, with the low-S rule, tabs whose payee takes a
-  payout up to a cheque's total (RL-9), fee grant budgets in several assets, and the room guards
-  and key room owner as plain fields), as no public Mirrornet node answers these calls. All 91
+  mirrornet-core node (`main` at `b67ba880`, with the low-S rule, tabs whose payee takes a
+  payout up to a cheque's total (RL-9), tab top-ups and close requests (RL-10, RL-11), fee grant
+  budgets in several assets, and the room guards and key room owner as plain fields), as no
+  public Mirrornet node answers these calls. All 93
   nonvirtual operations, data rooms, fee grants and tabs included, matched natively; the rich
   vectors set every optional field (`expected_epoch`, `expected_revision`, `owner_key`, a budget
   per period, the payout of `tab_close`). The

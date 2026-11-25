@@ -87,6 +87,8 @@ const mirrornetChanges = {
     'tab_create_operation',
     'tab_redeem_operation',
     'tab_close_operation',
+    'tab_deposit_operation',
+    'tab_close_request_operation',
   ],
 };
 // The key prefix lives only in the JSON form; the FC bytes of a public key do not carry it.

@@ -1554,6 +1554,57 @@ pub mod database {
         }
     }
 
+    /// RPC `database.get_tabs_by_cheque_key`.
+    pub mod get_tabs_by_cheque_key {
+        pub const API: &str = "database";
+        pub const METHOD: &str = "get_tabs_by_cheque_key";
+
+        /// Positional parameters for `database.get_tabs_by_cheque_key`.
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct Params {
+            pub cheque_key: String,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub payee_name_or_id: Option<String>,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub limit: Option<u32>,
+            /// Omitted from the call when `None`; the node applies its default.
+            pub start_id: Option<crate::generated::ids::TabId>,
+        }
+
+        impl Params {
+            /// The positional JSON parameter list for this call.
+            pub fn to_params_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+                let mut params = vec![serde_json::to_value(&self.cheque_key)?];
+                let tail: [Option<serde_json::Value>; 3] = [
+                    match &self.payee_name_or_id {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                    match &self.limit {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                    match &self.start_id {
+                        Some(value) => Some(serde_json::to_value(value)?),
+                        None => None,
+                    },
+                ];
+                if let Some(last_provided) = tail.iter().rposition(|value| value.is_some()) {
+                    for value in tail.into_iter().take(last_provided + 1) {
+                        params.push(value.unwrap_or(serde_json::Value::Null));
+                    }
+                }
+                Ok(serde_json::Value::Array(params))
+            }
+        }
+
+        pub type Returns = Vec<crate::generated::types::TabObject>;
+
+        pub fn parse_returns(value: serde_json::Value) -> Result<Returns, serde_json::Error> {
+            serde_json::from_value(value)
+        }
+    }
+
     /// RPC `database.get_tabs_by_payee`.
     pub mod get_tabs_by_payee {
         pub const API: &str = "database";

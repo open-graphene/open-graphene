@@ -2516,10 +2516,32 @@ pub struct TabCloseOperationFeeParamsT {
     pub fee: u64,
 }
 
+/// Raw protocol struct `tab_close_request_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetTabCloseRequestOperationFeeParamsT)]
+pub struct TabCloseRequestOperationFeeParamsT {
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
+    )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
+    pub fee: u64,
+}
+
 /// Raw protocol struct `tab_create_operation_fee_params_t`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneMirrornetTabCreateOperationFeeParamsT)]
 pub struct TabCreateOperationFeeParamsT {
+    #[serde(
+        deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
+    )]
+    #[schema(schema_with = crate::generated::types::u64_schema)]
+    pub fee: u64,
+}
+
+/// Raw protocol struct `tab_deposit_operation_fee_params_t`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetTabDepositOperationFeeParamsT)]
+pub struct TabDepositOperationFeeParamsT {
     #[serde(
         deserialize_with = "crate::generated::types::deserialize_u64_from_number_or_decimal_string"
     )]

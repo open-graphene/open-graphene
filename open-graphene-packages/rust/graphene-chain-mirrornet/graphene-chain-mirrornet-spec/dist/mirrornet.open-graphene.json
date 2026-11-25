@@ -13376,7 +13376,7 @@
           "source": {
             "name": "total",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 49
+            "line": 50
           },
           "support": {
             "status": "provisional",
@@ -13395,7 +13395,7 @@
           "source": {
             "name": "per_period",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 50
+            "line": 51
           },
           "support": {
             "status": "provisional",
@@ -13422,7 +13422,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 86
+            "line": 87
           },
           "support": {
             "status": "provisional",
@@ -13439,7 +13439,7 @@
           "source": {
             "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 88
+            "line": 89
           },
           "support": {
             "status": "provisional",
@@ -13456,7 +13456,7 @@
           "source": {
             "name": "grantor",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 89
+            "line": 90
           },
           "support": {
             "status": "provisional",
@@ -13476,7 +13476,7 @@
           "source": {
             "name": "parent",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 90
+            "line": 91
           },
           "support": {
             "status": "provisional",
@@ -13493,7 +13493,7 @@
           "source": {
             "name": "grantee",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 91
+            "line": 92
           },
           "support": {
             "status": "provisional",
@@ -13509,7 +13509,7 @@
           "source": {
             "name": "label",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 92
+            "line": 93
           },
           "support": {
             "status": "provisional",
@@ -13529,7 +13529,7 @@
           "source": {
             "name": "operations",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 93
+            "line": 94
           },
           "support": {
             "status": "provisional",
@@ -13554,7 +13554,7 @@
           "source": {
             "name": "budgets",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 94
+            "line": 95
           },
           "support": {
             "status": "provisional",
@@ -13570,7 +13570,7 @@
           "source": {
             "name": "period_seconds",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 95
+            "line": 96
           },
           "support": {
             "status": "provisional",
@@ -13586,7 +13586,7 @@
           "source": {
             "name": "expiration",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 96
+            "line": 97
           },
           "support": {
             "status": "provisional",
@@ -13602,7 +13602,7 @@
           "source": {
             "name": "can_delegate",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 97
+            "line": 98
           },
           "support": {
             "status": "provisional",
@@ -13618,7 +13618,7 @@
           "source": {
             "name": "room_permissions",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 98
+            "line": 99
           },
           "support": {
             "status": "provisional",
@@ -13639,7 +13639,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 99
+            "line": 100
           },
           "support": {
             "status": "provisional",
@@ -13666,7 +13666,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 83
+            "line": 84
           },
           "support": {
             "status": "provisional",
@@ -13682,7 +13682,7 @@
           "source": {
             "name": "price_per_kbyte",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 84
+            "line": 85
           },
           "support": {
             "status": "provisional",
@@ -13989,7 +13989,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 160
+            "line": 161
           },
           "support": {
             "status": "provisional",
@@ -14006,7 +14006,7 @@
           "source": {
             "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 162
+            "line": 163
           },
           "support": {
             "status": "provisional",
@@ -14023,7 +14023,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 163
+            "line": 164
           },
           "support": {
             "status": "provisional",
@@ -14040,7 +14040,7 @@
           "source": {
             "name": "grant",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 164
+            "line": 165
           },
           "support": {
             "status": "provisional",
@@ -14061,7 +14061,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 165
+            "line": 166
           },
           "support": {
             "status": "provisional",
@@ -14088,7 +14088,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 158
+            "line": 159
           },
           "support": {
             "status": "provisional",
@@ -14115,7 +14115,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 125
+            "line": 126
           },
           "support": {
             "status": "provisional",
@@ -14132,7 +14132,7 @@
           "source": {
             "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 127
+            "line": 128
           },
           "support": {
             "status": "provisional",
@@ -14149,7 +14149,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 128
+            "line": 129
           },
           "support": {
             "status": "provisional",
@@ -14166,7 +14166,7 @@
           "source": {
             "name": "grant",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 129
+            "line": 130
           },
           "support": {
             "status": "provisional",
@@ -14194,7 +14194,7 @@
           "source": {
             "name": "new_budgets",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 130
+            "line": 131
           },
           "support": {
             "status": "provisional",
@@ -14213,7 +14213,7 @@
           "source": {
             "name": "new_period_seconds",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 131
+            "line": 132
           },
           "support": {
             "status": "provisional",
@@ -14232,7 +14232,7 @@
           "source": {
             "name": "new_expiration",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 132
+            "line": 133
           },
           "support": {
             "status": "provisional",
@@ -14255,7 +14255,7 @@
           "source": {
             "name": "new_operations",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 133
+            "line": 134
           },
           "support": {
             "status": "provisional",
@@ -14274,7 +14274,7 @@
           "source": {
             "name": "new_room_permissions",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 134
+            "line": 135
           },
           "support": {
             "status": "provisional",
@@ -14293,7 +14293,7 @@
           "source": {
             "name": "new_label",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 135
+            "line": 136
           },
           "support": {
             "status": "provisional",
@@ -14312,7 +14312,7 @@
           "source": {
             "name": "new_can_delegate",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 136
+            "line": 137
           },
           "support": {
             "status": "provisional",
@@ -14333,7 +14333,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 137
+            "line": 138
           },
           "support": {
             "status": "provisional",
@@ -14360,7 +14360,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 122
+            "line": 123
           },
           "support": {
             "status": "provisional",
@@ -14376,7 +14376,7 @@
           "source": {
             "name": "price_per_kbyte",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 123
+            "line": 124
           },
           "support": {
             "status": "provisional",
@@ -18564,7 +18564,7 @@
           "source": {
             "name": "op",
             "file": "libraries/protocol/include/graphene/protocol/operations.hpp",
-            "line": 181
+            "line": 183
           },
           "support": {
             "status": "provisional",
@@ -21245,7 +21245,7 @@
           "source": {
             "name": "total",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 44
+            "line": 47
           },
           "support": {
             "status": "provisional",
@@ -21261,7 +21261,7 @@
           "source": {
             "name": "signature",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 45
+            "line": 48
           },
           "support": {
             "status": "provisional",
@@ -21288,7 +21288,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 134
+            "line": 137
           },
           "support": {
             "status": "provisional",
@@ -21305,7 +21305,7 @@
           "source": {
             "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 136
+            "line": 139
           },
           "support": {
             "status": "provisional",
@@ -21322,7 +21322,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 137
+            "line": 140
           },
           "support": {
             "status": "provisional",
@@ -21339,7 +21339,7 @@
           "source": {
             "name": "tab",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 138
+            "line": 141
           },
           "support": {
             "status": "provisional",
@@ -21359,7 +21359,7 @@
           "source": {
             "name": "payout",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 139
+            "line": 142
           },
           "support": {
             "status": "provisional",
@@ -21380,7 +21380,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 140
+            "line": 143
           },
           "support": {
             "status": "provisional",
@@ -21407,7 +21407,133 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 134
+            "line": 137
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
+      }
+    },
+    {
+      "name": "tab_close_request_operation",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 196
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "payer",
+          "type": {
+            "kind": "static_variant_ref",
+            "name": "fee_payer_ref"
+          },
+          "source": {
+            "name": "payer",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 198
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "caller",
+          "type": {
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
+          },
+          "source": {
+            "name": "caller",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 199
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "tab",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "tab"
+          },
+          "source": {
+            "name": "tab",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 200
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "extensions",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "static_variant_ref",
+              "name": "future_extensions"
+            },
+            "ordering": "static_variant_tag"
+          },
+          "source": {
+            "name": "extensions",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 201
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
+      "name": "tab_close_request_operation_fee_params_t",
+      "sourceName": "graphene::protocol::tab_close_request_operation::fee_params_t",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 196
           },
           "support": {
             "status": "provisional",
@@ -21434,7 +21560,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 76
+            "line": 79
           },
           "support": {
             "status": "provisional",
@@ -21451,7 +21577,7 @@
           "source": {
             "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 78
+            "line": 81
           },
           "support": {
             "status": "provisional",
@@ -21468,7 +21594,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 79
+            "line": 82
           },
           "support": {
             "status": "provisional",
@@ -21485,7 +21611,7 @@
           "source": {
             "name": "payee",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 80
+            "line": 83
           },
           "support": {
             "status": "provisional",
@@ -21505,7 +21631,7 @@
           "source": {
             "name": "payee_key",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 81
+            "line": 84
           },
           "support": {
             "status": "provisional",
@@ -21522,7 +21648,7 @@
           "source": {
             "name": "cheque_key",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 82
+            "line": 85
           },
           "support": {
             "status": "provisional",
@@ -21539,7 +21665,7 @@
           "source": {
             "name": "deposit",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 83
+            "line": 86
           },
           "support": {
             "status": "provisional",
@@ -21555,7 +21681,7 @@
           "source": {
             "name": "seconds",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 84
+            "line": 87
           },
           "support": {
             "status": "provisional",
@@ -21576,7 +21702,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 85
+            "line": 88
           },
           "support": {
             "status": "provisional",
@@ -21603,7 +21729,150 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 76
+            "line": 79
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "nested struct synthesized from qualified FC_REFLECT and matching nested declaration"
+      }
+    },
+    {
+      "name": "tab_deposit_operation",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 166
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "payer",
+          "type": {
+            "kind": "static_variant_ref",
+            "name": "fee_payer_ref"
+          },
+          "source": {
+            "name": "payer",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 168
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "caller",
+          "type": {
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
+          },
+          "source": {
+            "name": "caller",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 169
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "tab",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "tab"
+          },
+          "source": {
+            "name": "tab",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 170
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "amount",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "amount",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 171
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 5,
+          "name": "extensions",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "static_variant_ref",
+              "name": "future_extensions"
+            },
+            "ordering": "static_variant_tag"
+          },
+          "source": {
+            "name": "extensions",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 172
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "support": {
+        "status": "provisional",
+        "reason": "fields ordered and filtered by FC_REFLECT; field declarations provide types"
+      }
+    },
+    {
+      "name": "tab_deposit_operation_fee_params_t",
+      "sourceName": "graphene::protocol::tab_deposit_operation::fee_params_t",
+      "kind": "struct",
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "uint64"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 166
           },
           "support": {
             "status": "provisional",
@@ -21630,7 +21899,7 @@
           "source": {
             "name": "id",
             "file": "libraries/chain/include/graphene/chain/tab_object.hpp",
-            "line": 44
+            "line": 45
           },
           "support": {
             "status": "provisional",
@@ -21647,7 +21916,7 @@
           "source": {
             "name": "payer",
             "file": "libraries/chain/include/graphene/chain/tab_object.hpp",
-            "line": 44
+            "line": 45
           },
           "support": {
             "status": "provisional",
@@ -21667,7 +21936,7 @@
           "source": {
             "name": "grant",
             "file": "libraries/chain/include/graphene/chain/tab_object.hpp",
-            "line": 46
+            "line": 47
           },
           "support": {
             "status": "provisional",
@@ -21687,7 +21956,7 @@
           "source": {
             "name": "parent_grant",
             "file": "libraries/chain/include/graphene/chain/tab_object.hpp",
-            "line": 47
+            "line": 48
           },
           "support": {
             "status": "provisional",
@@ -21704,7 +21973,7 @@
           "source": {
             "name": "payee",
             "file": "libraries/chain/include/graphene/chain/tab_object.hpp",
-            "line": 48
+            "line": 49
           },
           "support": {
             "status": "provisional",
@@ -21724,7 +21993,7 @@
           "source": {
             "name": "payee_key",
             "file": "libraries/chain/include/graphene/chain/tab_object.hpp",
-            "line": 49
+            "line": 50
           },
           "support": {
             "status": "provisional",
@@ -21741,7 +22010,7 @@
           "source": {
             "name": "cheque_key",
             "file": "libraries/chain/include/graphene/chain/tab_object.hpp",
-            "line": 50
+            "line": 51
           },
           "support": {
             "status": "provisional",
@@ -21758,7 +22027,7 @@
           "source": {
             "name": "deposit",
             "file": "libraries/chain/include/graphene/chain/tab_object.hpp",
-            "line": 51
+            "line": 52
           },
           "support": {
             "status": "provisional",
@@ -21774,7 +22043,7 @@
           "source": {
             "name": "redeemed",
             "file": "libraries/chain/include/graphene/chain/tab_object.hpp",
-            "line": 52
+            "line": 53
           },
           "support": {
             "status": "provisional",
@@ -21790,7 +22059,7 @@
           "source": {
             "name": "created",
             "file": "libraries/chain/include/graphene/chain/tab_object.hpp",
-            "line": 53
+            "line": 54
           },
           "support": {
             "status": "provisional",
@@ -21806,7 +22075,7 @@
           "source": {
             "name": "expiration",
             "file": "libraries/chain/include/graphene/chain/tab_object.hpp",
-            "line": 54
+            "line": 55
           },
           "support": {
             "status": "provisional",
@@ -21833,7 +22102,7 @@
           "source": {
             "name": "cheque",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 52
+            "line": 55
           },
           "support": {
             "status": "provisional",
@@ -21849,7 +22118,7 @@
           "source": {
             "name": "redeemed",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 53
+            "line": 56
           },
           "support": {
             "status": "provisional",
@@ -21876,7 +22145,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 107
+            "line": 110
           },
           "support": {
             "status": "provisional",
@@ -21893,7 +22162,7 @@
           "source": {
             "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 109
+            "line": 112
           },
           "support": {
             "status": "provisional",
@@ -21910,7 +22179,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 110
+            "line": 113
           },
           "support": {
             "status": "provisional",
@@ -21927,7 +22196,7 @@
           "source": {
             "name": "tab",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 111
+            "line": 114
           },
           "support": {
             "status": "provisional",
@@ -21944,7 +22213,7 @@
           "source": {
             "name": "payout",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 112
+            "line": 115
           },
           "support": {
             "status": "provisional",
@@ -21965,7 +22234,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 113
+            "line": 116
           },
           "support": {
             "status": "provisional",
@@ -21992,7 +22261,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 107
+            "line": 110
           },
           "support": {
             "status": "provisional",
@@ -22019,7 +22288,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 158
+            "line": 219
           },
           "support": {
             "status": "provisional",
@@ -22036,7 +22305,7 @@
           "source": {
             "name": "tab",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 160
+            "line": 221
           },
           "support": {
             "status": "provisional",
@@ -22053,7 +22322,7 @@
           "source": {
             "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 161
+            "line": 222
           },
           "support": {
             "status": "provisional",
@@ -22070,7 +22339,7 @@
           "source": {
             "name": "payee",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 162
+            "line": 223
           },
           "support": {
             "status": "provisional",
@@ -22087,7 +22356,7 @@
           "source": {
             "name": "amount",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 163
+            "line": 224
           },
           "support": {
             "status": "provisional",
@@ -22103,7 +22372,7 @@
           "source": {
             "name": "redeemed",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 164
+            "line": 225
           },
           "support": {
             "status": "provisional",
@@ -22140,7 +22409,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 178
+            "line": 239
           },
           "support": {
             "status": "provisional",
@@ -22157,7 +22426,7 @@
           "source": {
             "name": "tab",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 180
+            "line": 241
           },
           "support": {
             "status": "provisional",
@@ -22174,7 +22443,7 @@
           "source": {
             "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 181
+            "line": 242
           },
           "support": {
             "status": "provisional",
@@ -22191,7 +22460,7 @@
           "source": {
             "name": "amount",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 182
+            "line": 243
           },
           "support": {
             "status": "provisional",
@@ -26968,6 +27237,30 @@
         },
         {
           "tag": 98,
+          "name": "tab_deposit_operation_fee_params_t",
+          "type": {
+            "kind": "ref",
+            "name": "tab_deposit_operation_fee_params_t"
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "fee_parameters arm synthesized from operation static_variant arm and nested fee_params_t"
+          }
+        },
+        {
+          "tag": 99,
+          "name": "tab_close_request_operation_fee_params_t",
+          "type": {
+            "kind": "ref",
+            "name": "tab_close_request_operation_fee_params_t"
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "fee_parameters arm synthesized from operation static_variant arm and nested fee_params_t"
+          }
+        },
+        {
+          "tag": 100,
           "name": "tab_redeemed_operation_fee_params_t",
           "type": {
             "kind": "ref",
@@ -26979,7 +27272,7 @@
           }
         },
         {
-          "tag": 99,
+          "tag": 101,
           "name": "tab_refund_operation_fee_params_t",
           "type": {
             "kind": "ref",
@@ -28348,6 +28641,30 @@
         },
         {
           "tag": 98,
+          "name": "tab_deposit_operation",
+          "type": {
+            "kind": "ref",
+            "name": "tab_deposit_operation"
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "static variant arm extracted from C++ type list"
+          }
+        },
+        {
+          "tag": 99,
+          "name": "tab_close_request_operation",
+          "type": {
+            "kind": "ref",
+            "name": "tab_close_request_operation"
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "static variant arm extracted from C++ type list"
+          }
+        },
+        {
+          "tag": 100,
           "name": "tab_redeemed_operation",
           "type": {
             "kind": "ref",
@@ -28359,7 +28676,7 @@
           }
         },
         {
-          "tag": 99,
+          "tag": 101,
           "name": "tab_refund_operation",
           "type": {
             "kind": "ref",
@@ -39572,7 +39889,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 86
+            "line": 87
           },
           "support": {
             "status": "provisional",
@@ -39589,7 +39906,7 @@
           "source": {
             "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 88
+            "line": 89
           },
           "support": {
             "status": "provisional",
@@ -39606,7 +39923,7 @@
           "source": {
             "name": "grantor",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 89
+            "line": 90
           },
           "support": {
             "status": "provisional",
@@ -39626,7 +39943,7 @@
           "source": {
             "name": "parent",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 90
+            "line": 91
           },
           "support": {
             "status": "provisional",
@@ -39643,7 +39960,7 @@
           "source": {
             "name": "grantee",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 91
+            "line": 92
           },
           "support": {
             "status": "provisional",
@@ -39659,7 +39976,7 @@
           "source": {
             "name": "label",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 92
+            "line": 93
           },
           "support": {
             "status": "provisional",
@@ -39679,7 +39996,7 @@
           "source": {
             "name": "operations",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 93
+            "line": 94
           },
           "support": {
             "status": "provisional",
@@ -39704,7 +40021,7 @@
           "source": {
             "name": "budgets",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 94
+            "line": 95
           },
           "support": {
             "status": "provisional",
@@ -39720,7 +40037,7 @@
           "source": {
             "name": "period_seconds",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 95
+            "line": 96
           },
           "support": {
             "status": "provisional",
@@ -39736,7 +40053,7 @@
           "source": {
             "name": "expiration",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 96
+            "line": 97
           },
           "support": {
             "status": "provisional",
@@ -39752,7 +40069,7 @@
           "source": {
             "name": "can_delegate",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 97
+            "line": 98
           },
           "support": {
             "status": "provisional",
@@ -39768,7 +40085,7 @@
           "source": {
             "name": "room_permissions",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 98
+            "line": 99
           },
           "support": {
             "status": "provisional",
@@ -39789,7 +40106,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 99
+            "line": 100
           },
           "support": {
             "status": "provisional",
@@ -39817,7 +40134,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 125
+            "line": 126
           },
           "support": {
             "status": "provisional",
@@ -39834,7 +40151,7 @@
           "source": {
             "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 127
+            "line": 128
           },
           "support": {
             "status": "provisional",
@@ -39851,7 +40168,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 128
+            "line": 129
           },
           "support": {
             "status": "provisional",
@@ -39868,7 +40185,7 @@
           "source": {
             "name": "grant",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 129
+            "line": 130
           },
           "support": {
             "status": "provisional",
@@ -39896,7 +40213,7 @@
           "source": {
             "name": "new_budgets",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 130
+            "line": 131
           },
           "support": {
             "status": "provisional",
@@ -39915,7 +40232,7 @@
           "source": {
             "name": "new_period_seconds",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 131
+            "line": 132
           },
           "support": {
             "status": "provisional",
@@ -39934,7 +40251,7 @@
           "source": {
             "name": "new_expiration",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 132
+            "line": 133
           },
           "support": {
             "status": "provisional",
@@ -39957,7 +40274,7 @@
           "source": {
             "name": "new_operations",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 133
+            "line": 134
           },
           "support": {
             "status": "provisional",
@@ -39976,7 +40293,7 @@
           "source": {
             "name": "new_room_permissions",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 134
+            "line": 135
           },
           "support": {
             "status": "provisional",
@@ -39995,7 +40312,7 @@
           "source": {
             "name": "new_label",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 135
+            "line": 136
           },
           "support": {
             "status": "provisional",
@@ -40014,7 +40331,7 @@
           "source": {
             "name": "new_can_delegate",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 136
+            "line": 137
           },
           "support": {
             "status": "provisional",
@@ -40035,7 +40352,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 137
+            "line": 138
           },
           "support": {
             "status": "provisional",
@@ -40063,7 +40380,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 160
+            "line": 161
           },
           "support": {
             "status": "provisional",
@@ -40080,7 +40397,7 @@
           "source": {
             "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 162
+            "line": 163
           },
           "support": {
             "status": "provisional",
@@ -40097,7 +40414,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 163
+            "line": 164
           },
           "support": {
             "status": "provisional",
@@ -40114,7 +40431,7 @@
           "source": {
             "name": "grant",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 164
+            "line": 165
           },
           "support": {
             "status": "provisional",
@@ -40135,7 +40452,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/fee_grant.hpp",
-            "line": 165
+            "line": 166
           },
           "support": {
             "status": "provisional",
@@ -40163,7 +40480,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 76
+            "line": 79
           },
           "support": {
             "status": "provisional",
@@ -40180,7 +40497,7 @@
           "source": {
             "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 78
+            "line": 81
           },
           "support": {
             "status": "provisional",
@@ -40197,7 +40514,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 79
+            "line": 82
           },
           "support": {
             "status": "provisional",
@@ -40214,7 +40531,7 @@
           "source": {
             "name": "payee",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 80
+            "line": 83
           },
           "support": {
             "status": "provisional",
@@ -40234,7 +40551,7 @@
           "source": {
             "name": "payee_key",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 81
+            "line": 84
           },
           "support": {
             "status": "provisional",
@@ -40251,7 +40568,7 @@
           "source": {
             "name": "cheque_key",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 82
+            "line": 85
           },
           "support": {
             "status": "provisional",
@@ -40268,7 +40585,7 @@
           "source": {
             "name": "deposit",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 83
+            "line": 86
           },
           "support": {
             "status": "provisional",
@@ -40284,7 +40601,7 @@
           "source": {
             "name": "seconds",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 84
+            "line": 87
           },
           "support": {
             "status": "provisional",
@@ -40305,7 +40622,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 85
+            "line": 88
           },
           "support": {
             "status": "provisional",
@@ -40333,7 +40650,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 107
+            "line": 110
           },
           "support": {
             "status": "provisional",
@@ -40350,7 +40667,7 @@
           "source": {
             "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 109
+            "line": 112
           },
           "support": {
             "status": "provisional",
@@ -40367,7 +40684,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 110
+            "line": 113
           },
           "support": {
             "status": "provisional",
@@ -40384,7 +40701,7 @@
           "source": {
             "name": "tab",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 111
+            "line": 114
           },
           "support": {
             "status": "provisional",
@@ -40401,7 +40718,7 @@
           "source": {
             "name": "payout",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 112
+            "line": 115
           },
           "support": {
             "status": "provisional",
@@ -40422,7 +40739,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 113
+            "line": 116
           },
           "support": {
             "status": "provisional",
@@ -40450,7 +40767,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 134
+            "line": 137
           },
           "support": {
             "status": "provisional",
@@ -40467,7 +40784,7 @@
           "source": {
             "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 136
+            "line": 139
           },
           "support": {
             "status": "provisional",
@@ -40484,7 +40801,7 @@
           "source": {
             "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 137
+            "line": 140
           },
           "support": {
             "status": "provisional",
@@ -40501,7 +40818,7 @@
           "source": {
             "name": "tab",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 138
+            "line": 141
           },
           "support": {
             "status": "provisional",
@@ -40521,7 +40838,7 @@
           "source": {
             "name": "payout",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 139
+            "line": 142
           },
           "support": {
             "status": "provisional",
@@ -40542,7 +40859,7 @@
           "source": {
             "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 140
+            "line": 143
           },
           "support": {
             "status": "provisional",
@@ -40557,7 +40874,7 @@
       }
     },
     {
-      "name": "tab_redeemed_operation",
+      "name": "tab_deposit_operation",
       "wireTag": 98,
       "fields": [
         {
@@ -40570,7 +40887,7 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 158
+            "line": 166
           },
           "support": {
             "status": "provisional",
@@ -40579,15 +40896,15 @@
         },
         {
           "index": 1,
-          "name": "tab",
+          "name": "payer",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "tab"
+            "kind": "static_variant_ref",
+            "name": "fee_payer_ref"
           },
           "source": {
-            "name": "tab",
+            "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 160
+            "line": 168
           },
           "support": {
             "status": "provisional",
@@ -40596,15 +40913,15 @@
         },
         {
           "index": 2,
-          "name": "payer",
+          "name": "caller",
           "type": {
-            "kind": "protocol_object_id",
-            "objectType": "account"
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
           },
           "source": {
-            "name": "payer",
+            "name": "caller",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 161
+            "line": 169
           },
           "support": {
             "status": "provisional",
@@ -40613,15 +40930,15 @@
         },
         {
           "index": 3,
-          "name": "payee",
+          "name": "tab",
           "type": {
             "kind": "protocol_object_id",
-            "objectType": "account"
+            "objectType": "tab"
           },
           "source": {
-            "name": "payee",
+            "name": "tab",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 162
+            "line": 170
           },
           "support": {
             "status": "provisional",
@@ -40638,7 +40955,7 @@
           "source": {
             "name": "amount",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 163
+            "line": 171
           },
           "support": {
             "status": "provisional",
@@ -40647,14 +40964,19 @@
         },
         {
           "index": 5,
-          "name": "redeemed",
+          "name": "extensions",
           "type": {
-            "kind": "int64"
+            "kind": "set",
+            "inner": {
+              "kind": "static_variant_ref",
+              "name": "future_extensions"
+            },
+            "ordering": "static_variant_tag"
           },
           "source": {
-            "name": "redeemed",
+            "name": "extensions",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 164
+            "line": 172
           },
           "support": {
             "status": "provisional",
@@ -40662,14 +40984,14 @@
           }
         }
       ],
-      "isVirtual": true,
+      "isVirtual": false,
       "support": {
         "status": "provisional",
         "reason": "operation derived from operation static_variant arm and matching struct fields"
       }
     },
     {
-      "name": "tab_refund_operation",
+      "name": "tab_close_request_operation",
       "wireTag": 99,
       "fields": [
         {
@@ -40682,7 +41004,107 @@
           "source": {
             "name": "fee",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 178
+            "line": 196
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "payer",
+          "type": {
+            "kind": "static_variant_ref",
+            "name": "fee_payer_ref"
+          },
+          "source": {
+            "name": "payer",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 198
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "caller",
+          "type": {
+            "kind": "static_variant_ref",
+            "name": "data_room_member_ref"
+          },
+          "source": {
+            "name": "caller",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 199
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "tab",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "tab"
+          },
+          "source": {
+            "name": "tab",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 200
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "extensions",
+          "type": {
+            "kind": "set",
+            "inner": {
+              "kind": "static_variant_ref",
+              "name": "future_extensions"
+            },
+            "ordering": "static_variant_tag"
+          },
+          "source": {
+            "name": "extensions",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 201
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "isVirtual": false,
+      "support": {
+        "status": "provisional",
+        "reason": "operation derived from operation static_variant arm and matching struct fields"
+      }
+    },
+    {
+      "name": "tab_redeemed_operation",
+      "wireTag": 100,
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 219
           },
           "support": {
             "status": "provisional",
@@ -40699,7 +41121,7 @@
           "source": {
             "name": "tab",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 180
+            "line": 221
           },
           "support": {
             "status": "provisional",
@@ -40716,7 +41138,119 @@
           "source": {
             "name": "payer",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 181
+            "line": 222
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 3,
+          "name": "payee",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "payee",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 223
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 4,
+          "name": "amount",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "amount",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 224
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 5,
+          "name": "redeemed",
+          "type": {
+            "kind": "int64"
+          },
+          "source": {
+            "name": "redeemed",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 225
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        }
+      ],
+      "isVirtual": true,
+      "support": {
+        "status": "provisional",
+        "reason": "operation derived from operation static_variant arm and matching struct fields"
+      }
+    },
+    {
+      "name": "tab_refund_operation",
+      "wireTag": 101,
+      "fields": [
+        {
+          "index": 0,
+          "name": "fee",
+          "type": {
+            "kind": "ref",
+            "name": "asset"
+          },
+          "source": {
+            "name": "fee",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 239
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 1,
+          "name": "tab",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "tab"
+          },
+          "source": {
+            "name": "tab",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 241
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "field selected and ordered by FC_REFLECT"
+          }
+        },
+        {
+          "index": 2,
+          "name": "payer",
+          "type": {
+            "kind": "protocol_object_id",
+            "objectType": "account"
+          },
+          "source": {
+            "name": "payer",
+            "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
+            "line": 242
           },
           "support": {
             "status": "provisional",
@@ -40733,7 +41267,7 @@
           "source": {
             "name": "amount",
             "file": "libraries/protocol/include/graphene/protocol/tab.hpp",
-            "line": 182
+            "line": 243
           },
           "support": {
             "status": "provisional",
@@ -42511,7 +43045,7 @@
           "source": {
             "name": "ops",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1510
+            "line": 1525
           },
           "support": {
             "status": "provisional",
@@ -42527,7 +43061,7 @@
           "source": {
             "name": "asset_symbol_or_id",
             "file": "libraries/app/include/graphene/app/database_api.hpp",
-            "line": 1510
+            "line": 1525
           },
           "support": {
             "status": "provisional",
@@ -42546,7 +43080,7 @@
       "source": {
         "name": "get_required_fees",
         "file": "libraries/app/include/graphene/app/database_api.hpp",
-        "line": 1510
+        "line": 1525
       },
       "support": {
         "status": "provisional",
@@ -43998,6 +44532,111 @@
         "name": "get_tabs_by_payee",
         "file": "libraries/app/include/graphene/app/database_api.hpp",
         "line": 1310
+      },
+      "support": {
+        "status": "provisional",
+        "reason": "selected in config, present in FC_API, and signature found"
+      }
+    },
+    {
+      "name": "get_tabs_by_cheque_key",
+      "apiClass": "database_api",
+      "apiName": "database",
+      "params": [
+        {
+          "index": 0,
+          "name": "cheque_key",
+          "type": {
+            "kind": "public_key",
+            "prefixRef": "chain.publicKeyPrefix"
+          },
+          "source": {
+            "name": "cheque_key",
+            "file": "libraries/app/include/graphene/app/database_api.hpp",
+            "line": 1319
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        },
+        {
+          "index": 1,
+          "name": "payee_name_or_id",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "required": false,
+          "nullable": true,
+          "source": {
+            "name": "payee_name_or_id",
+            "file": "libraries/app/include/graphene/app/database_api.hpp",
+            "line": 1319
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        },
+        {
+          "index": 2,
+          "name": "limit",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "uint32"
+            }
+          },
+          "required": false,
+          "nullable": true,
+          "source": {
+            "name": "limit",
+            "file": "libraries/app/include/graphene/app/database_api.hpp",
+            "line": 1319
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        },
+        {
+          "index": 3,
+          "name": "start_id",
+          "type": {
+            "kind": "optional",
+            "inner": {
+              "kind": "protocol_object_id",
+              "objectType": "tab"
+            }
+          },
+          "required": false,
+          "nullable": true,
+          "source": {
+            "name": "start_id",
+            "file": "libraries/app/include/graphene/app/database_api.hpp",
+            "line": 1319
+          },
+          "support": {
+            "status": "provisional",
+            "reason": "signature found"
+          }
+        }
+      ],
+      "returns": {
+        "kind": "vector",
+        "inner": {
+          "kind": "ref",
+          "name": "tab_object"
+        }
+      },
+      "isSubscription": false,
+      "source": {
+        "name": "get_tabs_by_cheque_key",
+        "file": "libraries/app/include/graphene/app/database_api.hpp",
+        "line": 1319
       },
       "support": {
         "status": "provisional",

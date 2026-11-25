@@ -1560,9 +1560,36 @@ pub struct TabCloseOperation {
     pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
 }
 
-pub const TAB_REDEEMED_OPERATION_ID: u32 = 98;
+pub const TAB_DEPOSIT_OPERATION_ID: u32 = 98;
 
-/// Protocol operation `tab_redeemed_operation` with wire tag 98.
+/// Protocol operation `tab_deposit_operation` with wire tag 98.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetTabDepositOperation)]
+pub struct TabDepositOperation {
+    pub fee: crate::generated::types::Asset,
+    pub payer: crate::generated::static_variants::FeePayerRef,
+    pub caller: crate::generated::static_variants::DataRoomMemberRef,
+    pub tab: crate::generated::ids::TabId,
+    pub amount: crate::generated::types::Asset,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const TAB_CLOSE_REQUEST_OPERATION_ID: u32 = 99;
+
+/// Protocol operation `tab_close_request_operation` with wire tag 99.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = GrapheneMirrornetTabCloseRequestOperation)]
+pub struct TabCloseRequestOperation {
+    pub fee: crate::generated::types::Asset,
+    pub payer: crate::generated::static_variants::FeePayerRef,
+    pub caller: crate::generated::static_variants::DataRoomMemberRef,
+    pub tab: crate::generated::ids::TabId,
+    pub extensions: Vec<crate::generated::static_variants::FutureExtensions>,
+}
+
+pub const TAB_REDEEMED_OPERATION_ID: u32 = 100;
+
+/// Protocol operation `tab_redeemed_operation` with wire tag 100.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneMirrornetTabRedeemedOperation)]
 pub struct TabRedeemedOperation {
@@ -1577,9 +1604,9 @@ pub struct TabRedeemedOperation {
     pub redeemed: i64,
 }
 
-pub const TAB_REFUND_OPERATION_ID: u32 = 99;
+pub const TAB_REFUND_OPERATION_ID: u32 = 101;
 
-/// Protocol operation `tab_refund_operation` with wire tag 99.
+/// Protocol operation `tab_refund_operation` with wire tag 101.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = GrapheneMirrornetTabRefundOperation)]
 pub struct TabRefundOperation {

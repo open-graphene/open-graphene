@@ -2166,7 +2166,21 @@ impl FcSerialize for crate::generated::types::TabCloseOperationFeeParamsT {
     }
 }
 
+impl FcSerialize for crate::generated::types::TabCloseRequestOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::types::TabCreateOperationFeeParamsT {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::types::TabDepositOperationFeeParamsT {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
         Ok(())
@@ -2800,8 +2814,10 @@ fn fee_parameters_tag(value: &crate::generated::static_variants::FeeParameters) 
         crate::generated::static_variants::FeeParameters::TabCreateOperationFeeParamsT(_) => 95u64,
         crate::generated::static_variants::FeeParameters::TabRedeemOperationFeeParamsT(_) => 96u64,
         crate::generated::static_variants::FeeParameters::TabCloseOperationFeeParamsT(_) => 97u64,
-        crate::generated::static_variants::FeeParameters::TabRedeemedOperationFeeParamsT(_) => 98u64,
-        crate::generated::static_variants::FeeParameters::TabRefundOperationFeeParamsT(_) => 99u64,
+        crate::generated::static_variants::FeeParameters::TabDepositOperationFeeParamsT(_) => 98u64,
+        crate::generated::static_variants::FeeParameters::TabCloseRequestOperationFeeParamsT(_) => 99u64,
+        crate::generated::static_variants::FeeParameters::TabRedeemedOperationFeeParamsT(_) => 100u64,
+        crate::generated::static_variants::FeeParameters::TabRefundOperationFeeParamsT(_) => 101u64,
     }
 }
 
@@ -3200,12 +3216,20 @@ impl FcSerialize for crate::generated::static_variants::FeeParameters {
                 write_varint(97u64, out);
                 value.as_ref().fc_serialize(out)
             }
-            Self::TabRedeemedOperationFeeParamsT(value) => {
+            Self::TabDepositOperationFeeParamsT(value) => {
                 write_varint(98u64, out);
                 value.as_ref().fc_serialize(out)
             }
-            Self::TabRefundOperationFeeParamsT(value) => {
+            Self::TabCloseRequestOperationFeeParamsT(value) => {
                 write_varint(99u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::TabRedeemedOperationFeeParamsT(value) => {
+                write_varint(100u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::TabRefundOperationFeeParamsT(value) => {
+                write_varint(101u64, out);
                 value.as_ref().fc_serialize(out)
             }
         }
@@ -5955,6 +5979,53 @@ impl FcSerialize for crate::generated::operations::TabCloseOperation {
     }
 }
 
+impl FcSerialize for crate::generated::operations::TabDepositOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.payer.fc_serialize(out)?;
+        self.caller.fc_serialize(out)?;
+        self.tab.fc_serialize(out)?;
+        self.amount.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
+impl FcSerialize for crate::generated::operations::TabCloseRequestOperation {
+    fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
+        self.fee.fc_serialize(out)?;
+        self.payer.fc_serialize(out)?;
+        self.caller.fc_serialize(out)?;
+        self.tab.fc_serialize(out)?;
+        write_varint(self.extensions.len() as u64, out);
+        let mut previous_key: Option<u64> = None;
+        for value in &self.extensions {
+            let key = future_extensions_tag(value);
+            if previous_key.is_some_and(|previous| previous >= key) {
+                return Err(FcSerializeError::UnsupportedValue {
+                    type_name: "Set",
+                    reason: "set values must be sorted and unique",
+                });
+            }
+            previous_key = Some(key);
+            value.fc_serialize(out)?;
+        }
+        Ok(())
+    }
+}
+
 impl FcSerialize for crate::generated::operations::TabRedeemedOperation {
     fn fc_serialize(&self, out: &mut Vec<u8>) -> Result<()> {
         self.fee.fc_serialize(out)?;
@@ -6372,12 +6443,20 @@ impl FcSerialize for crate::generated::static_variants::Operation {
                 write_varint(97u64, out);
                 value.as_ref().fc_serialize(out)
             }
-            Self::TabRedeemedOperation(value) => {
+            Self::TabDepositOperation(value) => {
                 write_varint(98u64, out);
                 value.as_ref().fc_serialize(out)
             }
-            Self::TabRefundOperation(value) => {
+            Self::TabCloseRequestOperation(value) => {
                 write_varint(99u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::TabRedeemedOperation(value) => {
+                write_varint(100u64, out);
+                value.as_ref().fc_serialize(out)
+            }
+            Self::TabRefundOperation(value) => {
+                write_varint(101u64, out);
                 value.as_ref().fc_serialize(out)
             }
         }
