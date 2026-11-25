@@ -14,7 +14,13 @@ pub(crate) fn render_types(
         "pub(crate) use open_graphene_core::deserialize_i64_from_number_or_decimal_string;\n",
     );
     out.push_str(
-        "pub(crate) use open_graphene_core::deserialize_u64_from_number_or_decimal_string;\n\n",
+        "pub(crate) use open_graphene_core::deserialize_u64_from_number_or_decimal_string;\n",
+    );
+    out.push_str(
+        "#[allow(unused_imports)]\npub(crate) use open_graphene_core::deserialize_optional_i64_from_number_or_decimal_string;\n",
+    );
+    out.push_str(
+        "#[allow(unused_imports)]\npub(crate) use open_graphene_core::deserialize_optional_u64_from_number_or_decimal_string;\n\n",
     );
     // OpenAPI has no unsigned 32-bit format and `int32` caps values at 2^31-1,
     // which real u32 wire values (e.g. TaPoS `ref_block_prefix`) exceed.
@@ -285,6 +291,20 @@ pub(crate) fn render_fields(
                 "    #[serde(deserialize_with = \"crate::generated::types::deserialize_u64_from_number_or_decimal_string\")]\n",
             );
         }
+        // The same for an optional 64-bit field, e.g. a fee grant's `per_period`. With its own
+        // decoder serde no longer reads a missing field as None by itself, hence `default`.
+        let optional_int64 = matches!(&field.ty, TypeRef::Optional { inner } if matches!(**inner, TypeRef::Int64 { .. }));
+        if optional_int64 {
+            out.push_str(
+                "    #[serde(default, deserialize_with = \"crate::generated::types::deserialize_optional_i64_from_number_or_decimal_string\")]\n",
+            );
+        }
+        let optional_uint64 = matches!(&field.ty, TypeRef::Optional { inner } if matches!(**inner, TypeRef::Uint64 { .. }));
+        if optional_uint64 {
+            out.push_str(
+                "    #[serde(default, deserialize_with = \"crate::generated::types::deserialize_optional_u64_from_number_or_decimal_string\")]\n",
+            );
+        }
         // u32 must not inherit utoipa's `int32` format; see u32_schema.
         let is_u32 = matches!(field.ty, TypeRef::Uint32)
             || matches!(&field.ty, TypeRef::Optional { inner } if matches!(**inner, TypeRef::Uint32));
@@ -484,6 +504,53 @@ mod tests {
         let first = out.find("pub first").expect("first field");
         let second = out.find("pub second").expect("second field");
         assert!(first < second);
+    }
+
+    #[test]
+    fn optional_64_bit_fields_decode_numbers_and_decimal_strings() {
+        let protocol = minimal_protocol();
+        let optional = |name: &str, inner: TypeRef| FieldDef {
+            index: 0,
+            name: name.to_string(),
+            ty: TypeRef::Optional {
+                inner: Box::new(inner),
+            },
+            source: None,
+            support: None,
+        };
+        let fields = vec![
+            optional(
+                "per_period",
+                TypeRef::Int64 {
+                    json: None,
+                    fc: None,
+                },
+            ),
+            optional(
+                "limit",
+                TypeRef::Uint64 {
+                    json: None,
+                    fc: None,
+                },
+            ),
+        ];
+
+        let mut out = String::new();
+        render_fields(
+            &mut out,
+            &protocol,
+            "TestStruct",
+            &fields,
+            &SchemaNoRecursionCuts::default(),
+        )
+        .expect("render fields");
+
+        assert!(out.contains(
+            "#[serde(default, deserialize_with = \"crate::generated::types::deserialize_optional_i64_from_number_or_decimal_string\")]\n    #[serde(skip_serializing_if = \"Option::is_none\")]\n    pub per_period: Option<i64>,"
+        ));
+        assert!(out.contains(
+            "#[serde(default, deserialize_with = \"crate::generated::types::deserialize_optional_u64_from_number_or_decimal_string\")]"
+        ));
     }
 
     #[test]

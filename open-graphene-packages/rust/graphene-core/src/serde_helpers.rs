@@ -59,6 +59,42 @@ where
     }
 }
 
+/// Deserialize an optional `i64` that may arrive as a JSON number or a decimal string, as
+/// [`deserialize_i64_from_number_or_decimal_string`] does for a required one. fc omits an absent
+/// optional, so the field also needs `#[serde(default)]`; `null` reads as absent too.
+pub fn deserialize_optional_i64_from_number_or_decimal_string<'de, D>(
+    deserializer: D,
+) -> Result<Option<i64>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    struct Present(
+        #[serde(deserialize_with = "deserialize_i64_from_number_or_decimal_string")] i64,
+    );
+
+    let present: Option<Present> = Option::deserialize(deserializer)?;
+    Ok(present.map(|Present(value)| value))
+}
+
+/// Deserialize an optional `u64` that may arrive as a JSON number or a decimal string, as
+/// [`deserialize_u64_from_number_or_decimal_string`] does for a required one. fc omits an absent
+/// optional, so the field also needs `#[serde(default)]`; `null` reads as absent too.
+pub fn deserialize_optional_u64_from_number_or_decimal_string<'de, D>(
+    deserializer: D,
+) -> Result<Option<u64>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    struct Present(
+        #[serde(deserialize_with = "deserialize_u64_from_number_or_decimal_string")] u64,
+    );
+
+    let present: Option<Present> = Option::deserialize(deserializer)?;
+    Ok(present.map(|Present(value)| value))
+}
+
 /// Deserialize fixed-length bytes that arrive either as a hex string or a JSON byte array.
 ///
 /// Graphene serializes fixed-byte fields (object ids, keys, hashes) as lowercase hex on the
@@ -205,6 +241,46 @@ mod tests {
     fn rejects_non_numeric_string() {
         let result: Result<Wrapper, _> = serde_json::from_str(r#"{"value": "nope"}"#);
         assert!(result.is_err());
+    }
+
+    #[derive(Deserialize)]
+    struct OptionalWrapper {
+        #[serde(
+            default,
+            deserialize_with = "deserialize_optional_i64_from_number_or_decimal_string"
+        )]
+        signed: Option<i64>,
+        #[serde(
+            default,
+            deserialize_with = "deserialize_optional_u64_from_number_or_decimal_string"
+        )]
+        unsigned: Option<u64>,
+    }
+
+    #[test]
+    fn decodes_optionals_from_number_string_or_absence() {
+        let from_numbers: OptionalWrapper =
+            serde_json::from_str(r#"{"signed": 5000, "unsigned": 7}"#).unwrap();
+        let from_strings: OptionalWrapper =
+            serde_json::from_str(r#"{"signed": "4294967297", "unsigned": "18446744073709551615"}"#)
+                .unwrap();
+        let absent: OptionalWrapper = serde_json::from_str(r#"{}"#).unwrap();
+        let null: OptionalWrapper =
+            serde_json::from_str(r#"{"signed": null, "unsigned": null}"#).unwrap();
+        let not_a_number: Result<OptionalWrapper, _> =
+            serde_json::from_str(r#"{"signed": "nope"}"#);
+
+        assert_eq!(
+            (from_numbers.signed, from_numbers.unsigned),
+            (Some(5000), Some(7))
+        );
+        assert_eq!(
+            (from_strings.signed, from_strings.unsigned),
+            (Some(4_294_967_297), Some(u64::MAX))
+        );
+        assert_eq!((absent.signed, absent.unsigned), (None, None));
+        assert_eq!((null.signed, null.unsigned), (None, None));
+        assert!(not_a_number.is_err());
     }
 
     #[test]

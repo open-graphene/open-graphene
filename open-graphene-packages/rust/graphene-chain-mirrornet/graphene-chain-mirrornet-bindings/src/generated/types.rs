@@ -5,6 +5,10 @@
 use serde::{Deserialize, Serialize};
 
 pub(crate) use open_graphene_core::deserialize_i64_from_number_or_decimal_string;
+#[allow(unused_imports)]
+pub(crate) use open_graphene_core::deserialize_optional_i64_from_number_or_decimal_string;
+#[allow(unused_imports)]
+pub(crate) use open_graphene_core::deserialize_optional_u64_from_number_or_decimal_string;
 pub(crate) use open_graphene_core::deserialize_u64_from_number_or_decimal_string;
 
 #[allow(dead_code)]
@@ -1634,8 +1638,16 @@ pub struct ExtendedAssetObject {
     #[schema(schema_with = crate::generated::types::u32_schema)]
     pub creation_block_num: u32,
     pub creation_time: String,
+    #[serde(
+        default,
+        deserialize_with = "crate::generated::types::deserialize_optional_i64_from_number_or_decimal_string"
+    )]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub total_in_collateral: Option<i64>,
+    #[serde(
+        default,
+        deserialize_with = "crate::generated::types::deserialize_optional_i64_from_number_or_decimal_string"
+    )]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub total_backing_collateral: Option<i64>,
 }
@@ -1657,6 +1669,10 @@ pub struct FeeGrantBudget {
         deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
     )]
     pub spent: i64,
+    #[serde(
+        default,
+        deserialize_with = "crate::generated::types::deserialize_optional_i64_from_number_or_decimal_string"
+    )]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub per_period: Option<i64>,
     #[serde(
@@ -1673,6 +1689,10 @@ pub struct FeeGrantBudgetLimits {
         deserialize_with = "crate::generated::types::deserialize_i64_from_number_or_decimal_string"
     )]
     pub total: i64,
+    #[serde(
+        default,
+        deserialize_with = "crate::generated::types::deserialize_optional_i64_from_number_or_decimal_string"
+    )]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub per_period: Option<i64>,
 }

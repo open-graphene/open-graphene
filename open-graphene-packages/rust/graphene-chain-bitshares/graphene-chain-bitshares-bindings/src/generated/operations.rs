@@ -1063,6 +1063,10 @@ pub struct CreditOfferUpdateOperation {
     #[schema(schema_with = crate::generated::types::u32_schema)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_duration_seconds: Option<u32>,
+    #[serde(
+        default,
+        deserialize_with = "crate::generated::types::deserialize_optional_i64_from_number_or_decimal_string"
+    )]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub min_deal_amount: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
