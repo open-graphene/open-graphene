@@ -40,6 +40,8 @@ pub struct PendingResponse {
 
 pub struct PendingCallbackNotice {
     callback_id: CallbackId,
+    /// The node's answer to the request, until [`PendingCallbackNotice::accepted`] reads it.
+    ack: Option<oneshot::Receiver<Result<Value, TransportError>>>,
     receiver: oneshot::Receiver<Result<Value, TransportError>>,
 }
 
@@ -56,6 +58,8 @@ enum PendingCall {
     },
     CallbackAck {
         callback_id: CallbackId,
+        /// The node's answer to the request itself: its acceptance, or its refusal.
+        ack: oneshot::Sender<Result<Value, TransportError>>,
     },
 }
 
@@ -75,6 +79,7 @@ enum LiveCommand {
         method: String,
         params_after_callback: Value,
         response: oneshot::Sender<Result<CallbackId, TransportError>>,
+        ack: oneshot::Sender<Result<Value, TransportError>>,
         callback: oneshot::Sender<Result<Value, TransportError>>,
     },
     SubscribeCallback {
@@ -91,17 +96,25 @@ enum LiveCommand {
 }
 
 impl LiveTransport {
-    pub(crate) fn spawn(transport: WebSocketTransport) -> Result<Self, TransportError> {
+    pub(crate) fn spawn(transport: WebSocketTransport) -> Self {
         let (commands, receiver) = unbounded_channel();
         let next_subscription_id = Arc::new(AtomicU64::new(1));
         let next_callback_id = Arc::new(AtomicU64::new(SUBSCRIPTION_CALLBACK_ID_BASE));
         let dispatcher = tokio::spawn(run_dispatcher(transport, receiver));
-        Ok(Self {
+        Self {
             commands,
             next_subscription_id,
             next_callback_id,
             dispatcher: Some(dispatcher),
-        })
+        }
+    }
+
+    /// Whether the dispatcher has stopped, as when the node closed the connection: every call
+    /// on this transport fails from then on, so its owner opens a new one.
+    pub fn is_stopped(&self) -> bool {
+        self.dispatcher
+            .as_ref()
+            .is_none_or(|dispatcher| dispatcher.is_finished())
     }
 
     pub fn handle(&self) -> LiveTransportHandle {
@@ -175,6 +188,7 @@ impl LiveTransportHandle {
         params_after_callback: Value,
     ) -> Result<PendingCallbackNotice, TransportError> {
         let (callback_id_response, callback_id_receiver) = oneshot::channel();
+        let (ack, ack_receiver) = oneshot::channel();
         let (callback, receiver) = oneshot::channel();
         self.commands
             .send(LiveCommand::CallWithCallback {
@@ -182,6 +196,7 @@ impl LiveTransportHandle {
                 method: method.into(),
                 params_after_callback,
                 response: callback_id_response,
+                ack,
                 callback,
             })
             .map_err(|_| TransportError::DispatcherStopped)?;
@@ -190,6 +205,7 @@ impl LiveTransportHandle {
             .map_err(|_| TransportError::DispatcherStopped)??;
         Ok(PendingCallbackNotice {
             callback_id,
+            ack: Some(ack_receiver),
             receiver,
         })
     }
@@ -253,6 +269,31 @@ impl PendingResponse {
 impl PendingCallbackNotice {
     pub fn callback_id(&self) -> CallbackId {
         self.callback_id
+    }
+
+    /// The node's answer to the request, up to `timeout`: its acceptance, after which the notice
+    /// comes, or its refusal as [`TransportError::RpcError`]. Read once; a later call answers
+    /// `Ok(Value::Null)`.
+    pub async fn accepted(&mut self, timeout: Duration) -> Result<Value, TransportError> {
+        let Some(ack) = self.ack.take() else {
+            return Ok(Value::Null);
+        };
+
+        match tokio::time::timeout(timeout, ack).await {
+            Ok(Ok(answer)) => answer,
+            Ok(Err(_)) => Err(TransportError::DispatcherStopped),
+            Err(_) => Err(TransportError::ResponseTimeout { timeout }),
+        }
+    }
+
+    /// The notice, if it comes within `timeout`; `Ok(None)` when it has not come yet, so that
+    /// the caller may wait again later.
+    pub async fn poll(&mut self, timeout: Duration) -> Result<Option<Value>, TransportError> {
+        match tokio::time::timeout(timeout, &mut self.receiver).await {
+            Ok(Ok(notice)) => notice.map(Some),
+            Ok(Err(_)) => Err(TransportError::DispatcherStopped),
+            Err(_) => Ok(None),
+        }
     }
 
     pub async fn wait(self) -> Result<Value, TransportError> {
@@ -401,6 +442,7 @@ async fn handle_command(
             method,
             params_after_callback,
             response,
+            ack,
             callback,
         } => {
             match transport
@@ -412,7 +454,7 @@ async fn handle_command(
                     let _ = response.send(Ok(callback_id));
                     pending_calls.insert(
                         callback_id.as_u64(),
-                        PendingCall::CallbackAck { callback_id },
+                        PendingCall::CallbackAck { callback_id, ack },
                     );
                     pending_callbacks.insert(callback_id, PendingCallback { callback });
                 }
@@ -472,21 +514,34 @@ fn dispatch_inbound(
     subscriptions: &mut HashMap<CallbackId, Vec<(u64, UnboundedSender<Value>)>>,
 ) {
     match inbound {
-        JsonRpcInbound::Response { id, result } => {
-            if let Some(PendingCall::Response { response }) = pending_calls.remove(&id) {
+        JsonRpcInbound::Response { id, result } => match pending_calls.remove(&id) {
+            Some(PendingCall::Response { response }) => {
                 let _ = response.send(Ok(result));
             }
-        }
+            Some(PendingCall::CallbackAck { ack, .. }) => {
+                let _ = ack.send(Ok(result));
+            }
+            None => {}
+        },
         JsonRpcInbound::Error { id, error } => {
             if let Some(pending) = pending_calls.remove(&id) {
-                let error = TransportError::RpcError { id, error };
                 match pending {
                     PendingCall::Response { response } => {
-                        let _ = response.send(Err(error));
+                        let _ = response.send(Err(TransportError::RpcError { id, error }));
                     }
-                    PendingCall::CallbackAck { callback_id } => {
+                    // A refused request never brings its notice: both the request's waiter and
+                    // the notice's hear the refusal.
+                    PendingCall::CallbackAck { callback_id, ack } => {
+                        let refusal = TransportError::RpcError {
+                            id,
+                            error: error.clone(),
+                        };
+                        let _ = ack.send(Err(refusal));
+
                         if let Some(pending_callback) = pending_callbacks.remove(&callback_id) {
-                            let _ = pending_callback.callback.send(Err(error));
+                            let _ = pending_callback
+                                .callback
+                                .send(Err(TransportError::RpcError { id, error }));
                         }
                     }
                 }
@@ -779,9 +834,10 @@ mod tests {
     fn rpc_error_for_pending_callback_reaches_callback_receiver() {
         let callback_id = CallbackId::new(7);
         let (pending_callback, mut callback_receiver) = callback_pending();
+        let (ack, mut ack_receiver) = oneshot::channel();
         let mut pending_calls = HashMap::from([(
             callback_id.as_u64(),
-            PendingCall::CallbackAck { callback_id },
+            PendingCall::CallbackAck { callback_id, ack },
         )]);
         let mut pending_callbacks = HashMap::from([(callback_id, pending_callback)]);
         let mut subscriptions = HashMap::new();
@@ -798,6 +854,8 @@ mod tests {
 
         let error = callback_receiver.try_recv().unwrap().unwrap_err();
         assert!(matches!(error, TransportError::RpcError { id: 7, .. }));
+        let refusal = ack_receiver.try_recv().unwrap().unwrap_err();
+        assert!(matches!(refusal, TransportError::RpcError { id: 7, .. }));
         assert!(pending_calls.is_empty());
         assert!(pending_callbacks.is_empty());
     }

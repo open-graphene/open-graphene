@@ -1,10 +1,12 @@
+use std::sync::Arc;
 use std::time::Duration;
 
 use serde_json::{Value, json};
 
+use crate::shared::SessionTransport;
 use crate::{
-    ChainIdMismatch, JsonRpcInbound, PendingCallback, ReconnectPolicy, TransportError,
-    WebSocketTransport, is_connection_error,
+    ChainIdMismatch, JsonRpcInbound, PendingCallback, ReconnectPolicy, SharedConnection,
+    TransportError, WebSocketTransport, is_connection_error,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -17,7 +19,7 @@ pub struct ApiIds {
 }
 
 pub struct GrapheneSession {
-    transport: WebSocketTransport,
+    transport: SessionTransport,
     api_ids: ApiIds,
     chain_id: String,
     reconnect_policy: ReconnectPolicy,
@@ -32,11 +34,35 @@ impl GrapheneSession {
     pub async fn from_transport(mut transport: WebSocketTransport) -> Result<Self, TransportError> {
         let (api_ids, chain_id) = establish(&mut transport, None).await?;
         Ok(Self {
-            transport,
+            transport: SessionTransport::Own(transport),
             api_ids,
             chain_id,
             reconnect_policy: ReconnectPolicy::default(),
         })
+    }
+
+    /// A session over `connection`, as [`SharedConnection::session`] makes it. It never
+    /// reconnects: the connection's owner opens a new one when it closes.
+    pub(crate) fn on_shared(connection: Arc<SharedConnection>) -> Self {
+        Self {
+            api_ids: connection.api_ids().clone(),
+            chain_id: connection.chain_id().to_owned(),
+            reconnect_policy: ReconnectPolicy::disabled(),
+            transport: SessionTransport::Shared(connection),
+        }
+    }
+
+    /// Gives this session's connection to a [`SharedConnection`], whose sessions call the node
+    /// side by side; a session already on a shared connection gives that connection back.
+    pub fn into_shared(self) -> Arc<SharedConnection> {
+        match self.transport {
+            SessionTransport::Own(transport) => Arc::new(SharedConnection::new(
+                transport,
+                self.api_ids,
+                self.chain_id,
+            )),
+            SessionTransport::Shared(connection) => connection,
+        }
     }
 
     /// How this session reconnects after a dropped connection (default: a few retries with backoff).
@@ -54,10 +80,16 @@ impl GrapheneSession {
     /// Refuses to reconnect if the node now reports a different chain id. Note that live
     /// subscriptions are not resumed: re-subscribe after a reconnect if you need them.
     pub async fn reconnect(&mut self) -> Result<(), TransportError> {
-        let url = self.transport.url().to_string();
+        let SessionTransport::Own(own) = &self.transport else {
+            return Err(TransportError::NotOnSharedConnection {
+                operation: "reconnect",
+            });
+        };
+
+        let url = own.url().to_string();
         let mut transport = WebSocketTransport::connect(&url).await?;
         let (api_ids, _) = establish(&mut transport, Some(&self.chain_id)).await?;
-        self.transport = transport;
+        self.transport = SessionTransport::Own(transport);
         self.api_ids = api_ids;
         Ok(())
     }
@@ -97,12 +129,19 @@ impl GrapheneSession {
         &self.api_ids
     }
 
-    pub fn into_transport(self) -> WebSocketTransport {
-        self.transport
+    /// The connection of its own this session talks through; a session on a shared connection
+    /// has none to give.
+    pub fn into_transport(self) -> Result<WebSocketTransport, TransportError> {
+        match self.transport {
+            SessionTransport::Own(transport) => Ok(transport),
+            SessionTransport::Shared(_) => Err(TransportError::NotOnSharedConnection {
+                operation: "into_transport",
+            }),
+        }
     }
 
     pub fn into_live_transport(self) -> Result<crate::LiveTransport, TransportError> {
-        self.transport.into_live()
+        self.into_transport()?.into_live()
     }
 
     pub async fn database_call(

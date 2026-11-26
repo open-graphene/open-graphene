@@ -4,6 +4,7 @@ pub mod error;
 pub mod json_rpc;
 pub mod live;
 pub mod session;
+pub mod shared;
 pub mod websocket;
 
 pub use callback::CallbackId;
@@ -20,4 +21,5 @@ pub use live::{
     SUBSCRIPTION_CALLBACK_ID_BASE,
 };
 pub use session::{ApiIds, GrapheneSession, parse_api_id, parse_chain_id};
+pub use shared::SharedConnection;
 pub use websocket::{DEFAULT_CALL_TIMEOUT, PendingCallback, WebSocketTransport};

@@ -248,6 +248,19 @@ impl ChainApi {
         Ok(Self { session })
     }
 
+    /// The API over `session`, such as one made from a shared connection
+    /// ([`SharedConnection::session`](open_graphene_transport::SharedConnection::session)), whose
+    /// calls go side by side with those of the connection's other sessions.
+    pub fn from_session(session: GrapheneSession) -> Self {
+        Self { session }
+    }
+
+    /// The session under this API, to share its connection
+    /// ([`GrapheneSession::into_shared`]).
+    pub fn into_session(self) -> GrapheneSession {
+        self.session
+    }
+
     /// The chain this session is connected to — the genesis-derived id that
     /// distinguishes one network of this chain from another.
     ///

@@ -85,7 +85,7 @@ impl WebSocketTransport {
     }
 
     pub fn into_live(self) -> Result<crate::LiveTransport, TransportError> {
-        crate::LiveTransport::spawn(self)
+        Ok(crate::LiveTransport::spawn(self))
     }
 
     pub async fn call_with_callback(

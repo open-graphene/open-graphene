@@ -43,6 +43,12 @@ pub enum TransportError {
     #[error("Graphene live dispatcher stopped")]
     DispatcherStopped,
 
+    #[error("no callback request {callback_id} waits on this shared connection")]
+    UnknownCallback { callback_id: CallbackId },
+
+    #[error("{operation} needs a session with a connection of its own, not a shared one")]
+    NotOnSharedConnection { operation: &'static str },
+
     #[error(
         "subscription callback id {callback_id} is below the reserved base {base}; allocate ids with LiveTransportHandle::allocate_callback_id so they cannot collide with request ids"
     )]
